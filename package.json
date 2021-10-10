@@ -1,0 +1,29 @@
+{
+  "name": "raven",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.ts",
+  "scripts": {
+    "compile": "tsc",
+    "start": "node ./dist/app.js"
+  },
+  "author": "Owlive",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^13.13.52",
+    "@typescript-eslint/eslint-plugin": "^4.28.1",
+    "@typescript-eslint/parser": "^4.28.1",
+    "eslint": "^7.29.0",
+    "prisma": "^3.2.1",
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "@discordjs/builders": "^0.6.0",
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "@prisma/client": "^3.2.1",
+    "colors": "^1.4.0",
+    "discord-api-types": "^0.23.1",
+    "discord.js": "^13.2.0",
+    "dotenv": "^10.0.0"
+  }
+}
