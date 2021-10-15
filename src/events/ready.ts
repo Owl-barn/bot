@@ -7,7 +7,8 @@ export default class ready implements RavenEvent {
 
     async execute(client: RavenClient): Promise<void> {
         if (!client.user) return;
-        await client.user.setActivity(`for ${client.guilds.cache.size} servers`, {
+        const usercount = client.guilds.cache.reduce(((x: number, y) => x + y.memberCount), 0);
+        await client.user.setActivity(`for ${usercount} members`, {
             type: "STREAMING",
             url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         });

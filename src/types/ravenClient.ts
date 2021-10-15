@@ -1,10 +1,11 @@
 import { PrismaClient } from ".prisma/client";
 import Collection from "@discordjs/collection";
-import { Client } from "discord.js";
+import { Client, Snowflake } from "discord.js";
+import musicService from "../modules/music.service";
 import { Command } from "./Command";
 
 export default class RavenClient extends Client {
     commands: Collection<string, Command>;
-    voiceService: unknown;
+    musicService: Map<Snowflake, musicService>;
     db: PrismaClient;
 }

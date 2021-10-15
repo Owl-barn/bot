@@ -27,6 +27,12 @@ function argumentHanlder(builder: SlashCommandBuilder, args: Argument[]) {
                         .setDescription(arg.description)
                         .setRequired(arg.required));
                 break;
+            case argumentType.boolean:
+                builder.addBooleanOption(option =>
+                    option.setName(arg.name)
+                        .setDescription(arg.description)
+                        .setRequired(arg.required));
+                break;
         }
     });
 

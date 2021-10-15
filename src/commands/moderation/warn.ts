@@ -1,7 +1,7 @@
-import { CommandInteraction, HexColorString, InteractionReplyOptions, MessageEmbed, User } from "discord.js";
+import { HexColorString, MessageEmbed, User } from "discord.js";
 import { argumentType } from "../../types/argument";
-import { Command } from "../../types/Command";
-import RavenClient from "../../types/ravenClient";
+import { Command, returnMessage } from "../../types/Command";
+import RavenInteraction from "../../types/interaction";
 
 module.exports = class extends Command {
     constructor() {
@@ -35,20 +35,19 @@ module.exports = class extends Command {
         });
     }
 
-    async execute(msg: CommandInteraction): Promise<InteractionReplyOptions> {
-        const db = (msg.client as RavenClient).db;
+    async execute(msg: RavenInteraction): Promise<returnMessage> {
+        const db = msg.client.db;
 
         const reason = msg.options.get("reason")?.value as string;
         const target = msg.options.get("user")?.user as User;
 
         // insert into db.
-        const test = await db.warnings.create({ data: { target_id: target.id, reason: reason.substr(0, 256), guild_id: msg.guildId as string, mod_id: msg.user.id } })
+        await db.warnings.create({ data: { target_id: target.id, reason: reason.substr(0, 256), guild_id: msg.guildId as string, mod_id: msg.user.id } })
             .catch((e: Error) => {
                 console.log(e);
                 throw { content: "an error occured" };
             });
 
-        console.log(test);
         const warnCount = await db.warnings.count({ where: { target_id: target.id, guild_id: msg.guildId as string } });
 
         let colour: HexColorString;

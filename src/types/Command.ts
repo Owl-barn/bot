@@ -1,5 +1,6 @@
 import { Interaction, InteractionReplyOptions } from "discord.js";
 import { argumentType } from "./argument";
+import RavenInteraction from "./interaction";
 
 export abstract class Command {
     public constructor(info: CommandInfo) {
@@ -22,7 +23,7 @@ export abstract class Command {
 
     public path?: string;
 
-    abstract execute(interaction: Interaction): Promise<InteractionReplyOptions>;
+    abstract execute(interaction: Interaction): Promise<(returnMessage)>;
 }
 
 export interface CommandInfo {
@@ -53,4 +54,8 @@ export interface Argument {
 export interface Throttling {
     duration: number;
     usages: number;
+}
+
+export interface returnMessage extends InteractionReplyOptions {
+    callback?: (interaction: RavenInteraction) => Promise<returnMessage | void>;
 }
