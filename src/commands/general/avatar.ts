@@ -1,8 +1,7 @@
-import { CommandInteraction, ImageURLOptions, InteractionReplyOptions, MessageEmbed } from "discord.js";
-import registerCommand from "../../modules/command.register";
+import { ImageURLOptions, MessageEmbed } from "discord.js";
 import { argumentType } from "../../types/argument";
-import { Command } from "../../types/Command";
-import RavenClient from "../../types/ravenClient";
+import { Command, returnMessage } from "../../types/Command";
+import RavenInteraction from "../../types/interaction";
 
 module.exports = class extends Command {
     constructor() {
@@ -30,11 +29,7 @@ module.exports = class extends Command {
         });
     }
 
-    async execute(msg: CommandInteraction): Promise<InteractionReplyOptions> {
-        const client = msg.client as RavenClient;
-
-        registerCommand(client.commands, client.user?.id as string);
-
+    async execute(msg: RavenInteraction): Promise<returnMessage> {
 
         const settings: ImageURLOptions = { dynamic: true, size: 4096 };
         const user = msg.options.get("user")?.user;

@@ -1,7 +1,7 @@
-import { CommandInteraction, InteractionReplyOptions, MessageEmbed, User } from "discord.js";
+import { InteractionReplyOptions, MessageEmbed, User } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
-import RavenClient from "../../types/ravenClient";
+import RavenInteraction from "../../types/interaction";
 
 export default class extends Command {
     constructor() {
@@ -35,8 +35,8 @@ export default class extends Command {
         });
     }
 
-    async execute(msg: CommandInteraction): Promise<InteractionReplyOptions> {
-        const db = (msg.client as RavenClient).db;
+    async execute(msg: RavenInteraction): Promise<InteractionReplyOptions> {
+        const db = msg.client.db;
 
         const index = msg.options.get("index")?.value as number;
         const target = msg.options.get("user")?.user as User;
