@@ -7,7 +7,8 @@ export enum argumentType {
     user = 5,
     channel = 6,
     role = 7,
-    mentionable = 8
+    mentionable = 8,
+    subCommand = 9
 }
 
 

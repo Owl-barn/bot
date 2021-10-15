@@ -1,8 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model guilds {
+  guild_id    String        @id @db.Char(18)
+  created     DateTime      @default(now()) @db.Timestamp(0)
+  permissions permissions[]
+  warnings    warnings[]
+  logs        logs[]
+}
+
+model logs {
+  uuid       String         @id(map: "logs_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  event_type logs_eventType
+  user       String?        @db.Char(18)
+  target     String?        @db.Char(18)
+  created    DateTime       @default(now()) @db.Timestamp(0)
+  guild_id   String         @db.Char(18)
+  content    String?        @db.VarChar(254)
+  guilds     guilds         @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict, map: "logs_FK")
+
+  @@index([guild_id], map: "logs_FK")
+}
+
+model permissions {
+  guild_id   String           @db.Char(18)
+  command_id String           @db.Char(18)
+  created    DateTime         @default(now()) @db.Timestamp(0)
+  type       permissions_type
+  permission Boolean
+  uuid       String           @id(map: "permissions_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  guilds     guilds           @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict, map: "permissions_FK")
+
+  @@index([guild_id], map: "permissions_FK")
+}
+
+model warnings {
+  uuid      String   @id(map: "warnings_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created   DateTime @default(now()) @db.Timestamp(0)
+  guild_id  String   @db.Char(18)
+  target_id String   @db.Char(18)
+  mod_id    String   @db.Char(18)
+  reason    String   @db.VarChar(256)
+  guilds    guilds   @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict, map: "warnings_FK")
+
+  @@index([guild_id], map: "Warnings_FK")
+}
+
+enum logs_eventType {
+  warn
+  del_warn
+  ban
+  kick
+  message_delete
+  message_update
+}
+
+enum permissions_type {
+  USER
+  ROLE
 }

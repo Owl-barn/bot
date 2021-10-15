@@ -22,6 +22,8 @@ export async function registerCommands(client: RavenClient): Promise<Collection<
 
             if (command == undefined) { continue; }
 
+            command.path = `/${folder}/${file}`;
+
             if (commands.get(command.name) !== undefined) {
                 console.log(`duplicate commands with name: ${command.name}`.red.bold);
                 process.exit();

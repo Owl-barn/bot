@@ -1,4 +1,4 @@
-import { Interaction } from "discord.js";
+import { Interaction, InteractionReplyOptions } from "discord.js";
 import { argumentType } from "./argument";
 
 export abstract class Command {
@@ -20,7 +20,9 @@ export abstract class Command {
 
     public throttling!: Throttling;
 
-    abstract execute(interaction: Interaction): Promise<void>;
+    public path?: string;
+
+    abstract execute(interaction: Interaction): Promise<InteractionReplyOptions>;
 }
 
 export interface CommandInfo {
@@ -37,6 +39,8 @@ export interface CommandInfo {
     permissions?: Permissions;
 
     throttling: Throttling;
+
+    path?: string;
 }
 
 export interface Argument {

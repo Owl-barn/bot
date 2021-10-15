@@ -1,4 +1,4 @@
-import { BaseCommandInteraction } from "discord.js";
+import { CommandInteraction, InteractionReplyOptions } from "discord.js";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -6,7 +6,7 @@ export default class InteractionCreate implements RavenEvent {
     name = "interactionCreate";
     once = false;
 
-    execute(interaction: BaseCommandInteraction): void {
+    async execute(interaction: CommandInteraction): Promise<void> {
         if (!interaction.isCommand()) return;
 
         const client = interaction.client as RavenClient;
@@ -15,6 +15,16 @@ export default class InteractionCreate implements RavenEvent {
 
         const command = client.commands.get(commandName);
 
-        command?.execute(interaction).catch(() => interaction.reply({ ephemeral: true, content: "An error occured." }));
+        const hidden = interaction.options.get("hidden") === null ? false : interaction.options.get("hidden")?.value as boolean;
+
+        await command?.execute(interaction)
+            .then((message: InteractionReplyOptions) => {
+                message.ephemeral = hidden;
+                interaction.reply(message);
+            })
+            .catch((e: Error) => {
+                console.log(e);
+                interaction.reply({ ephemeral: true, content: "An error occured." });
+            });
     }
 }
