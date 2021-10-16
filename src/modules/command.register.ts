@@ -1,46 +1,66 @@
-import { Argument, Command } from "../types/Command";
+import { Command } from "../types/Command";
 
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import Collection from "@discordjs/collection";
-import { argumentType } from "../types/argument";
+import { Argument, argumentType } from "../types/argument";
+import { SlashCommandOptionBase } from "@discordjs/builders/dist/interactions/slashCommands/mixins/CommandOptionBase";
 
-function argumentHanlder(builder: SlashCommandBuilder, args: Argument[]) {
-    args.forEach(arg => {
-        switch (arg.type) {
-            case argumentType.user:
-                builder.addUserOption(option =>
-                    option.setName(arg.name)
-                        .setDescription(arg.description)
-                        .setRequired(arg.required));
-                break;
-            case argumentType.string:
-                builder.addStringOption(option =>
-                    option.setName(arg.name)
-                        .setDescription(arg.description)
-                        .setRequired(arg.required));
-                break;
-            case argumentType.integer:
-                builder.addNumberOption(option =>
-                    option.setName(arg.name)
-                        .setDescription(arg.description)
-                        .setRequired(arg.required));
-                break;
-            case argumentType.boolean:
-                builder.addBooleanOption(option =>
-                    option.setName(arg.name)
-                        .setDescription(arg.description)
-                        .setRequired(arg.required));
-                break;
-        }
-    });
+function argumentHanlder(builder: SlashCommandBuilder | SlashCommandSubcommandBuilder, arg: Argument) {
+
+    function content<T extends SlashCommandOptionBase>(option: T): T {
+        option.setName(arg.name)
+            .setDescription(arg.description)
+            .setRequired(arg.required);
+
+        return option;
+    }
+
+    switch (arg.type) {
+        case argumentType.mentionable:
+            builder.addMentionableOption(content);
+            break;
+        case argumentType.channel:
+            builder.addChannelOption(content);
+            break;
+        case argumentType.role:
+            builder.addRoleOption(content);
+            break;
+        case argumentType.user:
+            builder.addUserOption(content);
+            break;
+        case argumentType.string:
+            builder.addStringOption(content);
+            break;
+        case argumentType.integer:
+            builder.addIntegerOption(content);
+            break;
+        case argumentType.number:
+            builder.addNumberOption(content);
+            break;
+        case argumentType.boolean:
+            builder.addBooleanOption(content);
+            break;
+        case argumentType.subCommand:
+            (builder as SlashCommandBuilder).addSubcommand((option): SlashCommandSubcommandBuilder => {
+                option.setName(arg.name)
+                    .setDescription(arg.description);
+
+                if (!arg.subCommand) throw "uh oh";
+
+                option = argumentHanlder(option, arg.subCommand) as SlashCommandSubcommandBuilder;
+
+                return option;
+            });
+    }
 
     return builder;
 }
-export default function registerCommand(input: Collection<string, Command>, self: string): void {
+
+
+export default function registerCommand(input: Collection<string, Command>, self: string, guild: string): void {
     const commands: SlashCommandBuilder[] = [];
-    const ownerCommands: SlashCommandBuilder[] = [];
     input.forEach((command) => {
 
         console.log(command.name);
@@ -51,7 +71,7 @@ export default function registerCommand(input: Collection<string, Command>, self
 
 
         if (command.args) {
-            builder = argumentHanlder(builder, command.args);
+            command.args.forEach((arg) => builder = (argumentHanlder(builder, arg)) as SlashCommandBuilder);
         }
 
         builder.addBooleanOption(Option =>
@@ -59,23 +79,14 @@ export default function registerCommand(input: Collection<string, Command>, self
                 .setDescription("hide result?")
                 .setRequired(false));
 
-        if (command.adminOnly) {
-            ownerCommands.push(builder);
-        } else {
-            commands.push(builder);
-        }
+        commands.push(builder);
     });
 
     const commandJson = commands.map(command => command.toJSON());
-    const ownerCommandJson = commands.map(command => command.toJSON());
 
     const rest = new REST({ version: "9" }).setToken(process.env.DISCORD_TOKEN as string);
 
-    Promise.all([
-        // rest.put(Routes.applicationCommands(self), { body: commandJson }),
-        rest.put(Routes.applicationGuildCommands(self, process.env.DEVSERVERID as string), { body: commandJson }),
-        rest.put(Routes.applicationGuildCommands(self, process.env.DEVSERVERID as string), { body: ownerCommandJson }),
-    ])
+    rest.put(Routes.applicationGuildCommands(self, guild), { body: commandJson })
         .then(() => console.log("Successfully registered application commands."))
         .catch(console.error);
 }

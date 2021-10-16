@@ -1,5 +1,5 @@
 import { Interaction, InteractionReplyOptions } from "discord.js";
-import { argumentType } from "./argument";
+import { Argument } from "./argument";
 import RavenInteraction from "./interaction";
 
 export abstract class Command {
@@ -42,13 +42,6 @@ export interface CommandInfo {
     throttling: Throttling;
 
     path?: string;
-}
-
-export interface Argument {
-    type: argumentType;
-    name: string;
-    description: string;
-    required: boolean;
 }
 
 export interface Throttling {

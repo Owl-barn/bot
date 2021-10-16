@@ -11,5 +11,10 @@ export enum argumentType {
     subCommand = 9
 }
 
-
-argumentType.boolean;
+export interface Argument {
+    type: argumentType;
+    name: string;
+    description: string;
+    required: boolean;
+    subCommand?: Argument;
+}
