@@ -6,7 +6,7 @@ import ytsr from "ytsr";
 export default class Song {
     public title: string;
     public url: string;
-    public length: string;
+    public duration: string;
     public artist: string;
     public thumbnail: string;
 
@@ -19,7 +19,7 @@ export default class Song {
     constructor(input: ytsr.Video, user: string) {
         this.title = Util.escapeMarkdown(input.title);
         this.url = input.url;
-        this.length = input.duration as string;
+        this.duration = input.duration as string;
         this.artist = input.author?.name as string;
         this.thumbnail = input.bestThumbnail.url as string;
 
@@ -29,7 +29,6 @@ export default class Song {
     public getStream = async (): Promise<AudioResource<Song>> => {
         const stream = ytdl(this.url, { filter: "audioonly", quality: "highestaudio", highWaterMark: 1 << 25 });
         const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary, metadata: this });
-
         return resource;
     }
 }

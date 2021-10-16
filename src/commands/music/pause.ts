@@ -23,9 +23,13 @@ module.exports = class extends Command {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const member = msg.member as GuildMember;
-        const vc = member.voice.channel;
 
+        const vc = member.voice.channel;
         if (vc === null) return { content: "Join a voicechannel first." };
+
+        const isDJ = member?.roles.cache.some(role => role.name === "DJ");
+        if (!isDJ) return { ephemeral: true, content: "you dont have the DJ role" };
+
         const subscription = msg.client.musicService.get(member.guild.id);
         if (!subscription) return { content: "Play a song first!" };
         const paused = subscription.player.state.status === AudioPlayerStatus.Paused;

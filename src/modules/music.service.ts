@@ -4,9 +4,10 @@ import Song from "../types/song";
 export default class musicService {
     public readonly player: AudioPlayer;
     public readonly voiceConnection: VoiceConnection;
-    public queue: Song[];
-    public queuelock = false;
-    public readyLock = false;
+    private queue: Song[];
+    private queueLock = false;
+    private voteLock = ""
+    private current: Song;
 
 
     constructor(voiceConnection: VoiceConnection) {
@@ -24,7 +25,7 @@ export default class musicService {
         voiceConnection.subscribe(this.player);
     }
 
-    public disconnectVoice = async (): Promise<void> => {
+    private disconnectVoice = async (): Promise<void> => {
         try {
             // try reconnect.
             await Promise.race([
@@ -37,11 +38,27 @@ export default class musicService {
         }
     }
 
-    public statechange = (oldState: AudioPlayerState, newState: AudioPlayerState): void => {
+    private statechange = (oldState: AudioPlayerState, newState: AudioPlayerState): void => {
         console.log(newState.status);
         if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
             void this.queueService();
         }
+    }
+
+    public getCurrent = (): Song => {
+        return this.current;
+    }
+
+    public getVoteLock = (): string => {
+        return this.voteLock;
+    }
+
+    public setVoteLock = (data: string): void => {
+        this.voteLock = data;
+    }
+
+    public getQueue = (): Song[] => {
+        return this.queue;
     }
 
     public addToQueue = (song: Song): void => {
@@ -56,19 +73,25 @@ export default class musicService {
     }
 
     private queueService = async (): Promise<void> => {
-        if (this.queuelock || this.player.state.status !== AudioPlayerStatus.Idle || this.queue.length === 0) {
+        if (this.queueLock || this.player.state.status !== AudioPlayerStatus.Idle) {
             return;
         }
 
-        this.queuelock = true;
+        this.queueLock = true;
+
+        if (this.queue.length === 0) {
+            this.stop();
+            return;
+        }
 
         const nextSong = this.queue.shift() as Song;
         try {
             const resource = await nextSong.getStream();
             this.player.play(resource);
-            this.queuelock = false;
+            this.current = nextSong;
+            this.queueLock = false;
         } catch (e) {
-            this.queuelock = false;
+            this.queueLock = false;
             console.error(e);
             return this.queueService();
         }

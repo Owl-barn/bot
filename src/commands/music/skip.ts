@@ -51,9 +51,11 @@ module.exports = class extends Command {
         const subscription = msg.client.musicService.get(member.guild.id);
         if (!subscription) return { content: "No music is playing" };
 
+        if (subscription.getVoteLock()) return { content: "Vote already in progress." };
+
         // DJ and force, less than 2 people in vc, user that added song.
         if ((isDJ && force) || vc.members.size <= 3 ||
-            subscription.player.state.resource.metadata.userID == msg.user.id
+            subscription.getCurrent().userID == msg.user.id
         ) return this.skip(subscription, index);
 
         if (!isDJ && index) return { content: "You need the DJ role to do this." };
@@ -71,43 +73,66 @@ module.exports = class extends Command {
 
     public callback = async (interaction: RavenInteraction) => {
         const filter = (i: MessageComponentInteraction) => i.customId === "vote";
-        const collector = interaction.channel?.createMessageComponentCollector({ filter, time: 15000 });
+        const collector = interaction.channel?.createMessageComponentCollector({ filter, time: 45000 });
 
         const voted: string[] = [];
 
         const subscription = interaction.client.musicService.get((interaction.member as GuildMember).guild.id);
+
         if (!subscription) return;
 
+        const song = subscription.getCurrent().url;
+
+        subscription.setVoteLock(song);
+
         collector?.on("collect", async (x) => {
-            if (x.customId !== "vote") return;
+            try {
+                if (x.customId !== "vote") return;
 
-            // Check if didnt vote yet.
-            if (voted.some(y => y === x.user.id)) { return; }
-            voted.push(x.user.id);
+                if (song !== subscription.getVoteLock()) {
+                    x.update({ content: "song ended", components: [] });
 
-            // Check if in vc.
-            const vc = (x.member as GuildMember).voice.channel;
-            if (!vc) return;
-            if (!vc.members.some(y => y.id == x.client.user?.id)) return;
+                    return;
+                }
 
-            // Get numbers.
-            const current = Number(x.message.content.split("/")[0]) + 1;
-            const max = (x.member as GuildMember).voice.channel?.members.size as number - 1;
+                // Check if didnt vote yet.
+                if (voted.some(y => y === x.user.id)) { return; }
+                voted.push(x.user.id);
 
-            if (current >= max / 2) {
-                x.update(this.skip(subscription));
+                // Check if in vc.
+                const vc = (x.member as GuildMember).voice.channel;
+                if (!vc) return;
+                if (!vc.members.some(y => y.id == x.client.user?.id)) return;
 
-                return;
+                // Get numbers.
+                const current = Number(x.message.content.split("/")[0]) + 1;
+                const max = (x.member as GuildMember).voice.channel?.members.size as number - 1;
+                const half = Math.floor(max / 2);
+
+                if (current >= half) {
+                    x.update(this.skip(subscription));
+
+                    return;
+                }
+
+                x.update({ content: `${current + 1}/${max}` });
+            } catch (e) {
+                console.error(e);
             }
+        });
 
-            x.update({ content: `${current + 1}/${max}` });
+        collector?.once("end", () => {
+            // reset votelock if still set.
+            if (subscription.getVoteLock() !== song) return;
+            subscription.setVoteLock("");
         });
     }
 
     private skip = (subscription: musicService, index?: number | null): returnMessage => {
+        const queue = subscription.getQueue();
         if (!index) subscription.player.stop();
-        else if (index > subscription.queue.length) return { content: `Out of range` };
-        else subscription.queue.splice(index, 1);
+        else if (index > queue.length) return { content: `Out of range` };
+        else queue.splice(index, 1);
 
         return { content: `Song skipped!`, components: [] };
     }

@@ -44,7 +44,15 @@ module.exports = class extends Command {
 
         const searchResult = await (await ytsearch(searchQuery, { limit: 1 })).items;
 
+        const song = new Song(searchResult[0] as ytsearch.Video, msg.user.id);
+
+        if (song.duration.length > 5) return { content: "Cant play songs that are over an hour long." };
+
         let subscription = client.musicService.get(member.guild.id);
+
+        if (subscription && subscription.voiceConnection.state.status === VoiceConnectionStatus.Destroyed) subscription = undefined;
+
+
         if (!subscription) {
 
             const connection = joinVoiceChannel({
@@ -58,8 +66,6 @@ module.exports = class extends Command {
             subscription.voiceConnection.on("error", console.warn);
             client.musicService.set(member.guild.id, subscription);
         }
-
-        const song = new Song(searchResult[0] as ytsearch.Video, msg.user.id);
 
         try {
             await entersState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 20e3);

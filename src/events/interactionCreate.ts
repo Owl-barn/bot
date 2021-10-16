@@ -18,6 +18,8 @@ export default class InteractionCreate implements RavenEvent {
 
         if (!command) return;
 
+        if (command.adminOnly && interaction.user.id !== process.env.OWNER_ID) return;
+
         this.respond(interaction, command?.execute);
     }
 
