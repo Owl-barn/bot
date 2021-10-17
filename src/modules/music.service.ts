@@ -89,6 +89,7 @@ export default class musicService {
             const resource = await nextSong.getStream();
             this.player.play(resource);
             this.current = nextSong;
+            this.voteLock = "";
             this.queueLock = false;
         } catch (e) {
             this.queueLock = false;

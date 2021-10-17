@@ -55,7 +55,7 @@ module.exports = class extends Command {
 
         // DJ and force, less than 2 people in vc, user that added song.
         if ((isDJ && force) || vc.members.size <= 3 ||
-            subscription.getCurrent().userID == msg.user.id
+            subscription.getCurrent().user.id == msg.user.id
         ) return this.skip(subscription, index);
 
         if (!isDJ && index) return { content: "You need the DJ role to do this." };
@@ -115,7 +115,7 @@ module.exports = class extends Command {
                     return;
                 }
 
-                x.update({ content: `${current + 1}/${max}` });
+                x.update({ content: `${current + 1}/${half}` }).catch(console.error);
             } catch (e) {
                 console.error(e);
             }

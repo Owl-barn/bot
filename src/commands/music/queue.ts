@@ -1,3 +1,4 @@
+import { italic } from "@discordjs/builders";
 import { EmbedFieldData, GuildMember, MessageEmbed } from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
@@ -28,14 +29,16 @@ module.exports = class extends Command {
 
         const subscription = msg.client.musicService.get(member.guild.id);
         if (!subscription) return { content: "Nothing is playing" };
-        if (subscription.queue.length < 1) return { content: "No songs queued" };
+
+        const current = subscription.getCurrent();
 
         const list: EmbedFieldData[] = [];
+        list.push({ name: "Now playing:", value: `[${current.title.substring(0, 40)}](${current.url}) - ${current.duration}\n${italic(`Requested by: ${current.user.tag}`)}` });
         let x = 0;
 
-        for (const song of subscription.queue) {
+        for (const song of subscription.getQueue()) {
             x++;
-            list.push({ name: x.toString(), value: `[${song.title}](${song.url})` });
+            list.push({ name: x.toString(), value: `[${song.title.substring(0, 40)}}](${song.url}) - ${song.duration}\n${italic(`Requested by: ${song.user.tag}`)}` });
         }
 
         const embed = new MessageEmbed()

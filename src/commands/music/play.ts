@@ -44,7 +44,7 @@ module.exports = class extends Command {
 
         const searchResult = await (await ytsearch(searchQuery, { limit: 1 })).items;
 
-        const song = new Song(searchResult[0] as ytsearch.Video, msg.user.id);
+        const song = new Song(searchResult[0] as ytsearch.Video, msg.user);
 
         if (song.duration.length > 5) return { content: "Cant play songs that are over an hour long." };
 
@@ -78,7 +78,7 @@ module.exports = class extends Command {
 
         const embed = new MessageEmbed()
             .setThumbnail(song.thumbnail)
-            .setTitle(subscription.queue.length < 1 ? `Now playing` : "Song queued")
+            .setTitle(subscription.getQueue().length < 1 ? `Now playing` : "Song queued")
             .setDescription(`[${song.title}](${song.url})`)
             .setColor(5362138)
             .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
