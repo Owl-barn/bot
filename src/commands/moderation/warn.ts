@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed, User } from "discord.js";
+import { HexColorString, MessageEmbed, User, Util } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
@@ -38,11 +38,11 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const db = msg.client.db;
 
-        const reason = msg.options.get("reason")?.value as string;
+        const reason = Util.escapeMarkdown(msg.options.get("reason")?.value as string).substr(0, 256);
         const target = msg.options.get("user")?.user as User;
 
         // insert into db.
-        await db.warnings.create({ data: { target_id: target.id, reason: reason.substr(0, 256), guild_id: msg.guildId as string, mod_id: msg.user.id } })
+        await db.warnings.create({ data: { target_id: target.id, reason: reason, guild_id: msg.guildId as string, mod_id: msg.user.id } })
             .catch((e: Error) => {
                 console.log(e);
                 throw { content: "an error occured" };

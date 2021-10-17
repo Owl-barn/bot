@@ -1,5 +1,5 @@
 import { AudioResource, createAudioResource, StreamType } from "@discordjs/voice";
-import { Util } from "discord.js";
+import { User, Util } from "discord.js";
 import ytdl from "ytdl-core";
 import ytsr from "ytsr";
 
@@ -10,20 +10,20 @@ export default class Song {
     public artist: string;
     public thumbnail: string;
 
-    public userID: string;
+    public user: User
 
     public readonly onStart: () => void;
     public readonly onFinish: () => void;
     public readonly onError: (error: Error) => void;
 
-    constructor(input: ytsr.Video, user: string) {
+    constructor(input: ytsr.Video, user: User) {
         this.title = Util.escapeMarkdown(input.title);
         this.url = input.url;
         this.duration = input.duration as string;
-        this.artist = input.author?.name as string;
+        this.artist = Util.escapeMarkdown(input.author?.name as string);
         this.thumbnail = input.bestThumbnail.url as string;
 
-        this.userID = user;
+        this.user = user;
     }
 
     public getStream = async (): Promise<AudioResource<Song>> => {
