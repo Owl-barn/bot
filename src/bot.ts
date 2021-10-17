@@ -18,7 +18,7 @@ export default class Bot {
 
 
     constructor() {
-        this.client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] }) as RavenClient;
+        this.client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES], allowedMentions: { parse: ["everyone", "roles"] } }) as RavenClient;
         this.client.musicService = new Map<Snowflake, musicService>();
 
         this.initializeEvents();
@@ -31,7 +31,7 @@ export default class Bot {
     }
 
     private async initializeCommands() {
-        this.client.commands = await registerCommands(this.client).catch((e) => { throw ` x Couldnt load commands \n ${e}`.red.bold; });
+        this.client.commands = await registerCommands().catch((e) => { throw ` x Couldnt load commands \n ${e}`.red.bold; });
     }
 
     private initializeDB() {
@@ -40,11 +40,8 @@ export default class Bot {
     }
 
     public async listen(): Promise<void> {
-        const client = this.client;
-        await client.login(process.env.DISCORD_TOKEN);
-        if (!client.user) return;
-        console.log(` ✓ Client ready, logged in as ${client.user.username}#${client.user.discriminator} (${client.user.id})`.green.bold);
+        await this.client.login(process.env.DISCORD_TOKEN);
 
-        registerCommand(client.commands, client.user.id);
+        // registerCommand(this.client.commands, this.client.user.id, "315428379316846592");
     }
 }

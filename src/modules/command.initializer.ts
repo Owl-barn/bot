@@ -5,9 +5,8 @@ import { Collection } from "discord.js";
 import fs from "fs";
 import path from "path";
 import { Command } from "../types/Command";
-import RavenClient from "../types/ravenClient";
 
-export async function registerCommands(client: RavenClient): Promise<Collection<string, Command>> {
+export async function registerCommands(): Promise<Collection<string, Command>> {
     console.log(" > Loading commands".green.bold);
     const commands = new Collection() as Collection<string, Command>;
 
@@ -18,7 +17,7 @@ export async function registerCommands(client: RavenClient): Promise<Collection<
 
         for (const file of commandFiles) {
             const cmdClass = (await import(`../commands/${folder}/${file}`)).default;
-            const command = new cmdClass(client) as Command;
+            const command = new cmdClass() as Command;
 
             if (command == undefined) { continue; }
 
