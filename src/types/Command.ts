@@ -39,7 +39,7 @@ export interface CommandInfo {
 
     permissions?: Permissions;
 
-    throttling: Throttling;
+    throttling?: Throttling;
 
     path?: string;
 }

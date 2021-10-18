@@ -8,11 +8,11 @@ datasource db {
 }
 
 model guilds {
-  guild_id    String        @id @db.Char(18)
   created     DateTime      @default(now()) @db.Timestamp(0)
+  guild_id    String        @id @db.Char(18)
+  logs        logs[]
   permissions permissions[]
   warnings    warnings[]
-  logs        logs[]
 }
 
 model logs {
@@ -50,6 +50,15 @@ model warnings {
   guilds    guilds   @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict, map: "warnings_FK")
 
   @@index([guild_id], map: "Warnings_FK")
+}
+
+model sessions {
+  session_id    String   @id(map: "sessions_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created       DateTime @default(now()) @db.Timestamp(0)
+  user_id       String   @db.Char(18)
+  access_token  String   @db.Char(30)
+  refresh_token String   @db.Char(30)
+  expire        DateTime @db.Timestamp(6)
 }
 
 enum logs_eventType {

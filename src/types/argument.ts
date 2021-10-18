@@ -8,7 +8,8 @@ export enum argumentType {
     channel = 6,
     role = 7,
     mentionable = 8,
-    subCommand = 9
+    subCommand = 9,
+    subCommandGroup = 10
 }
 
 export interface Argument {

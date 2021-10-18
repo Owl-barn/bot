@@ -1,20 +1,13 @@
-import colors from "colors";
-import dotenv from "dotenv";
-colors.enable();
-dotenv.config();
-
 import { Client, Intents, Snowflake } from "discord.js";
 import RavenClient from "./types/ravenClient";
 import { registerCommands } from "./modules/command.initializer";
 import eventInitializer from "./modules/event.initializer";
-import { PrismaClient } from "@prisma/client";
 import musicService from "./modules/music.service";
 import registerCommand from "./modules/command.register";
+import prisma from "./lib/db.service";
 
 export default class Bot {
-
-    client: RavenClient;
-    db: PrismaClient;
+    private client: RavenClient;
 
 
     constructor() {
@@ -24,6 +17,8 @@ export default class Bot {
         this.initializeEvents();
         this.initializeCommands();
         this.initializeDB();
+
+        this.listen();
     }
 
     private initializeEvents() {
@@ -35,8 +30,12 @@ export default class Bot {
     }
 
     private initializeDB() {
-        this.db = new PrismaClient();
-        this.client.db = this.db;
+
+        this.client.db = prisma;
+    }
+
+    public getClient = (): RavenClient => {
+        return this.client;
     }
 
     public async listen(): Promise<void> {
