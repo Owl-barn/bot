@@ -10,7 +10,7 @@ module.exports = class extends Command {
         super({
             name: "skip",
             description: "skips a song",
-            group: "general",
+            group: "music",
 
             guildOnly: true,
             adminOnly: false,
@@ -68,7 +68,7 @@ module.exports = class extends Command {
                     .setStyle("PRIMARY"),
             );
 
-        return { content: `0/${vc.members.size - 1}`, components: [component], callback: this.callback };
+        return { content: `0/${Math.floor((vc.members.size - 1) / 2)}`, components: [component], callback: this.callback };
     }
 
     public callback = async (interaction: RavenInteraction) => {
@@ -109,13 +109,15 @@ module.exports = class extends Command {
                 const max = (x.member as GuildMember).voice.channel?.members.size as number - 1;
                 const half = Math.floor(max / 2);
 
+                console.log(`${x.user.username} voted to skip, now at ${current} was at ${current - 1}`);
+
                 if (current >= half) {
                     x.update(this.skip(subscription));
 
                     return;
                 }
 
-                x.update({ content: `${current + 1}/${half}` }).catch(console.error);
+                x.update({ content: `${current} /${half}` }).catch(console.error);
             } catch (e) {
                 console.error(e);
             }

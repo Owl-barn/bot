@@ -8,7 +8,7 @@ module.exports = class extends Command {
         super({
             name: "warn",
             description: "warns a user",
-            group: "moderator",
+            group: "moderation",
 
             guildOnly: true,
             adminOnly: false,
@@ -38,6 +38,7 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const db = msg.client.db;
 
+        const hidden = msg.options.getBoolean("hidden");
         const reason = Util.escapeMarkdown(msg.options.get("reason")?.value as string).substr(0, 256);
         const target = msg.options.get("user")?.user as User;
 
@@ -62,9 +63,11 @@ module.exports = class extends Command {
         const embed = new MessageEmbed()
             .setAuthor(`${target.username}#${target.discriminator} has been warned, ${warnCount} total`)
             .setDescription(`**reason:** ${reason}`)
-            .setColor(colour);
+            .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
+            .setColor(colour)
+            .setTimestamp();
 
         // send embed.
-        return { embeds: [embed] };
+        return { embeds: [embed], content: hidden ? undefined : `${target}` };
     }
 };

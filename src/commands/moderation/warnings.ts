@@ -9,7 +9,7 @@ module.exports = class extends Command {
         super({
             name: "warnings",
             description: "shows a user's warnings",
-            group: "moderator",
+            group: "moderation",
 
             guildOnly: true,
             adminOnly: false,

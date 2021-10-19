@@ -20,6 +20,7 @@ export async function registerCommands(): Promise<Collection<string, Command>> {
             const command = new cmdClass() as Command;
 
             if (command == undefined) { continue; }
+            if (command.group !== folder) throw `Command folder must match group: ${command.name}`;
 
             command.path = `/${folder}/${file}`;
 

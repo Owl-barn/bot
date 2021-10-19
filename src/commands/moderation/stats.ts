@@ -9,7 +9,7 @@ module.exports = class extends Command {
         super({
             name: "modstats",
             description: "shows mod stats",
-            group: "moderator",
+            group: "moderation",
 
             guildOnly: true,
             adminOnly: false,
@@ -31,6 +31,8 @@ module.exports = class extends Command {
     }
 
     async execute(msg: CommandInteraction): Promise<InteractionReplyOptions> {
+
+        return { content: "fuck off" };
         const db = (msg.client as RavenClient).db;
 
         const target = msg.options.get("user")?.user as User;

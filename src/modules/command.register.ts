@@ -65,6 +65,8 @@ export default function registerCommand(input: Collection<string, Command>, self
 
         console.log(command.name);
 
+        if (command.group == "owner") return;
+
         let builder = new SlashCommandBuilder()
             .setName(command.name)
             .setDescription(command.description);
@@ -78,6 +80,8 @@ export default function registerCommand(input: Collection<string, Command>, self
             Option.setName("hidden")
                 .setDescription("hide result?")
                 .setRequired(false));
+
+        if (command.group === "moderation") builder.setDefaultPermission(true);
 
         commands.push(builder);
     });

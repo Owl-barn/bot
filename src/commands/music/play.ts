@@ -13,7 +13,7 @@ module.exports = class extends Command {
         super({
             name: "play",
             description: "Plays a song",
-            group: "general",
+            group: "music",
 
             guildOnly: true,
             adminOnly: false,

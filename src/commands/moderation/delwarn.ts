@@ -8,7 +8,7 @@ export default class extends Command {
         super({
             name: "delwarn",
             description: "Deletes a specific warn.",
-            group: "moderator",
+            group: "moderation",
 
             guildOnly: true,
             adminOnly: false,

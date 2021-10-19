@@ -11,7 +11,7 @@ export default class Bot {
 
 
     constructor() {
-        this.client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES], allowedMentions: { parse: ["everyone", "roles"] } }) as RavenClient;
+        this.client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES], allowedMentions: { parse: ["users"] } }) as RavenClient;
         this.client.musicService = new Map<Snowflake, musicService>();
 
         this.initializeEvents();
@@ -41,6 +41,6 @@ export default class Bot {
     public async listen(): Promise<void> {
         await this.client.login(process.env.DISCORD_TOKEN);
 
-        // registerCommand(this.client.commands, this.client.user.id, "315428379316846592");
+        // registerCommand(this.client.commands, this.client.user.id, "396330910162616321");
     }
 }
