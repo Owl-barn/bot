@@ -7,6 +7,7 @@ import ytsearch from "ytsr";
 import { DiscordGatewayAdapterCreator, entersState, joinVoiceChannel, VoiceConnectionStatus } from "@discordjs/voice";
 import Song from "../../types/song";
 import musicService from "../../modules/music.service";
+import ytdl from "ytdl-core";
 
 module.exports = class extends Command {
     constructor() {
@@ -42,9 +43,28 @@ module.exports = class extends Command {
 
         if (vc === null) { return { content: "Join a voicechannel first." }; }
 
-        const searchResult = await (await ytsearch(searchQuery, { limit: 1 })).items;
+        let song;
 
-        const song = new Song(searchResult[0] as ytsearch.Video, msg.user);
+        if (ytdl.validateID(searchQuery)) {
+            const searchResult = await ytdl.getInfo(searchQuery);
+
+            const info = {
+                title: searchResult.videoDetails.title,
+                url: searchResult.baseUrl,
+                duration: Number(searchResult.formats[0].approxDurationMs) > 3600000 ? "00:00:00" : "??",
+                author: { name: searchResult.videoDetails.author },
+                thumbnail: searchResult.thumbnail_url,
+            };
+
+            song = new Song(info as unknown as ytsearch.Video, msg.user);
+
+        } else {
+            const searchResult = await (await ytsearch(searchQuery, { limit: 1 })).items;
+
+            song = new Song(searchResult[0] as ytsearch.Video, msg.user);
+        }
+
+        if (!song) throw "no song object";
 
         if (song.duration.length > 5) return { content: "Cant play songs that are over an hour long." };
 
