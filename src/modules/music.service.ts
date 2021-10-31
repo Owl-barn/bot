@@ -66,6 +66,10 @@ export default class musicService {
         void this.queueService();
     }
 
+    public skipIndex = (index: number): void => {
+        this.queue.splice(index - 1, 1);
+    }
+
     public stop(): void {
         this.queue = [];
         this.player.stop(true);
