@@ -73,7 +73,7 @@ module.exports = class extends Command {
 
     public callback = async (interaction: RavenInteraction) => {
         const filter = (i: MessageComponentInteraction) => i.customId === "vote";
-        const collector = interaction.channel?.createMessageComponentCollector({ filter, time: 45000 });
+        const collector = interaction.channel?.createMessageComponentCollector({ filter, time: 20000 });
 
         const voted: string[] = [];
 
@@ -89,20 +89,19 @@ module.exports = class extends Command {
             try {
                 if (x.customId !== "vote") return;
 
-                if (song !== subscription.getVoteLock()) {
-                    x.update({ content: "song ended", components: [] });
+                if (song !== subscription.getVoteLock()) return x.update({ content: "song ended", components: [] });
 
-                    return;
-                }
 
                 // Check if didnt vote yet.
-                if (voted.some(y => y === x.user.id)) { return; }
-                voted.push(x.user.id);
+                if (voted.some(y => y === x.user.id)) return x.reply({ ephemeral: true, content: "You already voted" });
+
 
                 // Check if in vc.
                 const vc = (x.member as GuildMember).voice.channel;
-                if (!vc) return;
-                if (!vc.members.some(y => y.id == x.client.user?.id)) return;
+                if (!vc || !vc.members.some(y => y.id == x.client.user?.id)) return x.reply({ ephemeral: true, content: "You arent in vc." });
+
+
+                voted.push(x.user.id);
 
                 // Get numbers.
                 const current = Number(x.message.content.split("/")[0]) + 1;
@@ -134,7 +133,7 @@ module.exports = class extends Command {
         const queue = subscription.getQueue();
         if (!index) subscription.player.stop();
         else if (index > queue.length) return { content: `Out of range` };
-        else queue.splice(index, 1);
+        else subscription.skipIndex(index);
 
         return { content: `Song skipped!`, components: [] };
     }
