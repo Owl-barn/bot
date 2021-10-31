@@ -1,4 +1,4 @@
-import { Client, Intents, Snowflake } from "discord.js";
+import { Intents, Snowflake } from "discord.js";
 import RavenClient from "./types/ravenClient";
 import { registerCommands } from "./modules/command.initializer";
 import eventInitializer from "./modules/event.initializer";
@@ -11,7 +11,7 @@ export default class Bot {
 
 
     constructor() {
-        this.client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES], allowedMentions: { parse: ["users"] } }) as RavenClient;
+        this.client = new RavenClient({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES], allowedMentions: { parse: ["users"] } });
         this.client.musicService = new Map<Snowflake, musicService>();
 
         this.initializeEvents();
