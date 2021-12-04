@@ -3,7 +3,7 @@ import { Command } from "../types/Command";
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
-import Collection from "@discordjs/collection";
+import { Collection } from "discord.js";
 import { Argument, argumentType } from "../types/argument";
 import { SlashCommandOptionBase } from "@discordjs/builders/dist/interactions/slashCommands/mixins/CommandOptionBase";
 // SlashCommandSubcommandGroupBuilder

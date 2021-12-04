@@ -15,7 +15,7 @@ const GuildGetService = async (req: RavenRequest, res: Response): Promise<void> 
     const guild = client.guilds.cache.get(guildID);
     if (!guild) throw new NotFoundException();
     let commands = await guild?.commands.fetch();
-    if (commands) commands = commands.filter(x => x.applicationId === client.user.id);
+    if (commands) commands = commands.filter(x => x.applicationId === client.user!.id);
 
     const response: webGuild = {
         name: guild.name,

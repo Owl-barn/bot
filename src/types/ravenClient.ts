@@ -1,6 +1,5 @@
 import { PrismaClient } from ".prisma/client";
-import Collection from "@discordjs/collection";
-import { Client, Snowflake } from "discord.js";
+import { Client, Snowflake, Collection } from "discord.js";
 import musicService from "../modules/music.service";
 import { Command } from "./Command";
 
