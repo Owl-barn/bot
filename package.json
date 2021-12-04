@@ -26,6 +26,7 @@
     "@discordjs/rest": "^0.1.0-canary.0",
     "@discordjs/voice": "^0.6.0",
     "@prisma/client": "^3.2.1",
+    "axios": "^0.24.0",
     "colors": "^1.4.0",
     "cookie-parser": "^1.4.5",
     "discord-api-types": "^0.23.1",
@@ -38,6 +39,7 @@
     "libsodium-wrappers": "^0.7.9",
     "moment": "^2.29.1",
     "morgan": "^1.10.0",
+    "rcon-client": "^4.2.3",
     "ytdl-core": "^4.9.1",
     "ytsr": "^3.5.3"
   }

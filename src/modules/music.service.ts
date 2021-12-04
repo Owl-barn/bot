@@ -39,7 +39,6 @@ export default class musicService {
     }
 
     private statechange = (oldState: AudioPlayerState, newState: AudioPlayerState): void => {
-        console.log(newState.status);
         if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
             void this.queueService();
         }

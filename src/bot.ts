@@ -3,7 +3,6 @@ import RavenClient from "./types/ravenClient";
 import { registerCommands } from "./modules/command.initializer";
 import eventInitializer from "./modules/event.initializer";
 import musicService from "./modules/music.service";
-import registerCommand from "./modules/command.register";
 import prisma from "./lib/db.service";
 
 export default class Bot {
@@ -40,7 +39,5 @@ export default class Bot {
 
     public async listen(): Promise<void> {
         await this.client.login(process.env.DISCORD_TOKEN);
-
-        // registerCommand(this.client.commands, this.client.user.id, "396330910162616321");
     }
 }

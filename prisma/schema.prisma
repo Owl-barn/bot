@@ -13,6 +13,7 @@ model guilds {
   logs        logs[]
   permissions permissions[]
   warnings    warnings[]
+  whitelist   whitelist[]
 }
 
 model logs {
@@ -23,7 +24,7 @@ model logs {
   created    DateTime       @default(now()) @db.Timestamp(0)
   guild_id   String         @db.Char(18)
   content    String?        @db.VarChar(254)
-  guilds     guilds         @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict, map: "logs_FK")
+  guilds     guilds         @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
   @@index([guild_id], map: "logs_FK")
 }
@@ -35,9 +36,18 @@ model permissions {
   type       permissions_type
   permission Boolean
   uuid       String           @id(map: "permissions_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  guilds     guilds           @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict, map: "permissions_FK")
+  guilds     guilds           @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
   @@index([guild_id], map: "permissions_FK")
+}
+
+model sessions {
+  session_id    String   @id(map: "sessions_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created       DateTime @default(now()) @db.Timestamp(0)
+  user_id       String   @db.Char(18)
+  access_token  String   @db.Char(30)
+  refresh_token String   @db.Char(30)
+  expire        DateTime @db.Timestamp(6)
 }
 
 model warnings {
@@ -52,13 +62,26 @@ model warnings {
   @@index([guild_id], map: "Warnings_FK")
 }
 
-model sessions {
-  session_id    String   @id(map: "sessions_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  created       DateTime @default(now()) @db.Timestamp(0)
-  user_id       String   @db.Char(18)
-  access_token  String   @db.Char(30)
-  refresh_token String   @db.Char(30)
-  expire        DateTime @db.Timestamp(6)
+model rcon {
+  guild_id String  @id(map: "rcon_pk") @db.VarChar(18)
+  host     String  @db.VarChar(32)
+  port     Int
+  password String  @db.VarChar(64)
+  role_id  String? @db.VarChar(18)
+}
+
+model whitelist {
+  guild_id String   @db.Char(18)
+  created  DateTime @default(now()) @db.Timestamp(0)
+  mc_uuid  String   @db.Char(32)
+  user_id  String   @db.Char(18)
+  uuid     String   @id(map: "whitelist_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+
+  guilds guilds @relation(fields: [guild_id], references: [guild_id])
+
+
+  @@unique([guild_id, user_id], name: "whitelist_guild_user_un")
+  @@unique([guild_id, mc_uuid], name: "whitelist_guild_uuid_un")
 }
 
 enum logs_eventType {

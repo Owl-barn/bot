@@ -25,10 +25,10 @@ module.exports = class extends Command {
         const member = msg.member as GuildMember;
 
         const vc = member.voice.channel;
-        if (vc === null) return { content: "Join a voicechannel first." };
+        if (vc === null) return { ephemeral: true, content: "Join a voicechannel first." };
 
         const subscription = msg.client.musicService.get(member.guild.id);
-        if (!subscription) return { content: "Nothing is playing" };
+        if (!subscription) return { ephemeral: true, content: "Nothing is playing" };
 
         const current = subscription.getCurrent();
 

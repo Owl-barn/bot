@@ -14,6 +14,8 @@ export default class ready implements RavenEvent {
             url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         });
 
-        // console.log(await client.guilds.cache.get("315428379316846592")?.commands.fetch());
+        const guildList = client.guilds.cache.map(guild => ` - ID: ${guild.id.green}${` Owner: `.cyan}${guild.ownerId.green}${` Name: `.cyan}${guild.name.green}\n`.italic.cyan);
+
+        console.log(guildList.join(""));
     }
 }

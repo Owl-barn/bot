@@ -24,13 +24,13 @@ module.exports = class extends Command {
         const member = msg.member as GuildMember;
 
         const vc = member.voice.channel;
-        if (vc === null) return { content: "Join a voicechannel first." };
+        if (vc === null) return { ephemeral: true, content: "Join a voicechannel first." };
 
         const isDJ = member?.roles.cache.some(role => role.name === "DJ");
         if (!isDJ) return { ephemeral: true, content: "you dont have the DJ role" };
 
         const subscription = msg.client.musicService.get(member.guild.id);
-        if (!subscription) return { content: "Play a song first!" };
+        if (!subscription) return { ephemeral: true, content: "Play a song first!" };
         subscription.stop();
 
         return { content: `Bot stopped` };

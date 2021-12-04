@@ -44,21 +44,29 @@ module.exports = class extends Command {
         const index = msg.options.getInteger("index");
         const force = msg.options.getBoolean("force");
 
-        const isDJ = member?.roles.cache.some(role => role.name === "DJ");
 
-        if (vc === null) return { content: "Join a voicechannel first." };
+        if (vc === null) return { ephemeral: true, content: "Join a voicechannel first." };
 
         const subscription = msg.client.musicService.get(member.guild.id);
-        if (!subscription) return { content: "No music is playing" };
+        if (!subscription) return { ephemeral: true, content: "No music is playing" };
 
-        if (subscription.getVoteLock()) return { content: "Vote already in progress." };
+        const isDJ = member?.roles.cache.some(role => role.name === "DJ");
+        const isRequester = subscription.getCurrent().user.id == msg.user.id;
 
-        // DJ and force, less than 2 people in vc, user that added song.
-        if ((isDJ && force) || vc.members.size <= 3 ||
-            subscription.getCurrent().user.id == msg.user.id
-        ) return this.skip(subscription, index);
+        if (subscription.getVoteLock() && !(isDJ || isRequester)) return { ephemeral: true, content: "Vote already in progress." };
 
-        if (!isDJ && index) return { content: "You need the DJ role to do this." };
+        if (index) {
+            const queue = subscription.getQueue();
+            if (queue.length <= index - 1) return { ephemeral: true, content: "Out of range." };
+            if (queue[index - 1].user.id === msg.user.id || (isDJ && force)) {
+                return this.skip(subscription, index);
+            }
+
+            return { ephemeral: true, content: "Can't index skip a song you didnt add." };
+        }
+
+        if ((isDJ && force) || vc.members.size <= 3 || isRequester) return this.skip(subscription);
+
 
         const component = new MessageActionRow()
             .addComponents(
@@ -68,12 +76,12 @@ module.exports = class extends Command {
                     .setStyle("PRIMARY"),
             );
 
-        return { content: `0/${Math.floor((vc.members.size - 1) / 2)}`, components: [component], callback: this.callback };
+        return { content: `0/${Math.ceil((vc.members.size - 1) / 2)}`, components: [component], callback: this.callback };
     }
 
     public callback = async (interaction: RavenInteraction) => {
         const filter = (i: MessageComponentInteraction) => i.customId === "vote";
-        const collector = interaction.channel?.createMessageComponentCollector({ filter, time: 20000 });
+        const collector = interaction.channel?.createMessageComponentCollector({ filter, time: 120000 });
 
         const voted: string[] = [];
 
@@ -106,7 +114,7 @@ module.exports = class extends Command {
                 // Get numbers.
                 const current = Number(x.message.content.split("/")[0]) + 1;
                 const max = (x.member as GuildMember).voice.channel?.members.size as number - 1;
-                const half = Math.floor(max / 2);
+                const half = Math.ceil(max / 2);
 
                 console.log(`${x.user.username} voted to skip, now at ${current} was at ${current - 1}`);
 

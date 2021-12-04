@@ -20,6 +20,8 @@ export default class InteractionCreate implements RavenEvent {
 
         if (command.adminOnly && interaction.user.id !== process.env.OWNER_ID) return;
 
+        console.info(`${interaction.user.username}: ${command.name}: ${interaction.guild?.name}`);
+
         this.respond(interaction, command?.execute);
     }
 
@@ -40,6 +42,7 @@ export default class InteractionCreate implements RavenEvent {
 
         if (!response) return;
         if (interaction.replied) interaction.followUp(response).catch(e => console.error(e));
+        else if (interaction.deferred) interaction.editReply(response).catch(e => console.error(e));
         else interaction.reply(response).catch(e => console.error(e));
 
         if (response.callback) this.respond(interaction, response.callback).catch(e => console.error(e));
