@@ -3,11 +3,10 @@ import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
 import RavenClient from "../../types/ravenClient";
-import ytsearch from "ytsr";
 import { DiscordGatewayAdapterCreator, entersState, joinVoiceChannel, VoiceConnectionStatus } from "@discordjs/voice";
 import Song from "../../types/song";
 import musicService from "../../modules/music.service";
-import ytdl from "ytdl-core";
+import * as play from "play-dl";
 
 module.exports = class extends Command {
     constructor() {
@@ -43,30 +42,21 @@ module.exports = class extends Command {
 
         if (vc === null) { return { content: "Join a voicechannel first." }; }
 
-        let song;
+        let searchResult: play.YouTubeVideo;
 
-        if (ytdl.validateID(searchQuery)) {
-            const searchResult = await ytdl.getInfo(searchQuery);
-
-            const info = {
-                title: searchResult.videoDetails.title,
-                url: searchResult.baseUrl,
-                duration: Number(searchResult.formats[0].approxDurationMs) > 3600000 ? "00:00:00" : "??",
-                author: { name: searchResult.videoDetails.author },
-                thumbnail: searchResult.thumbnail_url,
-            };
-
-            song = new Song(info as unknown as ytsearch.Video, msg.user);
-
+        if (searchQuery.startsWith("https") && play.yt_validate(searchQuery) === "video") {
+            searchResult = await (await play.video_info(searchQuery)).video_details;
         } else {
-            const searchResult = await (await ytsearch(searchQuery, { limit: 1 })).items;
-
-            song = new Song(searchResult[0] as ytsearch.Video, msg.user);
+            searchResult = (await play.search(searchQuery, { source: { youtube: "video" }, limit: 1, fuzzy: true }))[0];
         }
+
+        if (!searchResult) return { content: "no searchresults found" };
+
+        const song = new Song(searchResult, msg.user);
 
         if (!song) throw "no song object";
 
-        if (song.duration.length > 5) return { content: "Cant play songs that are over an hour long." };
+        if (song.duration > 3600) return { content: "Cant play songs that are over an hour long." };
 
         let subscription = client.musicService.get(member.guild.id);
 

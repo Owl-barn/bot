@@ -39,8 +39,7 @@
     "libsodium-wrappers": "^0.7.9",
     "moment": "^2.29.1",
     "morgan": "^1.10.0",
-    "rcon-client": "^4.2.3",
-    "ytdl-core": "^4.9.1",
-    "ytsr": "^3.5.3"
+    "play-dl": "^1.4.4",
+    "rcon-client": "^4.2.3"
   }
 }
