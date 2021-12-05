@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Rcon } from "rcon-client/lib";
+import RavenInteraction from "../types/interaction";
 
 export async function getMcUUID(username: string): Promise<boolean | string> {
     let code = false;
@@ -18,7 +19,8 @@ export async function getMcName(uuid: string): Promise<string | false> {
         .then(response => {
             userName = response.status === 200 ? response.data.name : false;
         });
-    return userName;
+    if (userName) return userName;
+    throw "Couldnt resolve uuid";
 }
 
 export async function RCONHandler(command: string, login: RCONLogin): Promise<{ message: string, code: string }> {
@@ -30,6 +32,26 @@ export async function RCONHandler(command: string, login: RCONLogin): Promise<{ 
     rcon.end();
     // Return.
     return { message: response, code: `${response.startsWith("Added") ? "SUCCESS" : "GENERIC_ERR"}` };
+}
+
+export async function massRename(msg: RavenInteraction): Promise<void> {
+    const users = await msg.client.db.whitelist.findMany();
+
+    for (const user of users) {
+        try {
+            const dcUser = await msg.guild?.members.fetch(user.user_id);
+            const mcName = await getMcName(user.mc_uuid);
+
+            if (!mcName || !dcUser) throw "missing";
+
+            await dcUser.setNickname(mcName);
+
+            console.log(`mass rename success: ${user.user_id}`.green);
+        } catch (e) {
+            console.error(e);
+            console.log(`mass rename entry failed: ${user.user_id}`.red);
+        }
+    }
 }
 
 export type RCONLogin = {

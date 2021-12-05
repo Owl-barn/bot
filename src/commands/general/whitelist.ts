@@ -72,6 +72,9 @@ module.exports = class extends Command {
         // Give role.
         if (rconGuild.role_id) author.roles.add(rconGuild.role_id);
 
+        // Set Nickname.
+        author.setNickname(username);
+
         // Respond.
         return { content: "You've been whitelisted!" };
     }
