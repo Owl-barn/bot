@@ -1,5 +1,6 @@
-import { GuildManager, InteractionReplyOptions, MessageEmbed } from "discord.js";
-import moment from "moment";
+import { InteractionReplyOptions } from "discord.js";
+import GuildManager from "../../lib/guildManager";
+import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
 
@@ -10,16 +11,26 @@ module.exports = class statsCommand extends Command {
             description: "guild options",
             group: "owner",
 
+            args: [
+                {
+                    type: argumentType.string,
+                    name: "guild",
+                    description: "guild id",
+                    required: true,
+                },
+            ],
+
             guildOnly: false,
             adminOnly: true,
         });
     }
 
     async execute(msg: RavenInteraction): Promise<InteractionReplyOptions> {
-        const client = msg.client;
-        const guildID = "";
+        const guildID = msg.options.getString("guild") as string;
 
-        const guildManager = new GuildManager(guildID)
-        guildManager.delete();
+        const guildManager = new GuildManager(guildID, msg.client);
+        await guildManager.delete();
+
+        return { content: "hmm yes" };
     }
 };
