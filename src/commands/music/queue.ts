@@ -33,7 +33,11 @@ module.exports = class extends Command {
         const current = subscription.getCurrent();
 
         const list: EmbedFieldData[] = [];
-        list.push({ name: "Now playing:", value: `[${current.title.substring(0, 40)}](${current.url}) - ${current.duration}\n${italic(`Requested by: ${current.user.tag}`)}` });
+        if (current) {
+            list.push({ name: "Now playing:", value: `[${current.title.substring(0, 40)}](${current.url}) - ${current.duration / 60}\n${italic(`Requested by: ${current.user.tag}`)}` });
+        } else {
+            list.push({ name: "Now playing:", value: "Nothing is playing right now" });
+        }
         let x = 0;
 
         for (const song of subscription.getQueue()) {

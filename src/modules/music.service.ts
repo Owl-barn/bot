@@ -7,7 +7,7 @@ export default class musicService {
     private queue: Song[];
     private queueLock = false;
     private voteLock = ""
-    private current: Song;
+    private current: Song | null;
     private timeout: NodeJS.Timeout;
 
     constructor(voiceConnection: VoiceConnection) {
@@ -44,7 +44,7 @@ export default class musicService {
         }
     }
 
-    public getCurrent = (): Song => {
+    public getCurrent = (): Song | null => {
         return this.current;
     }
 
@@ -76,13 +76,15 @@ export default class musicService {
     }
 
     private queueService = async (): Promise<void> => {
-        if (this.queueLock || this.player.state.status !== AudioPlayerStatus.Idle) {
+        if (this.queueLock || (this.player.state.status !== AudioPlayerStatus.Idle)) {
             return;
         }
 
         this.queueLock = true;
 
         if (this.queue.length === 0) {
+            this.current = null;
+            this.queueLock = false;
             this.timeout = setTimeout(() => this.stop(), 180000);
             return;
         }
