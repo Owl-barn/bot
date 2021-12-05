@@ -13,7 +13,7 @@ export default class implements RavenEvent {
             const db = (guild.client as RavenClient).db;
             await db.guilds.create({ data: { guild_id: guild.id } });
 
-            console.log(`Joined new guild: ${guild.name} : ${guild.id}`.green);
+            console.log(`Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.green);
         } catch (e) {
             console.error(e);
         }
