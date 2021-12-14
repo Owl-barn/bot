@@ -24,25 +24,23 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const member = msg.member as GuildMember;
 
-        const vc = member.voice.channel;
-        if (vc === null) return { ephemeral: true, content: "Join a voicechannel first." };
-
         const subscription = msg.client.musicService.get(member.guild.id);
         if (!subscription) return { ephemeral: true, content: "Nothing is playing" };
 
         const current = subscription.getCurrent();
 
         const list: EmbedFieldData[] = [];
-        if (current) {
-            list.push({ name: "Now playing:", value: `[${current.title.substring(0, 40)}](${current.url}) - ${current.duration / 60}\n${italic(`Requested by: ${current.user.tag}`)}` });
-        } else {
-            list.push({ name: "Now playing:", value: "Nothing is playing right now" });
-        }
+
+        const fieldContent = current ?
+            `[${current.title.substring(0, 40)}](${current.url}) - ${current.duration.text}\n${italic(`Requested by: ${current.user.tag}`)}` :
+            "Nothing is playing right now";
+
+        list.push({ name: "Now playing:", value: fieldContent });
         let x = 0;
 
         for (const song of subscription.getQueue()) {
             x++;
-            list.push({ name: x.toString(), value: `[${song.title.substring(0, 40)}}](${song.url}) - ${song.duration}\n${italic(`Requested by: ${song.user.tag}`)}` });
+            list.push({ name: x.toString(), value: `[${song.title.substring(0, 40)}}](${song.url}) - ${song.duration.text}\n${italic(`Requested by: ${song.user.tag}`)}` });
         }
 
         const embed = new MessageEmbed()
