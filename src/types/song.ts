@@ -1,11 +1,12 @@
 import { AudioResource, createAudioResource } from "@discordjs/voice";
 import { User, Util } from "discord.js";
+import moment from "moment";
 import * as play from "play-dl";
 
 export default class Song {
     public title: string;
     public url: string;
-    public duration: number;
+    public duration: SongDuration;
     public artist: string;
     public thumbnail: string;
 
@@ -18,7 +19,10 @@ export default class Song {
     constructor(input: play.YouTubeVideo, user: User) {
         this.title = Util.escapeMarkdown(input.title || "couldnt load title");
         this.url = input.url;
-        this.duration = input.durationInSec;
+        this.duration = {
+            seconds: input.durationInSec,
+            text: moment().startOf("day").seconds(input.durationInSec).format("H:mm:ss"),
+        };
         this.artist = Util.escapeMarkdown(input.channel?.name as string);
         this.thumbnail = input.thumbnail?.url as string;
 
@@ -30,4 +34,9 @@ export default class Song {
         const resource = createAudioResource(source.stream, { inputType: source.type, metadata: this });
         return resource;
     }
+}
+
+export interface SongDuration {
+    seconds: number;
+    text: string
 }
