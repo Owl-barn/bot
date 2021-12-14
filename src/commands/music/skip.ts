@@ -1,4 +1,5 @@
 import { GuildMember, MessageActionRow, MessageButton, MessageComponentInteraction } from "discord.js";
+import { isDJ } from "../../lib/functions.service";
 import musicService from "../../modules/music.service";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
@@ -44,28 +45,33 @@ module.exports = class extends Command {
         const index = msg.options.getInteger("index");
         const force = msg.options.getBoolean("force");
 
+        const dj = isDJ(member);
+
 
         if (vc === null) return { ephemeral: true, content: "Join a voicechannel first." };
 
         const subscription = msg.client.musicService.get(member.guild.id);
-        if (!subscription) return { ephemeral: true, content: "No music is playing" };
 
-        const isDJ = member?.roles.cache.some(role => role.name === "DJ");
-        const isRequester = subscription.getCurrent().user.id == msg.user.id;
+        const currentSong = subscription?.getCurrent();
 
-        if (subscription.getVoteLock() && !(isDJ || isRequester)) return { ephemeral: true, content: "Vote already in progress." };
+        if (!subscription || !currentSong) return { ephemeral: true, content: "No music is playing" };
+
+
+        const isRequester = currentSong.user.id == msg.user.id;
+
+        if (subscription.getVoteLock() && !(dj || isRequester)) return { ephemeral: true, content: "Vote already in progress." };
 
         if (index) {
             const queue = subscription.getQueue();
             if (queue.length <= index - 1) return { ephemeral: true, content: "Out of range." };
-            if (queue[index - 1].user.id === msg.user.id || (isDJ && force)) {
+            if (queue[index - 1].user.id === msg.user.id || (dj && force)) {
                 return this.skip(subscription, index);
             }
 
             return { ephemeral: true, content: "Can't index skip a song you didnt add." };
         }
 
-        if ((isDJ && force) || vc.members.size <= 3 || isRequester) return this.skip(subscription);
+        if ((dj && force) || vc.members.size <= 3 || isRequester) return this.skip(subscription);
 
 
         const component = new MessageActionRow()
@@ -89,7 +95,9 @@ module.exports = class extends Command {
 
         if (!subscription) return;
 
-        const song = subscription.getCurrent().url;
+        const song = subscription.getCurrent()?.url;
+
+        if (!song) return;
 
         subscription.setVoteLock(song);
 
