@@ -32,7 +32,9 @@ module.exports = class extends Command {
 
         const subscription = msg.client.musicService.get(member.guild.id);
         if (!subscription) return { ephemeral: true, content: "Play a song first!" };
+
         const paused = subscription.player.state.status === AudioPlayerStatus.Paused;
+
         if (paused) subscription.player.unpause();
         else subscription.player.pause();
 

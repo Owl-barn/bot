@@ -47,7 +47,6 @@ module.exports = class extends Command {
 
         const dj = isDJ(member);
 
-
         if (vc === null) return { ephemeral: true, content: "Join a voicechannel first." };
 
         const subscription = msg.client.musicService.get(member.guild.id);
@@ -55,7 +54,6 @@ module.exports = class extends Command {
         const currentSong = subscription?.getCurrent();
 
         if (!subscription || !currentSong) return { ephemeral: true, content: "No music is playing" };
-
 
         const isRequester = currentSong.user.id == msg.user.id;
 
