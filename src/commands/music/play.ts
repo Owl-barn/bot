@@ -7,6 +7,7 @@ import { DiscordGatewayAdapterCreator, entersState, joinVoiceChannel, VoiceConne
 import Song from "../../types/song";
 import musicService from "../../modules/music.service";
 import * as play from "play-dl";
+import { isDJ } from "../../lib/functions.service";
 
 module.exports = class extends Command {
     constructor() {
@@ -25,6 +26,12 @@ module.exports = class extends Command {
                     description: "song name or url",
                     required: true,
                 },
+                {
+                    type: argumentType.boolean,
+                    name: "force",
+                    description: "force play?",
+                    required: false,
+                },
             ],
 
             throttling: {
@@ -38,9 +45,18 @@ module.exports = class extends Command {
         const member = msg.member as GuildMember;
         const vc = member.voice.channel;
         const client = msg.client as RavenClient;
-        const searchQuery = msg.options.getString("song") as string;
 
-        if (vc === null) { return { content: "Join a voicechannel first." }; }
+        const searchQuery = msg.options.getString("song") as string;
+        const force = msg.options.getBoolean("force");
+
+        let subscription = client.musicService.get(member.guild.id);
+        const dj = isDJ(member);
+
+        if (vc === null && !(dj && subscription)) { return { content: "Join a voicechannel first." }; }
+
+        if (subscription && vc?.id !== subscription.voiceConnection.joinConfig.channelId && !(dj && force)) {
+            return { content: "Join the same vc as the bot first." };
+        }
 
         let searchResult: play.YouTubeVideo;
 
@@ -56,14 +72,13 @@ module.exports = class extends Command {
 
         if (!song) throw "no song object";
 
-        if (song.duration > 3600) return { content: "Cant play songs that are over an hour long." };
-
-        let subscription = client.musicService.get(member.guild.id);
+        if (song.duration.seconds > 3600 && !dj) return { content: "Cant play songs that are over an hour long." };
 
         if (subscription && subscription.voiceConnection.state.status === VoiceConnectionStatus.Destroyed) subscription = undefined;
 
-
         if (!subscription) {
+
+            if (!vc) throw `no vc in play command, unforseen logic error?, ${member.id}`;
 
             const connection = joinVoiceChannel({
                 channelId: vc.id,
