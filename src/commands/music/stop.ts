@@ -27,7 +27,7 @@ module.exports = class extends Command {
         const dj = isDJ(member);
         const subscription = msg.client.musicService.get(member.guild.id);
 
-        if (!subscription) return { ephemeral: true, content: "Nothing is playing" };
+        if (!subscription || subscription.destroyed) return { ephemeral: true, content: "Nothing is playing" };
 
         if (dj) {
             subscription.stop();

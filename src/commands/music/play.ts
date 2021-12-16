@@ -50,6 +50,7 @@ module.exports = class extends Command {
         const force = msg.options.getBoolean("force");
 
         let subscription = client.musicService.get(member.guild.id);
+        if (subscription && subscription.destroyed) subscription = undefined;
         const dj = isDJ(member);
 
         if (vc === null && !(dj && subscription)) { return { content: "Join a voicechannel first." }; }

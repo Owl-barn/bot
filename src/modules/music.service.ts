@@ -9,6 +9,7 @@ export default class musicService {
     private voteLock = ""
     private current: Song | null;
     private timeout: NodeJS.Timeout;
+    public destroyed = false;
 
     constructor(voiceConnection: VoiceConnection) {
         this.voiceConnection = voiceConnection;
@@ -73,6 +74,8 @@ export default class musicService {
         this.queue = [];
         this.player.stop(true);
         if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
+
+        this.destroyed = true;
     }
 
     private queueService = async (): Promise<void> => {

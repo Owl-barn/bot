@@ -53,7 +53,7 @@ module.exports = class extends Command {
 
         const currentSong = subscription?.getCurrent();
 
-        if (!subscription || !currentSong) return { ephemeral: true, content: "No music is playing" };
+        if (!subscription || subscription.destroyed || !currentSong) return { ephemeral: true, content: "No music is playing" };
 
         const isRequester = currentSong.user.id == msg.user.id;
 
