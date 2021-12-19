@@ -8,25 +8,66 @@ datasource db {
 }
 
 model guilds {
-  created     DateTime      @default(now()) @db.Timestamp(0)
-  guild_id    String        @id @db.Char(18)
-  logs        logs[]
-  permissions permissions[]
-  warnings    warnings[]
-  whitelist   whitelist[]
+  created      DateTime       @default(now()) @db.Timestamp(0)
+  guild_id     String         @id @db.Char(18)
+  birthday_id  String?        @db.Char(18)
+  logs         logs[]
+  command_logs command_log[]
+  permissions  permissions[]
+  warnings     warnings[]
+  whitelist    whitelist[]
+  songs_played songs_played[]
+}
+
+model birthdays {
+  created  DateTime @default(now()) @db.Timestamp(0)
+  updated  DateTime @default(now()) @db.Timestamp(0)
+  user_id  String   @db.Char(18)
+  guild_id String   @db.Char(18)
+  birthday DateTime @db.Timestamp(0)
+
+  @@unique([user_id, guild_id])
+}
+
+model songs_played {
+  uuid    String   @id(map: "songsPlayed_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created DateTime @default(now()) @db.Timestamp(0)
+
+  guild_id String @db.Char(18)
+  user_id     String @db.Char(18)
+
+  duration Int  @db.Integer
+  played   Int? @db.Integer
+
+  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([guild_id], map: "songsPlayed_FK")
 }
 
 model logs {
   uuid       String         @id(map: "logs_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  event_type logs_eventType
-  user       String?        @db.Char(18)
-  target     String?        @db.Char(18)
   created    DateTime       @default(now()) @db.Timestamp(0)
   guild_id   String         @db.Char(18)
+  user       String?        @db.Char(18)
+  event_type logs_eventType
   content    String?        @db.VarChar(254)
-  guilds     guilds         @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+
+  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
   @@index([guild_id], map: "logs_FK")
+}
+
+model command_log {
+  uuid         String   @id(map: "command_log_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created      DateTime @default(now()) @db.Timestamp(0)
+  guild_id     String   @db.Char(18)
+  channel_id   String?  @db.Char(18)
+  user         String?  @db.Char(18)
+  command_name String   @db.VarChar(32)
+  hidden       Boolean  @db.Boolean
+  guilds       guilds   @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@index([guild_id], map: "command_log_FK")
 }
 
 model permissions {
@@ -87,10 +128,13 @@ model whitelist {
 enum logs_eventType {
   warn
   del_warn
-  ban
-  kick
+  member_ban
+  member_kick
+  member_join
+  member_leave
   message_delete
   message_update
+  command_use
 }
 
 enum permissions_type {
