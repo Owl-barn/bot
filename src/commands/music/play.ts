@@ -1,4 +1,4 @@
-import { GuildMember, MessageEmbed } from "discord.js";
+import { GuildMember, MessageEmbed, Util } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
@@ -105,7 +105,7 @@ module.exports = class extends Command {
         const embed = new MessageEmbed()
             .setThumbnail(song.thumbnail)
             .setTitle(subscription.getQueue().length < 1 ? `Now playing` : "Song queued")
-            .setDescription(`[${song.title}](${song.url})`)
+            .setDescription(`[${Util.escapeMarkdown(song.title)}](${song.url})`)
             .setColor(5362138)
             .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
             .setTimestamp();

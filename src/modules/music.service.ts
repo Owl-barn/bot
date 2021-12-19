@@ -1,4 +1,5 @@
 import { AudioPlayer, VoiceConnection, createAudioPlayer, VoiceConnectionStatus, AudioPlayerStatus, AudioPlayerState, entersState } from "@discordjs/voice";
+import prisma from "../lib/db.service";
 import Song from "../types/song";
 
 export default class musicService {
@@ -10,6 +11,8 @@ export default class musicService {
     private current: Song | null;
     private timeout: NodeJS.Timeout;
     public destroyed = false;
+    private secondsPlayed = 0;
+    private lastpause = 0;
 
     constructor(voiceConnection: VoiceConnection) {
         this.voiceConnection = voiceConnection;
@@ -20,6 +23,8 @@ export default class musicService {
 
         this.voiceConnection.on(VoiceConnectionStatus.Disconnected, this.disconnectVoice);
         this.voiceConnection.on(VoiceConnectionStatus.Destroyed, () => { this.timeout = setTimeout(() => this.stop(), 180000); });
+
+        this.player.on(AudioPlayerStatus.Paused, this.pause);
 
         this.player.on("error", (error) => console.error(error));
 
@@ -45,6 +50,28 @@ export default class musicService {
         }
     }
 
+    private pause = (oldState: AudioPlayerState, newState: AudioPlayerState) => {
+        if (oldState.status === AudioPlayerStatus.Playing && newState.status === AudioPlayerStatus.Paused) {
+            if (this.lastpause === 0) return;
+            this.secondsPlayed += (Date.now() - this.lastpause) / 1000;
+        }
+
+        if (oldState.status === AudioPlayerStatus.Paused && newState.status === AudioPlayerStatus.Playing) {
+            this.lastpause = Date.now();
+        }
+    }
+
+    private logDuration = async (song: Song, played: number | null): Promise<void> => {
+        await prisma.songs_played.create({
+            data: {
+                guild_id: this.voiceConnection.joinConfig.guildId,
+                user_id: song.user.id,
+                song_duration: song.duration.seconds,
+                play_duration: played ? Math.ceil(played) : null,
+            },
+        });
+    }
+
     public getCurrent = (): Song | null => {
         return this.current;
     }
@@ -61,13 +88,18 @@ export default class musicService {
         return this.queue;
     }
 
+    public getPlaytime = (): number => {
+        return Math.floor(this.secondsPlayed + (Date.now() - this.lastpause) / 1000);
+    }
+
     public addToQueue = (song: Song): void => {
         this.queue.push(song);
         void this.queueService();
     }
 
     public skipIndex = (index: number): void => {
-        this.queue.splice(index - 1, 1);
+        const skipped = this.queue.splice(index - 1, 1)[0];
+        this.logDuration(skipped, null);
     }
 
     public stop(): void {
@@ -85,6 +117,13 @@ export default class musicService {
 
         this.queueLock = true;
 
+        if (this.current) {
+            this.secondsPlayed += (Date.now() - this.lastpause) / 1000;
+            this.logDuration(this.current, this.secondsPlayed);
+            this.secondsPlayed = 0;
+            this.lastpause = 0;
+        }
+
         if (this.queue.length === 0) {
             this.current = null;
             this.queueLock = false;
@@ -98,6 +137,7 @@ export default class musicService {
         try {
             const resource = await nextSong.getStream();
             this.player.play(resource);
+            this.lastpause = Date.now();
             this.current = nextSong;
             this.voteLock = "";
             this.queueLock = false;
