@@ -1,3 +1,4 @@
+import logService from "../lib/logger.service";
 import { returnMessage } from "../types/Command";
 import RavenEvent from "../types/event";
 import RavenInteraction from "../types/interaction";
@@ -20,14 +21,14 @@ export default class InteractionCreate implements RavenEvent {
 
         if (command.adminOnly && interaction.user.id !== process.env.OWNER_ID) return;
 
-        console.info(`${interaction.user.username}: ${command.name}: ${interaction.guild?.name}`);
-
         this.respond(interaction, command?.execute);
     }
 
     async respond(interaction: RavenInteraction, func: (message: RavenInteraction) => Promise<returnMessage | void>): Promise<void> {
 
         const hidden = interaction.options.get("hidden") === null ? false : interaction.options.get("hidden")?.value as boolean;
+
+        logService.logCommand(interaction, hidden);
 
         const response = await func(interaction)
             .then((x) => {

@@ -61,6 +61,7 @@ function argumentHanlder(builder: SlashCommandBuilder | SlashCommandSubcommandBu
 
 export default function registerCommand(input: Collection<string, Command>, self: string, guild: string): void {
     const commands: SlashCommandBuilder[] = [];
+
     input.forEach((command) => {
 
         console.log(command.name);
