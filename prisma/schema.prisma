@@ -34,10 +34,10 @@ model songs_played {
   created DateTime @default(now()) @db.Timestamp(0)
 
   guild_id String @db.Char(18)
-  user_id     String @db.Char(18)
+  user_id  String @db.Char(18)
 
-  duration Int  @db.Integer
-  played   Int? @db.Integer
+  song_duration Int  @db.Integer
+  play_duration Int? @db.Integer
 
   guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
