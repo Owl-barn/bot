@@ -4,6 +4,7 @@ import { registerCommands } from "./modules/command.initializer";
 import eventInitializer from "./modules/event.initializer";
 import musicService from "./modules/music.service";
 import prisma from "./lib/db.service";
+import birthdayCron from "./lib/birthday.cron";
 
 export default class Bot {
     private client: RavenClient;
@@ -16,6 +17,7 @@ export default class Bot {
         this.initializeEvents();
         this.initializeCommands();
         this.initializeDB();
+        birthdayCron.start();
 
         this.listen();
     }
@@ -29,7 +31,6 @@ export default class Bot {
     }
 
     private initializeDB() {
-
         this.client.db = prisma;
     }
 
