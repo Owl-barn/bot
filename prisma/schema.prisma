@@ -20,11 +20,14 @@ model guilds {
 }
 
 model birthdays {
-  created  DateTime @default(now()) @db.Timestamp(0)
-  updated  DateTime @default(now()) @db.Timestamp(0)
-  user_id  String   @db.Char(18)
-  guild_id String   @db.Char(18)
+  created DateTime @default(now()) @db.Timestamp(0)
+  updated DateTime @default(now()) @db.Timestamp(0)
+
+  user_id  String @db.Char(18)
+  guild_id String @db.Char(18)
+
   birthday DateTime @db.Timestamp(0)
+  has_role  Boolean  @default(false) @db.Boolean
 
   @@unique([user_id, guild_id])
 }
