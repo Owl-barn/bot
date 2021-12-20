@@ -22,9 +22,12 @@ class logServiceClass {
     }
 
     public logCommand = (interaction: RavenInteraction, hidden: boolean): void => {
+        const subCommand = interaction.options.getSubcommand(false);
+        const commandName = subCommand ? `${interaction.commandName}_${subCommand}` : interaction.commandName;
+
         const query: Prisma.command_logUncheckedCreateInput = {
             user: interaction.member.user.id,
-            command_name: interaction.commandName,
+            command_name: commandName,
             guild_id: interaction.guildId,
             channel_id: interaction.channelId,
             hidden,
