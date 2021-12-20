@@ -73,8 +73,8 @@ module.exports = class extends Command {
 
                 const birthdayms = Number(new Date(query.birthday)) / 1000;
                 embed
-                    .addField(`Birth Date`, `**<@!${user.id}>'s birthday is on** ${moment(query.birthday).format("DD-MM-YYYY")}`)
-                    .addField(`When?`, `**BirthDate:** <t:${birthdayms}:R> \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
+                    .addField(`Birth Date`, `**<@!${user.id}> was born on** ${moment(query.birthday).format("DD-MM-YYYY")}`)
+                    .addField(`When?`, `**Born:** <t:${birthdayms}:R> \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
                     .addField("Disclaimer", "The time is displayed in utc relative to your timezone so it may show up wrong");
             } else {
                 embed.addField(`No data`, "This user has no birthday registered");
@@ -122,8 +122,8 @@ module.exports = class extends Command {
 
             const embed = new MessageEmbed()
                 .setTitle("Birthday set!")
-                .addField(`Birth Date`, `**Your birthday is on** ${moment(query.birthday).format("DD-MM-YYYY")}`)
-                .addField(`When?`, `**BirthDate:** <t:${birthdayms}:R> \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
+                .addField(`Birth Date`, `**Your birthday is on** ${birthdayMoment.format("DD-MM-YYYY")}`)
+                .addField(`When?`, `**Born:** <t:${birthdayms}:R> \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
                 .addField("Disclaimer", "The time is displayed in utc relative to your timezone so it may show up wrong")
                 .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
                 .setColor("RED")
