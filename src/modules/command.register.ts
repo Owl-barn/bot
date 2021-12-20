@@ -51,6 +51,11 @@ function argumentHanlder(builder: SlashCommandBuilder | SlashCommandSubcommandBu
 
                 option = argumentHanlder(option, arg.subCommand) as SlashCommandSubcommandBuilder;
 
+                option.addBooleanOption(Option =>
+                    Option.setName("hidden")
+                        .setDescription("hide result?")
+                        .setRequired(false));
+
                 return option;
             });
     }

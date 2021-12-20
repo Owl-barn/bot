@@ -121,7 +121,7 @@ module.exports = class extends Command {
 
 
             const nextBirthday = nextDate(query.birthday);
-            const age = yearsAgo(query.birthday);
+            const age = yearsAgo(birthdayMoment.toDate());
 
             const embed = new MessageEmbed()
                 .setTitle("Birthday set!")
