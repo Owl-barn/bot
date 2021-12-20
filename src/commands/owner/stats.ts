@@ -20,6 +20,9 @@ module.exports = class statsCommand extends Command {
 
         const users = msg.client.guilds.cache.reduce((acc, { memberCount }) => acc + memberCount, 0);
 
+        const commandUsage = await client.db.command_log.groupBy({ by: ["command_name"], _count: true, orderBy: { _count: { command_name: "desc" } }, take: 10 });
+        const musicPlayed = await client.db.songs_played.aggregate({ _avg: { play_duration: true, song_duration: true }, _sum: { play_duration: true, song_duration: true } });
+
         const embed = new MessageEmbed()
             .addFields([
                 { name: "Users", value: users.toString(), inline: true },
@@ -29,6 +32,8 @@ module.exports = class statsCommand extends Command {
             .addField("Memory usage", `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB`, true)
             .addField("Uptime", moment(Date.now() - (client.uptime as number)).fromNow().replace(" ago", ""), true)
             .addField("Commands", `${client.commands.size} loaded modules`, true)
+            .addField("Command Usage", commandUsage.map((x) => `**${x.command_name}:** ${x._count}`).join("\n"))
+            .addField("Music Usage", `**Average:** ${Math.round(musicPlayed._avg.play_duration || 0)}/${Math.round(musicPlayed._avg.song_duration || 0)}\n**sum:** ${musicPlayed._sum.play_duration}/${musicPlayed._sum.song_duration}`)
             .setFooter(`${msg.user.username} <${msg.user.id}>`, msg.user.avatarURL() as string | undefined)
             .setColor("#FF0000")
             .setTimestamp();
