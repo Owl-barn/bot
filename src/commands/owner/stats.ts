@@ -32,11 +32,17 @@ module.exports = class statsCommand extends Command {
             .addField("Memory usage", `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB`, true)
             .addField("Uptime", moment(Date.now() - (client.uptime as number)).fromNow().replace(" ago", ""), true)
             .addField("Commands", `${client.commands.size} loaded modules`, true)
-            .addField("Command Usage", commandUsage.map((x) => `**${x.command_name}:** ${x._count}`).join("\n"))
-            .addField("Music Usage", `**Average:** ${Math.round(musicPlayed._avg.play_duration || 0)}/${Math.round(musicPlayed._avg.song_duration || 0)}\n**sum:** ${musicPlayed._sum.play_duration}/${musicPlayed._sum.song_duration}`)
             .setFooter(`${msg.user.username} <${msg.user.id}>`, msg.user.avatarURL() as string | undefined)
             .setColor("#FF0000")
             .setTimestamp();
+
+        if (commandUsage && commandUsage.length > 0) {
+            embed.addField("Command Usage", commandUsage.map((x) => `**${x.command_name}:** ${x._count}`).join("\n"));
+        }
+
+        if (musicPlayed) {
+            embed.addField("Music Usage", `**Average:** ${Math.round(musicPlayed._avg.play_duration || 0)}/${Math.round(musicPlayed._avg.song_duration || 0)}\n**sum:** ${musicPlayed._sum.play_duration || 0}/${musicPlayed._sum.song_duration || 0}`);
+        }
 
         return { embeds: [embed] };
     }

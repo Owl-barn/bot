@@ -43,7 +43,7 @@ module.exports = class extends Command {
             ],
 
             throttling: {
-                duration: 60,
+                duration: 720,
                 usages: 2,
             },
         });
@@ -73,8 +73,8 @@ module.exports = class extends Command {
                 const age = yearsAgo(query.birthday);
 
                 embed
-                    .addField(`Birth Date`, `**<@!${user.id}> was born on** ${moment(query.birthday).format("DD-MM-YYYY")}`)
-                    .addField(`When?`, `**Age:** ${age} years \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
+                    .addField(`Birth Date`, `**${user.id === msg.user.id ? `you were` : `<@!${user.id}> was`} born on** ${moment(query.birthday).format("DD-MM-YYYY")}`)
+                    .addField(`info`, `**Age:** ${age} years \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
                     .addField("Disclaimer", "The time is displayed in utc relative to your timezone so it may show up wrong");
             } else {
                 embed.addField(`No data`, "This user has no birthday registered");
@@ -84,16 +84,21 @@ module.exports = class extends Command {
 
 
         } else if (subCommand === "set") {
-            if (!birthday) throw "a";
+            if (!birthday) throw "no birthday!???";
 
-            if (!birthdayCheck.test(birthday)) return { content: "Invalid input" };
+            if (!birthdayCheck.test(birthday)) return { content: "Invalid input format, the format is `DD/MM/YYYY`" };
 
             const birthdayMoment = moment(birthday, "DD-MM-YYYY");
             if (!birthdayMoment.isValid()) return { content: "Invalid date" };
 
             const getBirthday = await client.db.birthdays.findUnique({ where: { user_id_guild_id: { user_id: msg.user.id, guild_id: msg.guildId } } });
             if (getBirthday && (Date.now() - Number(getBirthday.updated)) > 600000) {
-                return { content: "You can only change your birthday once a year, dm <@!140762569056059392> if there was a mistake" };
+                const embed = new MessageEmbed()
+                    .addField("Not allowed", "You can only change your birthday once a year, dm <@140762569056059392> if there was a mistake")
+                    .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
+                    .setColor("RED")
+                    .setTimestamp();
+                return { embeds: [embed] };
             }
 
             const query = await client.db.birthdays.upsert({
@@ -120,8 +125,8 @@ module.exports = class extends Command {
 
             const embed = new MessageEmbed()
                 .setTitle("Birthday set!")
-                .addField(`Birth Date`, `**Your birthday is on** ${birthdayMoment.format("DD-MM-YYYY")}`)
-                .addField(`When?`, `**Age:** ${age} years \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
+                .addField(`Birth Date`, `**you were born on** ${birthdayMoment.format("DD-MM-YYYY")}`)
+                .addField(`info`, `**Age:** ${age} years \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
                 .addField("Disclaimer", "The time is displayed in utc relative to your timezone so it may show up wrong")
                 .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
                 .setColor("RED")
@@ -130,7 +135,7 @@ module.exports = class extends Command {
             return { embeds: [embed] };
         }
 
-        throw "a";
+        throw "no subcommand!??";
 
     }
 };
