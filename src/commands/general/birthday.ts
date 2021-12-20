@@ -1,6 +1,6 @@
 import { GuildMember, MessageEmbed } from "discord.js";
 import moment from "moment";
-import { nextDate } from "../../lib/functions.service";
+import { nextDate, yearsAgo } from "../../lib/functions.service";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
@@ -70,11 +70,11 @@ module.exports = class extends Command {
 
             if (query?.birthday) {
                 const nextBirthday = nextDate(new Date(query.birthday));
+                const age = yearsAgo(query.birthday);
 
-                const birthdayms = Number(new Date(query.birthday)) / 1000;
                 embed
                     .addField(`Birth Date`, `**<@!${user.id}> was born on** ${moment(query.birthday).format("DD-MM-YYYY")}`)
-                    .addField(`When?`, `**Born:** <t:${birthdayms}:R> \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
+                    .addField(`When?`, `**Age:** ${age} years \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
                     .addField("Disclaimer", "The time is displayed in utc relative to your timezone so it may show up wrong");
             } else {
                 embed.addField(`No data`, "This user has no birthday registered");
@@ -89,11 +89,9 @@ module.exports = class extends Command {
             if (!birthdayCheck.test(birthday)) return { content: "Invalid input" };
 
             const birthdayMoment = moment(birthday, "DD-MM-YYYY");
-
             if (!birthdayMoment.isValid()) return { content: "Invalid date" };
 
             const getBirthday = await client.db.birthdays.findUnique({ where: { user_id_guild_id: { user_id: msg.user.id, guild_id: msg.guildId } } });
-
             if (getBirthday && (Date.now() - Number(getBirthday.updated)) > 600000) {
                 return { content: "You can only change your birthday once a year, dm <@!140762569056059392> if there was a mistake" };
             }
@@ -117,13 +115,13 @@ module.exports = class extends Command {
             });
 
 
-            const birthdayms = Number(new Date(query.birthday)) / 1000;
             const nextBirthday = nextDate(query.birthday);
+            const age = yearsAgo(query.birthday);
 
             const embed = new MessageEmbed()
                 .setTitle("Birthday set!")
                 .addField(`Birth Date`, `**Your birthday is on** ${birthdayMoment.format("DD-MM-YYYY")}`)
-                .addField(`When?`, `**Born:** <t:${birthdayms}:R> \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
+                .addField(`When?`, `**Age:** ${age} years \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`)
                 .addField("Disclaimer", "The time is displayed in utc relative to your timezone so it may show up wrong")
                 .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
                 .setColor("RED")
