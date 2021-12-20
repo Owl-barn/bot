@@ -8,6 +8,7 @@ import Song from "../../types/song";
 import musicService from "../../modules/music.service";
 import * as play from "play-dl";
 import { isDJ } from "../../lib/functions.service";
+import moment from "moment";
 
 module.exports = class extends Command {
     constructor() {
@@ -102,10 +103,13 @@ module.exports = class extends Command {
 
         subscription.addToQueue(song);
 
+        const queueLength = subscription.getQueue().length;
+
         const embed = new MessageEmbed()
             .setThumbnail(song.thumbnail)
-            .setTitle(subscription.getQueue().length < 1 ? `Now playing` : "Song queued")
-            .setDescription(`[${Util.escapeMarkdown(song.title)}](${song.url})`)
+            .setTitle(queueLength < 1 ? `Now playing` : "Song queued")
+            .setDescription(`[${Util.escapeMarkdown(song.title)}](${song.url})
+            ${queueLength < 1 ? "" : `*Time untill play: ${moment().startOf("day").seconds(subscription.queueLength() - song.duration.seconds).format("H:mm:ss")}*`}`)
             .setColor(5362138)
             .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
             .setTimestamp();

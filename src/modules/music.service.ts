@@ -102,6 +102,13 @@ export default class musicService {
         this.logDuration(skipped, null);
     }
 
+    public queueLength = (): number => {
+        let queueLength = 0;
+        for (const song of this.queue) queueLength += song.duration.seconds;
+        const currentTime = this.getPlaytime();
+        return (this.current?.duration.seconds || 0 - currentTime) + queueLength;
+    }
+
     public stop(): void {
         this.queue = [];
         this.player.stop(true);
