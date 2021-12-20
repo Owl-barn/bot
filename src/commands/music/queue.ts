@@ -67,7 +67,7 @@ module.exports = class extends Command {
 
         for (const song of subscription.getQueue()) {
             x++;
-            list.push({ name: x.toString(), value: `[${Util.escapeMarkdown(song.title.substring(0, 40))}}](${song.url}) - ${song.duration.text}\n${italic(`Requested by: <@!${song.user.id}>`)}` });
+            list.push({ name: x.toString(), value: `[${Util.escapeMarkdown(song.title.substring(0, 40))}](${song.url}) - ${song.duration.text}\n${italic(`Requested by: <@!${song.user.id}>`)}` });
         }
 
         embed.addFields(list);
