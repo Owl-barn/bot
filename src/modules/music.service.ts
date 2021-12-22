@@ -67,7 +67,7 @@ export default class musicService {
                 guild_id: this.voiceConnection.joinConfig.guildId,
                 user_id: song.user.id,
                 song_duration: song.duration.seconds,
-                play_duration: played ? Math.ceil(played) : null,
+                play_duration: played ? Math.round(played) : null,
             },
         });
     }
