@@ -36,7 +36,7 @@ module.exports = class extends Command {
             ],
 
             throttling: {
-                duration: 60,
+                duration: 30,
                 usages: 2,
             },
         });

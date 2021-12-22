@@ -21,6 +21,11 @@ module.exports = class WebhookCommand extends Command {
 
             guildOnly: false,
             adminOnly: false,
+
+            throttling: {
+                duration: 10,
+                usages: 2,
+            },
         });
     }
 
