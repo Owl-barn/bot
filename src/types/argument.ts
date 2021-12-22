@@ -17,5 +17,5 @@ export interface Argument {
     name: string;
     description: string;
     required: boolean;
-    subCommand?: Argument;
+    subCommands?: Argument[];
 }

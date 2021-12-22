@@ -47,9 +47,9 @@ function argumentHanlder(builder: SlashCommandBuilder | SlashCommandSubcommandBu
                 option.setName(arg.name)
                     .setDescription(arg.description);
 
-                if (!arg.subCommand) throw "uh oh";
-
-                option = argumentHanlder(option, arg.subCommand) as SlashCommandSubcommandBuilder;
+                if (arg.subCommands && arg.subCommands.length !== 0) {
+                    arg.subCommands.forEach(x => option = argumentHanlder(option, x) as SlashCommandSubcommandBuilder);
+                }
 
                 option.addBooleanOption(Option =>
                     Option.setName("hidden")
@@ -69,9 +69,7 @@ export default function registerCommand(input: Collection<string, Command>, self
 
     input.forEach((command) => {
 
-        console.log(command.name);
-
-        if (command.group == "owner") return;
+        if (command.group == "owner" && command.name !== "stats") return;
 
         let builder = new SlashCommandBuilder()
             .setName(command.name)
@@ -87,7 +85,9 @@ export default function registerCommand(input: Collection<string, Command>, self
                 .setDescription("hide result?")
                 .setRequired(false));
 
-        if (command.group === "moderation") builder.setDefaultPermission(true);
+        if (command.group === "owner") builder.setDefaultPermission(false);
+
+        if (command.group === "moderation") builder.setDefaultPermission(false);
 
         commands.push(builder);
     });
