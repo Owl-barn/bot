@@ -1,21 +1,41 @@
 import { Command } from "../types/Command";
 
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import { SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { Collection } from "discord.js";
 import { Argument, argumentType } from "../types/argument";
 import { SlashCommandOptionBase } from "@discordjs/builders/dist/interactions/slashCommands/mixins/CommandOptionBase";
-// SlashCommandSubcommandGroupBuilder
-function argumentHanlder(builder: SlashCommandBuilder | SlashCommandSubcommandBuilder, arg: Argument) {
 
+function addSubcommand<B extends SlashCommandSubcommandGroupBuilder | SlashCommandBuilder>(builder: B, arg: Argument): B {
+    builder.addSubcommand((option): SlashCommandSubcommandBuilder => {
+        option.setName(arg.name);
+        option.setDescription(arg.description);
+
+        if (arg.subCommands && arg.subCommands.length !== 0) {
+            arg.subCommands.forEach(x => option = argumentHanlder(option, x) as SlashCommandSubcommandBuilder);
+        }
+
+        option.addBooleanOption(Option =>
+            Option.setName("hidden")
+                .setDescription("hide result?")
+                .setRequired(false));
+
+        return option;
+    });
+
+    return builder;
+}
+
+function argumentHanlder(builder: SlashCommandBuilder | SlashCommandSubcommandBuilder, arg: Argument) {
     function content<T extends SlashCommandOptionBase>(option: T): T {
         option.setName(arg.name)
             .setDescription(arg.description)
-            .setRequired(arg.required);
+            .setRequired(arg.required ? true : false);
 
         return option;
     }
+
 
     switch (arg.type) {
         case argumentType.mentionable:
@@ -43,21 +63,21 @@ function argumentHanlder(builder: SlashCommandBuilder | SlashCommandSubcommandBu
             builder.addBooleanOption(content);
             break;
         case argumentType.subCommand:
-            (builder as SlashCommandBuilder).addSubcommand((option): SlashCommandSubcommandBuilder => {
-                option.setName(arg.name)
-                    .setDescription(arg.description);
+            builder = addSubcommand(builder as SlashCommandBuilder, arg);
+            break;
+        case argumentType.subCommandGroup:
+            builder = (builder as SlashCommandBuilder)
+                .addSubcommandGroup((option): SlashCommandSubcommandGroupBuilder => {
+                    option.setName(arg.name);
+                    option.setDescription(arg.description);
+                    if (!arg.subCommands) throw "missing subcommands in group!??";
+                    for (const subcommand of arg.subCommands) {
+                        option = addSubcommand(option as SlashCommandSubcommandGroupBuilder, subcommand);
+                    }
 
-                if (arg.subCommands && arg.subCommands.length !== 0) {
-                    arg.subCommands.forEach(x => option = argumentHanlder(option, x) as SlashCommandSubcommandBuilder);
-                }
+                    return option;
+                }) as SlashCommandBuilder;
 
-                option.addBooleanOption(Option =>
-                    Option.setName("hidden")
-                        .setDescription("hide result?")
-                        .setRequired(false));
-
-                return option;
-            });
     }
 
     return builder;
@@ -70,6 +90,7 @@ export default function registerCommand(input: Collection<string, Command>, self
     input.forEach((command) => {
 
         if (command.group == "owner" && command.name !== "stats") return;
+        if (command.name === "config") return;
 
         let builder = new SlashCommandBuilder()
             .setName(command.name)
@@ -98,5 +119,5 @@ export default function registerCommand(input: Collection<string, Command>, self
 
     rest.put(Routes.applicationGuildCommands(self, guild), { body: commandJson })
         .then(() => console.log("Successfully registered application commands."))
-        .catch(console.error);
+        .catch(() => console.error);
 }

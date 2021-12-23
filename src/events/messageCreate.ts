@@ -38,7 +38,7 @@ export default class InteractionCreate implements RavenEvent {
 
                 if (command?.group !== "owner") permissions.push(serverOwner);
 
-                x.permissions.set({ permissions });
+                x.permissions.set({ permissions }).catch(() => console.log("permission set fail".red));
             });
         }
     }
