@@ -55,9 +55,11 @@ module.exports = class extends Command {
 
         if (!subscription || subscription.destroyed || !currentSong) return { ephemeral: true, content: "No music is playing" };
 
+        const voteLock = subscription.getVoteLock();
+
         const isRequester = currentSong.user.id == msg.user.id;
 
-        if (subscription.getVoteLock() && !(dj || isRequester)) return { ephemeral: true, content: "Vote already in progress." };
+        if (voteLock && !(dj || isRequester)) return { ephemeral: true, content: "Vote already in progress." };
 
         if (index) {
             const queue = subscription.getQueue();

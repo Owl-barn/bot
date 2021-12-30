@@ -22,7 +22,7 @@ export default class musicService {
         this.player.on("stateChange", this.statechange);
 
         this.voiceConnection.on(VoiceConnectionStatus.Disconnected, this.disconnectVoice);
-        this.voiceConnection.on(VoiceConnectionStatus.Destroyed, () => { this.timeout = setTimeout(() => this.stop(), 180000); });
+        this.voiceConnection.on(VoiceConnectionStatus.Destroyed, () => { this.startStopTimer(); });
 
         this.player.on(AudioPlayerStatus.Paused, this.pause);
 
@@ -109,6 +109,10 @@ export default class musicService {
         return (this.current?.duration.seconds || 0 - currentTime) + queueLength;
     }
 
+    public startStopTimer(): void {
+        this.timeout = setTimeout(() => this.stop(), 180000);
+    }
+
     public stop(): void {
         this.queue = [];
         this.player.stop(true);
@@ -134,7 +138,7 @@ export default class musicService {
         if (this.queue.length === 0) {
             this.current = null;
             this.queueLock = false;
-            this.timeout = setTimeout(() => this.stop(), 180000);
+            this.startStopTimer();
             return;
         }
 
