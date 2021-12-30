@@ -1,5 +1,5 @@
 import { italic } from "@discordjs/builders";
-import { EmbedFieldData, GuildMember, MessageEmbed, Util } from "discord.js";
+import { EmbedFieldData, GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
 import moment from "moment";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
@@ -32,9 +32,7 @@ module.exports = class extends Command {
         const current = subscription.getCurrent();
 
         const embed = new MessageEmbed()
-            .setColor(5362138)
-            .setTimestamp()
-            .setFooter(`${member.user.tag} - <@!${member.id}>`);
+            .setColor(process.env.EMBED_COLOR as HexColorString);
 
         if (!current) {
             embed.addField("Now playing:", "Nothing is playing right now");

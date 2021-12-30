@@ -63,9 +63,7 @@ module.exports = class extends Command {
         const embed = new MessageEmbed()
             .setAuthor(`${target.username}#${target.discriminator} has been warned, ${warnCount} total`)
             .setDescription(`**reason:** ${reason}`)
-            .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
-            .setColor(colour)
-            .setTimestamp();
+            .setColor(colour);
 
         // send embed.
         return { embeds: [embed], content: hidden ? undefined : `${target}` };

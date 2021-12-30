@@ -1,4 +1,4 @@
-import { GuildMember, MessageEmbed, Util } from "discord.js";
+import { GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
@@ -37,7 +37,7 @@ module.exports = class extends Command {
 
             throttling: {
                 duration: 30,
-                usages: 2,
+                usages: 3,
             },
         });
     }
@@ -81,6 +81,7 @@ module.exports = class extends Command {
         if (!subscription) {
 
             if (!vc) throw `no vc in play command, unforseen logic error?, ${member.id}`;
+            if (!vc.joinable) return { content: "I cant join that vc" };
 
             const connection = joinVoiceChannel({
                 channelId: vc.id,
@@ -98,6 +99,7 @@ module.exports = class extends Command {
             await entersState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 20e3);
         } catch (e) {
             console.warn(e);
+            subscription.stop();
             return { content: "Failed to join vc" };
         }
 
@@ -108,11 +110,9 @@ module.exports = class extends Command {
         const embed = new MessageEmbed()
             .setThumbnail(song.thumbnail)
             .setTitle(queueLength < 1 ? `Now playing` : "Song queued")
-            .setDescription(`[${Util.escapeMarkdown(song.title)}](${song.url})
+            .setDescription(`[${Util.escapeMarkdown(song.title).replace("[", "").replace("]", "")}](${song.url})
             ${queueLength < 1 ? "" : `*Time untill play: ${moment().startOf("day").seconds(subscription.queueLength() - song.duration.seconds).format("H:mm:ss")}*`}`)
-            .setColor(5362138)
-            .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
-            .setTimestamp();
+            .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed] };
     }
