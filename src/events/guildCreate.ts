@@ -1,4 +1,4 @@
-import { Guild } from "discord.js";
+import { Guild, HexColorString, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -12,8 +12,31 @@ export default class implements RavenEvent {
 
             const db = (guild.client as RavenClient).db;
             await db.guilds.create({ data: { guild_id: guild.id } });
+            console.log(`Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.red.bold);
+            const channel = guild.systemChannel;
 
-            console.log(`Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.green);
+            if (!channel) return;
+
+            const embed = new MessageEmbed()
+                .setTitle("Thank you!")
+                .setDescription("thank you for inviting me! the bot is currently still under development. and its not sustainable to make this bot free and public yet")
+                .addField("How do get access to the bot?", `Right now the only way is to subscribe to my ko-fi, if you have any questions please dm me! <@${process.env.OWNER_ID}>`)
+                .setThumbnail(guild.client.user?.avatarURL() || "")
+                .setTimestamp()
+                .setColor(process.env.EMBED_COLOR as HexColorString);
+
+
+            const component = new MessageActionRow()
+                .addComponents(
+                    new MessageButton()
+                        .setLabel("Donate")
+                        .setStyle("LINK")
+                        .setURL("https://ko-fi.com/owlive"),
+                );
+
+
+            await channel.send({ embeds: [embed], components: [component] }).catch(() => console.log("Couldnt send message in new server."));
+
         } catch (e) {
             console.error(e);
         }
