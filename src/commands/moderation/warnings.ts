@@ -1,6 +1,7 @@
 import { HexColorString, InteractionReplyOptions, MessageEmbed, User } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 module.exports = class extends Command {
@@ -8,10 +9,11 @@ module.exports = class extends Command {
         super({
             name: "warnings",
             description: "shows a user's warnings",
-            group: "moderation",
+            group: CommandGroup.moderation,
 
             guildOnly: true,
             adminOnly: false,
+            premium: false,
 
             args: [
                 {

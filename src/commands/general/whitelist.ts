@@ -3,6 +3,7 @@ import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
 import { getMcUUID, RCONHandler } from "../../lib/mc.service";
+import { CommandGroup } from "../../types/commandGroup";
 
 
 module.exports = class extends Command {
@@ -10,10 +11,11 @@ module.exports = class extends Command {
         super({
             name: "whitelist",
             description: "whitelist to mc server",
-            group: "general",
+            group: CommandGroup.general,
 
             guildOnly: true,
             adminOnly: false,
+            premium: true,
 
             args: [
                 {

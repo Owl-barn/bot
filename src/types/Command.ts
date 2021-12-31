@@ -1,5 +1,6 @@
 import { Interaction, InteractionReplyOptions } from "discord.js";
 import { Argument } from "./argument";
+import { CommandGroup } from "./commandGroup";
 import RavenInteraction from "./interaction";
 
 export abstract class Command {
@@ -9,10 +10,11 @@ export abstract class Command {
 
     public name!: string;
     public description!: string;
-    public group!: string;
+    public group!: CommandGroup;
 
     public guildOnly = false;
     public adminOnly = false;
+    public premium: boolean;
     public disabled?: boolean;
 
     public args?: Argument[];
@@ -33,6 +35,7 @@ export interface CommandInfo {
 
     guildOnly: boolean;
     adminOnly: boolean;
+    premium: boolean;
     disabled?: boolean;
 
     args?: Argument[];
@@ -47,6 +50,10 @@ export interface CommandInfo {
 export interface Throttling {
     duration: number;
     usages: number;
+}
+
+export interface Permissions {
+    test: string
 }
 
 export interface returnMessage extends InteractionReplyOptions {

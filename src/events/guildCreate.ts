@@ -1,4 +1,5 @@
 import { Guild, HexColorString, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import registerCommand, { registerPerms } from "../modules/command.register";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -14,6 +15,9 @@ export default class implements RavenEvent {
             await db.guilds.create({ data: { guild_id: guild.id } });
             console.log(`Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.red.bold);
             const channel = guild.systemChannel;
+
+            registerCommand(guild.client as RavenClient, guild);
+            registerPerms(guild.client as RavenClient, guild);
 
             if (!channel) return;
 
@@ -33,7 +37,6 @@ export default class implements RavenEvent {
                         .setStyle("LINK")
                         .setURL("https://ko-fi.com/owlive"),
                 );
-
 
             await channel.send({ embeds: [embed], components: [component] }).catch(() => console.log("Couldnt send message in new server."));
 

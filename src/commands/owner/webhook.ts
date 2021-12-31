@@ -1,6 +1,7 @@
 import { InteractionReplyOptions, WebhookClient } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 module.exports = class WebhookCommand extends Command {
@@ -8,7 +9,7 @@ module.exports = class WebhookCommand extends Command {
         super({
             name: "webhook",
             description: "deletes webhook",
-            group: "owner",
+            group: CommandGroup.owner,
 
             args: [
                 {
@@ -21,6 +22,7 @@ module.exports = class WebhookCommand extends Command {
 
             guildOnly: false,
             adminOnly: false,
+            premium: false,
 
             throttling: {
                 duration: 10,

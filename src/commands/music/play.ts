@@ -9,16 +9,18 @@ import musicService from "../../modules/music.service";
 import * as play from "play-dl";
 import { isDJ } from "../../lib/functions.service";
 import moment from "moment";
+import { CommandGroup } from "../../types/commandGroup";
 
 module.exports = class extends Command {
     constructor() {
         super({
             name: "play",
             description: "Plays a song",
-            group: "music",
+            group: CommandGroup.music,
 
             guildOnly: true,
             adminOnly: false,
+            premium: true,
 
             args: [
                 {

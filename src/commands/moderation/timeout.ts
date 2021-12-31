@@ -1,6 +1,7 @@
 import { GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 module.exports = class extends Command {
@@ -8,10 +9,11 @@ module.exports = class extends Command {
         super({
             name: "timeout",
             description: "puts a user on timeout",
-            group: "moderation",
+            group: CommandGroup.moderation,
 
             guildOnly: true,
             adminOnly: false,
+            premium: false,
 
             args: [
                 {
@@ -73,6 +75,9 @@ module.exports = class extends Command {
         const embed = new MessageEmbed()
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
+        const errorEmbed = new MessageEmbed()
+            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+
         if (command === "clear") {
             if (!target.communicationDisabledUntil) return { ephemeral: true, content: "This user isnt timed out." };
             await target.timeout(null);
@@ -82,7 +87,7 @@ module.exports = class extends Command {
         }
 
         const duration = Util.escapeMarkdown(msg.options.getString("duration", true)).trim();
-        if (!target.moderatable) return { content: "I cant timeout that user" };
+        if (!target.moderatable) return { embeds: [errorEmbed.setDescription("I cant timeout that user")] };
 
         const match = Array.from(duration.matchAll(durationCheck));
         let { days, hours, minutes } = match[0].groups as unknown as TimeInput;

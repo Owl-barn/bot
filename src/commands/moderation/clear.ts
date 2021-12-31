@@ -1,16 +1,18 @@
 import { BaseGuildTextChannel, CommandInteraction, InteractionReplyOptions } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 
 module.exports = class extends Command {
     constructor() {
         super({
             name: "clear",
             description: "clear chat",
-            group: "moderation",
+            group: CommandGroup.moderation,
 
             guildOnly: true,
             adminOnly: false,
+            premium: false,
 
             args: [
                 {

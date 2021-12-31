@@ -1,6 +1,7 @@
 import { GuildMember, HexColorString, ImageURLOptions, MessageEmbed } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 module.exports = class extends Command {
@@ -8,10 +9,11 @@ module.exports = class extends Command {
         super({
             name: "userinfo",
             description: "view userinfo",
-            group: "general",
+            group: CommandGroup.general,
 
             guildOnly: true,
             adminOnly: false,
+            premium: false,
 
             args: [
                 {

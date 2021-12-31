@@ -1,6 +1,7 @@
 import { GuildMember } from "discord.js";
 import { isDJ } from "../../lib/functions.service";
 import { Command, returnMessage } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 
@@ -9,10 +10,11 @@ module.exports = class extends Command {
         super({
             name: "stop",
             description: "stop the music and clear the queue",
-            group: "music",
+            group: CommandGroup.music,
 
             guildOnly: true,
             adminOnly: false,
+            premium: true,
 
             throttling: {
                 duration: 30,

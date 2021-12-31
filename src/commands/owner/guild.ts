@@ -2,6 +2,7 @@ import { InteractionReplyOptions } from "discord.js";
 import GuildManager from "../../lib/guildManager";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 module.exports = class statsCommand extends Command {
@@ -9,7 +10,11 @@ module.exports = class statsCommand extends Command {
         super({
             name: "guild",
             description: "guild options",
-            group: "owner",
+            group: CommandGroup.owner,
+
+            guildOnly: false,
+            adminOnly: true,
+            premium: false,
 
             args: [
                 {
@@ -19,9 +24,6 @@ module.exports = class statsCommand extends Command {
                     required: true,
                 },
             ],
-
-            guildOnly: false,
-            adminOnly: true,
 
             throttling: {
                 duration: 10,

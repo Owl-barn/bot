@@ -3,6 +3,7 @@ import { isDJ } from "../../lib/functions.service";
 import musicService from "../../modules/music.service";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 
@@ -11,10 +12,11 @@ module.exports = class extends Command {
         super({
             name: "skip",
             description: "skips a song",
-            group: "music",
+            group: CommandGroup.music,
 
             guildOnly: true,
             adminOnly: false,
+            premium: true,
 
             args: [
                 {

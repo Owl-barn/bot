@@ -1,6 +1,7 @@
 import { InteractionReplyOptions, MessageEmbed, User } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 export default class extends Command {
@@ -8,10 +9,11 @@ export default class extends Command {
         super({
             name: "delwarn",
             description: "Deletes a specific warn.",
-            group: "moderation",
+            group: CommandGroup.moderation,
 
             guildOnly: true,
             adminOnly: false,
+            premium: false,
 
             args: [
                 {

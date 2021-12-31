@@ -2,6 +2,7 @@ import { HexColorString, InteractionReplyOptions, MessageEmbed } from "discord.j
 import moment from "moment";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 module.exports = class statsCommand extends Command {
@@ -9,10 +10,12 @@ module.exports = class statsCommand extends Command {
         super({
             name: "stats",
             description: "shows bot stats",
-            group: "owner",
+            group: CommandGroup.owner,
 
             guildOnly: false,
             adminOnly: true,
+            premium: false,
+
             args: [
                 {
                     type: argumentType.boolean,

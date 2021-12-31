@@ -1,6 +1,7 @@
 import { AudioPlayerStatus } from "@discordjs/voice";
 import { GuildMember } from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 
@@ -9,10 +10,11 @@ module.exports = class extends Command {
         super({
             name: "pause",
             description: "pause the bot",
-            group: "music",
+            group: CommandGroup.music,
 
             guildOnly: true,
             adminOnly: false,
+            premium: true,
 
             throttling: {
                 duration: 30,

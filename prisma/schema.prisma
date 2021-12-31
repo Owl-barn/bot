@@ -8,9 +8,11 @@ datasource db {
 }
 
 model guilds {
-  created        DateTime         @default(now()) @db.Timestamp(0)
-  guild_id       String           @id @db.Char(18)
-  birthday_id    String?          @db.Char(18)
+  created     DateTime @default(now()) @db.Timestamp(0)
+  guild_id    String   @id @db.Char(18)
+  birthday_id String?  @db.Char(18)
+  premium     Boolean  @default(false) @db.Boolean
+
   logs           logs[]
   command_logs   command_log[]
   permissions    permissions[]
@@ -30,7 +32,7 @@ model birthdays {
   guild_id String @db.Char(18)
 
   birthday DateTime? @db.Timestamp(0)
-  has_role Boolean  @default(false) @db.Boolean
+  has_role Boolean   @default(false) @db.Boolean
 
   guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
@@ -79,13 +81,15 @@ model command_log {
 }
 
 model permissions {
-  guild_id   String           @db.Char(18)
-  command_id String           @db.Char(18)
-  created    DateTime         @default(now()) @db.Timestamp(0)
-  type       permissions_type
-  permission Boolean
   uuid       String           @id(map: "permissions_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  guilds     guilds           @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+  created    DateTime         @default(now()) @db.Timestamp(0)
+  guild_id   String           @db.Char(18)
+  command    String           @db.VarChar(32)
+  target     String           @db.Char(18)
+  permission Boolean
+  type       permissions_type
+
+  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
   @@index([guild_id], map: "permissions_FK")
 }

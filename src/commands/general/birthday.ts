@@ -1,5 +1,6 @@
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 import birthdayDifference from "./birthday/difference.module";
 import birthdayGet from "./birthday/get.module";
@@ -12,10 +13,11 @@ module.exports = class extends Command {
         super({
             name: "birthday",
             description: "birthday",
-            group: "general",
+            group: CommandGroup.general,
 
             guildOnly: true,
             adminOnly: false,
+            premium: false,
 
             args: [
                 {

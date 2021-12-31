@@ -2,6 +2,7 @@ import { italic } from "@discordjs/builders";
 import { EmbedFieldData, GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
 import moment from "moment";
 import { Command, returnMessage } from "../../types/Command";
+import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 
@@ -10,10 +11,11 @@ module.exports = class extends Command {
         super({
             name: "queue",
             description: "shows queue",
-            group: "music",
+            group: CommandGroup.music,
 
             guildOnly: true,
             adminOnly: false,
+            premium: true,
 
             throttling: {
                 duration: 30,
