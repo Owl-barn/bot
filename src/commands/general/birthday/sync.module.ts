@@ -10,7 +10,7 @@ export default async function birthdaySync(msg: RavenInteraction): Promise<retur
     embed.setColor(process.env.EMBED_COLOR as HexColorString);
 
 
-    const query = await client.db.birthdays.findFirst({ where: { user_id: msg.user.id } });
+    const query = await client.db.birthdays.findFirst({ where: { user_id: msg.user.id, NOT: { birthday: null } } });
 
     if (!query) return { embeds: [embed.setDescription("You dont have a birthday registered anywhere else.")] };
     const result = await client.db.birthdays.create({ data: { user_id: query.user_id, guild_id: msg.guildId, birthday: query.birthday } }).catch(() => null);

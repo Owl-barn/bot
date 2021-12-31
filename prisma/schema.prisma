@@ -8,15 +8,18 @@ datasource db {
 }
 
 model guilds {
-  created      DateTime       @default(now()) @db.Timestamp(0)
-  guild_id     String         @id @db.Char(18)
-  birthday_id  String?        @db.Char(18)
-  logs         logs[]
-  command_logs command_log[]
-  permissions  permissions[]
-  warnings     warnings[]
-  whitelist    whitelist[]
-  songs_played songs_played[]
+  created        DateTime         @default(now()) @db.Timestamp(0)
+  guild_id       String           @id @db.Char(18)
+  birthday_id    String?          @db.Char(18)
+  logs           logs[]
+  command_logs   command_log[]
+  permissions    permissions[]
+  warnings       warnings[]
+  whitelist      whitelist[]
+  songs_played   songs_played[]
+  self_role_main self_role_main[]
+  birthdays      birthdays[]
+  rcon           rcon[]
 }
 
 model birthdays {
@@ -26,8 +29,10 @@ model birthdays {
   user_id  String @db.Char(18)
   guild_id String @db.Char(18)
 
-  birthday DateTime @db.Timestamp(0)
-  has_role  Boolean  @default(false) @db.Boolean
+  birthday DateTime? @db.Timestamp(0)
+  has_role Boolean  @default(false) @db.Boolean
+
+  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
   @@unique([user_id, guild_id])
 }
@@ -106,12 +111,36 @@ model warnings {
   @@index([guild_id], map: "Warnings_FK")
 }
 
+model self_role_main {
+  uuid       String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  guild_id   String  @db.Char(18)
+  channel_id String  @db.Char(18)
+  message_id String? @db.Char(18)
+  title      String  @db.VarChar(64)
+  message    String  @db.VarChar(1024)
+
+  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict, map: "self_role_main_FK")
+
+  self_role_roles self_role_roles[]
+}
+
+model self_role_roles {
+  uuid      String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  main_uuid String @db.Uuid
+  role_id   String @db.Char(18)
+  name      String @db.VarChar(32)
+
+  self_role_main self_role_main @relation(fields: [main_uuid], references: [uuid], onDelete: Cascade, onUpdate: Restrict, map: "self_role_roles_FK")
+}
+
 model rcon {
   guild_id String  @id(map: "rcon_pk") @db.VarChar(18)
   host     String  @db.VarChar(32)
   port     Int
   password String  @db.VarChar(64)
   role_id  String? @db.VarChar(18)
+
+  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 }
 
 model whitelist {

@@ -20,6 +20,7 @@ export default async function birthdayDifference(msg: RavenInteraction): Promise
                 { user_id: second_user.id },
             ],
             guild_id: msg.guildId,
+            NOT: { birthday: null },
         },
         orderBy: { birthday: "asc" },
     });

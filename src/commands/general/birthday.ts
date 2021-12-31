@@ -3,6 +3,7 @@ import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
 import birthdayDifference from "./birthday/difference.module";
 import birthdayGet from "./birthday/get.module";
+import birthdayRemove from "./birthday/remove.module";
 import birthdaySet from "./birthday/set.module";
 import birthdaySync from "./birthday/sync.module";
 
@@ -65,7 +66,12 @@ module.exports = class extends Command {
                 {
                     type: argumentType.subCommand,
                     name: "sync",
-                    description: "fetch birthday from other server",
+                    description: "Fetch birthday from other server.",
+                },
+                {
+                    type: argumentType.subCommand,
+                    name: "remove",
+                    description: "Remove your birthday from this server.",
                 },
             ],
 
@@ -88,6 +94,8 @@ module.exports = class extends Command {
                 return birthdayDifference(msg);
             case "sync":
                 return birthdaySync(msg);
+            case "remove":
+                return birthdayRemove(msg);
             default:
                 throw "no subcommand!??";
         }

@@ -31,7 +31,7 @@ export default async function birthdayGet(msg: RavenInteraction): Promise<return
         .addField(`Birth Date`, `**${user.id === msg.user.id ? `you were` : `<@!${user.id}> was`} born on** ${moment(query.birthday).format("DD-MM-YYYY")}`)
         .addField(`Info`, `**Age:** ${age} years \n**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`, true)
         .addField("Star sign", `${starSign?.name} ${starSign?.icon}`, true)
-        .addField("Disclaimer", "The time is displayed in utc relative to your timezone so it may show up wrong");
+        .addField("Note", "All times are recorded in UTC timezone. The “next birthday” and birthday role times may be inaccurate due to this.");
 
     return { embeds: [embed] };
 }
