@@ -15,7 +15,7 @@ export default async function birthdaySet(msg: RavenInteraction): Promise<return
 
     const client = msg.client;
     const birthday = msg.options.getString("birthday", true);
-    const birthdayCheck = new RegExp(/(?<day>[0-9]{1,2})[/-:](?<month>[0-9]{1,2})[/-:](?<year>[0-9]{4})/g);
+    const birthdayCheck = new RegExp(/(?<day>[0-9]{1,2})[/:-](?<month>[0-9]{1,2})[/:-](?<year>[0-9]{4})/g);
 
     const embed = new MessageEmbed()
         .setColor(process.env.EMBED_COLOR as HexColorString);
