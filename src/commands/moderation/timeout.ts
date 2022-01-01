@@ -12,8 +12,6 @@ module.exports = class extends Command {
             group: CommandGroup.moderation,
 
             guildOnly: true,
-            adminOnly: false,
-            premium: false,
 
             args: [
                 {
@@ -64,7 +62,6 @@ module.exports = class extends Command {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
-        if (msg.user.id !== process.env.OWNER_ID) return {};
         const command = msg.options.getSubcommand(true);
         const timeoutLimit = 2419200000;
 
@@ -81,9 +78,8 @@ module.exports = class extends Command {
         if (command === "clear") {
             if (!target.communicationDisabledUntil) return { ephemeral: true, content: "This user isnt timed out." };
             await target.timeout(null);
-            embed.setDescription(`${target}'s timeout has been cleared`);
 
-            return { embeds: [embed] };
+            return { embeds: [embed.setDescription(`${target}'s timeout has been cleared`)] };
         }
 
         const duration = Util.escapeMarkdown(msg.options.getString("duration", true)).trim();

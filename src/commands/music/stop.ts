@@ -13,7 +13,6 @@ module.exports = class extends Command {
             group: CommandGroup.music,
 
             guildOnly: true,
-            adminOnly: false,
             premium: true,
 
             throttling: {

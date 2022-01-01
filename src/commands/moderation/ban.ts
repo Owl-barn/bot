@@ -12,8 +12,6 @@ module.exports = class extends Command {
             group: CommandGroup.moderation,
 
             guildOnly: true,
-            adminOnly: false,
-            premium: false,
 
             args: [
                 {

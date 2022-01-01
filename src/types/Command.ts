@@ -13,8 +13,8 @@ export abstract class Command {
     public group!: CommandGroup;
 
     public guildOnly = false;
-    public adminOnly = false;
-    public premium: boolean;
+    public adminOnly?: boolean;
+    public premium?: boolean;
     public disabled?: boolean;
 
     public args?: Argument[];
@@ -34,8 +34,8 @@ export interface CommandInfo {
     group: string;
 
     guildOnly: boolean;
-    adminOnly: boolean;
-    premium: boolean;
+    adminOnly?: boolean;
+    premium?: boolean;
     disabled?: boolean;
 
     args?: Argument[];

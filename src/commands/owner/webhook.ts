@@ -11,6 +11,8 @@ module.exports = class WebhookCommand extends Command {
             description: "deletes webhook",
             group: CommandGroup.owner,
 
+            guildOnly: false,
+
             args: [
                 {
                     type: argumentType.string,
@@ -19,10 +21,6 @@ module.exports = class WebhookCommand extends Command {
                     required: true,
                 },
             ],
-
-            guildOnly: false,
-            adminOnly: false,
-            premium: false,
 
             throttling: {
                 duration: 10,

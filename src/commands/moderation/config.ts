@@ -1,8 +1,11 @@
-import { MessageEmbed, Role } from "discord.js";
+import { permissions_type } from "@prisma/client";
+import { GuildMember, Role } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
+import { configBirthdayReset } from "./config/birthday/reset.module";
+import { configBirthdaySet } from "./config/birthday/set.module";
 
 module.exports = class extends Command {
     constructor() {
@@ -12,7 +15,7 @@ module.exports = class extends Command {
             group: CommandGroup.moderation,
 
             guildOnly: true,
-            adminOnly: false,
+            adminOnly: true,
             premium: false,
 
             args: [
@@ -48,7 +51,7 @@ module.exports = class extends Command {
                     subCommands: [
                         {
                             type: argumentType.subCommand,
-                            name: "set",
+                            name: "add",
                             description: "Add user/role to command.",
                             subCommands: [
                                 {
@@ -58,24 +61,22 @@ module.exports = class extends Command {
                                     required: true,
                                 },
                                 {
+                                    type: argumentType.boolean,
+                                    name: "allow",
+                                    description: "block or allow this role?",
+                                    required: true,
+                                },
+                                {
                                     type: argumentType.role,
-                                    name: "birthday_role",
+                                    name: "role",
                                     description: "What role to add.",
                                     required: false,
                                 },
-                            ],
-                        },
-                        {
-                            type: argumentType.subCommand,
-                            name: "remove",
-                            description: "Remove command permission of user/command.",
-                            required: false,
-                            subCommands: [
                                 {
-                                    type: argumentType.role,
-                                    name: "birthday_role",
-                                    description: "What role to set as birthday role.",
-                                    required: true,
+                                    type: argumentType.user,
+                                    name: "user",
+                                    description: "What user to add.",
+                                    required: false,
                                 },
                             ],
                         },
@@ -84,8 +85,8 @@ module.exports = class extends Command {
             ],
 
             throttling: {
-                duration: 720,
-                usages: 2,
+                duration: 30,
+                usages: 3,
             },
         });
     }
@@ -96,7 +97,10 @@ module.exports = class extends Command {
 
         switch (group) {
             case "birthday":
-                return (await birthday(msg, command));
+                if (command === "set") return await configBirthdaySet(msg);
+                else return await configBirthdayReset(msg);
+            case "permissions":
+                return await permissionsAdd(msg);
             default:
                 break;
         }
@@ -104,32 +108,73 @@ module.exports = class extends Command {
     }
 };
 
+async function permissionsAdd(msg: RavenInteraction): Promise<returnMessage> {
+    if (!msg.guildId) throw "No guildID???";
+    const client = msg.client;
+    const allow = msg.options.getBoolean("allow", true);
+    const commandName = msg.options.getString("command_name", true);
+    const role = msg.options.getRole("role") as Role | undefined;
+    const user = msg.options.getMember("user") as GuildMember | undefined;
 
-const birthday = async (msg: RavenInteraction, command: string): Promise<returnMessage> => {
-    const birthdayRole = msg.options.getRole("birthday_role", true) as Role;
-    if (command === "set") {
-        if (!birthdayRole.editable) return { content: "I cant assign this role" };
+    if (!((!role && user) || (role && !user))) return { content: "Please give either a user or role" };
 
-        await msg.client.db.guilds.update({ where: { guild_id: msg.guildId }, data: { birthday_id: birthdayRole.id } });
+    const type = role ? permissions_type.ROLE : permissions_type.USER;
+    const target = role || user;
+    const targetID = target?.id as string;
 
-        const embed = new MessageEmbed()
-            .addField("Success", `Successfully set ${birthdayRole} as the birthday auto role!`)
-            .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
-            .setColor("RED")
-            .setTimestamp();
-
-        return { embeds: [embed] };
-    } else {
-        await msg.client.db.guilds.update({ where: { guild_id: msg.guildId }, data: { birthday_id: null } });
-
-        const embed = new MessageEmbed()
-            .addField("Success", `Successfully reset and disabled the birthday auto role!`)
-            .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
-            .setColor("RED")
-            .setTimestamp();
-
-        return { embeds: [embed] };
+    const command = client.commands.get(commandName);
+    if (!command || (command.group === CommandGroup.owner && msg.user.id !== process.env.OWNER_ID)) {
+        return { content: "Command not found" };
     }
 
-    throw "a";
-};
+    const ruleExists = await client.db.permissions.findFirst({
+        where: {
+            guild_id: msg.guildId,
+            target: targetID,
+            command: commandName,
+            type,
+        },
+    });
+
+    if (ruleExists) {
+        await client.db.permissions.upsert({
+            create: {
+                guild_id: msg.guildId,
+                target: targetID,
+                command: commandName,
+                type,
+                permission: allow,
+            },
+            update: {
+                permission: allow,
+            },
+            where: {
+                uuid: ruleExists?.uuid,
+            },
+        });
+    } else {
+        await client.db.permissions.create({
+            data: {
+                guild_id: msg.guildId,
+                target: targetID,
+                command: commandName,
+                type,
+                permission: allow,
+            },
+        });
+    }
+
+    const interactions = await msg.guild?.commands.fetch();
+    if (!interactions) return { content: "couldnt find command?" };
+    const interaction = interactions.find((x) => x.name === commandName);
+    if (!interaction) return { content: "couldnt find command?" };
+    const permissions = [{
+        id: targetID,
+        type: type,
+        permission: allow,
+    }];
+
+    await interaction?.permissions.add({ permissions });
+
+    return { content: "updated!" };
+}
