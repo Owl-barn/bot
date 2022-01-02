@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed, User, Util } from "discord.js";
+import { HexColorString, MessageEmbed, Util } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -39,14 +39,13 @@ module.exports = class extends Command {
         const db = msg.client.db;
 
         const hidden = msg.options.getBoolean("hidden");
-        const reason = Util.escapeMarkdown(msg.options.get("reason")?.value as string).substr(0, 256);
-        const target = msg.options.get("user")?.user as User;
+        const reason = Util.escapeMarkdown(msg.options.getString("reason", true)).substring(0, 256);
+        const target = msg.options.getUser("user", true);
 
-        // insert into db.
         await db.warnings.create({ data: { target_id: target.id, reason: reason, guild_id: msg.guildId as string, mod_id: msg.user.id } })
             .catch((e: Error) => {
                 console.log(e);
-                throw { content: "an error occured" };
+                throw "couldnt create warn??";
             });
 
         const warnCount = await db.warnings.count({ where: { target_id: target.id, guild_id: msg.guildId as string } });
@@ -59,13 +58,11 @@ module.exports = class extends Command {
             default: colour = "#e60008"; break;
         }
 
-        // make embed.
         const embed = new MessageEmbed()
             .setAuthor(`${target.username}#${target.discriminator} has been warned, ${warnCount} total`)
             .setDescription(`**reason:** ${reason}`)
             .setColor(colour);
 
-        // send embed.
         return { embeds: [embed], content: hidden ? undefined : `${target}` };
     }
 };

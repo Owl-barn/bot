@@ -1,4 +1,4 @@
-import { BaseGuildTextChannel, CommandInteraction, InteractionReplyOptions } from "discord.js";
+import { BaseGuildTextChannel, CommandInteraction, HexColorString, InteractionReplyOptions, MessageEmbed } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -29,13 +29,14 @@ module.exports = class extends Command {
     }
 
     async execute(msg: CommandInteraction): Promise<InteractionReplyOptions> {
-        return { content: "fuck off" };
-        let amount = msg.options.getInteger("amount") as number;
+        let amount = msg.options.getInteger("amount", true);
         amount = amount <= 100 ? amount : 100;
 
         (msg.channel as BaseGuildTextChannel).bulkDelete(amount, true);
 
-        // send embed.
-        return { content: `deleted ${amount} messages` };
+        const embed = new MessageEmbed()
+            .setColor(process.env.EMBED_COLOR as HexColorString);
+
+        return { embeds: [embed.setDescription(`deleted ${amount} messages`)] };
     }
 };

@@ -1,4 +1,4 @@
-import { GuildMember, ImageURLOptions, MessageEmbed } from "discord.js";
+import { GuildMember, HexColorString, ImageURLOptions, MessageEmbed } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -38,7 +38,7 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
 
         const settings: ImageURLOptions = { dynamic: true, size: 4096 };
-        const user = msg.options.get("user")?.member as GuildMember;
+        const user = msg.options.getMember("user") as GuildMember | undefined;
         const global = msg.options.getBoolean("global");
 
         const member = user !== undefined ? user : msg.member as GuildMember;
@@ -48,13 +48,12 @@ module.exports = class extends Command {
         if (global) avatar = member.user.avatarURL(settings);
         else avatar = member.avatarURL(settings) || member.user.avatarURL(settings);
 
-        if (!avatar) return { ephemeral: true, content: "big uh oh stinky, dm bot owner" };
+        if (!avatar) throw "no avatar??";
 
         const embed = new MessageEmbed()
             .setTitle(`${member.user.username}'s avatar`)
-            .setImage(`${avatar}`)
-            .setFooter(`${msg.user.username} <@${msg.user.id}>`, msg.user.displayAvatarURL())
-            .setTimestamp();
+            .setImage(avatar)
+            .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed] };
     }

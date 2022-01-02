@@ -1,5 +1,5 @@
 import { AudioPlayerStatus } from "@discordjs/voice";
-import { GuildMember } from "discord.js";
+import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -25,20 +25,26 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const member = msg.member as GuildMember;
 
+        const failEmbed = new MessageEmbed()
+            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+
         const vc = member.voice.channel;
-        if (vc === null) return { ephemeral: true, content: "Join a voicechannel first." };
+        if (vc === null) return { embeds: [failEmbed.setDescription("Join a voicechannel first.")] };
 
         const isDJ = member?.roles.cache.some(role => role.name === "DJ");
-        if (!isDJ) return { ephemeral: true, content: "you dont have the DJ role" };
+        if (!isDJ) return { embeds: [failEmbed.setDescription("you dont have the DJ role")] };
 
         const subscription = msg.client.musicService.get(member.guild.id);
-        if (!subscription) return { ephemeral: true, content: "Play a song first!" };
+        if (!subscription) return { embeds: [failEmbed.setDescription("Play a song first!")] };
 
         const paused = subscription.player.state.status === AudioPlayerStatus.Paused;
 
-        if (paused) subscription.player.unpause();
-        else subscription.player.pause();
+        paused ? subscription.player.unpause() : subscription.player.pause();
 
-        return { content: `Song ${paused ? "resumed" : "paused"}` };
+        const embed = new MessageEmbed()
+            .setDescription(`Song ${paused ? "resumed ▶️" : "paused ⏸️"}`)
+            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+
+        return { embeds: [embed] };
     }
 };

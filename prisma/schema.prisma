@@ -91,6 +91,7 @@ model permissions {
 
   guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
+  @@unique([target, command, guild_id])
   @@index([guild_id], map: "permissions_FK")
 }
 

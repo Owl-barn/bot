@@ -1,4 +1,4 @@
-import { GuildMember, MessageEmbed, Util } from "discord.js";
+import { GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -38,20 +38,17 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         if (msg.user.id !== process.env.OWNER_ID) return {};
         const reason = Util.escapeMarkdown(msg.options.get("reason")?.value as string).substr(0, 256);
-        const target = msg.options.getMember("user") as GuildMember;
+        const target = msg.options.getMember("user", true) as GuildMember;
 
         if (!target.bannable) return { ephemeral: true, content: "I cant ban that person" };
 
         target.ban({ reason: reason.substring(0, 128) });
-        // make embed.
+
         const embed = new MessageEmbed()
             .setTitle(`User has been banned`)
             .setDescription(`<@${target.id}> has been banned for: \`${Util.escapeMarkdown(reason)}\``)
-            .setFooter(`${msg.user.username} <@${msg.user.id}> `, msg.user.displayAvatarURL())
-            .setColor("RED")
-            .setTimestamp();
+            .setColor(process.env.EMBED_COLOR as HexColorString);
 
-        // send embed.
         return { embeds: [embed] };
     }
 };

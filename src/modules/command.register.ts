@@ -7,7 +7,7 @@ import { SlashCommandOptionBase } from "@discordjs/builders/dist/interactions/sl
 import RavenClient from "../types/ravenClient";
 import { CommandGroup } from "../types/commandGroup";
 import { ApplicationCommandPermissionTypes } from "discord.js/typings/enums";
-import { permissions_type } from "@prisma/client";
+import { guilds, permissions_type } from "@prisma/client";
 
 function addSubcommand<B extends SlashCommandSubcommandGroupBuilder | SlashCommandBuilder>(builder: B, arg: Argument): B {
     builder.addSubcommand((option): SlashCommandSubcommandBuilder => {
@@ -144,9 +144,11 @@ export async function registerPerms(client: RavenClient, guild: Guild): Promise<
 
     const commands = client.commands;
     const dbPerms = await client.db.permissions.findMany({ where: { guild_id: guild.id } });
+    const botGuild = await client.db.guilds.findUnique({ where: { guild_id: guild.id } }) as guilds;
 
     const interactions = await guild.commands.fetch();
 
+    const promises: Promise<any>[] = [];
 
     for (const interaction of interactions.values()) {
         const command = commands.get(interaction.name);
@@ -156,7 +158,7 @@ export async function registerPerms(client: RavenClient, guild: Guild): Promise<
         if (interaction.defaultPermission) continue;
 
         permList.push(botOwner);
-        if (command?.group !== "owner") permList.push(serverOwner);
+        if (command?.group !== "owner" || (command.premium && !botGuild.premium)) permList.push(serverOwner);
 
         for (const perm of permissions) {
             permList.push({
@@ -166,9 +168,12 @@ export async function registerPerms(client: RavenClient, guild: Guild): Promise<
             });
         }
 
-        await interaction.permissions.set({ permissions: permList }).catch(() => console.log("permission set fail".red));
+        promises.push(interaction.permissions.set({ permissions: permList }).catch(() => console.log("permission set fail".red)));
 
     }
+
+    await Promise.all(promises);
+
 
     console.log(`Successfully registered application perms. guild: ${guild.id} - ${guild.name}`.green);
 }

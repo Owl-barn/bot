@@ -1,4 +1,4 @@
-import { Interaction, InteractionReplyOptions } from "discord.js";
+import { Interaction, InteractionReplyOptions, PermissionString } from "discord.js";
 import { Argument } from "./argument";
 import { CommandGroup } from "./commandGroup";
 import RavenInteraction from "./interaction";
@@ -19,7 +19,7 @@ export abstract class Command {
 
     public args?: Argument[];
 
-    public permissions?: Permissions;
+    public permissions?: PermissionString[];
 
     public throttling!: Throttling;
 
@@ -40,7 +40,7 @@ export interface CommandInfo {
 
     args?: Argument[];
 
-    permissions?: Permissions;
+    permissions?: PermissionString[];
 
     throttling: Throttling;
 

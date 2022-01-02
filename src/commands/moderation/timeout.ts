@@ -54,6 +54,7 @@ module.exports = class extends Command {
                 },
             ],
 
+            permissions: ["MODERATE_MEMBERS"],
             throttling: {
                 duration: 30,
                 usages: 3,
@@ -72,23 +73,26 @@ module.exports = class extends Command {
         const embed = new MessageEmbed()
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
-        const errorEmbed = new MessageEmbed()
+        const failEmbed = new MessageEmbed()
             .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
         if (command === "clear") {
-            if (!target.communicationDisabledUntil) return { ephemeral: true, content: "This user isnt timed out." };
+            if (!target.communicationDisabledUntil) return {
+                ephemeral: true,
+                embeds: [failEmbed.setDescription("This user isnt timed out.")],
+            };
             await target.timeout(null);
 
             return { embeds: [embed.setDescription(`${target}'s timeout has been cleared`)] };
         }
 
         const duration = Util.escapeMarkdown(msg.options.getString("duration", true)).trim();
-        if (!target.moderatable) return { embeds: [errorEmbed.setDescription("I cant timeout that user")] };
+        if (!target.moderatable) return { embeds: [failEmbed.setDescription("I cant time-out that user")] };
 
         const match = Array.from(duration.matchAll(durationCheck));
         let { days, hours, minutes } = match[0].groups as unknown as TimeInput;
 
-        if (!days && !hours && !minutes) return { ephemeral: true, content: "Couldnt determine duration" };
+        if (!days && !hours && !minutes) return { ephemeral: true, embeds: [embed.setDescription("Couldnt determine duration")] };
         days = Number(days);
         hours = Number(hours);
         minutes = Number(minutes);
@@ -99,7 +103,7 @@ module.exports = class extends Command {
         durationMs += hours ? Number(hours) * 60 * 60 * 1000 : 0;
         durationMs += minutes ? Number(minutes) * 60 * 1000 : 0;
 
-        if (durationMs < 10 * 1000) return { ephemeral: true, content: "Invalid input" };
+        if (durationMs < 10 * 1000) durationMs = 60 * 1000;
 
         if (durationMs > timeoutLimit) durationMs = timeoutLimit;
 

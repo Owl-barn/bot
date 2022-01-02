@@ -87,15 +87,15 @@ module.exports = class extends Command {
 
         switch (subCommand) {
             case "set":
-                return birthdaySet(msg);
+                return await birthdaySet(msg);
             case "get":
-                return birthdayGet(msg);
+                return await birthdayGet(msg);
             case "difference":
-                return birthdayDifference(msg);
+                return await birthdayDifference(msg);
             case "sync":
-                return birthdaySync(msg);
+                return await birthdaySync(msg);
             case "remove":
-                return birthdayRemove(msg);
+                return await birthdayRemove(msg);
             default:
                 throw "no subcommand!??";
         }

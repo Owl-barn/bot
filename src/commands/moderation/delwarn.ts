@@ -1,4 +1,4 @@
-import { InteractionReplyOptions, MessageEmbed, User } from "discord.js";
+import { HexColorString, InteractionReplyOptions, MessageEmbed } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -38,11 +38,14 @@ export default class extends Command {
     async execute(msg: RavenInteraction): Promise<InteractionReplyOptions> {
         const db = msg.client.db;
 
-        const index = msg.options.get("index")?.value as number;
-        const target = msg.options.get("user")?.user as User;
+        const index = msg.options.getInteger("index", true);
+        const target = msg.options.getUser("user", true);
+
+        const failEmbed = new MessageEmbed()
+            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
 
-        if (index < 1) { return { content: "Invalid index" }; }
+        if (index < 1) return { embeds: [failEmbed.setDescription("Invalid index")] };
 
         const query = await db.warnings.findFirst({
             where: {
@@ -53,13 +56,13 @@ export default class extends Command {
             skip: index - 1,
         });
 
-        if (query === null) return { content: "Out of bounds." };
+        if (query === null) return { embeds: [failEmbed.setDescription("Out of bounds.")] };
 
         await db.warnings.delete({ where: { uuid: query.uuid } });
 
         const embed = new MessageEmbed()
             .setAuthor(`${target.username}#${target.discriminator}'s ${index}${index > 1 ? "nd" : "st"} warning was removed`)
-            .setColor(5362138);
+            .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed] };
     }

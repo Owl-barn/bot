@@ -11,7 +11,14 @@ export default class Bot {
 
 
     constructor() {
-        this.client = new RavenClient({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES], allowedMentions: { parse: ["users"] } });
+        this.client = new RavenClient({
+            intents: [
+                Intents.FLAGS.GUILDS,
+                Intents.FLAGS.GUILD_MESSAGES,
+                Intents.FLAGS.GUILD_VOICE_STATES,
+            ], allowedMentions: { parse: ["users"] },
+        });
+
         this.client.musicService = new Map<Snowflake, musicService>();
 
         this.initializeEvents();
@@ -27,7 +34,8 @@ export default class Bot {
     }
 
     private async initializeCommands() {
-        this.client.commands = await registerCommands().catch((e) => { throw ` x Couldnt load commands \n ${e}`.red.bold; });
+        this.client.commands = await registerCommands()
+            .catch((e) => { throw ` x Couldnt load commands \n ${e}`.red.bold; });
     }
 
     private initializeDB() {

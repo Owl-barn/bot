@@ -1,4 +1,4 @@
-import { HexColorString, InteractionReplyOptions, MessageEmbed, User } from "discord.js";
+import { HexColorString, InteractionReplyOptions, MessageEmbed } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -32,7 +32,7 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<InteractionReplyOptions> {
         const db = msg.client.db;
 
-        const target = msg.options.getUser("user") as User;
+        const target = msg.options.getUser("user", true);
 
         const warnings = await db.warnings.findMany({
             where: {

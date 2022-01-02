@@ -1,5 +1,5 @@
 import { permissions_type } from "@prisma/client";
-import { GuildMember, Role } from "discord.js";
+import { GuildMember, HexColorString, MessageEmbed, Role } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -51,7 +51,7 @@ module.exports = class extends Command {
                     subCommands: [
                         {
                             type: argumentType.subCommand,
-                            name: "add",
+                            name: "set",
                             description: "Add user/role to command.",
                             subCommands: [
                                 {
@@ -80,6 +80,11 @@ module.exports = class extends Command {
                                 },
                             ],
                         },
+                        {
+                            type: argumentType.subCommand,
+                            name: "list",
+                            description: "See current permission overrides.",
+                        },
                     ],
                 },
             ],
@@ -100,13 +105,36 @@ module.exports = class extends Command {
                 if (command === "set") return await configBirthdaySet(msg);
                 else return await configBirthdayReset(msg);
             case "permissions":
-                return await permissionsAdd(msg);
+                if (command === "set") return await permissionsAdd(msg);
+                else return await permissionList(msg);
             default:
                 break;
         }
         return { content: "a" };
     }
 };
+
+async function permissionList(msg: RavenInteraction): Promise<returnMessage> {
+    if (!msg.guildId) throw "No guildID???";
+    const client = msg.client;
+
+    const permissions = await client.db.permissions.findMany({ where: { guild_id: msg.guildId }, orderBy: { command: "asc" } });
+
+    let result = "";
+
+    for (const perm of permissions) {
+        result += ` - ${perm.permission ? "✅" : "❎"} ${perm.command} <@${perm.type === "ROLE" ? "&" : ""}${perm.target}>\n`;
+    }
+
+
+    if (result.length === 0) result = "No command overrides";
+
+    const embed = new MessageEmbed()
+        .setDescription(result)
+        .setColor(process.env.EMBED_COLOR as HexColorString);
+
+    return { embeds: [embed] };
+}
 
 async function permissionsAdd(msg: RavenInteraction): Promise<returnMessage> {
     if (!msg.guildId) throw "No guildID???";
@@ -116,7 +144,9 @@ async function permissionsAdd(msg: RavenInteraction): Promise<returnMessage> {
     const role = msg.options.getRole("role") as Role | undefined;
     const user = msg.options.getMember("user") as GuildMember | undefined;
 
-    if (!((!role && user) || (role && !user))) return { content: "Please give either a user or role" };
+    const failEmbed = new MessageEmbed().setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+
+    if (!((!role && user) || (role && !user))) return { embeds: [failEmbed.setDescription("Please give either a user or role.")] };
 
     const type = role ? permissions_type.ROLE : permissions_type.USER;
     const target = role || user;
@@ -124,50 +154,37 @@ async function permissionsAdd(msg: RavenInteraction): Promise<returnMessage> {
 
     const command = client.commands.get(commandName);
     if (!command || (command.group === CommandGroup.owner && msg.user.id !== process.env.OWNER_ID)) {
-        return { content: "Command not found" };
+        return { embeds: [failEmbed.setDescription("Command not found")] };
     }
 
-    const ruleExists = await client.db.permissions.findFirst({
+    const guild = await client.db.guilds.findUnique({ where: { guild_id: msg.guildId } });
+
+    if (!guild?.premium && command.premium) {
+        return { embeds: [failEmbed.setDescription("Please buy ravenbot premium first.")] };
+    }
+
+    const query = await client.db.permissions.upsert({
+        update: { permission: allow },
         where: {
+            target_command_guild_id: {
+                guild_id: msg.guildId,
+                target: targetID,
+                command: commandName,
+            },
+        },
+        create: {
             guild_id: msg.guildId,
             target: targetID,
             command: commandName,
             type,
+            permission: allow,
         },
     });
 
-    if (ruleExists) {
-        await client.db.permissions.upsert({
-            create: {
-                guild_id: msg.guildId,
-                target: targetID,
-                command: commandName,
-                type,
-                permission: allow,
-            },
-            update: {
-                permission: allow,
-            },
-            where: {
-                uuid: ruleExists?.uuid,
-            },
-        });
-    } else {
-        await client.db.permissions.create({
-            data: {
-                guild_id: msg.guildId,
-                target: targetID,
-                command: commandName,
-                type,
-                permission: allow,
-            },
-        });
-    }
-
     const interactions = await msg.guild?.commands.fetch();
-    if (!interactions) return { content: "couldnt find command?" };
-    const interaction = interactions.find((x) => x.name === commandName);
-    if (!interaction) return { content: "couldnt find command?" };
+    if (!interactions) return { embeds: [failEmbed.setDescription("couldnt find command?")] };
+    const interaction = interactions.find((x) => x.name === query.command);
+    if (!interaction) return { embeds: [failEmbed.setDescription("couldnt find command?")] };
     const permissions = [{
         id: targetID,
         type: type,
@@ -176,5 +193,10 @@ async function permissionsAdd(msg: RavenInteraction): Promise<returnMessage> {
 
     await interaction?.permissions.add({ permissions });
 
-    return { content: "updated!" };
+
+    const embed = new MessageEmbed()
+        .setDescription(`${target} ${allow ? "can now use" : "can no longer use"} \`${query.command}\``)
+        .setColor(process.env.EMBED_COLOR as HexColorString);
+
+    return { embeds: [embed] };
 }

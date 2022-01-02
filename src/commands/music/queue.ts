@@ -27,8 +27,11 @@ module.exports = class extends Command {
         const member = msg.member as GuildMember;
         const scaleSize = 20;
 
+        const failEmbed = new MessageEmbed()
+            .setColor(process.env.EMBED_COLOR as HexColorString);
+
         const subscription = msg.client.musicService.get(member.guild.id);
-        if (!subscription) return { ephemeral: true, content: "Nothing is playing" };
+        if (!subscription) return { embeds: [failEmbed.setDescription("Nothing is playing right now.")] };
 
         const current = subscription.getCurrent();
 

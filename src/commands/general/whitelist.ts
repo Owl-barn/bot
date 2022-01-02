@@ -1,4 +1,4 @@
-import { GuildMember } from "discord.js";
+import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
@@ -32,11 +32,15 @@ module.exports = class extends Command {
     }
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const db = msg.client.db;
-        let username = msg.options.getString("mc_name");
-
-        if (!username) throw "Invalid name";
+        let username = msg.options.getString("mc_name", true);
 
         await msg.deferReply();
+
+        const embed = new MessageEmbed()
+            .setColor(process.env.EMBED_COLOR as HexColorString);
+
+        const failEmbed = new MessageEmbed()
+            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
         username = username.trim().substr(0, 64);
         const author = msg.member as GuildMember;
@@ -45,26 +49,26 @@ module.exports = class extends Command {
         const rconGuild = await msg.client.db.rcon.findFirst({ where: { guild_id: author.guild.id } });
 
         // Check if connected server.
-        if (rconGuild === null) return { ephemeral: true, content: "No minecraft server connected to this guild." };
+        if (rconGuild === null) return { embeds: [failEmbed.setDescription("No minecraft server connected to this guild.")] };
 
         // Get UUID
         let uuid = await getMcUUID(username);
 
         // Check if exists.
-        if (!uuid) return { ephemeral: true, content: "mc account doesn't exist" };
+        if (!uuid) return { embeds: [failEmbed.setDescription("mc account doesn't exist")] };
         uuid = uuid as string;
 
         // Check if already registered.
         const userExists = await db.whitelist.findFirst({ where: { OR: [{ user_id: author.id }, { mc_uuid: uuid }] } });
 
         // Check if already in db.
-        if (userExists !== null) return { ephemeral: true, content: "You already have an account linked." };
+        if (userExists !== null) return { embeds: [failEmbed.setDescription("You already have an account linked.")] };
 
         // Execute command.
         const response = await RCONHandler(`whitelist add ${username}`, { host: rconGuild.host, port: rconGuild.port, password: rconGuild.password });
 
         // If already whitelisted.
-        if (response.code !== "SUCCESS") return { ephemeral: true, content: response.message };
+        if (response.code !== "SUCCESS") return { embeds: [failEmbed.setDescription(response.message)] };
 
         // Add to db.
         await db.whitelist.create({ data: { user_id: author.id, mc_uuid: uuid, guild_id: author.guild.id } });
@@ -76,6 +80,6 @@ module.exports = class extends Command {
         author.setNickname(username);
 
         // Respond.
-        return { content: "You've been whitelisted!" };
+        return { embeds: [embed.setDescription("You've been whitelisted!")] };
     }
 };

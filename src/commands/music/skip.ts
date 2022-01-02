@@ -1,4 +1,4 @@
-import { GuildMember, MessageActionRow, MessageButton, MessageComponentInteraction } from "discord.js";
+import { GuildMember, HexColorString, MessageActionRow, MessageButton, MessageComponentInteraction, MessageEmbed } from "discord.js";
 import { isDJ } from "../../lib/functions.service";
 import musicService from "../../modules/music.service";
 import { argumentType } from "../../types/argument";
@@ -48,28 +48,31 @@ module.exports = class extends Command {
 
         const dj = isDJ(member);
 
-        if (vc === null) return { ephemeral: true, content: "Join a voicechannel first." };
+        const failEmbed = new MessageEmbed()
+            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+
+        if (vc === null) return { embeds: [failEmbed.setDescription("Join a voicechannel first.")] };
 
         const subscription = msg.client.musicService.get(member.guild.id);
 
         const currentSong = subscription?.getCurrent();
 
-        if (!subscription || subscription.destroyed || !currentSong) return { ephemeral: true, content: "No music is playing" };
+        if (!subscription || subscription.destroyed || !currentSong) return { embeds: [failEmbed.setDescription("No music is playing")] };
 
         const voteLock = subscription.getVoteLock();
 
         const isRequester = currentSong.user.id == msg.user.id;
 
-        if (voteLock && !(dj || isRequester)) return { ephemeral: true, content: "Vote already in progress." };
+        if (voteLock && !(dj || isRequester)) return { embeds: [failEmbed.setDescription("Vote already in progress.")] };
 
         if (index) {
             const queue = subscription.getQueue();
-            if (queue.length <= index - 1) return { ephemeral: true, content: "Out of range." };
+            if (queue.length <= index - 1) return { embeds: [failEmbed.setDescription("Out of range.")] };
             if (queue[index - 1].user.id === msg.user.id || (dj && force)) {
                 return this.skip(subscription, index);
             }
 
-            return { ephemeral: true, content: "Can't index skip a song you didnt add." };
+            return { embeds: [failEmbed.setDescription("Can't index skip a song you didnt add.")] };
         }
 
         if ((dj && force) || vc.members.size <= 3 || isRequester) return this.skip(subscription);
@@ -83,7 +86,12 @@ module.exports = class extends Command {
                     .setStyle("PRIMARY"),
             );
 
-        return { content: `0/${Math.ceil((vc.members.size - 1) / 2)}`, components: [component], callback: this.callback };
+
+        const embed = new MessageEmbed()
+            .setDescription(`0/${Math.ceil((vc.members.size - 1) / 2)}`)
+            .setColor(process.env.EMBED_COLOR as HexColorString);
+
+        return { embeds: [embed], components: [component], callback: this.callback };
     }
 
     public callback = async (interaction: RavenInteraction) => {
@@ -106,16 +114,25 @@ module.exports = class extends Command {
             try {
                 if (x.customId !== "vote") return;
 
-                if (song !== subscription.getVoteLock()) return x.update({ content: "song ended", components: [] });
+                const failEmbed = new MessageEmbed()
+                    .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+
+                if (song !== subscription.getVoteLock()) {
+                    return x.update({ embeds: [failEmbed.setDescription("song ended")], components: [] });
+                }
 
 
                 // Check if didnt vote yet.
-                if (voted.some(y => y === x.user.id)) return x.reply({ ephemeral: true, content: "You already voted" });
+                if (voted.some(y => y === x.user.id)) {
+                    return x.reply({ embeds: [failEmbed.setDescription("You already voted")], ephemeral: true });
+                }
 
 
                 // Check if in vc.
                 const vc = (x.member as GuildMember).voice.channel;
-                if (!vc || !vc.members.some(y => y.id == x.client.user?.id)) return x.reply({ ephemeral: true, content: "You arent in vc." });
+                if (!vc || !vc.members.some(y => y.id == x.client.user?.id)) {
+                    return x.reply({ embeds: [failEmbed.setDescription("You arent in vc.")], ephemeral: true });
+                }
 
 
                 voted.push(x.user.id);
@@ -133,7 +150,7 @@ module.exports = class extends Command {
                     return;
                 }
 
-                x.update({ content: `${current} /${half}` }).catch(console.error);
+                x.update({ embeds: [failEmbed.setDescription(`${current} /${half}`)] }).catch(console.error);
             } catch (e) {
                 console.error(e);
             }
@@ -147,11 +164,21 @@ module.exports = class extends Command {
     }
 
     private skip = (subscription: musicService, index?: number | null): returnMessage => {
+
+
+        const failEmbed = new MessageEmbed()
+            .setDescription(`Out of range`)
+            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+
         const queue = subscription.getQueue();
         if (!index) subscription.player.stop();
-        else if (index > queue.length) return { content: `Out of range` };
+        else if (index > queue.length) return { embeds: [failEmbed] };
         else subscription.skipIndex(index);
 
-        return { content: `Song skipped!`, components: [] };
+        const embed = new MessageEmbed()
+            .setDescription("Song skipped!")
+            .setColor(process.env.EMBED_COLOR as HexColorString);
+
+        return { embeds: [embed], components: [] };
     }
 };

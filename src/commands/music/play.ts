@@ -48,17 +48,20 @@ module.exports = class extends Command {
         const vc = member.voice.channel;
         const client = msg.client as RavenClient;
 
-        const searchQuery = msg.options.getString("song") as string;
+        const searchQuery = msg.options.getString("song", true);
         const force = msg.options.getBoolean("force");
 
         let subscription = client.musicService.get(member.guild.id);
         if (subscription && subscription.destroyed) subscription = undefined;
         const dj = isDJ(member);
 
-        if (vc === null && !(dj && subscription)) { return { content: "Join a voicechannel first." }; }
+        const failEmbed = new MessageEmbed()
+            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+
+        if (vc === null && !(dj && subscription)) { return { embeds: [failEmbed.setDescription("Join a voicechannel first.")] }; }
 
         if (subscription && vc?.id !== subscription.voiceConnection.joinConfig.channelId && !(dj && force)) {
-            return { content: "Join the same vc as the bot first." };
+            return { embeds: [failEmbed.setDescription("Join the same vc as the bot first.")] };
         }
 
         let searchResult: play.YouTubeVideo;
@@ -69,20 +72,20 @@ module.exports = class extends Command {
             searchResult = (await play.search(searchQuery, { source: { youtube: "video" }, limit: 1, fuzzy: true }))[0];
         }
 
-        if (!searchResult) return { content: "no searchresults found" };
+        if (!searchResult) return { embeds: [failEmbed.setDescription("no searchresults found")] };
 
         const song = new Song(searchResult, msg.user);
 
         if (!song) throw "no song object";
 
-        if (song.duration.seconds > 3600 && !dj) return { content: "Cant play songs that are over an hour long." };
+        if (song.duration.seconds > 3600 && !dj) return { embeds: [failEmbed.setDescription("Cant play songs that are over an hour long.")] };
 
         if (subscription && subscription.voiceConnection.state.status === VoiceConnectionStatus.Destroyed) subscription = undefined;
 
         if (!subscription) {
 
             if (!vc) throw `no vc in play command, unforseen logic error?, ${member.id}`;
-            if (!vc.joinable) return { content: "I cant join that vc" };
+            if (!vc.joinable) return { embeds: [failEmbed.setDescription("I cant join that vc")] };
 
             const connection = joinVoiceChannel({
                 channelId: vc.id,
@@ -101,7 +104,7 @@ module.exports = class extends Command {
         } catch (e) {
             console.warn(e);
             subscription.stop();
-            return { content: "Failed to join vc" };
+            return { embeds: [failEmbed.setDescription("Failed to join vc")] };
         }
 
         subscription.addToQueue(song);
@@ -111,7 +114,7 @@ module.exports = class extends Command {
         const embed = new MessageEmbed()
             .setThumbnail(song.thumbnail)
             .setTitle(queueLength < 1 ? `Now playing` : "Song queued")
-            .setDescription(`[${Util.escapeMarkdown(song.title).replace("[", "").replace("]", "")}](${song.url})
+            .setDescription(`[${Util.escapeMarkdown(song.title).replace(/[()[\]]/g, "")}](${song.url})
             ${queueLength < 1 ? "" : `*Time untill play: ${moment().startOf("day").seconds(subscription.queueLength() - song.duration.seconds).format("H:mm:ss")}*`}`)
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
