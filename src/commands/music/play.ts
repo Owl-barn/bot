@@ -110,13 +110,20 @@ module.exports = class extends Command {
         subscription.addToQueue(song);
 
         const queueLength = subscription.getQueue().length;
+        const songLength = moment().startOf("day").seconds(song.duration.seconds).format("H:mm:ss");
 
         const embed = new MessageEmbed()
             .setThumbnail(song.thumbnail)
-            .setTitle(queueLength < 1 ? `Now playing` : "Song queued")
-            .setDescription(`[${Util.escapeMarkdown(song.title).replace(/[()[\]]/g, "")}](${song.url})
-            ${queueLength < 1 ? "" : `*Time untill play: ${moment().startOf("day").seconds(subscription.queueLength() - song.duration.seconds).format("H:mm:ss")}*`}`)
+            .setAuthor({ name: queueLength < 1 ? `Now playing` : "Song queued" })
+            .setDescription(`**[${Util.escapeMarkdown(song.title).replace(/[()[\]]/g, "").substring(0, 48)}](${song.url})**`)
+            .addField("Channel", `*[${Util.escapeMarkdown(song.artist.name).replace(/[()[\]]/g, "")}](${song.artist.url})*`, true)
+            .addField("Song Duration", `*${songLength}*`, true)
+            .addField("Queue Position", `*${queueLength !== 0 ? queueLength : "Currently playing"}*`, true)
             .setColor(process.env.EMBED_COLOR as HexColorString);
+
+        if (queueLength !== 0) {
+            embed.addField("Time untill play", `*${moment().startOf("day").seconds(subscription.queueLength() - song.duration.seconds).format("H:mm:ss")}*`, true);
+        }
 
         return { embeds: [embed] };
     }

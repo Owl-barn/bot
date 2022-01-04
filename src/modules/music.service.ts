@@ -110,6 +110,7 @@ export default class musicService {
     }
 
     public startStopTimer(): void {
+        console.log(`music ended in ${this.voiceConnection.joinConfig.guildId}`);
         this.timeout = setTimeout(() => this.stop(), 180000);
     }
 

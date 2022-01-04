@@ -7,7 +7,7 @@ export default class Song {
     public title: string;
     public url: string;
     public duration: SongDuration;
-    public artist: string;
+    public artist: Artist;
     public thumbnail: string;
 
     public user: User
@@ -23,7 +23,10 @@ export default class Song {
             seconds: input.durationInSec,
             text: moment().startOf("day").seconds(input.durationInSec).format("H:mm:ss"),
         };
-        this.artist = Util.escapeMarkdown(input.channel?.name as string);
+        this.artist = {
+            name: Util.escapeMarkdown(input.channel?.name as string),
+            url: input.channel?.url || "",
+        };
         this.thumbnail = input.thumbnail?.url as string;
 
         this.user = user;
@@ -38,5 +41,10 @@ export default class Song {
 
 export interface SongDuration {
     seconds: number;
-    text: string
+    text: string;
+}
+
+export interface Artist {
+    name: string;
+    url: string;
 }
