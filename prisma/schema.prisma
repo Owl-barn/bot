@@ -12,6 +12,7 @@ model guilds {
   guild_id    String   @id @db.Char(18)
   birthday_id String?  @db.Char(18)
   premium     Boolean  @default(false) @db.Boolean
+  dev         Boolean  @default(false) @db.Boolean
 
   logs           logs[]
   command_logs   command_log[]

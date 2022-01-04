@@ -117,6 +117,9 @@ module.exports = class extends Command {
                 const failEmbed = new MessageEmbed()
                     .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
+                const embed = new MessageEmbed()
+                    .setColor(process.env.EMBED_COLOR as HexColorString);
+
                 if (song !== subscription.getVoteLock()) {
                     return x.update({ embeds: [failEmbed.setDescription("song ended")], components: [] });
                 }
@@ -138,7 +141,7 @@ module.exports = class extends Command {
                 voted.push(x.user.id);
 
                 // Get numbers.
-                const current = Number(x.message.content.split("/")[0]) + 1;
+                const current = Number((x.message.embeds[0].description as string).split("/")[0]) + 1;
                 const max = (x.member as GuildMember).voice.channel?.members.size as number - 1;
                 const half = Math.ceil(max / 2);
 
@@ -150,7 +153,7 @@ module.exports = class extends Command {
                     return;
                 }
 
-                x.update({ embeds: [failEmbed.setDescription(`${current} /${half}`)] }).catch(console.error);
+                x.update({ embeds: [embed.setDescription(`${current} /${half}`)] }).catch(console.error);
             } catch (e) {
                 console.error(e);
             }

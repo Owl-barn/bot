@@ -26,9 +26,9 @@ class logServiceClass {
         const commandName = subCommand ? `${interaction.commandName}_${subCommand}` : interaction.commandName;
 
         const query: Prisma.command_logUncheckedCreateInput = {
-            user: interaction.member.user.id,
+            user: interaction.user.id,
             command_name: commandName,
-            guild_id: interaction.guildId,
+            guild_id: interaction.guildId || "000000000000000000",
             channel_id: interaction.channelId,
             hidden,
         };

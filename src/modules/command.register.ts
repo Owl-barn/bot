@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
-import { ApplicationCommandPermissionData, Guild } from "discord.js";
+import { ClientUser, Guild, GuildApplicationCommandPermissionData } from "discord.js";
 import { Argument, argumentType } from "../types/argument";
 import { SlashCommandOptionBase } from "@discordjs/builders/dist/interactions/slashCommands/mixins/CommandOptionBase";
 import RavenClient from "../types/ravenClient";
@@ -94,7 +94,7 @@ export default async function registerCommand(client: RavenClient, guild: Guild)
     if (!botGuild) botGuild = await client.db.guilds.create({ data: { guild_id: guild.id } });
 
     for (const command of commands.values()) {
-        if (command.group === CommandGroup.owner) continue;
+        if (command.group === CommandGroup.owner && !botGuild.dev) continue;
         let permission = true;
 
         let builder = new SlashCommandBuilder()
@@ -124,7 +124,7 @@ export default async function registerCommand(client: RavenClient, guild: Guild)
 
     const rest = new REST({ version: "9" }).setToken(process.env.DISCORD_TOKEN as string);
 
-    await rest.put(Routes.applicationGuildCommands(client.user!.id, guild.id), { body: commandJson })
+    await rest.put(Routes.applicationGuildCommands((client.user as ClientUser).id, guild.id), { body: commandJson })
         .then(() => console.log(`Successfully registered application commands. guild: ${guild.id} - ${guild.name}`.green))
         .catch(() => console.error);
 }
@@ -148,32 +148,33 @@ export async function registerPerms(client: RavenClient, guild: Guild): Promise<
 
     const interactions = await guild.commands.fetch();
 
-    const promises: Promise<any>[] = [];
+    const guildPerms: GuildApplicationCommandPermissionData[] = [];
 
     for (const interaction of interactions.values()) {
         const command = commands.get(interaction.name);
         const permissions = dbPerms.filter((x) => x.command === command?.name);
-        const permList: ApplicationCommandPermissionData[] = [];
+        const commandPerms: GuildApplicationCommandPermissionData = {
+            id: interaction.id,
+            permissions: [],
+        };
 
         if (interaction.defaultPermission) continue;
 
-        permList.push(botOwner);
-        if (command?.group !== "owner" || (command.premium && !botGuild.premium)) permList.push(serverOwner);
+        commandPerms.permissions.push(botOwner);
+        if (command?.group !== "owner" || (command.premium && !botGuild.premium)) commandPerms.permissions.push(serverOwner);
 
         for (const perm of permissions) {
-            permList.push({
+            commandPerms.permissions.push({
                 id: perm.target,
                 type: perm.type === permissions_type.ROLE ? ApplicationCommandPermissionTypes.ROLE : ApplicationCommandPermissionTypes.USER,
                 permission: perm.permission,
             });
         }
 
-        promises.push(interaction.permissions.set({ permissions: permList }).catch(() => console.log("permission set fail".red)));
-
+        guildPerms.push(commandPerms);
     }
 
-    await Promise.all(promises);
-
+    await guild.commands.permissions.set({ fullPermissions: guildPerms }).catch((e) => console.log(e));
 
     console.log(`Successfully registered application perms. guild: ${guild.id} - ${guild.name}`.green);
 }

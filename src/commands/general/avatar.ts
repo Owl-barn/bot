@@ -38,15 +38,13 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
 
         const settings: ImageURLOptions = { dynamic: true, size: 4096 };
-        const user = msg.options.getMember("user") as GuildMember | undefined;
+        const user = msg.options.getMember("user") as GuildMember | null;
         const global = msg.options.getBoolean("global");
-
-        const member = user !== undefined ? user : msg.member as GuildMember;
-
+        const member = user || msg.member as GuildMember;
         let avatar;
 
         if (global) avatar = member.user.avatarURL(settings);
-        else avatar = member.avatarURL(settings) || member.user.avatarURL(settings);
+        else avatar = member?.avatarURL(settings) || member.user.avatarURL(settings);
 
         if (!avatar) throw "no avatar??";
 

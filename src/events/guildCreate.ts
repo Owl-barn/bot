@@ -12,19 +12,19 @@ export default class implements RavenEvent {
             if (!guild) throw "failed to register guild";
 
             const db = (guild.client as RavenClient).db;
-            await db.guilds.create({ data: { guild_id: guild.id } });
+            await db.guilds.createMany({ data: { guild_id: guild.id }, skipDuplicates: true });
             console.log(`Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.red.bold);
             const channel = guild.systemChannel;
 
-            registerCommand(guild.client as RavenClient, guild);
-            registerPerms(guild.client as RavenClient, guild);
+            await registerCommand(guild.client as RavenClient, guild);
+            await registerPerms(guild.client as RavenClient, guild);
 
             if (!channel) return;
 
             const embed = new MessageEmbed()
                 .setTitle("Thank you!")
-                .setDescription("thank you for inviting me! the bot is currently still under development. and its not sustainable to make this bot free and public yet")
-                .addField("How do get access to the bot?", `Right now the only way is to subscribe to my ko-fi, if you have any questions please dm me! <@${process.env.OWNER_ID}>`)
+                .setDescription("thank you for inviting me! the server owner can configure the commands with /config")
+                .addField("How do i play music?", `Right now the only way is to get a subscription, for more info and questions please [join the discord!](https://discord.gg/CD5xsWNbmU)`)
                 .setThumbnail(guild.client.user?.avatarURL() || "")
                 .setTimestamp()
                 .setColor(process.env.EMBED_COLOR as HexColorString);
@@ -33,9 +33,13 @@ export default class implements RavenEvent {
             const component = new MessageActionRow()
                 .addComponents(
                     new MessageButton()
-                        .setLabel("Donate")
+                        .setLabel("Donation")
                         .setStyle("LINK")
                         .setURL("https://ko-fi.com/owlive"),
+                    new MessageButton()
+                        .setLabel("Discord")
+                        .setStyle("LINK")
+                        .setURL("https://discord.gg/CD5xsWNbmU"),
                 );
 
             await channel.send({ embeds: [embed], components: [component] }).catch(() => console.log("Couldnt send message in new server."));

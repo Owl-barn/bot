@@ -10,7 +10,7 @@ module.exports = class statsCommand extends Command {
         super({
             name: "stats",
             description: "shows bot stats",
-            group: CommandGroup.owner,
+            group: CommandGroup.moderation,
 
             guildOnly: false,
             adminOnly: true,
