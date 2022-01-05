@@ -1,5 +1,7 @@
 import { AudioPlayer, VoiceConnection, createAudioPlayer, VoiceConnectionStatus, AudioPlayerStatus, AudioPlayerState, entersState } from "@discordjs/voice";
+import { MessageEmbed, HexColorString } from "discord.js";
 import prisma from "../lib/db.service";
+import { returnMessage } from "../types/Command";
 import Song from "../types/song";
 
 export default class musicService {
@@ -7,7 +9,8 @@ export default class musicService {
     public readonly voiceConnection: VoiceConnection;
     private queue: Song[];
     private queueLock = false;
-    private voteLock = ""
+    private voteLock = "";
+    private voted: string[] = [];
     private current: Song | null;
     private timeout: NodeJS.Timeout;
     public destroyed = false;
@@ -61,6 +64,71 @@ export default class musicService {
         }
     }
 
+    public getCurrent = (): Song | null => {
+        return this.current;
+    }
+
+    public stop(): void {
+        this.queue = [];
+        this.player.stop(true);
+        if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
+
+        this.destroyed = true;
+    }
+
+    // VOTE SKIP
+
+    public getVoteLock = (): string => {
+        return this.voteLock;
+    }
+
+    public setVoteLock = (data: string): void => {
+        this.voteLock = data;
+    }
+
+    public addVote = (user: string): string[] => {
+        this.voted.push(user);
+
+        return this.voted;
+    }
+
+    public getVotes = (): string[] => {
+        return this.voted;
+    }
+
+    public skip = (index?: number | null): returnMessage => {
+        const failEmbed = new MessageEmbed()
+            .setDescription(`Out of range`)
+            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+
+        const queue = this.getQueue();
+        if (!index) this.player.stop();
+        else if (index > queue.length) return { embeds: [failEmbed] };
+        else {
+            const skipped = this.queue.splice(index - 1, 1)[0];
+            this.logDuration(skipped, null);
+        }
+
+        const embed = new MessageEmbed()
+            .setDescription("Song skipped!")
+            .setColor(process.env.EMBED_COLOR as HexColorString);
+
+        return { embeds: [embed], components: [] };
+    }
+
+    // TIMING
+
+    public getPlaytime = (): number => {
+        return Math.floor(this.secondsPlayed + (Date.now() - this.lastpause) / 1000);
+    }
+
+    public queueLength = (): number => {
+        let queueLength = 0;
+        for (const song of this.queue) queueLength += song.duration.seconds;
+        const currentTime = this.getPlaytime();
+        return (this.current?.duration.seconds || 0 - currentTime) + queueLength;
+    }
+
     private logDuration = async (song: Song, played: number | null): Promise<void> => {
         await prisma.songs_played.create({
             data: {
@@ -72,54 +140,20 @@ export default class musicService {
         });
     }
 
-    public getCurrent = (): Song | null => {
-        return this.current;
-    }
-
-    public getVoteLock = (): string => {
-        return this.voteLock;
-    }
-
-    public setVoteLock = (data: string): void => {
-        this.voteLock = data;
-    }
-
-    public getQueue = (): Song[] => {
-        return this.queue;
-    }
-
-    public getPlaytime = (): number => {
-        return Math.floor(this.secondsPlayed + (Date.now() - this.lastpause) / 1000);
-    }
-
-    public addToQueue = (song: Song): void => {
-        this.queue.push(song);
-        void this.queueService();
-    }
-
-    public skipIndex = (index: number): void => {
-        const skipped = this.queue.splice(index - 1, 1)[0];
-        this.logDuration(skipped, null);
-    }
-
-    public queueLength = (): number => {
-        let queueLength = 0;
-        for (const song of this.queue) queueLength += song.duration.seconds;
-        const currentTime = this.getPlaytime();
-        return (this.current?.duration.seconds || 0 - currentTime) + queueLength;
-    }
-
     public startStopTimer(): void {
         console.log(`music ended in ${this.voiceConnection.joinConfig.guildId}`);
         this.timeout = setTimeout(() => this.stop(), 180000);
     }
 
-    public stop(): void {
-        this.queue = [];
-        this.player.stop(true);
-        if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
+    // QUEUE
 
-        this.destroyed = true;
+    public getQueue = (): Song[] => {
+        return this.queue;
+    }
+
+    public addToQueue = (song: Song): void => {
+        this.queue.push(song);
+        void this.queueService();
     }
 
     private queueService = async (): Promise<void> => {
@@ -152,6 +186,7 @@ export default class musicService {
             this.lastpause = Date.now();
             this.current = nextSong;
             this.voteLock = "";
+            this.voted = [];
             this.queueLock = false;
         } catch (e) {
             this.queueLock = false;
