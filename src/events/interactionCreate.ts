@@ -2,7 +2,7 @@ import logService from "../lib/logger.service";
 import throttleService from "../lib/throttle.service";
 import { returnMessage } from "../types/Command";
 import RavenEvent from "../types/event";
-import RavenInteraction from "../types/interaction";
+import RavenInteraction, { RavenButtonInteraction } from "../types/interaction";
 import RavenClient from "../types/ravenClient";
 
 export default class InteractionCreate implements RavenEvent {
@@ -11,26 +11,46 @@ export default class InteractionCreate implements RavenEvent {
     throttle = throttleService;
 
     async execute(interaction: RavenInteraction): Promise<void> {
-        if (!interaction.isCommand()) return;
+        if (interaction.isButton()) return await this.buttonEvent(interaction as RavenButtonInteraction);
+        if (interaction.isCommand()) return await this.commandEvent(interaction);
+    }
 
-        const client = interaction.client as RavenClient;
+    async commandEvent(msg: RavenInteraction): Promise<void> {
+        const client = msg.client as RavenClient;
 
-        const { commandName } = interaction;
+        const { commandName } = msg;
 
         const command = client.commands.get(commandName);
 
         if (!command) return;
 
-        if (command.adminOnly && interaction.user.id !== process.env.OWNER_ID) return;
+        if (command.adminOnly && msg.user.id !== process.env.OWNER_ID) return;
 
-        const isThrottled = this.throttle.isThrottled(interaction.guildId, interaction.user.id, command);
+        const isThrottled = this.throttle.isThrottled(msg.guildId || "e", msg.user.id, command);
 
         if (isThrottled) {
-            await interaction.reply({ ephemeral: true, content: `Throttled, try again in \`${isThrottled}\` seconds` }).catch(e => console.error(e));
+            await msg.reply({ ephemeral: true, content: `Throttled, try again in \`${isThrottled}\` seconds` }).catch(e => console.error(e));
             return;
         }
 
-        this.respond(interaction, command?.execute);
+        this.respond(msg, command?.execute);
+    }
+
+    async buttonEvent(msg: RavenButtonInteraction): Promise<void> {
+        const client = msg.client;
+
+        const command = client.buttons.get(msg.customId);
+
+        if (!command) return;
+
+        const response = await command.execute(msg)
+            .catch((e: Error) => {
+                console.log(e);
+                return { ephemeral: true, content: "An error occured." } as returnMessage;
+            });
+
+        if (!response || response.content?.length === 0) return;
+        await msg.reply(response).catch(e => console.error(e));
     }
 
     async respond(interaction: RavenInteraction, func: (message: RavenInteraction) => Promise<returnMessage | void>): Promise<void> {
@@ -39,7 +59,7 @@ export default class InteractionCreate implements RavenEvent {
 
         logService.logCommand(interaction, hidden);
 
-        this.throttle.addToThrottle(interaction.guildId, interaction.member.user.id, interaction.commandName);
+        this.throttle.addToThrottle(interaction.guildId || "e", interaction.user.id, interaction.commandName);
 
         const response = await func(interaction)
             .then((x) => {

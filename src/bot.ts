@@ -5,6 +5,7 @@ import eventInitializer from "./modules/event.initializer";
 import musicService from "./modules/music.service";
 import prisma from "./lib/db.service";
 import birthdayCron from "./lib/birthday.cron";
+import { registerButtons } from "./modules/button.initializer";
 
 export default class Bot {
     private client: RavenClient;
@@ -23,6 +24,7 @@ export default class Bot {
 
         this.initializeEvents();
         this.initializeCommands();
+        this.initializeButtons();
         this.initializeDB();
         birthdayCron.start();
 
@@ -36,6 +38,11 @@ export default class Bot {
     private async initializeCommands() {
         this.client.commands = await registerCommands()
             .catch((e) => { throw ` x Couldnt load commands \n ${e}`.red.bold; });
+    }
+
+    private async initializeButtons() {
+        this.client.buttons = await registerButtons()
+            .catch((e) => { throw ` x Couldnt load buttons \n ${e}`.red.bold; });
     }
 
     private initializeDB() {
