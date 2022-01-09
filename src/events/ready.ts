@@ -11,7 +11,7 @@ export default class ready implements RavenEvent {
         const usercount = client.guilds.cache.reduce(((x: number, y) => x + y.memberCount), 0);
         await client.user.setActivity(`for ${usercount} members`, {
             type: "STREAMING",
-            url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            url: "https://www.youtube.com/watch?v=VZrDxD0Za9I",
         });
 
         const guildList = client.guilds.cache.map(guild => ` - ID: ${guild.id.green}${` Owner: `.cyan}${guild.ownerId.green}${` Name: `.cyan}${guild.name.green}\n`.italic.cyan);

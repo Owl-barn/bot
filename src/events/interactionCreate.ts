@@ -11,8 +11,12 @@ export default class InteractionCreate implements RavenEvent {
     throttle = throttleService;
 
     async execute(interaction: RavenInteraction): Promise<void> {
-        if (interaction.isButton()) return await this.buttonEvent(interaction as RavenButtonInteraction);
-        if (interaction.isCommand()) return await this.commandEvent(interaction);
+        if (interaction.isButton()) {
+            return await this.buttonEvent(interaction as RavenButtonInteraction).catch(e => console.error(e));
+        }
+        if (interaction.isCommand()) {
+            return await this.commandEvent(interaction).catch(e => console.error(e));
+        }
     }
 
     async commandEvent(msg: RavenInteraction): Promise<void> {
@@ -39,7 +43,9 @@ export default class InteractionCreate implements RavenEvent {
     async buttonEvent(msg: RavenButtonInteraction): Promise<void> {
         const client = msg.client;
 
-        const command = client.buttons.get(msg.customId);
+        const commandName = msg.customId.split("_")[0];
+
+        const command = client.buttons.get(commandName);
 
         if (!command) return;
 
