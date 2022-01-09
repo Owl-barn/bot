@@ -7,15 +7,19 @@ import Song from "../types/song";
 export default class musicService {
     public readonly player: AudioPlayer;
     public readonly voiceConnection: VoiceConnection;
+
     private queue: Song[];
-    private queueLock = false;
-    private voteLock = "";
-    private voted: string[] = [];
     private current: Song | null;
-    private timeout: NodeJS.Timeout;
-    public destroyed = false;
+    private queueLock = false;
+
+    private currentVote: Vote | null = null;
+    private voted: string[] = [];
+
     private secondsPlayed = 0;
     private lastpause = 0;
+
+    private timeout: NodeJS.Timeout;
+    public destroyed = false;
 
     constructor(voiceConnection: VoiceConnection) {
         this.voiceConnection = voiceConnection;
@@ -78,12 +82,16 @@ export default class musicService {
 
     // VOTE SKIP
 
-    public getVoteLock = (): string => {
-        return this.voteLock;
+    public getVoteLock = (): Vote | null => {
+        return this.currentVote;
     }
 
-    public setVoteLock = (data: string): void => {
-        this.voteLock = data;
+    public setVoteLock = (): void => {
+        if (!this.current?.id) throw "No song playing";
+        this.currentVote = {
+            id: this.current.id,
+            start: Date.now(),
+        };
     }
 
     public addVote = (user: string): string[] => {
@@ -156,6 +164,12 @@ export default class musicService {
         void this.queueService();
     }
 
+    private reset = (): void => {
+        this.currentVote = null;
+        this.voted = [];
+        this.queueLock = false;
+    }
+
     private queueService = async (): Promise<void> => {
         if (this.queueLock || (this.player.state.status !== AudioPlayerStatus.Idle)) {
             return;
@@ -171,8 +185,8 @@ export default class musicService {
         }
 
         if (this.queue.length === 0) {
+            this.reset();
             this.current = null;
-            this.queueLock = false;
             this.startStopTimer();
             return;
         }
@@ -181,13 +195,11 @@ export default class musicService {
 
         const nextSong = this.queue.shift() as Song;
         try {
+            this.reset();
             const resource = await nextSong.getStream();
             this.player.play(resource);
             this.lastpause = Date.now();
             this.current = nextSong;
-            this.voteLock = "";
-            this.voted = [];
-            this.queueLock = false;
         } catch (e) {
             this.queueLock = false;
             console.error(e);
@@ -195,4 +207,9 @@ export default class musicService {
         }
 
     }
+}
+
+export interface Vote {
+    id: string;
+    start: number;
 }

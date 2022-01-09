@@ -4,6 +4,7 @@ import moment from "moment";
 import * as play from "play-dl";
 
 export default class Song {
+    public id: string;
     public title: string;
     public url: string;
     public duration: SongDuration;
@@ -17,7 +18,8 @@ export default class Song {
     public readonly onError: (error: Error) => void;
 
     constructor(input: play.YouTubeVideo, user: User) {
-        this.title = Util.escapeMarkdown(input.title || "couldnt load title");
+        this.id = `${Date.now()}`;
+        this.title = Util.escapeMarkdown((input.title || "couldnt load title").substring(0, 48).replace(/[()[\]]/g, ""));
         this.url = input.url;
         this.duration = {
             seconds: input.durationInSec,
@@ -31,6 +33,8 @@ export default class Song {
 
         this.user = user;
     }
+
+    private hashCode = (s: string) => s.split("").reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0)
 
     public getStream = async (): Promise<AudioResource<Song>> => {
         const source = await play.stream(this.url, { quality: 2 });

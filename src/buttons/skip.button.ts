@@ -9,14 +9,7 @@ export default class implements RavenButton {
 
     async execute(msg: RavenButtonInteraction): Promise<returnMessage> {
         if (!msg.guildId) throw "No guild";
-
-        const subscription = msg.client.musicService.get(msg.guildId);
-        if (!subscription) return { content: "No song is playing", ephemeral: true };
-
-        const song = subscription.getCurrent()?.url;
-        if (!song) return { content: "No song is playing", ephemeral: true };
-
-        subscription.setVoteLock(song);
+        const skipID = msg.customId.split("_")[1];
 
         const failEmbed = new MessageEmbed()
             .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
@@ -24,8 +17,17 @@ export default class implements RavenButton {
         const embed = new MessageEmbed()
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
-        if (song !== subscription.getVoteLock()) {
-            msg.update({ embeds: [failEmbed.setDescription("song ended")], components: [] });
+        const subscription = msg.client.musicService.get(msg.guildId);
+        const currentSong = subscription?.getCurrent();
+
+        if (!subscription || !currentSong?.id) {
+            return { content: "No song is playing", ephemeral: true };
+        }
+
+        const voteLock = subscription.getVoteLock();
+
+        if (skipID !== voteLock?.id) {
+            msg.update({ embeds: [failEmbed.setDescription("Song ended.")], components: [] });
 
             return { content: "" };
         }
@@ -58,7 +60,11 @@ export default class implements RavenButton {
             return { content: "" };
         }
 
-        msg.update({ embeds: [embed.setDescription(`${current}/${half}`)] }).catch(console.error);
+        embed
+            .addField("Song to skip", `*[${currentSong.title}](${currentSong.url})*`)
+            .setDescription(`${current}/${half}`);
+
+        msg.update({ embeds: [embed] }).catch(console.error);
 
         return { content: "" };
     }
