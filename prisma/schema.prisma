@@ -134,7 +134,10 @@ model self_role_roles {
   uuid      String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   main_uuid String @db.Uuid
   role_id   String @db.Char(18)
-  name      String @db.VarChar(32)
+
+  name        String  @db.VarChar(32)
+  emote       String  @db.VarChar(16)
+  description String @db.VarChar(128)
 
   self_role_main self_role_main @relation(fields: [main_uuid], references: [uuid], onDelete: Cascade, onUpdate: Restrict, map: "self_role_roles_FK")
 }
