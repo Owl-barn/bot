@@ -27,6 +27,11 @@ export default async function birthdayDifference(msg: RavenInteraction): Promise
 
     if (users.length !== 2) return { embeds: [embed.setDescription("one or more of you dont have a birthday registered")] };
 
+    const user0_age = Number(new Date()) - Number(users[0].birthday);
+    const user1_age = Number(new Date()) - Number(users[1].birthday);
+
+    const percent_difference = Math.abs(user0_age - user1_age) / Math.max(user0_age + user1_age, 0.0001) * 2;
+
     const difference = Math.abs((Number(users[0].birthday) - Number(users[1].birthday)) / (1000 * 60 * 60 * 24));
     const years = Math.floor(difference / 365);
     const days = difference % 365;
@@ -35,7 +40,7 @@ export default async function birthdayDifference(msg: RavenInteraction): Promise
     const oldest = users[0].user_id === second_user.id ? second_user : first_user;
     const youngest = users[1].user_id === second_user.id ? second_user : first_user;
 
-    embed.addField(`Who is older?`, `${oldest} is older than ${youngest} by ${differenceString} ${years > 2 ? `(sussy)` : ""}`);
+    embed.addField(`Who is older?`, `${oldest} is older than ${youngest} by ${differenceString} ${percent_difference > 0.15 ? `(sussy)` : ""}`);
 
     return { embeds: [embed] };
 }
