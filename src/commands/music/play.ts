@@ -64,12 +64,15 @@ module.exports = class extends Command {
             return { embeds: [failEmbed.setDescription("Join the same vc as the bot first.")] };
         }
 
-        let searchResult: play.YouTubeVideo;
+        let searchResult: play.YouTubeVideo | null;
 
         if (searchQuery.startsWith("https") && play.yt_validate(searchQuery) === "video") {
-            searchResult = await (await play.video_info(searchQuery)).video_details;
+            const result = await play.video_info(searchQuery).catch(() => null);
+            if (!result) return { embeds: [failEmbed.setDescription("Could not play this song")] };
+            searchResult = result.video_details;
         } else {
-            searchResult = (await play.search(searchQuery, { source: { youtube: "video" }, limit: 1, fuzzy: true }))[0];
+            const result = await play.search(searchQuery, { source: { youtube: "video" }, limit: 1, fuzzy: true });
+            searchResult = result[0];
         }
 
         if (!searchResult) return { embeds: [failEmbed.setDescription("no searchresults found")] };

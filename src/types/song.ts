@@ -34,8 +34,6 @@ export default class Song {
         this.user = user;
     }
 
-    private hashCode = (s: string) => s.split("").reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0)
-
     public getStream = async (): Promise<AudioResource<Song>> => {
         const source = await play.stream(this.url, { quality: 2 });
         const resource = createAudioResource(source.stream, { inputType: source.type, metadata: this });
