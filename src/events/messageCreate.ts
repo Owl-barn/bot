@@ -12,7 +12,7 @@ export default class InteractionCreate implements RavenEvent {
         if (!msg) return;
         const client = msg.client as RavenClient;
 
-        if (msg.content === "update*" && msg.member?.id === "140762569056059392") {
+        if (msg.content === "update*" && msg.member?.id === process.env.OWNER_ID) {
             const guilds = client.guilds.cache;
             const start = Date.now();
 
@@ -24,22 +24,29 @@ export default class InteractionCreate implements RavenEvent {
             msg.reply(`Updated all server perms, took \`${Date.now() - start}ms\``);
         }
 
-        if (msg.content === "info*" && msg.member?.id === "140762569056059392") {
+        if (msg.content === "info*" && msg.member?.id === process.env.OWNER_ID) {
             msg.guild?.channels.cache.forEach((x) => console.log(`${x.id} : ${x.name}`));
         }
-        if (msg.content === "innit*" && msg.member?.id === "140762569056059392") {
+
+        if (msg.content === "fix*" && msg.member?.id === process.env.OWNER_ID) {
+            if (!msg.guild) return;
+            await client.db.guilds.createMany({ data: { guild_id: msg.guild.id }, skipDuplicates: true });
+        }
+
+
+        if (msg.content === "innit*" && msg.member?.id === process.env.OWNER_ID) {
             const start = Date.now();
             await registerCommand(client, msg.guild as Guild);
             await registerPerms(client, msg.guild as Guild);
             msg.reply(`Updated this server's perms, took \`${Date.now() - start}ms\``);
         }
 
-        if (msg.content === "premium*" && msg.member?.id === "140762569056059392") {
+        if (msg.content === "premium*" && msg.member?.id === process.env.OWNER_ID) {
             await client.db.guilds.update({ where: { guild_id: msg.guildId as string }, data: { premium: true } });
             msg.reply("done");
         }
 
-        if (msg.content === "selfroles*" && msg.member?.id === "140762569056059392") {
+        if (msg.content === "selfroles*" && msg.member?.id === process.env.OWNER_ID) {
             const main = await client.db.self_role_main.findFirst() as self_role_main;
             const roles = await client.db.self_role_roles.findMany({ where: { main_uuid: main.uuid } });
             const guild = await client.guilds.fetch(main?.guild_id);
@@ -70,6 +77,5 @@ export default class InteractionCreate implements RavenEvent {
 
             channel.send({ components: [component], embeds: [embed] });
         }
-
     }
 }
