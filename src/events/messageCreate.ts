@@ -14,19 +14,24 @@ export default class InteractionCreate implements RavenEvent {
 
         if (msg.content === "update*" && msg.member?.id === "140762569056059392") {
             const guilds = client.guilds.cache;
+            const start = Date.now();
 
             for (const guild of guilds.values()) {
                 await registerCommand(client, guild);
                 await registerPerms(client, guild);
             }
 
-            msg.reply("done");
+            msg.reply(`Updated all server perms, took \`${Date.now() - start}ms\``);
         }
 
+        if (msg.content === "info*" && msg.member?.id === "140762569056059392") {
+            msg.guild?.channels.cache.forEach((x) => console.log(`${x.id} : ${x.name}`));
+        }
         if (msg.content === "innit*" && msg.member?.id === "140762569056059392") {
+            const start = Date.now();
             await registerCommand(client, msg.guild as Guild);
             await registerPerms(client, msg.guild as Guild);
-            msg.reply("done");
+            msg.reply(`Updated this server's perms, took \`${Date.now() - start}ms\``);
         }
 
         if (msg.content === "premium*" && msg.member?.id === "140762569056059392") {
@@ -42,18 +47,20 @@ export default class InteractionCreate implements RavenEvent {
 
             if (!channel) throw "aa";
             const embed = new MessageEmbed()
-                .setAuthor({ iconURL: client.user?.avatarURL() || "", name: "Raven Bot" })
-                .setColor(process.env.EMBED_COLOR as HexColorString)
                 .setTitle(main.title)
-                .setDescription(main.message);
+                .setFooter(main.uuid)
+                .setDescription(main.message)
+                .setColor(process.env.EMBED_COLOR as HexColorString)
+                .setAuthor({ iconURL: client.user?.avatarURL() || "", name: "Raven Bot" });
 
             const buttons: MessageActionRowComponent[] = [];
 
             roles.forEach((x) => {
+                embed.addField(`${x.emote} ${x.name}`, x.description);
                 buttons.push(
                     new MessageButton()
-                        .setCustomId(x.uuid)
-                        .setLabel(x.name)
+                        .setCustomId(`selfrole_${x.uuid}`)
+                        .setLabel(`${x.emote} ${x.name}`)
                         .setStyle("PRIMARY"),
                 );
             });
@@ -63,5 +70,6 @@ export default class InteractionCreate implements RavenEvent {
 
             channel.send({ components: [component], embeds: [embed] });
         }
+
     }
 }

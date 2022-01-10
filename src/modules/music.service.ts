@@ -73,6 +73,7 @@ export default class musicService {
     }
 
     public stop(): void {
+        console.log(`music ended in ${this.voiceConnection.joinConfig.guildId}`.yellow);
         this.queue = [];
         this.player.stop(true);
         if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
@@ -149,7 +150,7 @@ export default class musicService {
     }
 
     public startStopTimer(): void {
-        console.log(`music ended in ${this.voiceConnection.joinConfig.guildId}`);
+        console.log(`music queue ended in ${this.voiceConnection.joinConfig.guildId}`.yellow);
         this.timeout = setTimeout(() => this.stop(), 180000);
     }
 
