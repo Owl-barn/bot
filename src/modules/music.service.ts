@@ -13,7 +13,7 @@ export default class musicService {
     private queueLock = false;
 
     private currentVote: Vote | null = null;
-    private voted: string[] = [];
+    private voted: Set<string> = new Set();
 
     private secondsPlayed = 0;
     private lastpause = 0;
@@ -95,13 +95,20 @@ export default class musicService {
         };
     }
 
-    public addVote = (user: string): string[] => {
-        this.voted.push(user);
+    public addVote = (user: string): Set<string> => {
+        this.voted.add(user);
 
         return this.voted;
     }
 
-    public getVotes = (): string[] => {
+    public removeVote = (user: string): Set<string> => {
+        this.voted.delete(user);
+
+        return this.voted;
+    }
+
+
+    public getVotes = (): Set<string> => {
         return this.voted;
     }
 
@@ -167,7 +174,7 @@ export default class musicService {
 
     private reset = (): void => {
         this.currentVote = null;
-        this.voted = [];
+        this.voted = new Set();
         this.queueLock = false;
     }
 

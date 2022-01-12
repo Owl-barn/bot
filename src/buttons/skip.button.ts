@@ -32,27 +32,28 @@ export default class implements RavenButton {
             return { content: "" };
         }
 
-        const votes = subscription.getVotes();
-
-        // Check if didnt vote yet.
-        if (votes.some(y => y === msg.user.id)) {
-            return { embeds: [failEmbed.setDescription("You already voted")], ephemeral: true };
-        }
-
         // Check if in vc.
         const vc = (msg.member as GuildMember).voice.channel;
         if (!vc || !vc.members.some(y => y.id == msg.client.user?.id)) {
             return { embeds: [failEmbed.setDescription("You arent in vc.")], ephemeral: true };
         }
 
-        subscription.addVote(msg.user.id);
+        let votes = subscription.getVotes();
+        const originalCount = votes.size;
+
+        // Check if didnt vote yet.
+        if (votes.has(msg.user.id)) {
+            votes = subscription.removeVote(msg.user.id);
+        } else {
+            votes = subscription.addVote(msg.user.id);
+        }
 
         // Get numbers.
-        const current = Number((msg.message.embeds[0].description as string).split("/")[0]) + 1;
+        const current = votes.size;
         const max = (msg.member as GuildMember).voice.channel?.members.size as number - 1;
         const half = Math.ceil(max / 2);
 
-        console.log(`${msg.user.username} voted to skip, now at ${current} was at ${current - 1}`);
+        console.log(`${msg.user.username} vote set, now at ${current} was at ${originalCount}`);
 
         if (current >= half) {
             msg.update(subscription.skip());

@@ -77,6 +77,7 @@ module.exports = class extends Command {
         if ((dj && force) || vc.members.size <= 3 || isRequester) return subscription.skip();
 
         subscription.setVoteLock();
+        subscription.addVote(msg.user.id);
 
         const component = new MessageActionRow()
             .addComponents(
@@ -89,7 +90,7 @@ module.exports = class extends Command {
 
         const embed = new MessageEmbed()
             .addField("Song to skip", `**[${currentSong.title}](${currentSong.url})**`)
-            .setDescription(`0/${Math.ceil((vc.members.size - 1) / 2)}`)
+            .setDescription(`1/${Math.ceil((vc.members.size - 1) / 2)}`)
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed], components: [component] };
