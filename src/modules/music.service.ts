@@ -140,9 +140,12 @@ export default class musicService {
 
     public queueLength = (): number => {
         let queueLength = 0;
+
         for (const song of this.queue) queueLength += song.duration.seconds;
-        const currentTime = this.getPlaytime();
-        return (this.current?.duration.seconds || 0 - currentTime) + queueLength;
+
+        if (!this.current) return queueLength;
+
+        return (this.current.duration.seconds - this.getPlaytime()) + queueLength;
     }
 
     private logDuration = async (song: Song, played: number | null): Promise<void> => {
