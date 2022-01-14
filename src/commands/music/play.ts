@@ -60,6 +60,9 @@ module.exports = class extends Command {
 
         if (vc === null && !(dj && subscription)) { return { embeds: [failEmbed.setDescription("Join a voicechannel first.")] }; }
 
+
+        await msg.deferReply();
+
         if (subscription && vc?.id !== subscription.voiceConnection.joinConfig.channelId && !(dj && force)) {
             return { embeds: [failEmbed.setDescription("Join the same vc as the bot first.")] };
         }
