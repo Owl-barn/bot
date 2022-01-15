@@ -39,21 +39,19 @@ export default class implements RavenButton {
         }
 
         let votes = subscription.getVotes();
-        const originalCount = votes.size;
 
         // Check if didnt vote yet.
-        if (votes.has(msg.user.id)) {
-            votes = subscription.removeVote(msg.user.id);
-        } else {
-            votes = subscription.addVote(msg.user.id);
-        }
+        votes = votes.has(msg.user.id) ?
+            subscription.removeVote(msg.user.id) :
+            subscription.addVote(msg.user.id);
+
+        // Remove votes of people that left VC.
+        votes.forEach(vote => { if (!vc.members.has(vote)) subscription.removeVote(vote); });
 
         // Get numbers.
         const current = votes.size;
         const max = (msg.member as GuildMember).voice.channel?.members.size as number - 1;
         const half = Math.ceil(max / 2);
-
-        console.log(`${msg.user.username} vote set, now at ${current} was at ${originalCount}`);
 
         if (current >= half) {
             msg.update(subscription.skip());
@@ -62,8 +60,9 @@ export default class implements RavenButton {
         }
 
         embed
-            .addField("Song to skip", `*[${currentSong.title}](${currentSong.url})*`)
-            .setDescription(`${current}/${half}`);
+            .setTitle("Vote skip song")
+            .addField("Song to skip", `*[${currentSong.title}](${currentSong.url})*`, true)
+            .addField("Votes needed", `${current}/${half}`, true);
 
         msg.update({ embeds: [embed] }).catch(console.error);
 
