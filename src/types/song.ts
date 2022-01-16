@@ -5,7 +5,7 @@ import * as play from "play-dl";
 
 export default class Song {
     public id: string;
-    public title: string;
+    public title: Title;
     public url: string;
     public duration: SongDuration;
     public artist: Artist;
@@ -19,7 +19,10 @@ export default class Song {
 
     constructor(input: play.YouTubeVideo, user: User) {
         this.id = `${Date.now()}`;
-        this.title = Util.escapeMarkdown((input.title || "couldnt load title").substring(0, 48).replace(/[()[\]]/g, ""));
+        this.title = {
+            formatted: Util.escapeMarkdown((input.title || "couldnt load title").substring(0, 48).replace(/[()[\]]/g, "")),
+            original: input.title || "couldnt load title",
+        };
         this.url = input.url;
         this.duration = {
             seconds: input.durationInSec,
@@ -39,6 +42,11 @@ export default class Song {
         const resource = createAudioResource(source.stream, { inputType: source.type, metadata: this });
         return resource;
     }
+}
+
+export interface Title {
+    formatted: string;
+    original: string;
 }
 
 export interface SongDuration {

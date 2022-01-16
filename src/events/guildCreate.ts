@@ -23,7 +23,7 @@ export default class implements RavenEvent {
 
             const embed = new MessageEmbed()
                 .setTitle("Thank you!")
-                .setDescription("thank you for inviting me! the server owner can configure the bot with /config")
+                .setDescription("Thank you for inviting me! The server owner can configure the bot with /config")
                 .addField("How do i play music?", `Right now the only way is to get a subscription, for more info and questions please [join the discord!](${process.env.SUPPORT_SERVER})`)
                 .setThumbnail(guild.client.user?.avatarURL() || "")
                 .setTimestamp()

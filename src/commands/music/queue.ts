@@ -57,7 +57,7 @@ module.exports = class extends Command {
         progress += "]";
 
         const fieldContent = `
-        [${Util.escapeMarkdown(current.title.substring(0, 40))}](${current.url})
+        [${Util.escapeMarkdown(current.title.formatted.substring(0, 40))}](${current.url})
         **${playTimeText}** ${progress} **${current.duration.text}**
         ${italic(`Requested by: <@!${current.user.id}>`)}
         `;
@@ -69,7 +69,7 @@ module.exports = class extends Command {
 
         for (const song of subscription.getQueue()) {
             x++;
-            list.push({ name: x.toString(), value: `[${song.title}](${song.url}) - ${song.duration.text}\n${italic(`Requested by: <@!${song.user.id}>`)}` });
+            list.push({ name: x.toString(), value: `[${song.title.formatted}](${song.url}) - ${song.duration.text}\n${italic(`Requested by: <@!${song.user.id}>`)}` });
         }
 
         embed.addFields(list);

@@ -90,7 +90,7 @@ module.exports = class extends Command {
 
         const embed = new MessageEmbed()
             .setTitle("Vote skip song")
-            .addField("Song to skip", `**[${currentSong.title}](${currentSong.url})**`, true)
+            .addField("Song to skip", `**[${currentSong.title.formatted}](${currentSong.url})**`, true)
             .addField("Votes needed", `1/${Math.ceil((vc.members.size - 1) / 2)}`, true)
             .setColor(process.env.EMBED_COLOR as HexColorString);
 

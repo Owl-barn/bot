@@ -121,7 +121,7 @@ module.exports = class extends Command {
         const embed = new MessageEmbed()
             .setThumbnail(song.thumbnail)
             .setAuthor({ name: queueLength < 1 ? `Now playing` : "Song queued" })
-            .setDescription(`**[${song.title}](${song.url})**`)
+            .setDescription(`**[${song.title.formatted}](${song.url})**`)
             .addField("Channel", `*[${Util.escapeMarkdown(song.artist.name).replace(/[()[\]]/g, "")}](${song.artist.url})*`, true)
             .addField("Song Duration", `*${songLength}*`, true)
             .addField("Queue Position", `*${queueLength !== 0 ? queueLength : "Currently playing"}*`, true)

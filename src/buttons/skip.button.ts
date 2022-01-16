@@ -65,7 +65,7 @@ export default class implements RavenButton {
 
         embed
             .setTitle("Vote skip song")
-            .addField("Song to skip", `*[${currentSong.title}](${currentSong.url})*`, true)
+            .addField("Song to skip", `*[${currentSong.title.formatted}](${currentSong.url})*`, true)
             .addField("Votes needed", `${current}/${half}`, true);
 
         msg.update({ embeds: [embed] }).catch(console.error);
