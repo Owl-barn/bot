@@ -14,6 +14,8 @@ export default class implements RavenButton {
         const failEmbed = new MessageEmbed()
             .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
+        const ended = { embeds: [failEmbed.setDescription("Song ended.")], components: [] };
+
         const embed = new MessageEmbed()
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
@@ -21,13 +23,15 @@ export default class implements RavenButton {
         const currentSong = subscription?.getCurrent();
 
         if (!subscription || !currentSong?.id) {
-            return { content: "No song is playing", ephemeral: true };
+            msg.update(ended);
+
+            return { content: "" };
         }
 
         const voteLock = subscription.getVoteLock();
 
         if (skipID !== voteLock?.id) {
-            msg.update({ embeds: [failEmbed.setDescription("Song ended.")], components: [] });
+            msg.update(ended);
 
             return { content: "" };
         }

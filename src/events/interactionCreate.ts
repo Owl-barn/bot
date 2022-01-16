@@ -1,3 +1,4 @@
+import { HexColorString, MessageEmbed } from "discord.js";
 import logService from "../lib/logger.service";
 import throttleService from "../lib/throttle.service";
 import { returnMessage } from "../types/Command";
@@ -9,6 +10,9 @@ export default class InteractionCreate implements RavenEvent {
     name = "interactionCreate";
     once = false;
     throttle = throttleService;
+    errorEmbed = new MessageEmbed()
+        .setDescription(`An error occurred, please make a report of this in [the Raven bot discord server](${process.env.SUPPORT_SERVER})`)
+        .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
     async execute(interaction: RavenInteraction): Promise<void> {
         if (interaction.isButton()) {
@@ -52,7 +56,7 @@ export default class InteractionCreate implements RavenEvent {
         const response = await command.execute(msg)
             .catch((e: Error) => {
                 console.log(e);
-                return { ephemeral: true, content: "An error occured." } as returnMessage;
+                return { ephemeral: true, embeds: [this.errorEmbed] } as returnMessage;
             });
 
         if (!response || response.content?.length === 0) return;
@@ -75,7 +79,7 @@ export default class InteractionCreate implements RavenEvent {
             })
             .catch((e: Error) => {
                 console.log(e);
-                return { ephemeral: true, content: "An error occured." } as returnMessage;
+                return { ephemeral: true, embeds: [this.errorEmbed] } as returnMessage;
             });
 
         if (!response) return;
