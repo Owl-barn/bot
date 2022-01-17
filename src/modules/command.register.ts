@@ -152,16 +152,16 @@ export async function registerPerms(client: RavenClient, guild: Guild): Promise<
 
     for (const interaction of interactions.values()) {
         const command = commands.get(interaction.name);
+        if (!command) continue;
         const permissions = dbPerms.filter((x) => x.command === command?.name);
         const commandPerms: GuildApplicationCommandPermissionData = {
             id: interaction.id,
             permissions: [],
         };
 
-        if (interaction.defaultPermission) continue;
-
         commandPerms.permissions.push(botOwner);
-        if (command?.group !== "owner" || (command.premium && !botGuild.premium)) commandPerms.permissions.push(serverOwner);
+        const allowed = (command.premium && botGuild.premium) || (!command.premium);
+        if (command.group !== "owner" && allowed) commandPerms.permissions.push(serverOwner);
 
         for (const perm of permissions) {
             commandPerms.permissions.push({
