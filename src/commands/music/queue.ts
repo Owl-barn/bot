@@ -73,6 +73,9 @@ module.exports = class extends Command {
         }
 
         embed.addFields(list);
+        if (subscription.getLoop()) {
+            embed.addField("Loop", "🔁 *enabled*");
+        }
 
         return { embeds: [embed] };
     }
