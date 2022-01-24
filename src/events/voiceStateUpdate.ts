@@ -20,11 +20,10 @@ export default class ready implements RavenEvent {
         const channelEqual = oldState.channelId === newState.channelId;
         const leaveVC = (oldState.channelId === botVC && !channelEqual && oldState.channelId);
         const deafen = (newState.channelId === botVC && (newState.deaf && !oldState.deaf));
-        const joinVC = (newState.channelId === botVC && !channelEqual);
+        const joinVC = (newState.channelId === botVC && !channelEqual && !newState.deaf);
         const undeafen = (newState.channelId === botVC && (!newState.deaf && oldState.deaf));
 
         if (joinVC || undeafen) {
-            console.log(`${newState.member?.user.username} vc +`);
             subscription.setIdle(false);
             return;
         }
@@ -33,7 +32,6 @@ export default class ready implements RavenEvent {
             if (!oldState.channel) return;
             const people = this.vcSize(oldState.channel);
             if (people === 0) {
-                console.log(`${newState.member?.user.username} vc -`);
                 if (people === 0) subscription.setIdle(true);
             }
 
