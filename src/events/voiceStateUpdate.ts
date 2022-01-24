@@ -1,0 +1,54 @@
+import { VoiceBasedChannel, VoiceState } from "discord.js";
+import RavenEvent from "../types/event";
+import RavenClient from "../types/ravenClient";
+
+export default class ready implements RavenEvent {
+    name = "voiceStateUpdate";
+    once = false;
+
+    async execute(oldState: VoiceState, newState: VoiceState): Promise<void> {
+        const client = oldState.client as RavenClient;
+        const subscription = client.musicService.get(oldState.guild.id);
+        if (!subscription || subscription.destroyed) return;
+        const botVC = subscription.voiceConnection.joinConfig.channelId;
+
+        if (newState.member?.id === client.user?.id && newState.channel && this.vcSize(newState.channel) === 0) {
+            subscription.setIdle(true);
+            return;
+        }
+
+        const channelEqual = oldState.channelId === newState.channelId;
+        const leaveVC = (oldState.channelId === botVC && !channelEqual && oldState.channelId);
+        const deafen = (newState.channelId === botVC && (newState.deaf && !oldState.deaf));
+        const joinVC = (newState.channelId === botVC && !channelEqual);
+        const undeafen = (newState.channelId === botVC && (!newState.deaf && oldState.deaf));
+
+        if (joinVC || undeafen) {
+            console.log(`${newState.member?.user.username} vc +`);
+            subscription.setIdle(false);
+            return;
+        }
+
+        if (leaveVC || deafen) {
+            if (!oldState.channel) return;
+            const people = this.vcSize(oldState.channel);
+            if (people === 0) {
+                console.log(`${newState.member?.user.username} vc -`);
+                if (people === 0) subscription.setIdle(true);
+            }
+
+            return;
+        }
+    }
+
+    public vcSize = (channel: VoiceBasedChannel): number => {
+        let people = 0;
+        for (const x of channel.members.values()) {
+            if (x.voice.deaf) continue;
+            if (x.user.bot) continue;
+
+            people += 1;
+        }
+        return people;
+    }
+}

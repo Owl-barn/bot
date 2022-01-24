@@ -18,6 +18,9 @@ export default class musicService {
     private secondsPlayed = 0;
     private lastpause = 0;
 
+    private loop = false;
+
+    private idle: NodeJS.Timeout;
     private timeout: NodeJS.Timeout;
     public destroyed = false;
 
@@ -81,11 +84,22 @@ export default class musicService {
         this.destroyed = true;
     }
 
+    // IDLE
+    public setIdle = (x: boolean): void => {
+        if (x) console.log(`vc empty in ${this.voiceConnection.joinConfig.guildId}`.red);
+        if (!x && this.idle) console.log(`vc reinstated in ${this.voiceConnection.joinConfig.guildId}`.green);
+        x ? this.idle = setTimeout(() => this.stop(), 180000) : clearTimeout(this.idle);
+    }
+
+    // LOOP
+
+    public toggleLoop = (): boolean => this.loop = !this.loop;
+
+    public getLoop = (): boolean => this.loop;
+
     // VOTE SKIP
 
-    public getVoteLock = (): Vote | null => {
-        return this.currentVote;
-    }
+    public getVoteLock = (): Vote | null => this.currentVote;
 
     public setVoteLock = (): void => {
         if (!this.current?.id) throw "No song playing";
@@ -193,6 +207,8 @@ export default class musicService {
             this.logDuration(this.current, this.secondsPlayed);
             this.secondsPlayed = 0;
             this.lastpause = 0;
+
+            if (this.loop) this.queue.push(this.current);
         }
 
         if (this.queue.length === 0) {
