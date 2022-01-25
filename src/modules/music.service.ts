@@ -163,6 +163,8 @@ export default class musicService {
     }
 
     private logDuration = async (song: Song, played: number | null): Promise<void> => {
+        if (song.duration.seconds === 0) return;
+        if (played && played > song.duration.seconds) played = song.duration.seconds;
         await prisma.songs_played.create({
             data: {
                 guild_id: this.voiceConnection.joinConfig.guildId,
