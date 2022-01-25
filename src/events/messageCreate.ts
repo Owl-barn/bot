@@ -1,5 +1,5 @@
 import { self_role_main } from "@prisma/client";
-import { Guild, HexColorString, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { Guild, GuildChannel, HexColorString, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import registerCommand, { registerPerms } from "../modules/command.register";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
@@ -15,24 +15,21 @@ export default class InteractionCreate implements RavenEvent {
         if (msg.content === "update*" && msg.member?.id === process.env.OWNER_ID) {
             const guilds = client.guilds.cache;
             const start = Date.now();
+            await msg.reply("updating...");
 
             for (const guild of guilds.values()) {
                 await registerCommand(client, guild);
                 await registerPerms(client, guild);
             }
 
-            msg.reply(`Updated all server perms, took \`${Date.now() - start}ms\``);
-        }
-
-        if (msg.content === "info*" && msg.member?.id === process.env.OWNER_ID) {
-            msg.guild?.channels.cache.forEach((x) => console.log(`${x.id} : ${x.name}`));
+            await msg.reply(`Updated all server perms, took \`${Date.now() - start}ms\``);
+            return;
         }
 
         if (msg.content === "fix*" && msg.member?.id === process.env.OWNER_ID) {
             if (!msg.guild) return;
             await client.db.guilds.createMany({ data: { guild_id: msg.guild.id }, skipDuplicates: true });
         }
-
 
         if (msg.content === "innit*" && msg.member?.id === process.env.OWNER_ID) {
             const start = Date.now();
@@ -41,16 +38,16 @@ export default class InteractionCreate implements RavenEvent {
             msg.reply(`Updated this server's perms, took \`${Date.now() - start}ms\``);
         }
 
-        if (msg.content === "premium*" && msg.member?.id === process.env.OWNER_ID) {
-            await client.db.guilds.update({ where: { guild_id: msg.guildId as string }, data: { premium: true } });
-            msg.reply("done");
+        if (msg.content.startsWith("say*") && msg.member?.id === process.env.OWNER_ID) {
+            const channel = client.guilds.cache.get("396330910162616321")?.channels.cache.get("504696026201063444") as TextChannel;
+            await channel.send(msg.content.substring(5, msg.content.length));
         }
 
         if (msg.content === "selfroles*" && msg.member?.id === process.env.OWNER_ID) {
             const main = await client.db.self_role_main.findFirst() as self_role_main;
             const roles = await client.db.self_role_roles.findMany({ where: { main_uuid: main.uuid } });
             const guild = await client.guilds.fetch(main?.guild_id);
-            const channel = await guild.channels.cache.get(main.channel_id) as TextChannel;
+            const channel = guild.channels.cache.get(main.channel_id) as TextChannel;
 
             if (!channel) throw "aa";
             const embed = new MessageEmbed()

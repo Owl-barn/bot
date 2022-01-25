@@ -71,9 +71,7 @@ export default class musicService {
         }
     }
 
-    public getCurrent = (): Song | null => {
-        return this.current;
-    }
+    public getCurrent = (): Song | null => this.current;
 
     public stop(): void {
         console.log(`music ended in ${this.voiceConnection.joinConfig.guildId}`.yellow);
@@ -109,11 +107,7 @@ export default class musicService {
         };
     }
 
-    public addVote = (user: string): Set<string> => {
-        this.voted.add(user);
-
-        return this.voted;
-    }
+    public addVote = (user: string): Set<string> => this.voted.add(user);
 
     public removeVote = (user: string): Set<string> => {
         this.voted.delete(user);
@@ -122,9 +116,7 @@ export default class musicService {
     }
 
 
-    public getVotes = (): Set<string> => {
-        return this.voted;
-    }
+    public getVotes = (): Set<string> => this.voted;
 
     public skip = (index?: number | null): returnMessage => {
         const failEmbed = new MessageEmbed()
@@ -182,9 +174,7 @@ export default class musicService {
 
     // QUEUE
 
-    public getQueue = (): Song[] => {
-        return this.queue;
-    }
+    public getQueue = (): Song[] => this.queue;
 
     public addToQueue = (song: Song): void => {
         this.queue.push(song);
