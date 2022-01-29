@@ -50,6 +50,7 @@ module.exports = class extends Command {
 
         const searchQuery = msg.options.getString("song", true);
         const force = msg.options.getBoolean("force");
+        const hidden = msg.options.getBoolean("hidden") || false;
 
         let subscription = client.musicService.get(member.guild.id);
         if (subscription && subscription.destroyed) subscription = undefined;
@@ -61,7 +62,7 @@ module.exports = class extends Command {
         if (vc === null && !(dj && subscription)) { return { embeds: [failEmbed.setDescription("Join a voicechannel first.")] }; }
 
 
-        await msg.deferReply();
+        await msg.deferReply({ ephemeral: hidden });
 
         if (subscription && vc?.id !== subscription.voiceConnection.joinConfig.channelId && !(dj && force)) {
             return { embeds: [failEmbed.setDescription("Join the same vc as the bot first.")] };
