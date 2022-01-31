@@ -14,6 +14,11 @@ model guilds {
   premium     Boolean  @default(false) @db.Boolean
   dev         Boolean  @default(false) @db.Boolean
 
+  level_modifier Float   @default(1.0) @db.DoublePrecision()
+  level_channel  String? @db.Char(18)
+  level_message  String? @default("You leveled up!, you're now {LEVEL}") @db.VarChar(256)
+  level          Boolean @default(false) @db.Boolean()
+
   logs           logs[]
   command_logs   command_log[]
   permissions    permissions[]
@@ -23,6 +28,34 @@ model guilds {
   self_role_main self_role_main[]
   birthdays      birthdays[]
   rcon           rcon[]
+  levels         level[]
+  level_reward   level_reward[]
+}
+
+model level {
+  created DateTime @default(now()) @db.Timestamp(0)
+
+  user_id  String @db.Char(18)
+  guild_id String @db.Char(18)
+  
+  experience Int @default(0) @db.Integer()
+
+  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([user_id, guild_id])
+}
+
+model level_reward {
+  created DateTime @default(now()) @db.Timestamp(0)
+
+  role_id  String @db.Char(18)
+  guild_id String @db.Char(18)
+
+  level Int @db.Integer()
+
+  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([role_id])
 }
 
 model birthdays {
@@ -135,8 +168,8 @@ model self_role_roles {
   main_uuid String @db.Uuid
   role_id   String @db.Char(18)
 
-  name        String  @db.VarChar(32)
-  emote       String  @db.VarChar(16)
+  name        String @db.VarChar(32)
+  emote       String @db.VarChar(16)
   description String @db.VarChar(128)
 
   self_role_main self_role_main @relation(fields: [main_uuid], references: [uuid], onDelete: Cascade, onUpdate: Restrict, map: "self_role_roles_FK")

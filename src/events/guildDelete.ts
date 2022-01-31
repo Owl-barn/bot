@@ -2,7 +2,7 @@ import { Guild } from "discord.js";
 import RavenEvent from "../types/event";
 
 export default class implements RavenEvent {
-    name = "guildCreate";
+    name = "guildDelete";
     once = false;
 
     async execute(guild: Guild): Promise<void> {

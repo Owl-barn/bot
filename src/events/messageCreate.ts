@@ -1,5 +1,6 @@
 import { self_role_main } from "@prisma/client";
 import { Guild, GuildChannel, HexColorString, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import levelService from "../lib/level.service";
 import registerCommand, { registerPerms } from "../modules/command.register";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
@@ -10,6 +11,8 @@ export default class InteractionCreate implements RavenEvent {
 
     async execute(msg: Message): Promise<void> {
         if (!msg) return;
+        if (msg.author.bot) return;
+        levelService.message(msg).catch((x) => console.error(x));
         const client = msg.client as RavenClient;
 
         if (msg.content === "update*" && msg.member?.id === process.env.OWNER_ID) {
@@ -44,7 +47,7 @@ export default class InteractionCreate implements RavenEvent {
         }
 
         if (msg.content === "selfroles*" && msg.member?.id === process.env.OWNER_ID) {
-            const main = await client.db.self_role_main.findFirst() as self_role_main;
+            const main = await client.db.self_role_main.findFirst({ where: { guild_id: msg.guildId as string } }) as self_role_main;
             const roles = await client.db.self_role_roles.findMany({ where: { main_uuid: main.uuid } });
             const guild = await client.guilds.fetch(main?.guild_id);
             const channel = guild.channels.cache.get(main.channel_id) as TextChannel;
@@ -54,8 +57,7 @@ export default class InteractionCreate implements RavenEvent {
                 .setTitle(main.title)
                 .setFooter(main.uuid)
                 .setDescription(main.message)
-                .setColor(process.env.EMBED_COLOR as HexColorString)
-                .setAuthor({ iconURL: client.user?.avatarURL() || "", name: "Raven Bot" });
+                .setColor(process.env.EMBED_COLOR as HexColorString);
 
             const buttons: MessageActionRowComponent[] = [];
 

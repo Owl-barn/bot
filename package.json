@@ -42,7 +42,6 @@
     "moment": "^2.29.1",
     "morgan": "^1.10.0",
     "play-dl": "^1.4.4",
-    "rcon-client": "^4.2.3",
-    "redis": "^4.0.2"
+    "rcon-client": "^4.2.3"
   }
 }

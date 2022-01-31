@@ -10,7 +10,6 @@ import { registerButtons } from "./modules/button.initializer";
 export default class Bot {
     private client: RavenClient;
 
-
     constructor() {
         this.client = new RavenClient({
             intents: [
