@@ -45,7 +45,7 @@ module.exports = class extends Command {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const subCommand = msg.options.getSubcommand(true);
-        const user = msg.options.getUser("user") || msg.user;
+        const member = msg.options.getMember("user") as GuildMember | null || (msg.member as GuildMember);
         if (!msg.guildId) throw "a";
         const guild = await msg.client.db.guilds.findUnique({ where: { guild_id: msg.guildId } });
 
@@ -64,8 +64,8 @@ module.exports = class extends Command {
             return { embeds: [embed] };
         }
 
-        let level = await msg.client.db.level.findUnique({ where: { user_id_guild_id: { guild_id: msg.guildId, user_id: user.id } } });
-        if (!level) level = await msg.client.db.level.create({ data: { user_id: msg.user.id, guild_id: msg.guildId } });
+        let level = await msg.client.db.level.findUnique({ where: { user_id_guild_id: { guild_id: msg.guildId, user_id: member.id } } });
+        if (!level) level = await msg.client.db.level.create({ data: { user_id: member.id, guild_id: msg.guildId } });
         const stats = levelService.calculateLevel(level.experience);
 
         const NextReward = await msg.client.db.level_reward.findFirst({ where: { guild_id: msg.guildId, level: { gt: stats.level } }, orderBy: { level: "asc" } });
@@ -81,9 +81,9 @@ module.exports = class extends Command {
         const progress = progressBar(stats.currentXP, stats.levelXP, 40, theme);
         const remaining = stats.levelXP - stats.currentXP;
 
-        embed.setTitle(`${msg.user.username}'s level`);
-        embed.setThumbnail((msg.member as GuildMember).avatarURL() || msg.user.avatarURL() || msg.user.defaultAvatarURL);
-        embed.setDescription(`${msg.user} is currently level ${stats.level}\`\`\`${progress}\`\`\``);
+        embed.setTitle(`${member.user.username}'s level`);
+        embed.setThumbnail(member.avatarURL() || member.user.avatarURL() || member.user.defaultAvatarURL);
+        embed.setDescription(`${member.user} is currently level ${stats.level}\`\`\`${progress}\`\`\``);
         embed.addField("Level XP", `**Current:** ${stats.currentXP}\n**Next Level:** ${stats.levelXP}`, true);
         embed.addField("Remaining XP", `**XP left:** ${remaining}\n**Messages left:** ${Math.round(remaining / 20)}`, true);
         embed.addField("Total XP", `${stats.totalXP}`, true);
