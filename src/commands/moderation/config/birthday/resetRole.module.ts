@@ -2,7 +2,7 @@ import { HexColorString, MessageEmbed } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
-export async function configBirthdayReset(msg: RavenInteraction): Promise<returnMessage> {
+export async function configBirthdayResetRole(msg: RavenInteraction): Promise<returnMessage> {
     if (!msg.guildId) throw "no guild??";
 
     await msg.client.db.guilds.update({ where: { guild_id: msg.guildId }, data: { birthday_id: null } });
