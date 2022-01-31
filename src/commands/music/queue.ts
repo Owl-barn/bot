@@ -1,6 +1,7 @@
 import { italic } from "@discordjs/builders";
 import { EmbedFieldData, GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
 import moment from "moment";
+import progressBar from "../../lib/progressBar";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -25,7 +26,6 @@ module.exports = class extends Command {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const member = msg.member as GuildMember;
-        const scaleSize = 20;
 
         const failEmbed = new MessageEmbed()
             .setColor(process.env.EMBED_COLOR as HexColorString);
@@ -43,18 +43,9 @@ module.exports = class extends Command {
             return { embeds: [embed] };
         }
 
-        let progress = "[";
         const playTime = subscription.getPlaytime();
         const playTimeText = moment().startOf("day").seconds(playTime).format("H:mm:ss");
-        const playPosition = Math.ceil((playTime / current?.duration.seconds) * scaleSize) - 1;
-
-        for (let index = 0; index < scaleSize; index++) {
-            if (index < playPosition || playPosition === scaleSize - 1) progress += "=";
-            else if (index === playPosition) progress += ">";
-            else if (index > playPosition) progress += "-";
-        }
-
-        progress += "]";
+        const progress = progressBar(playTime, current.duration.seconds, 20);
 
         const fieldContent = `
         [${Util.escapeMarkdown(current.title.formatted.substring(0, 40))}](${current.url})

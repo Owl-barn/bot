@@ -1,5 +1,6 @@
 import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
 import levelService from "../../lib/level.service";
+import progressBar from "../../lib/progressBar";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -69,17 +70,15 @@ module.exports = class extends Command {
 
         const NextReward = await msg.client.db.level_reward.findFirst({ where: { guild_id: msg.guildId, level: { gt: stats.level } }, orderBy: { level: "asc" } });
 
-        let progress = "8";
-        const scaleSize = 40;
-        const playPosition = Math.ceil((stats.currentXP / stats.levelXP) * scaleSize) - 1;
+        const theme = {
+            start: "8",
+            end: "]",
+            passed: "=",
+            remaining: "-",
+            indicator: "D",
+        };
 
-        for (let index = 0; index < scaleSize; index++) {
-            if (index < playPosition || playPosition === scaleSize - 1) progress += "=";
-            else if (index === playPosition) progress += "D";
-            else if (index > playPosition) progress += "-";
-        }
-
-        progress += "]";
+        const progress = progressBar(stats.currentXP, stats.levelXP, 40, theme);
         const remaining = stats.levelXP - stats.currentXP;
 
         embed.setTitle(`${msg.user.username}'s level`);
