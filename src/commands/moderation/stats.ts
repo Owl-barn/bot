@@ -13,7 +13,6 @@ module.exports = class statsCommand extends Command {
             group: CommandGroup.moderation,
 
             guildOnly: false,
-            adminOnly: true,
             premium: false,
 
             args: [

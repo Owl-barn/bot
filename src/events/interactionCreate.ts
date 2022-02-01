@@ -1,7 +1,9 @@
-import { HexColorString, MessageEmbed } from "discord.js";
+import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
+import { failEmbed } from "../lib/embedTemplate";
 import logService from "../lib/logger.service";
 import throttleService from "../lib/throttle.service";
 import { returnMessage } from "../types/Command";
+import { CommandGroup } from "../types/commandGroup";
 import RavenEvent from "../types/event";
 import RavenInteraction, { RavenButtonInteraction } from "../types/interaction";
 import RavenClient from "../types/ravenClient";
@@ -32,12 +34,19 @@ export default class InteractionCreate implements RavenEvent {
 
         if (!command) return;
 
-        if (command.adminOnly && msg.user.id !== process.env.OWNER_ID) return;
+        if (command.adminOnly && !(msg.member as GuildMember).permissions.has("ADMINISTRATOR")) {
+            await msg.reply({ embeds: [failEmbed.setDescription("You need admin perms to use this command")] })
+                .catch((x) => console.log(x));
+            return;
+        }
+
+        if (command.group === CommandGroup.owner && msg.user.id !== process.env.OWNER_ID) return;
 
         const isThrottled = this.throttle.isThrottled(msg.guildId || "e", msg.user.id, command);
 
         if (isThrottled) {
-            await msg.reply({ ephemeral: true, content: `Throttled, try again in \`${isThrottled}\` seconds` }).catch(e => console.error(e));
+            await msg.reply({ ephemeral: true, content: `Throttled, try again in \`${isThrottled}\` seconds` })
+                .catch(e => console.error(e));
             return;
         }
 

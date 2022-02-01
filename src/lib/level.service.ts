@@ -13,7 +13,6 @@ class LevelService {
 
     constructor() {
         this.levelArray = this.makeLevelArray(this.maxLevel);
-        console.log(this.levelArray);
         this.sync().then(() => console.log("Loaded level guilds"));
 
         // this.load().then(() => console.log("Loaded levels"));
