@@ -1,5 +1,6 @@
 import { birthdays, guilds } from "@prisma/client";
 import cron from "cron";
+import { TextBasedChannel } from "discord.js";
 import bot from "../app";
 import RavenClient from "../types/ravenClient";
 
@@ -18,13 +19,13 @@ export async function birthdayLoop(): Promise<void> {
     and extract(day from birthday) = extract(day from current_timestamp)
     ` as birthdays[];
 
-    const guildsDB = await client.db.guilds.findMany({ where: { NOT: { birthday_id: null } } });
+    const guildsDB = await client.db.guilds.findMany({ where: { OR: [{ NOT: { birthday_role: null } }, { NOT: { birthday_channel: null } }] } });
 
     const removeRoleUsers = await client.db.birthdays.findMany({ where: { has_role: true } });
 
     for (const user of removeRoleUsers) {
         const data = await getData(user, guildsDB, client);
-        if (!data) return;
+        if (!data) continue;
         const { guild, role, member } = data;
 
         await client.db.birthdays.update({
@@ -32,33 +33,42 @@ export async function birthdayLoop(): Promise<void> {
             data: { has_role: false },
         }).catch(() => null);
 
+        if (!role) continue;
+
         const addRole = await member.roles.remove(role).catch(() => null);
-        if (!addRole) return;
+        if (!addRole) continue;
 
         console.info(`removed birthday role from ${user.user_id}`.yellow);
     }
 
     for (const user of users) {
         const data = await getData(user, guildsDB, client);
-        if (!data) return;
-        const { guild, role, member } = data;
+        if (!data) continue;
+        const { guild, role, channel, member } = data;
 
-        const addRole = await member.roles.add(role).catch(() => null);
-        if (!addRole) return;
+        if (role) {
+            const addRole = await member.roles.add(role).catch(() => null);
+            if (addRole) {
+                await client.db.birthdays.update({
+                    where: { user_id_guild_id: { user_id: user.user_id, guild_id: guild.id } },
+                    data: { has_role: true },
+                }).catch(() => null);
 
-        await client.db.birthdays.update({
-            where: { user_id_guild_id: { user_id: user.user_id, guild_id: guild.id } },
-            data: { has_role: true },
-        }).catch(() => null);
+                console.info(`given birthday role to ${user.user_id}`.yellow);
+            }
+        }
 
-        console.info(`given birthday role to ${user.user_id}`.yellow);
+        if (channel) {
+            await channel.send(`Happy birthday <@${member.id}>!!!`)
+                .catch(() => console.log("Couldnt send birthday message"));
+        }
     }
 }
 
 async function getData(user: birthdays, guildsDB: guilds[], client: RavenClient) {
     const guildDB = guildsDB.find(x => x.guild_id === user.guild_id);
     if (!guildDB) return;
-    if (guildDB.birthday_id === null) return;
+    if (guildDB.birthday_role === null) return;
 
     const guild = client.guilds.cache.get(guildDB.guild_id);
     if (!guild) return;
@@ -66,12 +76,24 @@ async function getData(user: birthdays, guildsDB: guilds[], client: RavenClient)
     const member = await guild?.members.fetch(user.user_id).catch(() => null);
     if (!member) return;
 
-    const role = await guild.roles.fetch(guildDB.birthday_id).catch(() => null);
-    if (!role) {
-        await client.db.guilds.update({ where: { guild_id: guildDB.guild_id }, data: { birthday_id: null } }).catch(() => null);
-        return;
+    let role;
+    if (guildDB.birthday_role) {
+        role = await guild.roles.fetch(guildDB.birthday_role).catch(() => null);
+        if (!role) {
+            await client.db.guilds.update({ where: { guild_id: guildDB.guild_id }, data: { birthday_role: null } }).catch(() => null);
+            return;
+        }
     }
 
-    return { guild, role, member };
+    let channel;
+    if (guildDB.birthday_channel) {
+        channel = await guild.channels.cache.get(guildDB.birthday_channel) as TextBasedChannel;
+        if (!channel) {
+            await client.db.guilds.update({ where: { guild_id: guildDB.guild_id }, data: { birthday_channel: null } }).catch(() => null);
+            return;
+        }
+    }
+
+    return { guild, role, channel, member };
 }
 export default birthdayCron;
