@@ -1,4 +1,5 @@
-import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
+import { GuildMember } from "discord.js";
+import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import levelService from "../../lib/level.service";
 import progressBar from "../../lib/progressBar";
 import { argumentType } from "../../types/argument";
@@ -45,50 +46,63 @@ module.exports = class extends Command {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const subCommand = msg.options.getSubcommand(true);
-        const member = msg.options.getMember("user") as GuildMember | null || (msg.member as GuildMember);
         if (!msg.guildId) throw "a";
         const guild = await msg.client.db.guilds.findUnique({ where: { guild_id: msg.guildId } });
-
-        const failEmbed = new MessageEmbed()
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
-
-        const embed = new MessageEmbed()
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        const failEmbed = failEmbedTemplate();
 
         if (!guild?.level) return { embeds: [failEmbed.setDescription("The level system is disabled in this server")] };
 
-        if (subCommand === "top") {
-            const top = await msg.client.db.level.findMany({ where: { guild_id: msg.guildId }, orderBy: { experience: "desc" }, take: 10 });
-            embed.setTitle(`${msg.guild?.name} leaderboard`);
-            embed.setDescription(top.map((x, y) => `${y + 1}. <@${x.user_id}> \`${x.experience}\``).join("\n"));
-            return { embeds: [embed] };
+        switch (subCommand) {
+            case "get": return await levelGet(msg);
+            case "top": return await levelTop(msg);
         }
 
-        let level = await msg.client.db.level.findUnique({ where: { user_id_guild_id: { guild_id: msg.guildId, user_id: member.id } } });
-        if (!level) level = await msg.client.db.level.create({ data: { user_id: member.id, guild_id: msg.guildId } });
-        const stats = levelService.calculateLevel(level.experience);
-
-        const NextReward = await msg.client.db.level_reward.findFirst({ where: { guild_id: msg.guildId, level: { gt: stats.level } }, orderBy: { level: "asc" } });
-
-        const theme = {
-            start: "8",
-            end: "]",
-            passed: "=",
-            remaining: "-",
-            indicator: "D",
-        };
-
-        const progress = progressBar(stats.currentXP, stats.levelXP, 40, theme);
-        const remaining = stats.levelXP - stats.currentXP;
-
-        embed.setTitle(`${member.user.username}'s level`);
-        embed.setThumbnail(member.avatarURL() || member.user.avatarURL() || member.user.defaultAvatarURL);
-        embed.setDescription(`${member.user} is currently level ${stats.level}\`\`\`${progress}\`\`\``);
-        embed.addField("Level XP", `**Current:** ${stats.currentXP}\n**Next Level:** ${stats.levelXP}`, true);
-        embed.addField("Remaining XP", `**XP left:** ${remaining}\n**Messages left:** ${Math.round(remaining / 20)}`, true);
-        embed.addField("Total XP", `${stats.totalXP}`, true);
-        if (NextReward) embed.addField("Next reward", `**Level:** ${NextReward.level}\n**Role:** <@&${NextReward.role_id}>`);
-        return { embeds: [embed] };
-
+        throw "no level subcommand??";
     }
 };
+
+async function levelTop(msg: RavenInteraction) {
+    if (!msg.guildId) throw "a";
+    const embed = embedTemplate();
+
+    const top = await msg.client.db.level.findMany({ where: { guild_id: msg.guildId }, orderBy: { experience: "desc" }, take: 10 });
+    embed.setTitle(`${msg.guild?.name} leaderboard`);
+    embed.addField("User", top.map((x, y) => `#${y + 1}:  <@${x.user_id}>`).join("\n"), true);
+    embed.addField("Level", `\`\`\`${top.map(x => ` ${levelService.calculateLevel(x.experience).level} `).join("\n")}\`\`\``, true);
+    return { embeds: [embed] };
+}
+
+async function levelGet(msg: RavenInteraction) {
+    const member = msg.options.getMember("user") as GuildMember | null || (msg.member as GuildMember);
+    if (!msg.guildId) throw "a";
+    const failEmbed = failEmbedTemplate();
+    const embed = embedTemplate();
+
+    if (member.user.bot) return { embeds: [failEmbed.setDescription("Bots cant have levels.")] };
+
+    let level = await msg.client.db.level.findUnique({ where: { user_id_guild_id: { guild_id: msg.guildId, user_id: member.id } } });
+    if (!level) level = await msg.client.db.level.create({ data: { user_id: member.id, guild_id: msg.guildId } });
+    const stats = levelService.calculateLevel(level.experience);
+
+    const NextReward = await msg.client.db.level_reward.findFirst({ where: { guild_id: msg.guildId, level: { gt: stats.level } }, orderBy: { level: "asc" } });
+
+    const theme = {
+        start: "[",
+        end: "]",
+        passed: "=",
+        remaining: "-",
+        indicator: ">",
+    };
+
+    const progress = progressBar(stats.currentXP, stats.levelXP, 40, theme);
+    const remaining = stats.levelXP - stats.currentXP;
+
+    embed.setTitle(`${member.user.username}'s level`);
+    embed.setThumbnail(member.avatarURL() || member.user.avatarURL() || member.user.defaultAvatarURL);
+    embed.setDescription(`${member.user} is currently level ${stats.level}\`\`\`${progress}\`\`\``);
+    embed.addField("Level XP", `**Current:** ${stats.currentXP}\n**Next Level:** ${stats.levelXP}`, true);
+    embed.addField("Remaining XP", `**XP left:** ${remaining}\n**Messages left:** ${Math.round(remaining / 20)}`, true);
+    embed.addField("Total XP", `${stats.totalXP}`, true);
+    if (NextReward) embed.addField("Next reward", `**Level:** ${NextReward.level}\n**Role:** <@&${NextReward.role_id}>`);
+    return { embeds: [embed] };
+}
