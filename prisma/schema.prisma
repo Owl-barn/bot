@@ -8,11 +8,13 @@ datasource db {
 }
 
 model guilds {
-  created     DateTime @default(now()) @db.Timestamp(0)
-  guild_id    String   @id @db.Char(18)
-  birthday_id String?  @db.Char(18)
-  premium     Boolean  @default(false) @db.Boolean
-  dev         Boolean  @default(false) @db.Boolean
+  created  DateTime @default(now()) @db.Timestamp(0)
+  guild_id String   @id @db.Char(18)
+  premium  Boolean  @default(false) @db.Boolean
+  dev      Boolean  @default(false) @db.Boolean
+
+  birthday_role    String? @db.Char(18)
+  birthday_channel String? @db.Char(18)
 
   level_modifier Float   @default(1.0) @db.DoublePrecision()
   level_channel  String? @db.Char(18)
@@ -37,7 +39,7 @@ model level {
 
   user_id  String @db.Char(18)
   guild_id String @db.Char(18)
-  
+
   experience Int @default(0) @db.Integer()
 
   guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)

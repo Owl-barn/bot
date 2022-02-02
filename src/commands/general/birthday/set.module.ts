@@ -40,7 +40,7 @@ export default async function birthdaySet(msg: RavenInteraction): Promise<return
     const hasBirthday = await client.db.birthdays.findUnique({ where: { user_id_guild_id: { user_id: msg.user.id, guild_id: msg.guildId } } });
     if (hasBirthday && (Date.now() - Number(hasBirthday.updated)) > 600000) {
 
-        embed.addField("Not allowed", "You can only change your birthday once a year, dm <@140762569056059392> if there was a mistake");
+        embed.addField("Not allowed", "You can only change your birthday once a year, contact an admin if there was a mistake");
         return { embeds: [embed] };
     }
 

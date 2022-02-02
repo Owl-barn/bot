@@ -1,5 +1,4 @@
-import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
-import { failEmbed } from "../lib/embedTemplate";
+import { HexColorString, MessageEmbed } from "discord.js";
 import logService from "../lib/logger.service";
 import throttleService from "../lib/throttle.service";
 import { returnMessage } from "../types/Command";
@@ -34,11 +33,13 @@ export default class InteractionCreate implements RavenEvent {
 
         if (!command) return;
 
-        if (command.adminOnly && !(msg.member as GuildMember).permissions.has("ADMINISTRATOR")) {
+        /*
+        if (command.adminOnly && !(msg.member as GuildMember).permissions.has("ADMINISTRATOR") && msg.user.id !== process.env.OWNER_ID) {
             await msg.reply({ embeds: [failEmbed.setDescription("You need admin perms to use this command")] })
                 .catch((x) => console.log(x));
             return;
         }
+        */
 
         if (command.group === CommandGroup.owner && msg.user.id !== process.env.OWNER_ID) return;
 
