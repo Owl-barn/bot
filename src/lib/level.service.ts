@@ -32,6 +32,10 @@ class LevelService {
         await this.db.level.createMany({ data: output });
     }
 
+    public clearThrottle = (): void => {
+        this.timeout = new Map();
+    }
+
     public message = async (msg: Message): Promise<void> => {
         if (!msg.guildId) return;
         const guildConfig = this.guilds.get(msg.guildId);
@@ -59,9 +63,13 @@ class LevelService {
             // Assign level roles.
             const roleRewards = await this.db.level_reward.findMany({ where: { guild_id: guild, level: { lte: current.level } } });
 
-            if (roleRewards.length > 0) {
+            const currentRoles = msg.member?.roles.cache.map(x => x.id);
+
+            const rolesToAdd = currentRoles ? roleRewards.filter(x => currentRoles?.indexOf(x.role_id) === -1) : roleRewards;
+
+            if (rolesToAdd.length > 0) {
                 const roles: RoleResolvable[] = [];
-                for (const x of roleRewards) {
+                for (const x of rolesToAdd) {
                     const role = msg.guild?.roles.resolveId(x.role_id);
                     if (!role) continue;
                     roles.push(role);
@@ -69,12 +77,13 @@ class LevelService {
                 await msg.member?.roles.add(roles);
             }
 
+
             // Notify user.
             if (guildConfig.message) {
                 let message = guildConfig.message;
                 message = message.replace("{LEVEL}", String(current.level));
                 message = message.replace("{USER}", `<@${user}>`);
-                message = message.replace("{NEW_ROLES}", String(roleRewards.length));
+                message = message.replace("{NEW_ROLES}", String(rolesToAdd.length));
 
                 if (guildConfig.channel) {
                     const channel = msg.guild?.channels.cache.get(guildConfig.channel) as GuildTextBasedChannel;

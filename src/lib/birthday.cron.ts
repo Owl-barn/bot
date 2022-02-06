@@ -3,6 +3,7 @@ import cron from "cron";
 import { TextBasedChannel } from "discord.js";
 import bot from "../app";
 import RavenClient from "../types/ravenClient";
+import levelService from "./level.service";
 
 const birthdayCron = new cron.CronJob("0 0 * * *", async () => {
     await birthdayLoop();
@@ -10,6 +11,8 @@ const birthdayCron = new cron.CronJob("0 0 * * *", async () => {
 
 export async function birthdayLoop(): Promise<void> {
     const client = bot.getClient();
+
+    levelService.clearThrottle();
 
     console.log("running loop");
 
