@@ -48,8 +48,6 @@ const GuildsGetService = async (req: RavenRequest, res: Response): Promise<void>
         });
     });
 
-    console.log("api aaaaaaa");
-
     webCache.setGuilds(req.user.user_id, responseGuilds);
 
 

@@ -2,11 +2,11 @@ import { Router, Response, NextFunction } from "express";
 import authMiddleware from "../../middleware/auth.middleware";
 import Controller from "../../types/controller";
 import { RavenRequest } from "../../types/web";
-import GuildGetService from "./guild.get.service";
-import GuildsGetService from "./guilds.get.service";
+import GuildGetService from "./user.guild.get.service";
+import GuildsGetService from "./user.guilds.get.service";
 
 export default class GuildsController implements Controller {
-    public path = "/guilds";
+    public path = "/guild";
     public router = Router();
 
     constructor() {

@@ -26,9 +26,6 @@ const GuildGetService = async (req: RavenRequest, res: Response): Promise<void> 
         commands: client.commands.map(x => { return { name: x.name, enabled: commands.find(y => y.name == x.name) !== undefined }; }),
     };
 
-
-    console.log(response);
-
     res.json(response);
 };
 
