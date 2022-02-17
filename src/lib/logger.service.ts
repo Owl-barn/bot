@@ -33,7 +33,7 @@ class logServiceClass {
             hidden,
         };
 
-        prisma.command_log.create({ data: query }).then(() => console.info(`${interaction.user.username}: ${commandName}: ${interaction.guild?.name}: ${hidden}`));
+        prisma.command_log.create({ data: query }).then(() => console.info(`${interaction.guild?.name}: ${interaction.user.username}: ${commandName}: ${hidden}`));
     }
 }
 

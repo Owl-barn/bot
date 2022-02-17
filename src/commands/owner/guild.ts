@@ -166,7 +166,7 @@ async function guildInfo(msg: RavenInteraction): Promise<InteractionReplyOptions
     const roles = guild.roles.cache.sort((x, y) => y.position - x.position);
     const roleOutput = roles.map(x => `id: ${x.id} name: ${x.name}`).join("\n");
 
-    const output = `${guild.name}\n\npremium: ${query?.premium}\n\nchannels:\n${channelOutput}\n\nroles:\n${roleOutput}`;
+    const output = `${guild.name}\n\npremium: ${query?.premium}\nlevel: ${query?.level}\n\nchannels:\n${channelOutput}\n\nroles:\n${roleOutput}`;
 
     const attachment = new MessageAttachment(Buffer.from(output), "info.txt");
 

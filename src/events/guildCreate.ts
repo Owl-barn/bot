@@ -43,6 +43,12 @@ export default class implements RavenEvent {
                 );
 
             await channel.send({ embeds: [embed], components: [component] }).catch(() => console.log("Couldnt send message in new server."));
+            const notifEmbed = new MessageEmbed()
+                .setColor(process.env.EMBED_COLOR as HexColorString)
+                .setTitle("New guild")
+                .setDescription(`Name: ${guild.name}\nID: ${guild.id}\nOwner: ${guild.ownerId}\nMembercount: ${guild.memberCount}`);
+
+            await (await guild.client.users.fetch(process.env.OWNER_ID as string)).send({ embeds: [notifEmbed] }).catch(() => null);
 
         } catch (e) {
             console.error(e);

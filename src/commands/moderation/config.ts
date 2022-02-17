@@ -14,6 +14,7 @@ import { configLevelSetChannel } from "./config/level/setChannel.module";
 import { configLevelRewardList } from "./config/level_rewards/list.module";
 import { configBirthdaySetChannel } from "./config/birthday/setChannel.module";
 import { configBirthdaySetRole } from "./config/birthday/setRole.module";
+import { configLevelReset } from "./config/level/reset.module";
 
 module.exports = class extends Command {
     constructor() {
@@ -248,7 +249,7 @@ module.exports = class extends Command {
                     case "toggle": return await configLevelToggle(msg);
                     case "message": return await configLevelSetMessage(msg);
                     case "channel": return await configLevelSetChannel(msg);
-                    case "reset": return {};
+                    case "reset": return await configLevelReset(msg);
                 }
                 break;
             case "birthday":

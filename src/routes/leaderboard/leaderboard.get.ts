@@ -12,7 +12,7 @@ const leaderboardGet = async (req: RavenRequest, res: Response, next: NextFuncti
     const leaderboard = await prisma.level.findMany({ where: { guild_id: guildID }, orderBy: { experience: "desc" }, take: 50 });
     const guild = client.guilds.cache.get(guildID);
 
-    if (!guild) next(new NotFoundException());
+    if (!guild || !guild.available) next(new NotFoundException());
 
     const users = [];
     for (const x of leaderboard) {
