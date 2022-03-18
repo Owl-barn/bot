@@ -8,7 +8,7 @@ module.exports = class extends Command {
     constructor() {
         super({
             name: "ban",
-            description: "bans an user",
+            description: "bans a user",
             group: CommandGroup.moderation,
 
             guildOnly: true,

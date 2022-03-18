@@ -21,7 +21,7 @@ module.exports = class extends Command {
                 {
                     type: argumentType.subCommand,
                     name: "get",
-                    description: "get an user's birthday",
+                    description: "get a user's birthday",
                     subCommands: [
                         {
                             type: argumentType.user,
@@ -47,7 +47,7 @@ module.exports = class extends Command {
                 {
                     type: argumentType.subCommand,
                     name: "difference",
-                    description: "get an user's birthday",
+                    description: "get a user's birthday",
                     subCommands: [
                         {
                             type: argumentType.user,
