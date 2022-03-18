@@ -1,35 +1,15 @@
-import { guilds } from "@prisma/client";
 import { GuildTextBasedChannel, Message, RoleResolvable } from "discord.js";
 import prisma from "./db.service";
-
-const json = import("./levels.json");
+import GuildConfig from "./guildconfig.service";
 
 class LevelService {
     private levelArray: LevelArray[];
     private db = prisma;
     private timeout: Map<string, number> = new Map();
-    private guilds: Map<string, GuildConfig> = new Map();
     private maxLevel = 100;
 
     constructor() {
         this.levelArray = this.makeLevelArray(this.maxLevel);
-        this.sync().then(() => console.log("Loaded level guilds"));
-
-        // this.load().then(() => console.log("Loaded levels"));
-    }
-
-    private load = async () => {
-        const output = [];
-        const input = await json;
-        for (const x of input.default) {
-            output.push({
-                user_id: x.id,
-                guild_id: "467011741738336258",
-                experience: x.xp,
-            });
-        }
-
-        await this.db.level.createMany({ data: output });
     }
 
     public clearThrottle = (): void => {
@@ -38,8 +18,9 @@ class LevelService {
 
     public message = async (msg: Message): Promise<void> => {
         if (!msg.guildId) return;
-        const guildConfig = this.guilds.get(msg.guildId);
+        const guildConfig = GuildConfig.getGuild(msg.guildId);
         if (!guildConfig) return;
+        if (!guildConfig.levelEnabled) return;
 
         const id = `${msg.guildId}-${msg.author.id}`;
         const lastTimeout = this.timeout.get(id);
@@ -54,7 +35,7 @@ class LevelService {
 
         const current = this.calculateLevel(query.experience);
 
-        const toAdd = this.getRandomXP(guildConfig.modifier);
+        const toAdd = this.getRandomXP(guildConfig.levelModifier);
         current.currentXP += toAdd;
 
         if (current.currentXP >= this.levelArray[current.level].xp) {
@@ -79,14 +60,14 @@ class LevelService {
 
 
             // Notify user.
-            if (guildConfig.message) {
-                let message = guildConfig.message;
+            if (guildConfig.levelMessage) {
+                let message = guildConfig.levelMessage;
                 message = message.replace("{LEVEL}", String(current.level));
                 message = message.replace("{USER}", `<@${user}>`);
                 message = message.replace("{NEW_ROLES}", String(rolesToAdd.length));
 
-                if (guildConfig.channel) {
-                    const channel = msg.guild?.channels.cache.get(guildConfig.channel) as GuildTextBasedChannel;
+                if (guildConfig.levelChannel) {
+                    const channel = msg.guild?.channels.cache.get(guildConfig.levelChannel) as GuildTextBasedChannel;
                     if (!channel) {
                         await this.db.guilds.update({ where: { guild_id: guild }, data: { level_channel: null } });
                         msg.reply(message);
@@ -144,20 +125,6 @@ class LevelService {
         };
     }
 
-    public sync = async () => {
-        const guildQuery = await this.db.guilds.findMany({ where: { level: true } });
-        this.guilds = new Map();
-        for (const guild of guildQuery) this.toggleGuild(guild);
-    }
-
-    public toggleGuild = async (guild: guilds) => {
-        this.guilds.set(guild.guild_id, {
-            channel: guild.level_channel,
-            message: guild.level_message,
-            modifier: guild.level_modifier,
-        });
-    }
-
     /*
     private levelFromXP = (xp: number, maxLevel = 100): number => {
         const XPLevelArr = this.makeLevelArray(maxLevel);
@@ -169,12 +136,6 @@ class LevelService {
     */
 }
 
-
-interface GuildConfig {
-    modifier: number;
-    channel: string | null;
-    message: string | null;
-}
 
 interface LevelArray {
     level: number;

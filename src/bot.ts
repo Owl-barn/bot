@@ -6,6 +6,8 @@ import musicService from "./modules/music.service";
 import prisma from "./lib/db.service";
 import birthdayCron from "./lib/birthday.cron";
 import { registerButtons } from "./modules/button.initializer";
+import AFKService from "./lib/afk.service";
+import GuildConfig from "./lib/guildconfig.service";
 
 export default class Bot {
     private client: RavenClient;
@@ -26,6 +28,8 @@ export default class Bot {
         this.initializeCommands();
         this.initializeButtons();
         this.initializeDB();
+        AFKService;
+        GuildConfig.init();
         birthdayCron.start();
 
         this.listen();
