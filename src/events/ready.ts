@@ -1,3 +1,4 @@
+import VCService from "../lib/privateVC.service";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -15,6 +16,8 @@ export default class ready implements RavenEvent {
         });
 
         const guildList = client.guilds.cache.map(guild => ` - ID: ${guild.id.green}${` Owner: `.cyan}${guild.ownerId.green}${` Name: `.cyan}${guild.name.green}\n`.italic.cyan);
+
+        VCService.initialize(client);
 
         console.log(guildList.join(""));
     }

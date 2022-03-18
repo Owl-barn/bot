@@ -15,6 +15,8 @@ import { configLevelRewardList } from "./config/level_rewards/list.module";
 import { configBirthdaySetChannel } from "./config/birthday/setChannel.module";
 import { configBirthdaySetRole } from "./config/birthday/setRole.module";
 import { configLevelReset } from "./config/level/reset.module";
+import configVoiceLimit from "./config/voice/limit.module";
+import configVoiceToggle from "./config/voice/toggle.module";
 
 module.exports = class extends Command {
     constructor() {
@@ -222,6 +224,30 @@ module.exports = class extends Command {
                         },
                     ],
                 },
+                {
+                    type: argumentType.subCommandGroup,
+                    name: "voice",
+                    description: "settings for private vc",
+                    subCommands: [
+                        {
+                            type: argumentType.subCommand,
+                            name: "toggle",
+                            description: "toggles vc",
+                        },
+                        {
+                            type: argumentType.subCommand,
+                            name: "limit",
+                            description: "set max amount of private rooms",
+                            subCommands: [
+                                {
+                                    type: argumentType.integer,
+                                    name: "amount",
+                                    description: "How many rooms",
+                                },
+                            ],
+                        },
+                    ],
+                },
             ],
 
             throttling: {
@@ -265,7 +291,14 @@ module.exports = class extends Command {
                     case "list": return await configPermissionList(msg);
                 }
                 break;
+            case "voice":
+                switch (command) {
+                    case "toggle": return await configVoiceToggle(msg);
+                    case "limit": return await configVoiceLimit(msg);
+                }
+                break;
         }
+
         return { content: "a" };
     }
 };

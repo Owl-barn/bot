@@ -7,6 +7,7 @@ class GuildConfigClass {
     public init = async () => {
         const guildQuery = await db.guilds.findMany();
         for (const guild of guildQuery) this.updateGuild(guild);
+        console.log("Loaded guild configs");
     }
 
     public updateGuild = async (guild: guilds) => {

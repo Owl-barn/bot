@@ -16,6 +16,13 @@ export async function birthdayLoop(): Promise<void> {
 
     console.log("running loop");
 
+    if (!client.user) throw "No client user???";
+    const usercount = client.guilds.cache.reduce(((x: number, y) => x + y.memberCount), 0);
+    await client.user.setActivity(`for ${usercount} members`, {
+        type: "STREAMING",
+        url: "https://www.youtube.com/watch?v=VZrDxD0Za9I",
+    });
+
     const users = await client.db.$queryRaw`
     select * from birthdays
     where extract(month from birthday) = extract(month from current_timestamp)

@@ -1,4 +1,5 @@
 import { VoiceBasedChannel, VoiceState } from "discord.js";
+import VCService from "../lib/privateVC.service";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -7,6 +8,7 @@ export default class ready implements RavenEvent {
     once = false;
 
     async execute(oldState: VoiceState, newState: VoiceState): Promise<void> {
+        await VCService.onChange(oldState, newState).catch(x => console.error(x));
         const client = oldState.client as RavenClient;
         const subscription = client.musicService.get(oldState.guild.id);
         if (!subscription || subscription.destroyed) return;

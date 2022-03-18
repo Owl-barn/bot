@@ -16,6 +16,9 @@ model guilds {
   birthday_role    String? @db.Char(18)
   birthday_channel String? @db.Char(18)
 
+  vc_channel_id String? @db.Char(18)
+  vc_limit      Int     @default(4) @db.Integer()
+
   level_modifier Float   @default(1.0) @db.DoublePrecision()
   level_channel  String? @db.Char(18)
   level_message  String? @default("You leveled up!, you're now {LEVEL}") @db.VarChar(256)
@@ -32,6 +35,8 @@ model guilds {
   rcon           rcon[]
   levels         level[]
   level_reward   level_reward[]
+  afk            afk[]
+  private_vc     private_vc[]
 }
 
 model level {
@@ -58,6 +63,32 @@ model level_reward {
   guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
   @@unique([role_id])
+}
+
+model afk {
+  created  DateTime @default(now()) @db.Timestamp(0)
+  user_id  String   @db.Char(18)
+  guild_id String   @db.Char(18)
+
+  reason String? @db.VarChar(256)
+  global Boolean @db.Boolean
+
+  guild guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([guild_id, user_id])
+}
+
+model private_vc {
+  created  DateTime @default(now()) @db.Timestamp(0)
+  user_id  String   @db.Char(18)
+  guild_id String   @db.Char(18)
+
+  main_channel_id String @unique @db.Char(18)
+  wait_channel_id String @unique @db.Char(18)
+
+  guild guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([user_id, guild_id])
 }
 
 model birthdays {
