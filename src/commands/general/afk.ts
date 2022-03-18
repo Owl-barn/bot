@@ -41,8 +41,10 @@ module.exports = class extends Command {
         let global = msg.options.getBoolean("global");
         let reason = msg.options.getString("reason");
 
-        reason = reason ? reason.substring(0, 127) : null;
-        global = global === null ? true : global;
+        global = global === null ? false : global;
+
+        if (global || reason == null) reason = null;
+        else reason = reason.substring(0, 127);
 
         await client.db.afk.deleteMany({ where: { user_id: msg.user.id, global: true } });
 
