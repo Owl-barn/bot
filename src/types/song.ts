@@ -38,7 +38,7 @@ export default class Song {
     }
 
     public getStream = async (): Promise<AudioResource<Song>> => {
-        const source = await play.stream(this.url, { quality: 2 });
+        const source = await play.stream(this.url, { quality: 0 });
         const resource = createAudioResource(source.stream, { inputType: source.type, metadata: this });
         return resource;
     }
