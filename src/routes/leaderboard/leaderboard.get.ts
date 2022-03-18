@@ -9,7 +9,7 @@ const leaderboardGet = async (req: RavenRequest, res: Response, next: NextFuncti
     const guildID = req.params.id;
     const client = bot.getClient();
 
-    const leaderboard = await prisma.level.findMany({ where: { guild_id: guildID }, orderBy: { experience: "desc" }, take: 50 });
+    const leaderboard = await prisma.level.findMany({ where: { guild_id: guildID }, orderBy: { experience: "desc" }, take: 100 });
     const guild = client.guilds.cache.get(guildID);
 
     if (!guild || !guild.available) next(new NotFoundException());
@@ -33,7 +33,7 @@ const leaderboardGet = async (req: RavenRequest, res: Response, next: NextFuncti
         response.push(x);
     }
 
-    response.splice(25, response.length - 25);
+    // response.splice(25, response.length - 25);
 
 
     res.json(response);
