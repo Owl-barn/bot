@@ -37,7 +37,7 @@ module.exports = class extends Command {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
 
-        const settings: ImageURLOptions = { dynamic: true, size: 4096 };
+        const settings: ImageURLOptions = { dynamic: true, size: 4096, format: "png" };
         const user = msg.options.getMember("user") as GuildMember | null;
         const global = msg.options.getBoolean("global");
         const member = user || msg.member as GuildMember;
