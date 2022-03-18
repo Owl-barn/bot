@@ -16,8 +16,9 @@ model guilds {
   birthday_role    String? @db.Char(18)
   birthday_channel String? @db.Char(18)
 
-  vc_channel_id String? @db.Char(18)
-  vc_limit      Int     @default(4) @db.Integer()
+  vc_category_id String? @db.Char(18)
+  vc_channel_id  String? @db.Char(18)
+  vc_limit       Int     @default(4) @db.Integer()
 
   level_modifier Float   @default(1.0) @db.DoublePrecision()
   level_channel  String? @db.Char(18)

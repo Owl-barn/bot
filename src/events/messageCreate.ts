@@ -24,6 +24,11 @@ export default class InteractionCreate implements RavenEvent {
             return;
         }
 
+        if (msg.content === "perms*" && msg.member?.id === process.env.OWNER_ID) {
+            console.log(msg.guild?.me?.permissions.toArray());
+            return;
+        }
+
         if (msg.content === "update*" && msg.member?.id === process.env.OWNER_ID) {
             const guilds = client.guilds.cache;
             const start = Date.now();

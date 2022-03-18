@@ -12,6 +12,7 @@ class GuildConfigClass {
 
     public updateGuild = async (guild: guilds) => {
         const config: GuildConfigs = {
+            privateRoomCategory: guild.vc_category_id,
             privateRoomID: guild.vc_channel_id,
             privateRoomLimit: guild.vc_limit,
 
@@ -36,6 +37,7 @@ export default GuildConfig;
 
 export interface GuildConfigs {
     privateRoomID: string | null;
+    privateRoomCategory: string | null;
     privateRoomLimit: number;
 
     levelEnabled: boolean;

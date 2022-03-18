@@ -1,4 +1,4 @@
-import { MessageEmbed, HexColorString } from "discord.js";
+import { MessageEmbed, HexColorString, OverwriteResolvable } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 import GuildConfig from "../../../../lib/guildconfig.service";
@@ -7,27 +7,45 @@ export default async function configVoiceToggle(msg: RavenInteraction): Promise<
     if (!msg.guildId) throw "No guildID???";
 
     let channelID = null;
+    let categoryID = null;
     const config = await msg.client.db.guilds.findUnique({ where: { guild_id: msg.guildId as string } });
+    const botPerms: OverwriteResolvable = { id: msg.client.user?.id as string, allow: ["VIEW_CHANNEL", "CONNECT", "MANAGE_CHANNELS"] };
     if (!config) throw "No guild??";
 
     if (config.vc_channel_id) {
         const channel = msg.guild?.channels.cache.get(config.vc_channel_id);
-        if (channel) await channel.delete().catch(null);
+        const category = msg.guild?.channels.cache.get(config.vc_category_id as string);
+
+        if (channel) await channel.delete().catch(x => console.error(x));
+        if (category) await category.delete().catch(x => console.error(x));
+
     } else {
-        const channel = await msg.guild?.channels.create("Create private room", {
-            type: 2,
-            permissionOverwrites: [{
-                id: msg.guildId as string,
-                allow: ["CONNECT"],
-                deny: ["SPEAK"],
-            }],
+        const category = await msg.guild?.channels.create("🔒 Private Rooms", {
+            type: 4,
+            permissionOverwrites: [
+                botPerms,
+                {
+                    id: msg.guildId,
+                    allow: ["CONNECT"],
+                    deny: ["SPEAK"],
+                }],
         });
 
-        if (!channel) throw "Couldnt make vc";
+        if (!category) throw "Couldnt make category channel.";
+
+        const channel = await msg.guild?.channels.create("Create private room", {
+            type: 2,
+            parent: category.id,
+            permissionOverwrites: [botPerms],
+        });
+
+        if (!channel || !category) throw "Couldnt make vc";
+
         channelID = channel.id;
+        categoryID = category.id;
     }
 
-    const query = await msg.client.db.guilds.update({ where: { guild_id: msg.guildId as string }, data: { vc_channel_id: channelID } });
+    const query = await msg.client.db.guilds.update({ where: { guild_id: msg.guildId as string }, data: { vc_channel_id: channelID, vc_category_id: categoryID } });
     GuildConfig.updateGuild(query);
 
     const embed = new MessageEmbed()
