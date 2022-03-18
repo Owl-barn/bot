@@ -1,5 +1,5 @@
 import { HexColorString, MessageEmbed } from "discord.js";
-import levelService from "../../../../lib/level.service";
+import GuildConfig from "../../../../lib/guildconfig.service";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
@@ -15,7 +15,7 @@ export async function configLevelSetChannel(msg: RavenInteraction): Promise<retu
         : embed.setDescription("successfully disabled the level up channel");
 
     const guild = await msg.client.db.guilds.update({ where: { guild_id: msg.guildId }, data: { level_channel: channel?.id } });
-    await levelService.toggleGuild(guild);
+    GuildConfig.updateGuild(guild);
 
     return { embeds: [embed] };
 }

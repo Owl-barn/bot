@@ -1,5 +1,5 @@
 import { HexColorString, MessageEmbed } from "discord.js";
-import levelService from "../../../../lib/level.service";
+import GuildConfig from "../../../../lib/guildconfig.service";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
@@ -8,7 +8,7 @@ export async function configLevelToggle(msg: RavenInteraction): Promise<returnMe
     const state = msg.options.getBoolean("state", true);
 
     const guild = await msg.client.db.guilds.update({ where: { guild_id: msg.guildId }, data: { level: state } });
-    await levelService.toggleGuild(guild);
+    GuildConfig.updateGuild(guild);
 
     const embed = new MessageEmbed()
         .setDescription(`Successfully toggled the level system, it is now \`${state ? "on" : "off"}\``)

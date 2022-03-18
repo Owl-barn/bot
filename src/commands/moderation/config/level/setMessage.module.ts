@@ -1,5 +1,5 @@
 import { HexColorString, MessageEmbed } from "discord.js";
-import levelService from "../../../../lib/level.service";
+import GuildConfig from "../../../../lib/guildconfig.service";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
@@ -19,7 +19,7 @@ export async function configLevelSetMessage(msg: RavenInteraction): Promise<retu
     }
 
     const guild = await msg.client.db.guilds.update({ where: { guild_id: msg.guildId }, data: { level_message: message } });
-    await levelService.toggleGuild(guild);
+    GuildConfig.updateGuild(guild);
 
     return { embeds: [embed] };
 }
