@@ -1,11 +1,13 @@
-import { private_vc } from "@prisma/client";
 import { GuildMember, OverwriteResolvable, VoiceChannel, VoiceState } from "discord.js";
 import RavenClient from "../types/ravenClient";
 import db from "./db.service";
 import GuildConfig from "./guildconfig.service";
 
+const adjectives = ["Cool", "Fancy", "Nice", "Swaggy", "Based", "Stinky", "Mommy", "Irish",
+    "Musical", "Happy", "Big", "Sussy", "Goth", "Swedish"];
+const nouns = ["Owl", "Borb", "Frog", "Froggy", "Pigeon", "Ogre", "Clara", "HousePlant", "Goth"];
+
 class VCServiceClass {
-    private rooms: private_vc[] = [];
     private ratelimit: Set<string> = new Set();
     private delays: Map<string, NodeJS.Timeout> = new Map();
 
@@ -35,8 +37,6 @@ class VCServiceClass {
 
                 continue;
             }
-
-            this.rooms.push(room);
         }
 
         console.log("VC Service loaded");
@@ -52,26 +52,34 @@ class VCServiceClass {
         if (!member) return;
         if (member.user.bot) return;
         const guildConfig = GuildConfig.getGuild(current.guild.id);
+        const rooms = guildConfig?.privateRooms;
 
         if (old.channelId == current.channelId) return;
-        if (old.channelId && this.rooms.find(x => x.main_channel_id == old.channelId)) {
+        if (old.channelId && rooms?.find(x => x.main_channel_id == old.channelId)) {
             this.leaveHub(old);
         }
         if (current.channelId) {
             if (guildConfig?.privateRoomID == current.channelId) {
                 this.createHub(current);
             }
-            if (this.rooms.find(x => x.main_channel_id == current.channelId)) {
+            if (rooms?.find(x => x.main_channel_id == current.channelId)) {
                 this.joinHub(current);
             }
         }
     }
 
+    private startDelete(vc: VoiceState, delay: number) {
+        this.delays.set(vc.channelId as string, setTimeout(() => this.disbandVC(vc).catch(e => console.error(e)), delay));
+    }
+
     private async leaveHub(vc: VoiceState) {
         const channel = vc.channel as VoiceChannel;
         const members = channel.members.filter(x => !x.user.bot);
-        if (members.size == 0) {
-            this.delays.set(vc.channelId as string, setTimeout(() => this.disbandVC(vc), 60000));
+        console.log(`Member left: ${members.size}`.red);
+        if (members.size <= 1) {
+            const delay = members.size == 1 ? 180000 : 60000;
+            console.log(`delete delay start: ${delay}`.red);
+            this.startDelete(vc, delay);
         }
     }
 
@@ -79,10 +87,21 @@ class VCServiceClass {
         const member = vc.member as GuildMember;
         if (!vc.channel || !vc.channel.manageable) return;
         if (member.user.bot) return;
+        console.log(`Member joined`.green);
+
         const timeout = this.delays.get(vc.channelId as string);
         if (timeout) {
             clearTimeout(timeout);
             this.delays.delete(vc.channelId as string);
+
+            const channel = vc.channel as VoiceChannel;
+            const members = channel.members.filter(x => !x.user.bot);
+
+            console.log(`delete delay removed, size: ${members.size}`.green);
+            if (members.size == 1) {
+                this.startDelete(vc, 180000);
+                console.log(`delete delay added 180000`.red);
+            }
         }
 
         if (vc.channel.permissionOverwrites.cache.get(member.id)) return;
@@ -114,7 +133,9 @@ class VCServiceClass {
         const roomBot: OverwriteResolvable = { id: vc.client.user?.id as string, allow: ["MANAGE_CHANNELS", "VIEW_CHANNEL", "CONNECT"] };
         const roomLock: OverwriteResolvable = { id: vc.guild.id, deny: ["CONNECT"], allow: ["STREAM"] };
 
-        const room = await vc.guild.channels.create(`🔒 Private vc #${this.rooms.length + 1}`,
+        const channelName = adjectives[Math.floor(Math.random() * adjectives.length)] + nouns[Math.floor(Math.random() * nouns.length)];
+
+        const room = await vc.guild.channels.create(`🔒 ${channelName} VC`,
             {
                 type: 2,
                 parent: guildConfig.privateRoomCategory as string,
@@ -122,7 +143,7 @@ class VCServiceClass {
             },
         );
 
-        const wait = await vc.guild.channels.create(`🕐 waiting room #${this.rooms.length + 1}`,
+        const wait = await vc.guild.channels.create(`🕐 ${channelName} Waiting Room`,
             {
                 type: 2,
                 parent: guildConfig.privateRoomCategory as string,
@@ -130,15 +151,18 @@ class VCServiceClass {
             },
         );
 
-        const roomQuery = await db.private_vc.create({ data: { user_id: member.id, guild_id: vc.guild.id, main_channel_id: room.id, wait_channel_id: wait.id } });
-        this.rooms.push(roomQuery);
+        await db.private_vc.create({ data: { user_id: member.id, guild_id: vc.guild.id, main_channel_id: room.id, wait_channel_id: wait.id } });
+        GuildConfig.updateGuild(vc.guild.id);
 
         await vc.member?.voice.setChannel(room.id, "Created private room");
+        this.startDelete(vc, 180000);
+        console.log(`delete delay added 180000`.red);
     }
 
     public async disbandVC(vc: VoiceState) {
         if (!vc.channel || !vc.channelId) return;
-        const query = await db.private_vc.findUnique({ where: { main_channel_id: vc.channelId } });
+        const channelId = vc.channelId;
+        const query = await db.private_vc.findUnique({ where: { main_channel_id: channelId } });
         if (!query) return;
 
         this.ratelimit.add(query.user_id);
@@ -150,8 +174,9 @@ class VCServiceClass {
         if (mainRoom) mainRoom.deletable ? await mainRoom.delete("Session expired").catch(x => console.error(x)) : console.error(`Couldnt delete ${mainRoom.id}`.red);
         if (WaitRoom) WaitRoom.deletable ? await WaitRoom.delete("Session expired").catch(x => console.error(x)) : console.error(`Couldnt delete ${WaitRoom.id}`.red);
 
-        await db.private_vc.delete({ where: { main_channel_id: vc.channelId } });
+        await db.private_vc.delete({ where: { main_channel_id: channelId } });
 
+        GuildConfig.updateGuild(vc.guild.id);
         console.log(`Deleted private room`);
     }
 }

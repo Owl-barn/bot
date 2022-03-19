@@ -1,4 +1,4 @@
-import { guilds } from "@prisma/client";
+import { guilds, private_vc } from "@prisma/client";
 import db from "./db.service";
 
 class GuildConfigClass {
@@ -10,11 +10,16 @@ class GuildConfigClass {
         console.log("Loaded guild configs");
     }
 
-    public updateGuild = async (guild: guilds) => {
+    public updateGuild = async (guild: guilds | string) => {
+        if (typeof guild == "string") {
+            guild = await db.guilds.findUnique({ where: { guild_id: guild } }) as guilds;
+        }
+        const rooms = await db.private_vc.findMany({ where: { guild_id: guild.guild_id } });
         const config: GuildConfigs = {
             privateRoomCategory: guild.vc_category_id,
             privateRoomID: guild.vc_channel_id,
             privateRoomLimit: guild.vc_limit,
+            privateRooms: rooms,
 
             levelEnabled: guild.level,
             levelModifier: guild.level_modifier,
@@ -39,6 +44,7 @@ export interface GuildConfigs {
     privateRoomID: string | null;
     privateRoomCategory: string | null;
     privateRoomLimit: number;
+    privateRooms: private_vc[];
 
     levelEnabled: boolean;
     levelModifier: number;
