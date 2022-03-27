@@ -8,6 +8,7 @@ import birthdayCron from "./lib/birthday.cron";
 import { registerButtons } from "./modules/button.initializer";
 import AFKService from "./lib/afk.service";
 import GuildConfig from "./lib/guildconfig.service";
+import * as play from "play-dl";
 
 export default class Bot {
     private client: RavenClient;
@@ -31,6 +32,14 @@ export default class Bot {
         AFKService;
         GuildConfig.init();
         birthdayCron.start();
+        play.setToken({
+            spotify: {
+                client_id: process.env.SP_ID as string,
+                client_secret: process.env.SP_SECRET as string,
+                refresh_token: process.env.SP_RT as string,
+                market: process.env.SP_MARKET as string,
+            },
+        });
 
         this.listen();
     }

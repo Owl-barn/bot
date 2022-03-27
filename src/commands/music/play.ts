@@ -43,7 +43,7 @@ module.exports = class extends Command {
         });
     }
 
-    async execute(msg: RavenInteraction): Promise<returnMessage> {
+    execute = async (msg: RavenInteraction): Promise<returnMessage> => {
         const member = msg.member as GuildMember;
         const vc = member.voice.channel;
         const client = msg.client as RavenClient;
@@ -61,23 +61,13 @@ module.exports = class extends Command {
 
         if (vc === null && !(dj && subscription)) { return { embeds: [failEmbed.setDescription("Join a voicechannel first.")] }; }
 
-
         await msg.deferReply({ ephemeral: hidden });
 
         if (subscription && vc?.id !== subscription.voiceConnection.joinConfig.channelId && !(dj && force)) {
             return { embeds: [failEmbed.setDescription("Join the same vc as the bot first.")] };
         }
 
-        let searchResult: play.YouTubeVideo | null;
-
-        if (searchQuery.startsWith("https") && play.yt_validate(searchQuery) === "video") {
-            const result = await play.video_info(searchQuery).catch(() => null);
-            if (!result) return { embeds: [failEmbed.setDescription("Could not play this song")] };
-            searchResult = result.video_details;
-        } else {
-            const result = await play.search(searchQuery, { source: { youtube: "video" }, limit: 1, fuzzy: true });
-            searchResult = result[0];
-        }
+        const searchResult = await this.searchSong(searchQuery).catch(() => null);
 
         if (!searchResult) return { embeds: [failEmbed.setDescription("no searchresults found")] };
 
@@ -133,5 +123,29 @@ module.exports = class extends Command {
         }
 
         return { embeds: [embed] };
+    }
+
+    searchSong = async (searchQuery: string) => {
+        // If not Url search yt.
+        if (!searchQuery.startsWith("https")) return await this.searchVideo(searchQuery);
+
+        // If yt video.
+        if (play.yt_validate(searchQuery) === "video") {
+            const result = await play.video_info(searchQuery).catch(() => null);
+            if (!result) throw "Couldnt play this song";
+            return result.video_details;
+        }
+
+        // If spotify url
+        if (play.sp_validate(searchQuery) == "track") {
+            const song = await play.spotify(searchQuery) as play.SpotifyTrack;
+            return this.searchVideo(`${song.name} - ${song.artists[0].name}`);
+        }
+
+        return await this.searchVideo(searchQuery);
+    }
+
+    searchVideo = async (searchQuery: string) => {
+        return (await play.search(searchQuery, { source: { youtube: "video" }, limit: 1, fuzzy: true }))[0];
     }
 };
