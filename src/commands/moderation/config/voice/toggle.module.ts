@@ -1,4 +1,4 @@
-import { MessageEmbed, HexColorString, OverwriteResolvable } from "discord.js";
+import { MessageEmbed, HexColorString } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 import GuildConfig from "../../../../lib/guildconfig.service";
@@ -9,7 +9,6 @@ export default async function configVoiceToggle(msg: RavenInteraction): Promise<
     let channelID = null;
     let categoryID = null;
     const config = await msg.client.db.guilds.findUnique({ where: { guild_id: msg.guildId as string } });
-    const botPerms: OverwriteResolvable = { id: msg.client.user?.id as string, allow: ["VIEW_CHANNEL", "CONNECT", "MANAGE_CHANNELS"] };
     if (!config) throw "No guild??";
 
     if (config.vc_channel_id) {
@@ -23,11 +22,14 @@ export default async function configVoiceToggle(msg: RavenInteraction): Promise<
         const category = await msg.guild?.channels.create("🔒 Private Rooms", {
             type: 4,
             permissionOverwrites: [
-                botPerms,
+                {
+                    id: msg.client.user?.id as string,
+                    allow: ["VIEW_CHANNEL", "CONNECT", "MANAGE_CHANNELS", "MOVE_MEMBERS", "STREAM", "SPEAK"],
+                },
                 {
                     id: msg.guildId,
                     allow: ["CONNECT"],
-                    deny: ["SPEAK"],
+                    deny: ["SPEAK", "STREAM"],
                 }],
         });
 
@@ -36,7 +38,6 @@ export default async function configVoiceToggle(msg: RavenInteraction): Promise<
         const channel = await msg.guild?.channels.create("Create private room", {
             type: 2,
             parent: category.id,
-            permissionOverwrites: [botPerms],
         });
 
         if (!channel || !category) throw "Couldnt make vc";

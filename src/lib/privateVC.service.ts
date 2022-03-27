@@ -1,4 +1,4 @@
-import { GuildMember, OverwriteResolvable, VoiceChannel, VoiceState } from "discord.js";
+import { GuildChannelCreateOptions, GuildMember, OverwriteResolvable, VoiceChannel, VoiceState } from "discord.js";
 import RavenClient from "../types/ravenClient";
 import db from "./db.service";
 import GuildConfig from "./guildconfig.service";
@@ -51,70 +51,61 @@ class VCServiceClass {
 
         if (!member) return;
         if (member.user.bot) return;
+
         const guildConfig = GuildConfig.getGuild(current.guild.id);
         const rooms = guildConfig?.privateRooms;
 
         if (old.channelId == current.channelId) return;
         if (old.channelId && rooms?.find(x => x.main_channel_id == old.channelId)) {
-            this.leaveHub(old);
+            this.leaveHub(old).catch(e => console.error(e));
         }
+
         if (current.channelId) {
             if (guildConfig?.privateRoomID == current.channelId) {
-                this.createHub(current);
+                this.createHub(current).catch(e => console.error(e));
             }
             if (rooms?.find(x => x.main_channel_id == current.channelId)) {
-                this.joinHub(current);
+                this.joinHub(current).catch(e => console.error(e));
             }
         }
     }
 
     private startDelete(vc: VoiceState, delay: number) {
-        this.delays.set(vc.channelId as string, setTimeout(() => this.disbandVC(vc).catch(e => console.error(e)), delay));
+        this.delays.set(vc.channelId as string, setTimeout(() => this.disbandVC(vc)
+            .catch(e => console.error(e)), delay));
     }
 
     private async leaveHub(vc: VoiceState) {
-        const channel = vc.channel as VoiceChannel;
-        const members = channel.members.filter(x => !x.user.bot);
-        console.log(`Member left: ${members.size}`.red);
-        if (members.size <= 1) {
-            const delay = members.size == 1 ? 180000 : 60000;
-            console.log(`delete delay start: ${delay}`.red);
-            this.startDelete(vc, delay);
-        }
+        const memberCount = this.getMemberCount(vc);
+        if (memberCount == 0) this.disbandVC(vc);
+        // else if (memberCount == 1) this.startDelete(vc, 180000);
     }
 
     private async joinHub(vc: VoiceState) {
         const member = vc.member as GuildMember;
-        if (!vc.channel || !vc.channel.manageable) return;
-        if (member.user.bot) return;
-        console.log(`Member joined`.green);
+        if (!vc.channel) return;
 
+        // Remove timeout if exists.
         const timeout = this.delays.get(vc.channelId as string);
         if (timeout) {
             clearTimeout(timeout);
             this.delays.delete(vc.channelId as string);
-
-            const channel = vc.channel as VoiceChannel;
-            const members = channel.members.filter(x => !x.user.bot);
-
-            console.log(`delete delay removed, size: ${members.size}`.green);
-            if (members.size == 1) {
-                this.startDelete(vc, 180000);
-                console.log(`delete delay added 180000`.red);
-            }
         }
 
+        // Add join perms if not already have.
         if (vc.channel.permissionOverwrites.cache.get(member.id)) return;
         vc.channel.permissionOverwrites.create(member.id, { CONNECT: true });
     }
 
     private async createHub(vc: VoiceState) {
         const member = vc.member as GuildMember;
+
         if (this.ratelimit.has(member.id)) return;
+
         const guildConfig = GuildConfig.getGuild(vc.guild.id);
         if (!guildConfig) return;
 
-        const activeVC = await db.private_vc.findMany({ where: { guild_id: vc.guild.id } });
+        const activeVC = guildConfig.privateRooms;
 
         if (activeVC.length > 0) {
             // Already has a vc.
@@ -127,36 +118,39 @@ class VCServiceClass {
             }
         }
 
-        console.log("Creating hub...");
-
+        // Channel perms.
         const roomOwner: OverwriteResolvable = { id: vc.member?.id as string, allow: ["MOVE_MEMBERS", "CONNECT"] };
         const roomBot: OverwriteResolvable = { id: vc.client.user?.id as string, allow: ["MANAGE_CHANNELS", "VIEW_CHANNEL", "CONNECT"] };
-        const roomLock: OverwriteResolvable = { id: vc.guild.id, deny: ["CONNECT"], allow: ["STREAM"] };
+        const roomLock: OverwriteResolvable = { id: vc.guild.id, deny: ["CONNECT"], allow: ["STREAM", "SPEAK"] };
+        const finns: OverwriteResolvable = { id: "399435813580046356", allow: ["STREAM", "SPEAK", "CONNECT"] };
 
+        // Generate channel name.
         const channelName = adjectives[Math.floor(Math.random() * adjectives.length)] + nouns[Math.floor(Math.random() * nouns.length)];
 
-        const room = await vc.guild.channels.create(`🔒 ${channelName} VC`,
-            {
-                type: 2,
-                parent: guildConfig.privateRoomCategory as string,
-                permissionOverwrites: [roomBot, roomLock, roomOwner],
-            },
-        );
+        // Room config.
+        const roomConfig: GuildChannelCreateOptions = { type: 2, parent: guildConfig.privateRoomCategory as string };
 
-        const wait = await vc.guild.channels.create(`🕐 ${channelName} Waiting Room`,
-            {
-                type: 2,
-                parent: guildConfig.privateRoomCategory as string,
-                permissionOverwrites: [roomBot, roomOwner],
-            },
-        );
+        const roomList = [roomBot, roomLock, roomOwner];
+        const waitList = [roomBot, roomOwner];
 
+        if (vc.guild.id == "396330910162616321") {
+            roomList.push(finns);
+            waitList.push(finns);
+        }
+        // Create rooms.
+        const room = await vc.guild.channels.create(`🔒 ${channelName} VC`, { ...roomConfig, permissionOverwrites: roomList });
+        const wait = await vc.guild.channels.create(`🕐 ${channelName} Waiting Room`, { ...roomConfig, permissionOverwrites: waitList });
+
+
+        // Put into db and update local config.
         await db.private_vc.create({ data: { user_id: member.id, guild_id: vc.guild.id, main_channel_id: room.id, wait_channel_id: wait.id } });
         GuildConfig.updateGuild(vc.guild.id);
 
+        // Move user.
         await vc.member?.voice.setChannel(room.id, "Created private room");
-        this.startDelete(vc, 180000);
-        console.log(`delete delay added 180000`.red);
+
+        // Add Remove delay.
+        // this.startDelete(vc, 600000);
     }
 
     public async disbandVC(vc: VoiceState) {
@@ -177,7 +171,12 @@ class VCServiceClass {
         await db.private_vc.delete({ where: { main_channel_id: channelId } });
 
         GuildConfig.updateGuild(vc.guild.id);
-        console.log(`Deleted private room`);
+    }
+
+    private getMemberCount(vc: VoiceState) {
+        const channel = vc.channel as VoiceChannel;
+        const members = channel.members.filter(x => !x.user.bot);
+        return members.size;
     }
 }
 
