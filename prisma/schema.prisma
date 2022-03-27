@@ -13,6 +13,8 @@ model guilds {
   premium  Boolean  @default(false) @db.Boolean
   dev      Boolean  @default(false) @db.Boolean
 
+  log_channel String? @db.Char(18)
+
   birthday_role    String? @db.Char(18)
   birthday_channel String? @db.Char(18)
 

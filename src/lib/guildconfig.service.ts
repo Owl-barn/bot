@@ -21,6 +21,8 @@ class GuildConfigClass {
             privateRoomLimit: guild.vc_limit,
             privateRooms: rooms,
 
+            log_channel: guild.log_channel,
+
             levelEnabled: guild.level,
             levelModifier: guild.level_modifier,
             levelChannel: guild.level_channel,
@@ -45,6 +47,8 @@ export interface GuildConfigs {
     privateRoomCategory: string | null;
     privateRoomLimit: number;
     privateRooms: private_vc[];
+
+    log_channel: string | null;
 
     levelEnabled: boolean;
     levelModifier: number;

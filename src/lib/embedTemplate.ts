@@ -5,6 +5,10 @@ export function embedTemplate(): MessageEmbed {
 }
 
 export function failEmbedTemplate(): MessageEmbed {
-    return new MessageEmbed()
-        .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+    return new MessageEmbed().setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+}
+
+
+export function warningEmbedTemplate(): MessageEmbed {
+    return new MessageEmbed().setColor(process.env.EMBED_WARNING_COLOR as HexColorString);
 }
