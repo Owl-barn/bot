@@ -74,7 +74,6 @@ export default class musicService {
     public getCurrent = (): Song | null => this.current;
 
     public stop(): void {
-        console.log(`music ended in ${this.voiceConnection.joinConfig.guildId}`.yellow);
         this.queue = [];
         this.player.stop(true);
         if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
@@ -84,8 +83,6 @@ export default class musicService {
 
     // IDLE
     public setIdle = (x: boolean): void => {
-        if (x) console.log(`vc empty in ${this.voiceConnection.joinConfig.guildId}`.red);
-        if (!x && this.idle) console.log(`vc reinstated in ${this.voiceConnection.joinConfig.guildId}`.green);
         x ? this.idle = setTimeout(() => this.stop(), 180000) : clearTimeout(this.idle);
     }
 
@@ -168,7 +165,6 @@ export default class musicService {
     }
 
     public startStopTimer(): void {
-        console.log(`music queue ended in ${this.voiceConnection.joinConfig.guildId}`.yellow);
         this.timeout = setTimeout(() => this.stop(), 180000);
     }
 
