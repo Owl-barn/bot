@@ -129,6 +129,10 @@ module.exports = class extends Command {
         // If not Url search yt.
         if (!searchQuery.startsWith("https")) return await this.searchVideo(searchQuery);
 
+        if (!play.is_expired()) {
+            await play.refreshToken();
+        }
+
         // If yt video.
         if (play.yt_validate(searchQuery) === "video") {
             const result = await play.video_info(searchQuery).catch(() => null);
