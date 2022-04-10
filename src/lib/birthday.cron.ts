@@ -7,7 +7,7 @@ import levelService from "./level.service";
 
 const birthdayCron = new cron.CronJob("0 0 * * *", async () => {
     await birthdayLoop();
-}, null, true, "Europe/London");
+}, null, true, "UTC");
 
 export async function birthdayLoop(): Promise<void> {
     const client = bot.getClient();
@@ -28,6 +28,8 @@ export async function birthdayLoop(): Promise<void> {
     where extract(month from birthday) = extract(month from current_timestamp)
     and extract(day from birthday) = extract(day from current_timestamp)
     ` as birthdays[];
+
+    console.log(users);
 
     const guildsDB = await client.db.guilds.findMany({ where: { OR: [{ NOT: { birthday_role: null } }, { NOT: { birthday_channel: null } }] } });
 
