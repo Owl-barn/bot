@@ -72,25 +72,9 @@ export default class InteractionCreate implements RavenEvent {
             return;
         }
 
-        if (msg.content === "levels*" && (msg.member?.id === process.env.OWNER_ID || msg.member?.id === "308274118183223297")) {
-            const staff = [
-                "325734188101926912",
-                "313259996739534849",
-                "436272901700976659",
-                "208623028798619648",
-                "750593174593994843",
-                "934705041879760926",
-                "316004787378192384",
-                "308274118183223297",
-                "217742553632473089",
-                "526876208521150503",
-                "174689636310974464",
-                "231932258519482368",
-                "500022065009786900",
-                "444610964575354901",
-                "568441584639541259",
-            ];
-
+        if (msg.content === "levels*" && (msg.member?.id === process.env.OWNER_ID || msg.member?.id === "174689636310974464")) {
+            const staff = msg.guild?.roles.cache.get("399435813580046356")?.members.map(x => x.id);
+            if (!staff) return;
             const staffLevels = await client.db.level.findMany({ where: { user_id: { in: staff }, guild_id: "396330910162616321" }, orderBy: { experience: "desc" } });
 
             let response = "levels: \n";
