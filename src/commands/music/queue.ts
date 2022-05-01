@@ -68,7 +68,7 @@ module.exports = class extends Command {
             embed.addField("Loop", "🔁 *enabled*");
         }
 
-        embed.setFooter(`Queue length: ${new Date(subscription.queueLength() * 1000).toISOString().slice(11, 19)}`);
+        embed.setFooter({ text: `Queue length: ${new Date(subscription.queueLength() * 1000).toISOString().slice(11, 19)}` });
 
         return { embeds: [embed] };
     }
