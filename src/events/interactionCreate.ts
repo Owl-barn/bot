@@ -25,6 +25,10 @@ export default class InteractionCreate implements RavenEvent {
         }
     }
 
+    async quickReply(msg: RavenInteraction, content: string): Promise<void> {
+        await msg.reply({ ephemeral: true, content }).catch(e => console.error(e));
+    }
+
     async commandEvent(msg: RavenInteraction): Promise<void> {
         const client = msg.client as RavenClient;
 
@@ -35,24 +39,12 @@ export default class InteractionCreate implements RavenEvent {
 
         if (!command) return;
 
-        /*
-        if (command.adminOnly && !(msg.member as GuildMember).permissions.has("ADMINISTRATOR") && msg.user.id !== process.env.OWNER_ID) {
-            await msg.reply({ embeds: [failEmbed.setDescription("You need admin perms to use this command")] })
-                .catch((x) => console.log(x));
-            return;
-        }
-        */
-
-        if (command.group === CommandGroup.owner && msg.user.id !== process.env.OWNER_ID) return await msg.reply("You are not allowed to do this command.").catch(e => console.error(e));
-        if (command.premium && (!msg.guildId || !GuildConfig.getGuild(msg.guildId)?.premium)) return await msg.reply("You are not allowed to do this command.").catch(e => console.error(e));
+        if (command.group === CommandGroup.owner && msg.user.id !== process.env.OWNER_ID) return await this.quickReply(msg, "You are not allowed to do this command.");
+        if (command.premium && (!msg.guildId || !GuildConfig.getGuild(msg.guildId)?.premium)) return await this.quickReply(msg, "This command is premium only.");
 
         const isThrottled = this.throttle.isThrottled(msg.guildId || "e", msg.user.id, command);
 
-        if (isThrottled) {
-            await msg.reply({ ephemeral: true, content: `Throttled, try again in \`${isThrottled}\` seconds` })
-                .catch(e => console.error(e));
-            return;
-        }
+        if (isThrottled) return await this.quickReply(msg, `Throttled, try again in \`${isThrottled}\` seconds`);
 
         this.respond(msg, command?.execute);
     }
