@@ -1,4 +1,5 @@
 import { HexColorString, MessageEmbed } from "discord.js";
+import GuildConfig from "../lib/guildconfig.service";
 import logService from "../lib/logger.service";
 import throttleService from "../lib/throttle.service";
 import { returnMessage } from "../types/Command";
@@ -28,6 +29,7 @@ export default class InteractionCreate implements RavenEvent {
         const client = msg.client as RavenClient;
 
         const { commandName } = msg;
+        if (!msg.guildId) return;
 
         const command = client.commands.get(commandName);
 
@@ -41,7 +43,8 @@ export default class InteractionCreate implements RavenEvent {
         }
         */
 
-        if (command.group === CommandGroup.owner && msg.user.id !== process.env.OWNER_ID) return;
+        if (command.group === CommandGroup.owner && msg.user.id !== process.env.OWNER_ID) return await msg.reply("You are not allowed to do this command.").catch(e => console.error(e));
+        if (command.premium && (!msg.guildId || !GuildConfig.getGuild(msg.guildId)?.premium)) return await msg.reply("You are not allowed to do this command.").catch(e => console.error(e));
 
         const isThrottled = this.throttle.isThrottled(msg.guildId || "e", msg.user.id, command);
 

@@ -23,6 +23,8 @@ class GuildConfigClass {
 
             log_channel: guild.log_channel,
 
+            premium: guild.premium,
+
             levelEnabled: guild.level,
             levelModifier: guild.level_modifier,
             levelChannel: guild.level_channel,
@@ -49,6 +51,8 @@ export interface GuildConfigs {
     privateRooms: private_vc[];
 
     log_channel: string | null;
+
+    premium: boolean;
 
     levelEnabled: boolean;
     levelModifier: number;
