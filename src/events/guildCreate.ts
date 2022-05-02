@@ -25,7 +25,7 @@ export default class implements RavenEvent {
                 .setTitle("Thank you!")
                 .setDescription("Thank you for inviting me! The server owner can configure the bot with /config")
                 .addField("How do i play music?", `Right now the only way is to get a subscription, for more info and questions please [join the discord!](${process.env.SUPPORT_SERVER})`)
-                .setThumbnail(guild.client.user?.avatarURL() || "")
+                .setThumbnail(guild.client.user?.avatarURL() || guild.client.user?.defaultAvatarURL as string)
                 .setTimestamp()
                 .setColor(process.env.EMBED_COLOR as HexColorString);
 

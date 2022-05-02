@@ -54,7 +54,7 @@ module.exports = class extends Command {
         const embed = new MessageEmbed()
             .setTitle(`${member.user.username}`)
             .setDescription(`${member.user.username}'s user info!`)
-            .setThumbnail(avatar || "a")
+            .setThumbnail(avatar || member.user.defaultAvatarURL)
             .addField("Base info", list)
             .addField("Roles", `${roles.map(x => `${x}`).join(" ")}`)
             .setColor(process.env.EMBED_COLOR as HexColorString);
