@@ -21,7 +21,7 @@ export default class implements RavenEvent {
 
         embed.setTitle("Message updated");
         embed.setDescription(`old:\n\`\`\`${old.content}\`\`\`\ncurrent:\n\`\`\`${current.content}\`\`\``);
-        embed.setFooter(`${member.user.username}#${member.user.tag} <@${member.id}>`, avatar || "");
+        embed.setFooter({ text: `${member.user.username}#${member.user.tag} <@${member.id}>`, iconURL: avatar || "" });
         channel.send({ embeds: [embed] });
     }
 }

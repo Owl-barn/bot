@@ -32,13 +32,13 @@ export default class Song {
             name: Util.escapeMarkdown(input.channel?.name as string),
             url: input.channel?.url || "",
         };
-        this.thumbnail = input.thumbnail?.url as string;
+        this.thumbnail = input.thumbnails[0].url as string;
 
         this.user = user;
     }
 
     public getStream = async (): Promise<AudioResource<Song>> => {
-        const source = await play.stream(this.url, { quality: 1 });
+        const source = await play.stream(this.url, { quality: 2, discordPlayerCompatibility: true });
         const resource = createAudioResource(source.stream, { inputType: source.type, metadata: this });
         return resource;
     }

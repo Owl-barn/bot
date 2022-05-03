@@ -98,7 +98,7 @@ export default class InteractionCreate implements RavenEvent {
             if (!channel) throw "aa";
             const embed = new MessageEmbed()
                 .setTitle(main.title)
-                .setFooter(main.uuid)
+                .setFooter({ text: main.uuid })
                 .setDescription(main.message)
                 .setColor(process.env.EMBED_COLOR as HexColorString);
 
