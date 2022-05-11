@@ -59,7 +59,7 @@ module.exports = class extends Command {
         }
 
         const embed = new MessageEmbed()
-            .setAuthor(`${target.username}#${target.discriminator} has been warned, ${warnCount} total`)
+            .setTitle(`${target.username}#${target.discriminator} has been warned, ${warnCount} total`)
             .setDescription(`**reason:** ${reason}`)
             .setColor(colour);
 

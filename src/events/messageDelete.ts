@@ -21,7 +21,7 @@ export default class InteractionCreate implements RavenEvent {
 
         embed.setTitle("Message Deleted");
         embed.setDescription(msg.content);
-        embed.setFooter({ text: `${member.user.username}#${member.user.tag} <@${member.id}>`, iconURL: avatar || "" });
+        embed.setFooter({ text: `${member.user.tag} <@${member.id}>`, iconURL: avatar || "" });
         channel.send({ embeds: [embed] });
     }
 }

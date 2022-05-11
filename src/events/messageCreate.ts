@@ -1,5 +1,5 @@
 import { self_role_main } from "@prisma/client";
-import { Guild, GuildChannel, HexColorString, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageEmbed, TextChannel } from "discord.js";
+import { Guild, HexColorString, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageEmbed, TextChannel } from "discord.js";
 import AFKService from "../lib/afk.service";
 import prisma from "../lib/db.service";
 import { yearsAgo } from "../lib/functions.service";
@@ -35,6 +35,7 @@ export default class InteractionCreate implements RavenEvent {
             await msg.reply("updating...");
 
             for (const guild of guilds.values()) {
+                guild.commands.set([]);
                 await registerCommand(client, guild);
             }
 
@@ -116,20 +117,6 @@ export default class InteractionCreate implements RavenEvent {
                 .addComponents(buttons);
 
             channel.send({ components: [component], embeds: [embed] });
-        }
-
-        // peepee poopoo
-        const channels: string[] = ["456103889733681182", "404032420963418142", "426343728991698945"];
-
-        if (channels.indexOf(msg.channelId) !== -1) {
-            const channel = msg.channel as GuildChannel;
-            console.log(`${msg.guild?.name} - ${channel.name} - ${msg.author.username}: `.magenta + msg.content.yellow || "EMPTY".red);
-
-            if (msg.attachments) {
-                msg.attachments.forEach(x => {
-                    console.log(`   ${msg.guild?.name} - ${channel.name} - ${msg.author.username}:> `.magenta + x.url.yellow || "EMPTY".red);
-                });
-            }
         }
     }
 }

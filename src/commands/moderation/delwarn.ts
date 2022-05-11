@@ -61,7 +61,7 @@ export default class extends Command {
         await db.warnings.delete({ where: { uuid: query.uuid } });
 
         const embed = new MessageEmbed()
-            .setAuthor(`${target.username}#${target.discriminator}'s ${index}${index > 1 ? "nd" : "st"} warning was removed`)
+            .setTitle(`${target.username}#${target.discriminator}'s ${index}${index > 1 ? "nd" : "st"} warning was removed`)
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed] };
