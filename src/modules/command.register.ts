@@ -124,11 +124,9 @@ export default async function registerCommand(client: RavenClient, guild: Guild)
     const commandJson = commandBuilder.map(command => command.toJSON());
 
     const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN as string);
-    commandJson.forEach(command => { console.log(`${command.name}:\n${command.options.map(x => x.type).join("\n")}`); });
 
     await rest.put(Routes.applicationGuildCommands((client.user as ClientUser).id, guild.id), { body: commandJson })
         .then(() => console.log(`Successfully registered application commands. guild: ${guild.id} - ${guild.name}`.green))
         .catch((x) => console.error(x));
 
-    console.log(await guild.commands.fetch());
 }
