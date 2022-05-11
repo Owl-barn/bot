@@ -1,5 +1,5 @@
 import { Guild, HexColorString, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
-import registerCommand, { registerPerms } from "../modules/command.register";
+import registerCommand from "../modules/command.register";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -17,7 +17,6 @@ export default class implements RavenEvent {
             const channel = guild.systemChannel;
 
             await registerCommand(guild.client as RavenClient, guild);
-            await registerPerms(guild.client as RavenClient, guild);
 
             if (!channel) return;
 

@@ -4,7 +4,7 @@ import AFKService from "../lib/afk.service";
 import prisma from "../lib/db.service";
 import { yearsAgo } from "../lib/functions.service";
 import levelService from "../lib/level.service";
-import registerCommand, { registerPerms } from "../modules/command.register";
+import registerCommand from "../modules/command.register";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -36,7 +36,6 @@ export default class InteractionCreate implements RavenEvent {
 
             for (const guild of guilds.values()) {
                 await registerCommand(client, guild);
-                await registerPerms(client, guild);
             }
 
             await msg.reply(`Updated all server perms, took \`${Date.now() - start}ms\``);
@@ -51,7 +50,6 @@ export default class InteractionCreate implements RavenEvent {
         if (msg.content === "innit*" && msg.member?.id === process.env.OWNER_ID) {
             const start = Date.now();
             await registerCommand(client, msg.guild as Guild);
-            await registerPerms(client, msg.guild as Guild);
             msg.reply(`Updated this server's perms, took \`${Date.now() - start}ms\``);
         }
 

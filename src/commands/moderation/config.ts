@@ -183,49 +183,6 @@ module.exports = class extends Command {
                 },
                 {
                     type: argumentType.subCommandGroup,
-                    name: "permissions",
-                    description: "Settings for command permissions",
-                    subCommands: [
-                        {
-                            type: argumentType.subCommand,
-                            name: "set",
-                            description: "Add user/role to command.",
-                            subCommands: [
-                                {
-                                    type: argumentType.string,
-                                    name: "command_name",
-                                    description: "What command to edit.",
-                                    required: true,
-                                },
-                                {
-                                    type: argumentType.boolean,
-                                    name: "allow",
-                                    description: "block or allow this role?",
-                                    required: true,
-                                },
-                                {
-                                    type: argumentType.role,
-                                    name: "role",
-                                    description: "What role to add.",
-                                    required: false,
-                                },
-                                {
-                                    type: argumentType.user,
-                                    name: "user",
-                                    description: "What user to add.",
-                                    required: false,
-                                },
-                            ],
-                        },
-                        {
-                            type: argumentType.subCommand,
-                            name: "list",
-                            description: "See current permission overrides.",
-                        },
-                    ],
-                },
-                {
-                    type: argumentType.subCommandGroup,
                     name: "voice",
                     description: "settings for private vc",
                     subCommands: [
@@ -286,6 +243,7 @@ module.exports = class extends Command {
                 }
                 break;
             case "permissions":
+                return { content: "Disabled" };
                 switch (command) {
                     case "set": return await configPermissionsAdd(msg);
                     case "list": return await configPermissionList(msg);

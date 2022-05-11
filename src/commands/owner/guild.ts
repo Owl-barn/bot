@@ -1,5 +1,5 @@
 import { Collection, Guild, InteractionReplyOptions, MessageAttachment, TextChannel } from "discord.js";
-import registerCommand, { registerPerms } from "../../modules/command.register";
+import registerCommand from "../../modules/command.register";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -142,7 +142,6 @@ async function guildPremium(msg: RavenInteraction): Promise<InteractionReplyOpti
     await client.db.guilds.update({ where: { guild_id: guild.id }, data: { premium } });
 
     await registerCommand(client, guild);
-    await registerPerms(client, guild);
 
     return { content: `${guild.name}'s premium was set to \`${premium}\`` };
 }
