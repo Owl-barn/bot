@@ -3,8 +3,6 @@ import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 import { configBirthdayResetUser } from "./config/birthday/resetUser.module";
-import configPermissionsAdd from "./config/permissions/add.module";
-import configPermissionList from "./config/permissions/list.module";
 import { configLevelRewardAdd } from "./config/level_rewards/add.module";
 import { configLevelRewardRemove } from "./config/level_rewards/remove.module";
 import { configLevelRewardReset } from "./config/level_rewards/reset.module";
@@ -240,13 +238,6 @@ module.exports = class extends Command {
                     case "set_role": return await configBirthdaySetRole(msg);
                     case "set_channel": return await configBirthdaySetChannel(msg);
                     case "reset_user": return await configBirthdayResetUser(msg);
-                }
-                break;
-            case "permissions":
-                return { content: "Disabled" };
-                switch (command) {
-                    case "set": return await configPermissionsAdd(msg);
-                    case "list": return await configPermissionList(msg);
                 }
                 break;
             case "voice":
