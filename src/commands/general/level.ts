@@ -46,7 +46,7 @@ module.exports = class extends Command {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const subCommand = msg.options.getSubcommand(true);
-        if (!msg.guildId) throw "a";
+        if (!msg.guildId) throw "Level Command didnt get guildID";
         const guild = await msg.client.db.guilds.findUnique({ where: { guild_id: msg.guildId } });
         const failEmbed = failEmbedTemplate();
 
@@ -62,7 +62,7 @@ module.exports = class extends Command {
 };
 
 function levelTop(msg: RavenInteraction): returnMessage {
-    if (!msg.guildId) throw "a";
+    if (!msg.guildId) throw "Level Command didnt get guildID";
     const embed = embedTemplate();
 
     embed.setTitle(`${msg.guild?.name} leaderboard`);
@@ -82,7 +82,7 @@ function levelTop(msg: RavenInteraction): returnMessage {
 
 async function levelGet(msg: RavenInteraction): Promise<returnMessage> {
     const member = msg.options.getMember("user") as GuildMember | null || (msg.member as GuildMember);
-    if (!msg.guildId) throw "a";
+    if (!msg.guildId) throw "Level Command didnt get guildID";
     const failEmbed = failEmbedTemplate();
     const embed = embedTemplate();
 

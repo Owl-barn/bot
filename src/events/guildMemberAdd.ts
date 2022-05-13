@@ -1,4 +1,5 @@
 import { GuildMember, RoleResolvable } from "discord.js";
+import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
@@ -9,6 +10,7 @@ export default class implements RavenEvent {
 
     async execute(member: GuildMember): Promise<void> {
         const client = member.client as RavenClient;
+        if (GuildConfig.getGuild(member.guild.id)?.banned) return;
 
         const userLevel = await client.db.level.findUnique({
             where: {

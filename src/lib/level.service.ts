@@ -113,7 +113,7 @@ class LevelService {
             break;
         }
 
-        if (!currentLevel && currentLevel !== 0) throw "a";
+        if (!currentLevel && currentLevel !== 0) throw "Couldn't calculate level.";
 
         const current = this.levelArray[currentLevel];
 

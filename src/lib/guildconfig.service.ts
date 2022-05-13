@@ -24,6 +24,7 @@ class GuildConfigClass {
             log_channel: guild.log_channel,
 
             premium: guild.premium,
+            banned: guild.banned,
 
             levelEnabled: guild.level,
             levelModifier: guild.level_modifier,
@@ -53,6 +54,7 @@ export interface GuildConfigs {
     log_channel: string | null;
 
     premium: boolean;
+    banned: boolean;
 
     levelEnabled: boolean;
     levelModifier: number;

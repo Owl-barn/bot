@@ -3,6 +3,7 @@ import { Guild, HexColorString, Message, MessageActionRow, MessageActionRowCompo
 import AFKService from "../lib/afk.service";
 import prisma from "../lib/db.service";
 import { yearsAgo } from "../lib/functions.service";
+import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import registerCommand from "../modules/command.register";
 import RavenEvent from "../types/event";
@@ -15,6 +16,8 @@ export default class InteractionCreate implements RavenEvent {
     async execute(msg: Message): Promise<void> {
         if (!msg) return;
         if (msg.author.bot) return;
+        if (msg.guildId && GuildConfig.getGuild(msg.guildId)?.banned) return;
+
         levelService.message(msg).catch((x) => console.error(x));
         AFKService.onMessage(msg).catch((x) => console.error(x));
         const client = msg.client as RavenClient;

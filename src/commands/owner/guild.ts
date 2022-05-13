@@ -76,6 +76,18 @@ module.exports = class statsCommand extends Command {
                             description: "guild id",
                             required: true,
                         },
+                        {
+                            type: argumentType.boolean,
+                            name: "state",
+                            description: "ban status",
+                            required: true,
+                        },
+                        {
+                            type: argumentType.boolean,
+                            name: "leave",
+                            description: "leave guild",
+                            required: false,
+                        },
                     ],
                 },
             ],
@@ -97,10 +109,8 @@ module.exports = class statsCommand extends Command {
                 return await guildList(msg);
             case "premium":
                 return await guildPremium(msg);
-            case "leave":
-                return await guildLeave(msg);
             case "ban":
-                return await guildLeave(msg);
+                return await guildBan(msg);
             default:
                 break;
         }
@@ -110,15 +120,25 @@ module.exports = class statsCommand extends Command {
 
 };
 
-async function guildLeave(msg: RavenInteraction): Promise<InteractionReplyOptions> {
+async function guildBan(msg: RavenInteraction): Promise<InteractionReplyOptions> {
     const guildID = msg.options.getString("guild_id", true);
+    const state = msg.options.getBoolean("state", true);
+    const leave = msg.options.getBoolean("leave", false);
+
     const client = msg.client;
     const guild = client.guilds.cache.get(guildID);
     if (!guild) return { content: "Guild not found" };
 
-    await guild.leave();
+    await client.db.guilds.update({ where: { guild_id: guild.id }, data: { banned: state } });
+    await msg.guild?.commands.set([]);
+    let left = false;
 
-    return { content: `Left \`${guild.name}\`` };
+    if (leave) {
+        const leaveGuild = await guild.leave();
+        if (leaveGuild) left = true;
+    }
+
+    return { content: `ban state: \`${state ? "true" : "false"}\`\nLeft: \`${left ? "true" : "false"}\`\nName: \`${guild.name}\`` };
 }
 
 async function guildList(msg: RavenInteraction): Promise<InteractionReplyOptions> {

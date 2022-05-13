@@ -17,6 +17,11 @@ export default class InteractionCreate implements RavenEvent {
         .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
     async execute(interaction: RavenInteraction): Promise<void> {
+        const guildconfig = GuildConfig.getGuild(interaction.guildId || "");
+        if (guildconfig?.banned) {
+            await interaction.reply({ content: "This guild is banned from using Raven bot, If you believe this is an issue please contact the bot owner" }).catch(e => console.error(e));
+            return;
+        }
         if (interaction.isButton()) {
             return await this.buttonEvent(interaction as RavenButtonInteraction).catch(e => console.error(e));
         }
