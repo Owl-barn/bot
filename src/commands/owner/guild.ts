@@ -1,4 +1,5 @@
 import { Collection, Guild, InteractionReplyOptions, MessageAttachment, TextChannel } from "discord.js";
+import GuildConfig from "../../lib/guildconfig.service";
 import registerCommand from "../../modules/command.register";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
@@ -130,10 +131,13 @@ async function guildBan(msg: RavenInteraction): Promise<InteractionReplyOptions>
     if (!guild) return { content: "Guild not found" };
 
     await client.db.guilds.update({ where: { guild_id: guild.id }, data: { banned: state } });
-    await msg.guild?.commands.set([]);
-    let left = false;
 
-    if (leave) {
+    if (state) await msg.guild?.commands.set([]);
+    else await registerCommand(client, guild);
+    await GuildConfig.init();
+
+    let left = false;
+    if (leave && state) {
         const leaveGuild = await guild.leave();
         if (leaveGuild) left = true;
     }

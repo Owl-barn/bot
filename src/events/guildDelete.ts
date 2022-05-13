@@ -7,7 +7,7 @@ export default class implements RavenEvent {
 
     async execute(guild: Guild): Promise<void> {
         try {
-            if (!guild) throw "failed to register guild";
+            if (!guild) throw "failed to log deleted guild";
 
             console.log(`Left Guild, ID: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.red.bold);
 

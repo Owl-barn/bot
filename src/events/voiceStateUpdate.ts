@@ -9,8 +9,8 @@ export default class ready implements RavenEvent {
     once = false;
 
     async execute(oldState: VoiceState, newState: VoiceState): Promise<void> {
-        const guildID = newState.guild.id || oldState.guild.id;
-        if (guildID && GuildConfig.getGuild(guildID)?.banned) return;
+        if (GuildConfig.getGuild(newState.guild.id)?.banned) return;
+
         await VCService.onChange(oldState, newState).catch(x => console.error(x));
         const client = oldState.client as RavenClient;
         const subscription = client.musicService.get(oldState.guild.id);

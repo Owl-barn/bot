@@ -13,6 +13,7 @@ export default class implements RavenEvent {
         const config = GuildConfig.getGuild(member.guild.id);
         if (!config) return;
         if (!config.log_channel) return;
+        if (config.banned) return;
 
         const avatar = member.avatarURL() || member.user.avatarURL();
         const channel = member.guild?.channels.cache.get(config.log_channel) as TextChannel;

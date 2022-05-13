@@ -1,4 +1,5 @@
 import { Guild, HexColorString, MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import GuildConfig from "../lib/guildconfig.service";
 import registerCommand from "../modules/command.register";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
@@ -10,6 +11,7 @@ export default class implements RavenEvent {
     async execute(guild: Guild): Promise<void> {
         try {
             if (!guild) throw "failed to register guild";
+            if (GuildConfig.getGuild(guild.id)?.banned) return;
 
             const db = (guild.client as RavenClient).db;
             await db.guilds.createMany({ data: { guild_id: guild.id }, skipDuplicates: true });

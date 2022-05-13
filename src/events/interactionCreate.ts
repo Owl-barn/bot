@@ -19,7 +19,7 @@ export default class InteractionCreate implements RavenEvent {
     async execute(interaction: RavenInteraction): Promise<void> {
         const guildconfig = GuildConfig.getGuild(interaction.guildId || "");
         if (guildconfig?.banned) {
-            await interaction.reply({ content: "This guild is banned from using Raven bot, If you believe this is an issue please contact the bot owner" }).catch(e => console.error(e));
+            await interaction.reply({ content: "This guild is banned from using Raven bot, If you believe this is an issue please contact the bot owner", ephemeral: true }).catch(e => console.error(e));
             return;
         }
         if (interaction.isButton()) {
