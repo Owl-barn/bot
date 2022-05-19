@@ -94,7 +94,7 @@ class VCServiceClass {
 
         // Add join perms if not already have.
         if (vc.channel.permissionOverwrites.cache.get(member.id)) return;
-        vc.channel.permissionOverwrites.create(member.id, { CONNECT: true });
+        vc.channel.permissionOverwrites.create(member.id, { CONNECT: true, VIEW_CHANNEL: true });
     }
 
     private async createHub(vc: VoiceState) {
@@ -120,8 +120,9 @@ class VCServiceClass {
 
         // Channel perms.
         const roomOwner: OverwriteResolvable = { id: vc.member?.id as string, allow: ["MOVE_MEMBERS", "CONNECT"] };
-        const roomBot: OverwriteResolvable = { id: vc.client.user?.id as string, allow: ["MANAGE_CHANNELS", "VIEW_CHANNEL", "CONNECT"] };
+        const roomBot: OverwriteResolvable = { id: vc.client.user?.id as string, allow: ["MANAGE_CHANNELS", "VIEW_CHANNEL", "CONNECT", "SPEAK"] };
         const roomLock: OverwriteResolvable = { id: vc.guild.id, deny: ["CONNECT"], allow: ["STREAM", "SPEAK"] };
+        const waitingRoom: OverwriteResolvable = { id: vc.guild.id, deny: ["SPEAK", "STREAM"] };
         const finns: OverwriteResolvable = { id: "399435813580046356", allow: ["STREAM", "SPEAK", "CONNECT"] };
 
         // Generate channel name.
@@ -131,7 +132,7 @@ class VCServiceClass {
         const roomConfig: GuildChannelCreateOptions = { type: 2, parent: guildConfig.privateRoomCategory as string };
 
         const roomList = [roomBot, roomLock, roomOwner];
-        const waitList = [roomBot, roomOwner];
+        const waitList = [roomBot, roomOwner, waitingRoom];
 
         if (vc.guild.id == "396330910162616321") {
             roomList.push(finns);

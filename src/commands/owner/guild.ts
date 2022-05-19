@@ -134,7 +134,7 @@ async function guildBan(msg: RavenInteraction): Promise<InteractionReplyOptions>
 
     if (state) await msg.guild?.commands.set([]);
     else await registerCommand(client, guild);
-    await GuildConfig.init();
+    await GuildConfig.updateGuild(guild.id);
 
     let left = false;
     if (leave && state) {
@@ -166,6 +166,7 @@ async function guildPremium(msg: RavenInteraction): Promise<InteractionReplyOpti
     await client.db.guilds.update({ where: { guild_id: guild.id }, data: { premium } });
 
     await registerCommand(client, guild);
+    await GuildConfig.updateGuild(guild.id);
 
     return { content: `${guild.name}'s premium was set to \`${premium}\`` };
 }
