@@ -6,7 +6,7 @@ class LevelService {
     private levelArray: LevelArray[];
     private db = prisma;
     private timeout: Map<string, number> = new Map();
-    private maxLevel = 100;
+    private maxLevel = 10000;
 
     constructor() {
         this.levelArray = this.makeLevelArray(this.maxLevel);
@@ -93,6 +93,7 @@ class LevelService {
 
     // Make an array of levels and their xp values.
     private makeLevelArray = (maxLevel: number) => {
+        const now = Date.now();
         const array: LevelArray[] = [];
         let total = 0;
         for (let i = 0; i < maxLevel + 1; i++) {
@@ -101,6 +102,7 @@ class LevelService {
             array.push({ total, xp, level: i });
             total += xp;
         }
+        console.log(`Made level array in ${Date.now() - now}ms.`);
         return array;
     }
 
