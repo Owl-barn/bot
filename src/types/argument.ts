@@ -9,7 +9,7 @@ export enum argumentType {
     role = 7,
     mentionable = 8,
     subCommand = 9,
-    subCommandGroup = 10
+    subCommandGroup = 10,
 }
 
 export interface Argument {

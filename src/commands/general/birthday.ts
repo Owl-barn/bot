@@ -39,7 +39,8 @@ module.exports = class extends Command {
                         {
                             type: argumentType.string,
                             name: "birthday",
-                            description: "your birthday date formatted like: dd/mm/yyyy",
+                            description:
+                                "your birthday date formatted like: dd/mm/yyyy",
                             required: true,
                         },
                     ],

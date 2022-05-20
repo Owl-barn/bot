@@ -11,7 +11,7 @@ export default class Song {
     public artist: Artist;
     public thumbnail: string;
 
-    public user: User
+    public user: User;
 
     public readonly onStart: () => void;
     public readonly onFinish: () => void;
@@ -20,13 +20,20 @@ export default class Song {
     constructor(input: play.YouTubeVideo, user: User) {
         this.id = `${Date.now()}`;
         this.title = {
-            formatted: Util.escapeMarkdown((input.title || "couldnt load title").substring(0, 48).replace(/[()[\]]/g, "")),
+            formatted: Util.escapeMarkdown(
+                (input.title || "couldnt load title")
+                    .substring(0, 48)
+                    .replace(/[()[\]]/g, ""),
+            ),
             original: input.title || "couldnt load title",
         };
         this.url = input.url;
         this.duration = {
             seconds: input.durationInSec,
-            text: moment().startOf("day").seconds(input.durationInSec).format("H:mm:ss"),
+            text: moment()
+                .startOf("day")
+                .seconds(input.durationInSec)
+                .format("H:mm:ss"),
         };
         this.artist = {
             name: Util.escapeMarkdown(input.channel?.name as string),
@@ -38,10 +45,16 @@ export default class Song {
     }
 
     public getStream = async (): Promise<AudioResource<Song>> => {
-        const source = await play.stream(this.url, { quality: 2, discordPlayerCompatibility: true });
-        const resource = createAudioResource(source.stream, { inputType: source.type, metadata: this });
+        const source = await play.stream(this.url, {
+            quality: 2,
+            discordPlayerCompatibility: true,
+        });
+        const resource = createAudioResource(source.stream, {
+            inputType: source.type,
+            metadata: this,
+        });
         return resource;
-    }
+    };
 }
 
 export interface Title {

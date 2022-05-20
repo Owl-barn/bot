@@ -5,9 +5,15 @@ import bot from "../app";
 import RavenClient from "../types/ravenClient";
 import levelService from "./level.service";
 
-const birthdayCron = new cron.CronJob("0 0 * * *", async () => {
-    await birthdayLoop();
-}, null, true, "UTC");
+const birthdayCron = new cron.CronJob(
+    "0 0 * * *",
+    async () => {
+        await birthdayLoop();
+    },
+    null,
+    true,
+    "UTC",
+);
 
 export async function birthdayLoop(): Promise<void> {
     const client = bot.getClient();
@@ -17,33 +23,52 @@ export async function birthdayLoop(): Promise<void> {
     console.log("running loop");
 
     if (!client.user) throw "No client user???";
-    const usercount = client.guilds.cache.reduce(((x: number, y) => x + y.memberCount), 0);
+    const usercount = client.guilds.cache.reduce(
+        (x: number, y) => x + y.memberCount,
+        0,
+    );
     await client.user.setActivity(`for ${usercount} members`, {
         type: "STREAMING",
         url: "https://www.youtube.com/watch?v=VZrDxD0Za9I",
     });
 
-    const users = await client.db.$queryRaw`
+    const users = (await client.db.$queryRaw`
     select * from birthdays
     where extract(month from birthday) = extract(month from current_timestamp)
     and extract(day from birthday) = extract(day from current_timestamp)
-    ` as birthdays[];
+    `) as birthdays[];
 
     console.log(users);
 
-    const guildsDB = await client.db.guilds.findMany({ where: { OR: [{ NOT: { birthday_role: null } }, { NOT: { birthday_channel: null } }] } });
+    const guildsDB = await client.db.guilds.findMany({
+        where: {
+            OR: [
+                { NOT: { birthday_role: null } },
+                { NOT: { birthday_channel: null } },
+            ],
+        },
+    });
 
-    const removeRoleUsers = await client.db.birthdays.findMany({ where: { has_role: true } });
+    const removeRoleUsers = await client.db.birthdays.findMany({
+        where: { has_role: true },
+    });
 
     for (const user of removeRoleUsers) {
         const data = await getData(user, guildsDB, client);
         if (!data) continue;
         const { guild, role, member } = data;
 
-        await client.db.birthdays.update({
-            where: { user_id_guild_id: { user_id: user.user_id, guild_id: guild.id } },
-            data: { has_role: false },
-        }).catch(() => null);
+        await client.db.birthdays
+            .update({
+                where: {
+                    user_id_guild_id: {
+                        user_id: user.user_id,
+                        guild_id: guild.id,
+                    },
+                },
+                data: { has_role: false },
+            })
+            .catch(() => null);
 
         if (!role) continue;
 
@@ -61,24 +86,36 @@ export async function birthdayLoop(): Promise<void> {
         if (role) {
             const addRole = await member.roles.add(role).catch(() => null);
             if (addRole) {
-                await client.db.birthdays.update({
-                    where: { user_id_guild_id: { user_id: user.user_id, guild_id: guild.id } },
-                    data: { has_role: true },
-                }).catch(() => null);
+                await client.db.birthdays
+                    .update({
+                        where: {
+                            user_id_guild_id: {
+                                user_id: user.user_id,
+                                guild_id: guild.id,
+                            },
+                        },
+                        data: { has_role: true },
+                    })
+                    .catch(() => null);
 
                 console.info(`given birthday role to ${user.user_id}`.yellow);
             }
         }
 
         if (channel) {
-            await channel.send(`Happy birthday <@${member.id}>!!!`)
+            await channel
+                .send(`Happy birthday <@${member.id}>!!!`)
                 .catch(() => console.log("Couldnt send birthday message"));
         }
     }
 }
 
-async function getData(user: birthdays, guildsDB: guilds[], client: RavenClient) {
-    const guildDB = guildsDB.find(x => x.guild_id === user.guild_id);
+async function getData(
+    user: birthdays,
+    guildsDB: guilds[],
+    client: RavenClient,
+) {
+    const guildDB = guildsDB.find((x) => x.guild_id === user.guild_id);
     if (!guildDB) return;
     if (guildDB.birthday_role === null) return;
 
@@ -92,16 +129,28 @@ async function getData(user: birthdays, guildsDB: guilds[], client: RavenClient)
     if (guildDB.birthday_role) {
         role = await guild.roles.fetch(guildDB.birthday_role).catch(() => null);
         if (!role) {
-            await client.db.guilds.update({ where: { guild_id: guildDB.guild_id }, data: { birthday_role: null } }).catch(() => null);
+            await client.db.guilds
+                .update({
+                    where: { guild_id: guildDB.guild_id },
+                    data: { birthday_role: null },
+                })
+                .catch(() => null);
             return;
         }
     }
 
     let channel;
     if (guildDB.birthday_channel) {
-        channel = await guild.channels.cache.get(guildDB.birthday_channel) as TextBasedChannel;
+        channel = guild.channels.cache.get(
+            guildDB.birthday_channel,
+        ) as TextBasedChannel;
         if (!channel) {
-            await client.db.guilds.update({ where: { guild_id: guildDB.guild_id }, data: { birthday_channel: null } }).catch(() => null);
+            await client.db.guilds
+                .update({
+                    where: { guild_id: guildDB.guild_id },
+                    data: { birthday_channel: null },
+                })
+                .catch(() => null);
             return;
         }
     }

@@ -16,12 +16,22 @@ export default class implements RavenEvent {
 
         const member = current.member as GuildMember;
         const avatar = member.avatarURL() || member.user.avatarURL();
-        const channel = current.guild?.channels.cache.get(config.log_channel) as TextChannel;
+        const channel = current.guild?.channels.cache.get(
+            config.log_channel,
+        ) as TextChannel;
         const embed = warningEmbedTemplate();
 
         embed.setTitle("Message updated");
-        embed.setDescription(`old:\n\`\`\`${old.content}\`\`\`\ncurrent:\n\`\`\`${current.content}\`\`\``);
-        embed.setFooter({ text: `${member.user.tag} <@${member.id}>`, iconURL: avatar || "" });
+        embed.setDescription(
+            `old:\n` +
+                `\`\`\`${old.content}\`\`\`\n` +
+                `current:\n` +
+                `\`\`\`${current.content}\`\`\``,
+        );
+        embed.setFooter({
+            text: `${member.user.tag} <@${member.id}>`,
+            iconURL: avatar || "",
+        });
         channel.send({ embeds: [embed] });
     }
 }

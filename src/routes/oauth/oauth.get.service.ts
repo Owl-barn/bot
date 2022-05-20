@@ -7,13 +7,11 @@ import { URLSearchParams } from "url";
 import fetch from "got";
 import { User } from "discord.js";
 
-
 export default class OauthGetService {
     public async execute(req: Request, res: Response): Promise<void> {
         const code = req.query.code as string;
 
         if (!code) throw new HttpException(403, "bad request");
-
 
         const data = new URLSearchParams({
             client_id: process.env.CLIENT_ID as string,
@@ -25,7 +23,8 @@ export default class OauthGetService {
         });
 
         // Get token.
-        const oauthResult = await fetch.post("https://discord.com/api/oauth2/token", { form: data })
+        const oauthResult = await fetch
+            .post("https://discord.com/api/oauth2/token", { form: data })
             .catch((e) => console.error(e.response.body));
 
         if (!oauthResult || !oauthResult.body) return;
@@ -34,7 +33,9 @@ export default class OauthGetService {
 
         // Get user.
         const userResult = await fetch("https://discord.com/api/users/@me", {
-            headers: { authorization: `${token.token_type} ${token.access_token}` },
+            headers: {
+                authorization: `${token.token_type} ${token.access_token}`,
+            },
         });
 
         if (!userResult || !userResult.body) return;
@@ -50,10 +51,16 @@ export default class OauthGetService {
             },
         });
 
+        const signedSesion = jwt.sign(
+            session,
+            process.env.JWT_SECRET as string,
+        );
 
-        const signedSesion = jwt.sign(session, process.env.JWT_SECRET as string);
-
-        res.cookie("session", signedSesion, { signed: true, domain: ".xayania.com", secure: true });
+        res.cookie("session", signedSesion, {
+            signed: true,
+            domain: ".xayania.com",
+            secure: true,
+        });
         res.redirect("https://raven.xayania.com/guilds");
     }
 }

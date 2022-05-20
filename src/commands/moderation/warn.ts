@@ -39,27 +39,47 @@ module.exports = class extends Command {
         const db = msg.client.db;
 
         const hidden = msg.options.getBoolean("hidden");
-        const reason = Util.escapeMarkdown(msg.options.getString("reason", true)).substring(0, 256);
+        const reason = Util.escapeMarkdown(
+            msg.options.getString("reason", true),
+        ).substring(0, 256);
         const target = msg.options.getUser("user", true);
 
-        await db.warnings.create({ data: { target_id: target.id, reason: reason, guild_id: msg.guildId as string, mod_id: msg.user.id } })
+        await db.warnings
+            .create({
+                data: {
+                    target_id: target.id,
+                    reason: reason,
+                    guild_id: msg.guildId as string,
+                    mod_id: msg.user.id,
+                },
+            })
             .catch((e: Error) => {
                 console.log(e);
                 throw "couldnt create warn??";
             });
 
-        const warnCount = await db.warnings.count({ where: { target_id: target.id, guild_id: msg.guildId as string } });
+        const warnCount = await db.warnings.count({
+            where: { target_id: target.id, guild_id: msg.guildId as string },
+        });
 
         let colour: HexColorString;
 
         switch (warnCount) {
-            case 1: colour = "#18ac15"; break;
-            case 2: colour = "#d7b500"; break;
-            default: colour = "#e60008"; break;
+            case 1:
+                colour = "#18ac15";
+                break;
+            case 2:
+                colour = "#d7b500";
+                break;
+            default:
+                colour = "#e60008";
+                break;
         }
 
         const embed = new MessageEmbed()
-            .setTitle(`${target.username}#${target.discriminator} has been warned, ${warnCount} total`)
+            .setTitle(
+                `${target.username}#${target.discriminator} has been warned, ${warnCount} total`,
+            )
             .setDescription(`**reason:** ${reason}`)
             .setColor(colour);
 

@@ -8,7 +8,9 @@ export default class implements RavenEvent {
     async execute(channel: GuildChannel): Promise<void> {
         try {
             if (!channel) return;
-            console.log(`new channel: ${channel.name}: ${channel.guild.name}`.yellow);
+            console.log(
+                `new channel: ${channel.name}: ${channel.guild.name}`.yellow,
+            );
         } catch (e) {
             console.error(e);
         }

@@ -4,7 +4,6 @@ import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
-
 module.exports = class extends Command {
     constructor() {
         super({
@@ -29,12 +28,22 @@ module.exports = class extends Command {
         const subscription = msg.client.musicService.get(member.guild.id);
         const vc = member.voice.channel;
 
-        const failEmbed = new MessageEmbed()
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+        const failEmbed = new MessageEmbed().setColor(
+            process.env.EMBED_FAIL_COLOR as HexColorString,
+        );
 
-        if (!subscription || subscription.destroyed) return { embeds: [failEmbed.setDescription("Nothing is playing right now.")] };
+        if (!subscription || subscription.destroyed) {
+            const response = failEmbed.setDescription(
+                "Nothing is playing right now.",
+            );
+            return { embeds: [response] };
+        }
 
-        if (!dj || !vc || vc?.id !== subscription.voiceConnection.joinConfig.channelId) {
+        if (
+            !dj ||
+            !vc ||
+            vc?.id !== subscription.voiceConnection.joinConfig.channelId
+        ) {
             return { embeds: [failEmbed.setDescription("You cant do that.")] };
         }
 

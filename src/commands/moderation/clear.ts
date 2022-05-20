@@ -1,4 +1,10 @@
-import { BaseGuildTextChannel, CommandInteraction, HexColorString, InteractionReplyOptions, MessageEmbed } from "discord.js";
+import {
+    BaseGuildTextChannel,
+    CommandInteraction,
+    HexColorString,
+    InteractionReplyOptions,
+    MessageEmbed,
+} from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -34,8 +40,9 @@ module.exports = class extends Command {
 
         (msg.channel as BaseGuildTextChannel).bulkDelete(amount, true);
 
-        const embed = new MessageEmbed()
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        const embed = new MessageEmbed().setColor(
+            process.env.EMBED_COLOR as HexColorString,
+        );
 
         return { embeds: [embed.setDescription(`deleted ${amount} messages`)] };
     }

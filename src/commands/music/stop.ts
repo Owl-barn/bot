@@ -4,7 +4,6 @@ import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
-
 module.exports = class extends Command {
     constructor() {
         super({
@@ -28,16 +27,33 @@ module.exports = class extends Command {
         const dj = isDJ(member);
         const subscription = msg.client.musicService.get(member.guild.id);
 
-        const failEmbed = new MessageEmbed()
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+        const failEmbed = new MessageEmbed().setColor(
+            process.env.EMBED_FAIL_COLOR as HexColorString,
+        );
 
-        if (!subscription || subscription.destroyed) return { embeds: [failEmbed.setDescription("Nothing is playing right now.")] };
+        if (!subscription || subscription.destroyed) {
+            const response = failEmbed.setDescription(
+                "Nothing is playing right now.",
+            );
+            return { embeds: [response] };
+        }
 
         if (!dj) {
             const vc = member.voice.channel;
-            if (vc == null) return { embeds: [failEmbed.setDescription("Join a voice channel first.")] };
-            if (vc.id !== subscription.voiceConnection.joinConfig.channelId || vc.members.size !== 2) {
-                return { embeds: [failEmbed.setDescription("You do not have the `DJ` role.")] };
+            if (vc == null) {
+                const response = failEmbed.setDescription(
+                    "Join a voice channel first.",
+                );
+                return { embeds: [response] };
+            }
+            if (
+                vc.id !== subscription.voiceConnection.joinConfig.channelId ||
+                vc.members.size !== 2
+            ) {
+                const response = failEmbed.setDescription(
+                    "You do not have the `DJ` role.",
+                );
+                return { embeds: [response] };
             }
         }
 

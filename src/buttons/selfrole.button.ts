@@ -16,10 +16,11 @@ export default class implements RavenButton {
 
         const buttonID = msg.customId.trim().split("_")[1];
 
-
         if (!user) return error;
 
-        const query = await client.db.self_role_roles.findFirst({ where: { uuid: buttonID } });
+        const query = await client.db.self_role_roles.findFirst({
+            where: { uuid: buttonID },
+        });
 
         if (!query) return error;
 
@@ -38,5 +39,4 @@ export default class implements RavenButton {
             return { ephemeral: true, embeds: [embed] };
         }
     }
-
 }

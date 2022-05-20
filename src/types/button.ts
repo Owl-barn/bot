@@ -5,5 +5,5 @@ export default abstract class RavenButton {
     name: string;
     disabled = false;
 
-    abstract execute(msg: RavenButtonInteraction): Promise<returnMessage>
+    abstract execute(msg: RavenButtonInteraction): Promise<returnMessage>;
 }

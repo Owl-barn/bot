@@ -3,7 +3,12 @@ import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
 import RavenClient from "../../types/ravenClient";
-import { DiscordGatewayAdapterCreator, entersState, joinVoiceChannel, VoiceConnectionStatus } from "@discordjs/voice";
+import {
+    DiscordGatewayAdapterCreator,
+    entersState,
+    joinVoiceChannel,
+    VoiceConnectionStatus,
+} from "@discordjs/voice";
 import Song from "../../types/song";
 import musicService from "../../modules/music.service";
 import * as play from "play-dl";
@@ -56,38 +61,70 @@ module.exports = class extends Command {
         if (subscription && subscription.destroyed) subscription = undefined;
         const dj = isDJ(member);
 
-        const failEmbed = new MessageEmbed()
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+        const failEmbed = new MessageEmbed().setColor(
+            process.env.EMBED_FAIL_COLOR as HexColorString,
+        );
 
-        if (vc === null && !(dj && subscription)) { return { embeds: [failEmbed.setDescription("Join a voicechannel first.")] }; }
+        if (vc === null && !(dj && subscription)) {
+            const response = failEmbed.setDescription(
+                "Join a voicechannel first.",
+            );
+            return { embeds: [response] };
+        }
 
         await msg.deferReply({ ephemeral: hidden });
 
-        if (subscription && vc?.id !== subscription.voiceConnection.joinConfig.channelId && !(dj && force)) {
-            return { embeds: [failEmbed.setDescription("Join the same vc as the bot first.")] };
+        if (
+            subscription &&
+            vc?.id !== subscription.voiceConnection.joinConfig.channelId &&
+            !(dj && force)
+        ) {
+            const response = failEmbed.setDescription(
+                "Join the same vc as the bot first.",
+            );
+            return { embeds: [response] };
         }
 
-        const searchResult = await this.searchSong(searchQuery).catch(() => null);
+        const searchResult = await this.searchSong(searchQuery).catch(
+            () => null,
+        );
 
-        if (!searchResult) return { embeds: [failEmbed.setDescription("no searchresults found")] };
+        if (!searchResult)
+            return {
+                embeds: [failEmbed.setDescription("no searchresults found")],
+            };
 
         const song = new Song(searchResult, msg.user);
 
         if (!song) throw "no song object";
 
-        if (song.duration.seconds > 3600 && !dj) return { embeds: [failEmbed.setDescription("Cant play songs that are over an hour long.")] };
+        if (song.duration.seconds > 3600 && !dj) {
+            const response = failEmbed.setDescription(
+                "Cant play songs that are over an hour long.",
+            );
+            return { embeds: [response] };
+        }
 
-        if (subscription && subscription.voiceConnection.state.status === VoiceConnectionStatus.Destroyed) subscription = undefined;
+        if (
+            subscription &&
+            subscription.voiceConnection.state.status ===
+                VoiceConnectionStatus.Destroyed
+        )
+            subscription = undefined;
 
         if (!subscription) {
-
-            if (!vc) throw `no vc in play command, unforseen logic error?, ${member.id}`;
-            if (!vc.joinable) return { embeds: [failEmbed.setDescription("I cant join that vc")] };
+            if (!vc)
+                throw `no vc in play command, unforseen logic error?, ${member.id}`;
+            if (!vc.joinable)
+                return {
+                    embeds: [failEmbed.setDescription("I cant join that vc")],
+                };
 
             const connection = joinVoiceChannel({
                 channelId: vc.id,
                 guildId: vc.guild.id,
-                adapterCreator: vc.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator,
+                adapterCreator: vc.guild
+                    .voiceAdapterCreator as DiscordGatewayAdapterCreator,
             });
 
             subscription = new musicService(connection);
@@ -97,7 +134,11 @@ module.exports = class extends Command {
         }
 
         try {
-            await entersState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 20e3);
+            await entersState(
+                subscription.voiceConnection,
+                VoiceConnectionStatus.Ready,
+                20e3,
+            );
         } catch (e) {
             console.warn(e);
             subscription.stop();
@@ -106,28 +147,46 @@ module.exports = class extends Command {
 
         subscription.addToQueue(song);
 
+        let channelName = Util.escapeMarkdown(song.artist.name);
+        channelName = channelName.replace(/[()[\]]/g, "");
+
         const queueLength = subscription.getQueue().length;
-        const songLength = moment().startOf("day").seconds(song.duration.seconds).format("H:mm:ss");
+        const songLength = moment()
+            .startOf("day")
+            .seconds(song.duration.seconds)
+            .format("H:mm:ss");
 
         const embed = new MessageEmbed()
             .setThumbnail(song.thumbnail)
-            .setAuthor({ name: queueLength < 1 ? `Now playing` : "Song queued" })
+            .setAuthor({
+                name: queueLength < 1 ? `Now playing` : "Song queued",
+            })
             .setDescription(`**[${song.title.formatted}](${song.url})**`)
-            .addField("Channel", `*[${Util.escapeMarkdown(song.artist.name).replace(/[()[\]]/g, "")}](${song.artist.url})*`, true)
+            .addField("Channel", `*[${channelName}](${song.artist.url})*`, true)
             .addField("Song Duration", `*${songLength}*`, true)
-            .addField("Queue Position", `*${queueLength !== 0 ? queueLength : "Currently playing"}*`, true)
+            .addField(
+                "Queue Position",
+                `*${queueLength !== 0 ? queueLength : "Currently playing"}*`,
+                true,
+            )
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
         if (queueLength !== 0) {
-            embed.addField("Time untill play", `*${moment().startOf("day").seconds(subscription.queueLength() - song.duration.seconds).format("H:mm:ss")}*`, true);
+            const timeTillPlay = moment()
+                .startOf("day")
+                .seconds(subscription.queueLength() - song.duration.seconds)
+                .format("H:mm:ss");
+
+            embed.addField("Time untill play", `*${timeTillPlay}*`, true);
         }
 
         return { embeds: [embed] };
-    }
+    };
 
     searchSong = async (searchQuery: string) => {
         // If not Url search yt.
-        if (!searchQuery.startsWith("https")) return await this.searchVideo(searchQuery);
+        if (!searchQuery.startsWith("https"))
+            return await this.searchVideo(searchQuery);
 
         if (!play.is_expired()) {
             await play.refreshToken();
@@ -142,14 +201,20 @@ module.exports = class extends Command {
 
         // If spotify url
         if (play.sp_validate(searchQuery) == "track") {
-            const song = await play.spotify(searchQuery) as play.SpotifyTrack;
+            const song = (await play.spotify(searchQuery)) as play.SpotifyTrack;
             return this.searchVideo(`${song.name} - ${song.artists[0].name}`);
         }
 
         return await this.searchVideo(searchQuery);
-    }
+    };
 
     searchVideo = async (searchQuery: string) => {
-        return (await play.search(searchQuery, { source: { youtube: "video" }, limit: 1, fuzzy: true }))[0];
-    }
+        return (
+            await play.search(searchQuery, {
+                source: { youtube: "video" },
+                limit: 1,
+                fuzzy: true,
+            })
+        )[0];
+    };
 };

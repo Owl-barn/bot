@@ -47,7 +47,8 @@ module.exports = class extends Command {
                                 {
                                     type: argumentType.integer,
                                     name: "level",
-                                    description: "What level to add a reward to.",
+                                    description:
+                                        "What level to add a reward to.",
                                     required: true,
                                 },
                             ],
@@ -90,7 +91,8 @@ module.exports = class extends Command {
                                 {
                                     type: argumentType.boolean,
                                     name: "state",
-                                    description: "turn the level sytem on or off?",
+                                    description:
+                                        "turn the level sytem on or off?",
                                     required: true,
                                 },
                             ],
@@ -103,7 +105,8 @@ module.exports = class extends Command {
                                 {
                                     type: argumentType.channel,
                                     name: "channel",
-                                    description: "What to set the level up channel to",
+                                    description:
+                                        "What to set the level up channel to",
                                     required: false,
                                 },
                             ],
@@ -116,7 +119,8 @@ module.exports = class extends Command {
                                 {
                                     type: argumentType.string,
                                     name: "message",
-                                    description: "What to set the level up message to",
+                                    description:
+                                        "What to set the level up message to",
                                     required: false,
                                 },
                             ],
@@ -141,7 +145,8 @@ module.exports = class extends Command {
                                 {
                                     type: argumentType.role,
                                     name: "birthday_role",
-                                    description: "What role to set as birthday role.",
+                                    description:
+                                        "What role to set as birthday role.",
                                     required: false,
                                 },
                             ],
@@ -154,7 +159,8 @@ module.exports = class extends Command {
                                 {
                                     type: argumentType.channel,
                                     name: "birthday_channel",
-                                    description: "Where to send happy birthday messages.",
+                                    description:
+                                        "Where to send happy birthday messages.",
                                     required: false,
                                 },
                             ],
@@ -175,7 +181,8 @@ module.exports = class extends Command {
                         {
                             type: argumentType.subCommand,
                             name: "reset_role",
-                            description: "Reset the birthday role and turn off the auto role.",
+                            description:
+                                "Reset the birthday role and turn off the auto role.",
                         },
                     ],
                 },
@@ -219,31 +226,44 @@ module.exports = class extends Command {
         switch (group) {
             case "level_reward":
                 switch (command) {
-                    case "add": return await configLevelRewardAdd(msg);
-                    case "remove": return await configLevelRewardRemove(msg);
-                    case "list": return await configLevelRewardList(msg);
-                    case "reset": return await configLevelRewardReset(msg);
+                    case "add":
+                        return await configLevelRewardAdd(msg);
+                    case "remove":
+                        return await configLevelRewardRemove(msg);
+                    case "list":
+                        return await configLevelRewardList(msg);
+                    case "reset":
+                        return await configLevelRewardReset(msg);
                 }
                 break;
             case "level":
                 switch (command) {
-                    case "toggle": return await configLevelToggle(msg);
-                    case "message": return await configLevelSetMessage(msg);
-                    case "channel": return await configLevelSetChannel(msg);
-                    case "reset": return await configLevelReset(msg);
+                    case "toggle":
+                        return await configLevelToggle(msg);
+                    case "message":
+                        return await configLevelSetMessage(msg);
+                    case "channel":
+                        return await configLevelSetChannel(msg);
+                    case "reset":
+                        return await configLevelReset(msg);
                 }
                 break;
             case "birthday":
                 switch (command) {
-                    case "set_role": return await configBirthdaySetRole(msg);
-                    case "set_channel": return await configBirthdaySetChannel(msg);
-                    case "reset_user": return await configBirthdayResetUser(msg);
+                    case "set_role":
+                        return await configBirthdaySetRole(msg);
+                    case "set_channel":
+                        return await configBirthdaySetChannel(msg);
+                    case "reset_user":
+                        return await configBirthdayResetUser(msg);
                 }
                 break;
             case "voice":
                 switch (command) {
-                    case "toggle": return await configVoiceToggle(msg);
-                    case "limit": return await configVoiceLimit(msg);
+                    case "toggle":
+                        return await configVoiceToggle(msg);
+                    case "limit":
+                        return await configVoiceLimit(msg);
                 }
                 break;
         }

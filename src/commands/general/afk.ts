@@ -24,7 +24,8 @@ module.exports = class extends Command {
                 {
                     type: argumentType.boolean,
                     name: "global",
-                    description: "Go AFK everywhere or just here? (defaults to true)",
+                    description:
+                        "Go AFK everywhere or just here? (defaults to true)",
                     required: false,
                 },
             ],
@@ -46,7 +47,12 @@ module.exports = class extends Command {
         if (global || reason == null) reason = null;
         else reason = reason.substring(0, 127);
 
-        await client.db.afk.deleteMany({ where: { user_id: msg.user.id, global: true } });
+        await client.db.afk.deleteMany({
+            where: {
+                user_id: msg.user.id,
+                global: true,
+            },
+        });
 
         const createQuery = await client.db.afk.create({
             data: {
@@ -58,11 +64,11 @@ module.exports = class extends Command {
         });
 
         AFKService.setAFK(createQuery);
-
+        const reasonString = reason ? ` message: \`\`${reason}\`\`` : "";
 
         const embed = new MessageEmbed()
             .setTitle(`AFK set`)
-            .setDescription(`Successfully set you as AFK${reason ? ` message: \`\`${reason}\`\`` : ""} `)
+            .setDescription(`Successfully set you as AFK${reasonString}.`)
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed] };

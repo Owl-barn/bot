@@ -59,9 +59,12 @@ module.exports = class extends Command {
         const subCommand = msg.options.getSubcommand(true);
 
         switch (subCommand) {
-            case "hide": return hideRoom(msg);
-            case "transfer": return transferRoom(msg);
-            case "kick": return kick(msg);
+            case "hide":
+                return hideRoom(msg);
+            case "transfer":
+                return transferRoom(msg);
+            case "kick":
+                return kick(msg);
             default:
                 break;
         }
@@ -72,55 +75,126 @@ module.exports = class extends Command {
 
 async function transferRoom(msg: RavenInteraction): Promise<returnMessage> {
     const member = msg.options.getMember("user", true) as GuildMember;
-    if (member.id == msg.user.id) return { content: "You can't transfer your room to yourself" };
+    if (member.id == msg.user.id)
+        return { content: "You can't transfer your room to yourself" };
 
-    const { room, dbRoom } = await fetchRoom(msg).catch(x => x == "noRoom" ? { room: null, dbRoom: null } : Promise.reject(x));
+    const { room, dbRoom } = await fetchRoom(msg).catch((x) =>
+        x == "noRoom" ? { room: null, dbRoom: null } : Promise.reject(x),
+    );
     if (!room || !dbRoom) return { content: "You don't have a private room" };
 
     const waitRoom = await msg.guild?.channels.fetch(dbRoom.wait_channel_id);
 
-    await room.permissionOverwrites.create(msg.user.id, { MOVE_MEMBERS: false });
-    await room.permissionOverwrites.create(member.id, { VIEW_CHANNEL: true, CONNECT: true, MOVE_MEMBERS: true });
+    const roomOwnerPermissions = {
+        VIEW_CHANNEL: true,
+        CONNECT: true,
+        MOVE_MEMBERS: true,
+    };
+    const memberPermissions = {
+        VIEW_CHANNEL: true,
+        CONNECT: true,
+        MOVE_MEMBERS: false,
+    };
+
+    await room.permissionOverwrites.create(msg.user.id, memberPermissions);
+    await room.permissionOverwrites.create(member.id, roomOwnerPermissions);
 
     if (waitRoom) {
-        await waitRoom.permissionOverwrites.create(member.id, { VIEW_CHANNEL: true, CONNECT: true, MOVE_MEMBERS: true });
-        await waitRoom.permissionOverwrites.create(member.id, { MOVE_MEMBERS: false });
+        await waitRoom.permissionOverwrites.create(
+            member.id,
+            roomOwnerPermissions,
+        );
+        await waitRoom.permissionOverwrites.create(
+            member.id,
+            memberPermissions,
+        );
     }
 
-    await msg.client.db.private_vc.update({ where: { user_id_guild_id: { user_id: msg.user.id, guild_id: msg.guildId as string } }, data: { user_id: member.id } });
+    await msg.client.db.private_vc.update({
+        where: {
+            user_id_guild_id: {
+                user_id: msg.user.id,
+                guild_id: msg.guildId as string,
+            },
+        },
+        data: { user_id: member.id },
+    });
 
-    return { embeds: [embedTemplate().setDescription(`Room is now owned by ${member.user}`)] };
+    const responseEmbed = embedTemplate().setDescription(
+        `Room is now owned by ${member.user}`,
+    );
+
+    return { embeds: [responseEmbed] };
 }
 
 async function hideRoom(msg: RavenInteraction): Promise<returnMessage> {
-    const { room } = await fetchRoom(msg).catch(x => x == "noRoom" ? { room: null, dbRoom: null } : Promise.reject(x));
+    const { room } = await fetchRoom(msg).catch((x) =>
+        x == "noRoom" ? { room: null, dbRoom: null } : Promise.reject(x),
+    );
     if (!room) return { content: "You don't have a private room" };
 
-    let currentState = room.permissionsFor(msg.guildId as string)?.has("VIEW_CHANNEL");
+    let currentState = room
+        .permissionsFor(msg.guildId as string)
+        ?.has("VIEW_CHANNEL");
     currentState = currentState == undefined ? true : currentState;
-    await room.permissionOverwrites.edit(msg.guildId as string, { VIEW_CHANNEL: !currentState, CONNECT: false });
+    await room.permissionOverwrites.edit(msg.guildId as string, {
+        VIEW_CHANNEL: !currentState,
+        CONNECT: false,
+        STREAM: true,
+        SPEAK: true,
+    });
 
-    return { embeds: [embedTemplate().setDescription(`Room is now ${!currentState ? "visible" : "hidden"}`)] };
+    const responseEmbed = embedTemplate().setDescription(
+        `Room is now ${currentState ? "hidden" : "visible"}`,
+    );
+
+    return { embeds: [responseEmbed] };
 }
 
 async function kick(msg: RavenInteraction): Promise<returnMessage> {
     const member = msg.options.getMember("user", true) as GuildMember;
     if (member.id == msg.user.id) return { content: "You can't kick yourself" };
 
-    const { room } = await fetchRoom(msg).catch(x => x == "noRoom" ? { room: null, dbRoom: null } : Promise.reject(x));
+    const { room } = await fetchRoom(msg).catch((x) =>
+        x == "noRoom" ? { room: null, dbRoom: null } : Promise.reject(x),
+    );
     if (!room) return { content: "You don't have a private room" };
 
-    if (member.voice.channelId == room.id) await member.voice.disconnect().catch(() => { null; });
-    await room.permissionOverwrites.delete(member.id, `Manually removed from channel by ${msg.user.id}`);
-    return { embeds: [embedTemplate().setDescription("User kicked from room")], ephemeral: true };
+    if (member.voice.channelId == room.id)
+        await member.voice.disconnect().catch(() => {
+            null;
+        });
+    await room.permissionOverwrites.delete(
+        member.id,
+        `Manually removed from channel by ${msg.user.id}`,
+    );
+
+    const responseEmbed = embedTemplate().setDescription(
+        `${member.user} has been kicked from the room`,
+    );
+    return { embeds: [responseEmbed], ephemeral: true };
 }
 
 async function fetchRoom(msg: RavenInteraction) {
-    const dbRoom = await msg.client.db.private_vc.findUnique({ where: { user_id_guild_id: { user_id: msg.user.id, guild_id: msg.guildId as string } } });
+    const dbRoom = await msg.client.db.private_vc.findUnique({
+        where: {
+            user_id_guild_id: {
+                user_id: msg.user.id,
+                guild_id: msg.guildId as string,
+            },
+        },
+    });
     if (!dbRoom) throw "noRoom";
     const room = await msg.guild?.channels.fetch(dbRoom.main_channel_id);
     if (!room) {
-        await msg.client.db.private_vc.delete({ where: { user_id_guild_id: { user_id: msg.user.id, guild_id: msg.guildId as string } } });
+        await msg.client.db.private_vc.delete({
+            where: {
+                user_id_guild_id: {
+                    user_id: msg.user.id,
+                    guild_id: msg.guildId as string,
+                },
+            },
+        });
         throw "noRoom";
     }
 

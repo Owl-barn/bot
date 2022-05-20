@@ -4,12 +4,12 @@ import RavenInteraction from "../types/interaction";
 
 class logServiceClass {
     private timeout: Record<string, NodeJS.Timeout>;
-    private logCache: Record<string, string[]>
-    private logConfig: Record<string, string>
+    private logCache: Record<string, string[]>;
+    private logConfig: Record<string, string>;
 
     private executeQueries = async (guild: string) => {
         clearTimeout(this.timeout[guild]);
-    }
+    };
 
     private pushlog = (content: string, guild: string) => {
         this.logCache[guild].push(content);
@@ -17,13 +17,21 @@ class logServiceClass {
             clearTimeout(this.timeout[guild]);
             this.executeQueries(guild);
         } else {
-            this.timeout[guild] = setTimeout(() => this.executeQueries(guild), 180000);
+            this.timeout[guild] = setTimeout(
+                () => this.executeQueries(guild),
+                180000,
+            );
         }
-    }
+    };
 
-    public logCommand = (interaction: RavenInteraction, hidden: boolean): void => {
+    public logCommand = (
+        interaction: RavenInteraction,
+        hidden: boolean,
+    ): void => {
         const subCommand = interaction.options.getSubcommand(false);
-        const commandName = subCommand ? `${interaction.commandName}_${subCommand}` : interaction.commandName;
+        const commandName = subCommand
+            ? `${interaction.commandName}_${subCommand}`
+            : interaction.commandName;
 
         const query: Prisma.command_logUncheckedCreateInput = {
             user: interaction.user.id,
@@ -33,13 +41,21 @@ class logServiceClass {
             hidden,
         };
 
-        prisma.command_log.create({ data: query }).then(() => console.info(`${interaction.guild?.name}: ${interaction.user.username}: ${commandName}: ${hidden}`));
-    }
+        const logList = [
+            interaction.guild?.name,
+            interaction.user.username,
+            commandName,
+            hidden,
+        ];
+
+        prisma.command_log
+            .create({ data: query })
+            .then(() => console.info(logList.join(" | ")));
+    };
 }
 
 declare const global: NodeJS.Global & { logService: logServiceClass };
 const logService: logServiceClass = global.logService || new logServiceClass();
 if (process.env.NODE_ENV === "development") global.logService = logService;
-
 
 export default logService;

@@ -24,7 +24,9 @@ export default class implements RavenEvent {
         if (!userLevel) return;
 
         const level = levelService.calculateLevel(userLevel.experience);
-        const rewards = await client.db.level_reward.findMany({ where: { level: { lte: level.level }, guild_id: member.guild.id } });
+        const rewards = await client.db.level_reward.findMany({
+            where: { level: { lte: level.level }, guild_id: member.guild.id },
+        });
 
         if (rewards.length === 0) return;
 
@@ -35,6 +37,8 @@ export default class implements RavenEvent {
             roles.push(role);
         }
 
-        await member.roles.add(roles, "Level roles").catch(() => console.log("Couldnt assign roles"));
+        await member.roles
+            .add(roles, "Level roles")
+            .catch(() => console.log("Couldnt assign roles"));
     }
 }

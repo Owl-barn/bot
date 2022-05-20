@@ -4,23 +4,24 @@
         "node": true
     },
     "parser": "@typescript-eslint/parser",
-    "plugins": [
-        "@typescript-eslint"
-    ],
+    "plugins": ["@typescript-eslint", "prettier"],
     "extends": [
         "eslint:recommended",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "prettier"
     ],
     "parserOptions": {
         "project": "./tsconfig.json"
     },
     "rules": {
+        "prettier/prettier": 2,
         "@typescript-eslint/no-unused-vars": [
             "error",
             {
                 "argsIgnorePattern": "^_"
             }
         ],
+        "eol-last": ["error", "always"],
         "brace-style": [
             "error",
             "1tbs",
@@ -28,24 +29,11 @@
                 "allowSingleLine": true
             }
         ],
-        "comma-dangle": [
-            "error",
-            "always-multiline"
-        ],
+        "comma-dangle": ["error", "always-multiline"],
         "comma-spacing": "error",
         "comma-style": "error",
-        "dot-location": [
-            "error",
-            "property"
-        ],
+        "dot-location": ["error", "property"],
         "handle-callback-err": "off",
-        "indent": [
-            "error",
-            4,
-            {
-                "SwitchCase": 1
-            }
-        ],
         "max-nested-callbacks": [
             "error",
             {
@@ -75,21 +63,12 @@
         "no-shadow": [
             "error",
             {
-                "allow": [
-                    "err",
-                    "resolve",
-                    "reject"
-                ]
+                "allow": ["err", "resolve", "reject"]
             }
         ],
-        "no-trailing-spaces": [
-            "error"
-        ],
+        "no-trailing-spaces": ["error"],
         "no-var": "error",
-        "object-curly-spacing": [
-            "error",
-            "always"
-        ],
+        "object-curly-spacing": ["error", "always"],
         "prefer-const": "error",
         "quotes": [
             "error",
@@ -98,10 +77,7 @@
                 "allowTemplateLiterals": true
             }
         ],
-        "semi": [
-            "error",
-            "always"
-        ],
+        "semi": ["error", "always"],
         "space-before-blocks": "error",
         "space-before-function-paren": [
             "error",

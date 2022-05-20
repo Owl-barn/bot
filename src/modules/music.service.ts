@@ -1,4 +1,12 @@
-import { AudioPlayer, VoiceConnection, createAudioPlayer, VoiceConnectionStatus, AudioPlayerStatus, AudioPlayerState, entersState } from "@discordjs/voice";
+import {
+    AudioPlayer,
+    VoiceConnection,
+    createAudioPlayer,
+    VoiceConnectionStatus,
+    AudioPlayerStatus,
+    AudioPlayerState,
+    entersState,
+} from "@discordjs/voice";
 import { MessageEmbed, HexColorString } from "discord.js";
 import prisma from "../lib/db.service";
 import { returnMessage } from "../types/Command";
@@ -31,8 +39,13 @@ export default class musicService {
 
         this.player.on("stateChange", this.statechange);
 
-        this.voiceConnection.on(VoiceConnectionStatus.Disconnected, this.disconnectVoice);
-        this.voiceConnection.on(VoiceConnectionStatus.Destroyed, () => { this.startStopTimer(); });
+        this.voiceConnection.on(
+            VoiceConnectionStatus.Disconnected,
+            this.disconnectVoice,
+        );
+        this.voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
+            this.startStopTimer();
+        });
 
         this.player.on(AudioPlayerStatus.Paused, this.pause);
 
@@ -45,50 +58,79 @@ export default class musicService {
         try {
             // try reconnect.
             await Promise.race([
-                entersState(this.voiceConnection, VoiceConnectionStatus.Signalling, 5_000),
-                entersState(this.voiceConnection, VoiceConnectionStatus.Connecting, 5_000),
+                entersState(
+                    this.voiceConnection,
+                    VoiceConnectionStatus.Signalling,
+                    5_000,
+                ),
+                entersState(
+                    this.voiceConnection,
+                    VoiceConnectionStatus.Connecting,
+                    5_000,
+                ),
             ]);
         } catch (error) {
             // actual disconnect, dont recover.
             this.voiceConnection.destroy();
         }
-    }
+    };
 
-    private statechange = (oldState: AudioPlayerState, newState: AudioPlayerState): void => {
-        if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
+    private statechange = (
+        oldState: AudioPlayerState,
+        newState: AudioPlayerState,
+    ): void => {
+        if (
+            newState.status === AudioPlayerStatus.Idle &&
+            oldState.status !== AudioPlayerStatus.Idle
+        ) {
             void this.queueService();
         }
-    }
+    };
 
-    private pause = (oldState: AudioPlayerState, newState: AudioPlayerState) => {
-        if (oldState.status === AudioPlayerStatus.Playing && newState.status === AudioPlayerStatus.Paused) {
+    private pause = (
+        oldState: AudioPlayerState,
+        newState: AudioPlayerState,
+    ) => {
+        if (
+            oldState.status === AudioPlayerStatus.Playing &&
+            newState.status === AudioPlayerStatus.Paused
+        ) {
             if (this.lastpause === 0) return;
             this.secondsPlayed += (Date.now() - this.lastpause) / 1000;
         }
 
-        if (oldState.status === AudioPlayerStatus.Paused && newState.status === AudioPlayerStatus.Playing) {
+        if (
+            oldState.status === AudioPlayerStatus.Paused &&
+            newState.status === AudioPlayerStatus.Playing
+        ) {
             this.lastpause = Date.now();
         }
-    }
+    };
 
     public getCurrent = (): Song | null => this.current;
 
     public stop(): void {
         this.queue = [];
         this.player.stop(true);
-        if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
+        if (
+            this.voiceConnection.state.status !==
+            VoiceConnectionStatus.Destroyed
+        )
+            this.voiceConnection.destroy();
 
         this.destroyed = true;
     }
 
     // IDLE
     public setIdle = (x: boolean): void => {
-        x ? this.idle = setTimeout(() => this.stop(), 180000) : clearTimeout(this.idle);
-    }
+        x
+            ? (this.idle = setTimeout(() => this.stop(), 180000))
+            : clearTimeout(this.idle);
+    };
 
     // LOOP
 
-    public toggleLoop = (): boolean => this.loop = !this.loop;
+    public toggleLoop = (): boolean => (this.loop = !this.loop);
 
     public getLoop = (): boolean => this.loop;
 
@@ -102,7 +144,7 @@ export default class musicService {
             id: this.current.id,
             start: Date.now(),
         };
-    }
+    };
 
     public addVote = (user: string): Set<string> => this.voted.add(user);
 
@@ -110,8 +152,7 @@ export default class musicService {
         this.voted.delete(user);
 
         return this.voted;
-    }
-
+    };
 
     public getVotes = (): Set<string> => this.voted;
 
@@ -133,13 +174,15 @@ export default class musicService {
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed], components: [] };
-    }
+    };
 
     // TIMING
 
     public getPlaytime = (): number => {
-        return Math.floor(this.secondsPlayed + (Date.now() - this.lastpause) / 1000);
-    }
+        return Math.floor(
+            this.secondsPlayed + (Date.now() - this.lastpause) / 1000,
+        );
+    };
 
     public queueLength = (): number => {
         let queueLength = 0;
@@ -148,12 +191,16 @@ export default class musicService {
 
         if (!this.current) return queueLength;
 
-        return (this.current.duration.seconds - this.getPlaytime()) + queueLength;
-    }
+        return this.current.duration.seconds - this.getPlaytime() + queueLength;
+    };
 
-    private logDuration = async (song: Song, played: number | null): Promise<void> => {
+    private logDuration = async (
+        song: Song,
+        played: number | null,
+    ): Promise<void> => {
         if (song.duration.seconds === 0) return;
-        if (played && played > song.duration.seconds) played = song.duration.seconds;
+        if (played && played > song.duration.seconds)
+            played = song.duration.seconds;
         await prisma.songs_played.create({
             data: {
                 guild_id: this.voiceConnection.joinConfig.guildId,
@@ -162,7 +209,7 @@ export default class musicService {
                 play_duration: played ? Math.round(played) : null,
             },
         });
-    }
+    };
 
     public startStopTimer(): void {
         this.timeout = setTimeout(() => this.stop(), 180000);
@@ -175,16 +222,19 @@ export default class musicService {
     public addToQueue = (song: Song): void => {
         this.queue.push(song);
         void this.queueService();
-    }
+    };
 
     private reset = (): void => {
         this.currentVote = null;
         this.voted = new Set();
         this.queueLock = false;
-    }
+    };
 
     private queueService = async (): Promise<void> => {
-        if (this.queueLock || (this.player.state.status !== AudioPlayerStatus.Idle)) {
+        if (
+            this.queueLock ||
+            this.player.state.status !== AudioPlayerStatus.Idle
+        ) {
             return;
         }
 
@@ -220,8 +270,7 @@ export default class musicService {
             console.error(e);
             return this.queueService();
         }
-
-    }
+    };
 }
 
 export interface Vote {

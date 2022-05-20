@@ -3,7 +3,11 @@ import { Command } from "../types/Command";
 class ThrottleService {
     private list: Record<string, Record<string, ThrottleCommandMap[]>> = {};
 
-    public isThrottled(guild: string, user: string, command: Command): number | boolean {
+    public isThrottled(
+        guild: string,
+        user: string,
+        command: Command,
+    ): number | boolean {
         const listUser = this.list[guild]?.[user];
         if (!listUser) return false;
 
@@ -12,10 +16,10 @@ class ThrottleService {
         let total = 0;
         let oldest = Infinity;
 
-        this.list[guild][user] = listUser.filter(item => {
+        this.list[guild][user] = listUser.filter((item) => {
             if (item.name !== command.name) return true;
 
-            if (now > (item.date + command.throttling.duration)) return false;
+            if (now > item.date + command.throttling.duration) return false;
 
             total++;
             if (item.date < oldest) oldest = item.date;
@@ -23,7 +27,8 @@ class ThrottleService {
             return true;
         });
 
-        if (total >= command.throttling.usages) return command.throttling.duration - (now - oldest);
+        if (total >= command.throttling.usages)
+            return command.throttling.duration - (now - oldest);
 
         return false;
     }
@@ -31,7 +36,10 @@ class ThrottleService {
     public addToThrottle(guild: string, user: string, command: string): void {
         if (!this.list[guild]?.[user]) this.addUser(guild, user);
 
-        this.list[guild][user].push({ name: command, date: Math.round(Date.now() / 1000) });
+        this.list[guild][user].push({
+            name: command,
+            date: Math.round(Date.now() / 1000),
+        });
     }
 
     private addUser(guild: string, user: string): void {
@@ -49,12 +57,11 @@ interface ThrottleCommandMap {
     date: number;
 }
 
-
 declare const global: NodeJS.Global & { throttleService: ThrottleService };
 
 const throttleService = global.throttleService || new ThrottleService();
 
-if (process.env.NODE_ENV === "development") global.throttleService = throttleService;
-
+if (process.env.NODE_ENV === "development")
+    global.throttleService = throttleService;
 
 export default throttleService;

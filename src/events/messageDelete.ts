@@ -15,12 +15,17 @@ export default class InteractionCreate implements RavenEvent {
 
         const member = msg.member as GuildMember;
         const avatar = member.avatarURL() || member.user.avatarURL();
-        const channel = msg.guild?.channels.cache.get(config.log_channel) as TextChannel;
+        const channel = msg.guild?.channels.cache.get(
+            config.log_channel,
+        ) as TextChannel;
         const embed = failEmbedTemplate();
 
         embed.setTitle("Message Deleted");
         embed.setDescription(msg.content);
-        embed.setFooter({ text: `${member.user.tag} <@${member.id}>`, iconURL: avatar || "" });
+        embed.setFooter({
+            text: `${member.user.tag} <@${member.id}>`,
+            iconURL: avatar || "",
+        });
         channel.send({ embeds: [embed] });
     }
 }

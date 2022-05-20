@@ -3,5 +3,5 @@ export enum CommandGroup {
     owner = "owner",
     moderation = "moderation",
     general = "general",
-    music = "music"
+    music = "music",
 }

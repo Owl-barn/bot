@@ -20,7 +20,8 @@ export default class Bot {
                 Intents.FLAGS.GUILD_MESSAGES,
                 Intents.FLAGS.GUILD_VOICE_STATES,
                 Intents.FLAGS.GUILD_MEMBERS,
-            ], allowedMentions: { parse: ["users"] },
+            ],
+            allowedMentions: { parse: ["users"] },
         });
 
         this.client.musicService = new Map<Snowflake, musicService>();
@@ -49,13 +50,15 @@ export default class Bot {
     }
 
     private async initializeCommands() {
-        this.client.commands = await registerCommands()
-            .catch((e) => { throw ` x Couldnt load commands \n ${e}`.red.bold; });
+        this.client.commands = await registerCommands().catch((e) => {
+            throw ` x Couldnt load commands \n ${e}`.red.bold;
+        });
     }
 
     private async initializeButtons() {
-        this.client.buttons = await registerButtons()
-            .catch((e) => { throw ` x Couldnt load buttons \n ${e}`.red.bold; });
+        this.client.buttons = await registerButtons().catch((e) => {
+            throw ` x Couldnt load buttons \n ${e}`.red.bold;
+        });
     }
 
     private initializeDB() {
@@ -64,7 +67,7 @@ export default class Bot {
 
     public getClient = (): RavenClient => {
         return this.client;
-    }
+    };
 
     public async listen(): Promise<void> {
         await this.client.login(process.env.DISCORD_TOKEN);

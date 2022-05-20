@@ -1,4 +1,8 @@
-import { HexColorString, InteractionReplyOptions, MessageEmbed } from "discord.js";
+import {
+    HexColorString,
+    InteractionReplyOptions,
+    MessageEmbed,
+} from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -56,17 +60,30 @@ module.exports = class extends Command {
         let colour: HexColorString;
 
         switch (warns.length) {
-            case 0: colour = process.env.EMBED_COLOR as HexColorString; break;
-            case 1: colour = "#18ac15"; break;
-            case 2: colour = "#d7b500"; break;
-            default: colour = "#e60008"; break;
+            case 0:
+                colour = process.env.EMBED_COLOR as HexColorString;
+                break;
+            case 1:
+                colour = "#18ac15";
+                break;
+            case 2:
+                colour = "#d7b500";
+                break;
+            default:
+                colour = "#e60008";
+                break;
         }
 
         const embed = new MessageEmbed()
-            .setAuthor({ name: `${target.tag} has ${warnings.length} warnings.`, iconURL: target.avatarURL() as string })
+            .setAuthor({
+                name: `${target.tag} has ${warnings.length} warnings.`,
+                iconURL: target.avatarURL() as string,
+            })
             .setColor(colour);
 
-        warns.length !== 0 ? embed.addFields(warns) : embed.setDescription("This user has no warnings.");
+        warns.length !== 0
+            ? embed.addFields(warns)
+            : embed.setDescription("This user has no warnings.");
 
         return { embeds: [embed] };
     }

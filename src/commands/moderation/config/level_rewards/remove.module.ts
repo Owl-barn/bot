@@ -2,7 +2,9 @@ import { HexColorString, MessageEmbed, Role } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
-export async function configLevelRewardRemove(msg: RavenInteraction): Promise<returnMessage> {
+export async function configLevelRewardRemove(
+    msg: RavenInteraction,
+): Promise<returnMessage> {
     if (!msg.guildId) throw "no guild??";
     const role = msg.options.getRole("role", true) as Role;
 

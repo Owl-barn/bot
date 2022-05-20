@@ -14,11 +14,23 @@ export default function eventInitializer(client: RavenClient): void {
                 await import(`${dir}/events/${file}`).then(async (module) => {
                     const event = new module.default(client) as RavenEvent;
 
-                    if (event.once) client.once(event.name, (...args) => event.execute(...args));
-                    else client.on(event.name, (...args) => event.execute(...args));
+                    if (event.once)
+                        client.once(event.name, (...args) =>
+                            event.execute(...args),
+                        );
+                    else
+                        client.on(event.name, (...args) =>
+                            event.execute(...args),
+                        );
 
-                    console.log(` - Loaded Event: ${event.name.green.italic}`.cyan.italic);
+                    console.log(
+                        ` - Loaded Event: ${event.name.green.italic}`.cyan
+                            .italic,
+                    );
                 });
             }
-        }).then(() => { console.log(" ✓ All Events loaded".green.bold); });
+        })
+        .then(() => {
+            console.log(" ✓ All Events loaded".green.bold);
+        });
 }

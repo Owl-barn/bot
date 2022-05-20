@@ -17,15 +17,21 @@ export default class GuildManager {
 
         this.guild = await this.client.guilds.fetch(this.guildID);
 
-        const left = await this.guild.leave().catch(() => false).then(() => true);
+        const left = await this.guild
+            .leave()
+            .catch(() => false)
+            .then(() => true);
 
-        const deleted = await prisma.$transaction([
-            prisma.warnings.deleteMany(query),
-            prisma.rcon.deleteMany(query),
-            prisma.whitelist.deleteMany(query),
-            prisma.logs.deleteMany(query),
-            prisma.guilds.delete(query),
-        ]).catch(() => false).then(() => true);
+        const deleted = await prisma
+            .$transaction([
+                prisma.warnings.deleteMany(query),
+                prisma.rcon.deleteMany(query),
+                prisma.whitelist.deleteMany(query),
+                prisma.logs.deleteMany(query),
+                prisma.guilds.delete(query),
+            ])
+            .catch(() => false)
+            .then(() => true);
 
         console.log(`Deleted: ${deleted} Left: ${left}`.yellow.italic);
     }

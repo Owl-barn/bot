@@ -10,7 +10,11 @@ import LeaderboardController from "./routes/leaderboard/leaderboard.controller";
 import OauthController from "./routes/oauth/oauth.controller";
 import WebServer from "./web";
 
-const web = new WebServer([new OauthController(), new GuildsController(), new LeaderboardController()]);
+const web = new WebServer([
+    new OauthController(),
+    new GuildsController(),
+    new LeaderboardController(),
+]);
 web.listen();
 
 declare const global: NodeJS.Global & { bot?: Bot };

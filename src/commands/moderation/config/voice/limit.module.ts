@@ -2,7 +2,9 @@ import { MessageEmbed, HexColorString } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
-export default async function configVoiceLimit(msg: RavenInteraction): Promise<returnMessage> {
+export default async function configVoiceLimit(
+    msg: RavenInteraction,
+): Promise<returnMessage> {
     if (!msg.guildId) throw "No guildID???";
 
     const embed = new MessageEmbed()

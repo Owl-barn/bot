@@ -14,16 +14,23 @@ class OauthController implements Controller {
     private initializeRoutes = () => {
         this.router.get(this.path, this.oauthPost);
         this.router.get("auth", authMiddleware, this.authPost);
-    }
+    };
 
-    private oauthPost = async (req: Request, res: Response, next: NextFunction) => {
-        new OauthGetService().execute(req, res).catch(e => next(e));
-    }
+    private oauthPost = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        new OauthGetService().execute(req, res).catch((e) => next(e));
+    };
 
-    private authPost = async (_req: Request, res: Response, _next: NextFunction) => {
+    private authPost = async (
+        _req: Request,
+        res: Response,
+        _next: NextFunction,
+    ) => {
         res.status(200).send({ message: "ok" });
-    }
-
+    };
 }
 
 export default OauthController;

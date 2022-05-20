@@ -68,31 +68,51 @@ module.exports = class extends Command {
 
         let reason = msg.options.getString("reason", false);
         const target = msg.options.getMember("user", true) as GuildMember;
-        const durationCheck = new RegExp(/((?<days>[0-9]{1,2}) ?(?:d) ?)?((?<hours>[0-9]{1,2}) ?(?:h) ?)?((?<minutes>[0-9]{1,2}) ?(?:m))?/g);
+        const durationCheck = new RegExp(
+            /((?<days>[0-9]{1,2}) ?(?:d) ?)?((?<hours>[0-9]{1,2}) ?(?:h) ?)?((?<minutes>[0-9]{1,2}) ?(?:m))?/g,
+        );
 
-        const embed = new MessageEmbed()
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        const embed = new MessageEmbed().setColor(
+            process.env.EMBED_COLOR as HexColorString,
+        );
 
-        const failEmbed = new MessageEmbed()
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+        const failEmbed = new MessageEmbed().setColor(
+            process.env.EMBED_FAIL_COLOR as HexColorString,
+        );
 
         if (command === "clear") {
-            if (!target.communicationDisabledUntil) return {
-                ephemeral: true,
-                embeds: [failEmbed.setDescription("This user isnt timed out.")],
-            };
+            if (!target.communicationDisabledUntil)
+                return {
+                    ephemeral: true,
+                    embeds: [
+                        failEmbed.setDescription("This user isnt timed out."),
+                    ],
+                };
             await target.timeout(null);
 
-            return { embeds: [embed.setDescription(`${target}'s timeout has been cleared`)] };
+            const response = embed.setDescription(
+                `${target}'s timeout has been cleared`,
+            );
+
+            return { embeds: [response] };
         }
 
-        const duration = Util.escapeMarkdown(msg.options.getString("duration", true)).trim();
-        if (!target.moderatable) return { embeds: [failEmbed.setDescription("I cant time-out that user")] };
+        const duration = Util.escapeMarkdown(
+            msg.options.getString("duration", true),
+        ).trim();
+        if (!target.moderatable)
+            return {
+                embeds: [failEmbed.setDescription("I cant time-out that user")],
+            };
 
         const match = Array.from(duration.matchAll(durationCheck));
         let { days, hours, minutes } = match[0].groups as unknown as TimeInput;
 
-        if (!days && !hours && !minutes) return { ephemeral: true, embeds: [embed.setDescription("Couldnt determine duration")] };
+        if (!days && !hours && !minutes)
+            return {
+                ephemeral: true,
+                embeds: [embed.setDescription("Couldnt determine duration")],
+            };
         days = Number(days);
         hours = Number(hours);
         minutes = Number(minutes);
@@ -107,7 +127,9 @@ module.exports = class extends Command {
 
         if (durationMs > timeoutLimit) durationMs = timeoutLimit;
 
-        reason = reason ? Util.escapeMarkdown(reason).substring(0, 127) : "No reason provided.";
+        reason = reason
+            ? Util.escapeMarkdown(reason).substring(0, 127)
+            : "No reason provided.";
 
         const member = await target.timeout(durationMs, reason);
 
@@ -115,9 +137,23 @@ module.exports = class extends Command {
 
         if (!member.communicationDisabledUntilTimestamp) throw "??";
 
-        const durationString = ` ${displayUnit(days, "day")}${displayUnit(hours, "hour")}${displayUnit(minutes, "minute")}`;
-        embed.setDescription(`${target} has been timed out\nWith the reason: \`${reason}\`\nfor: \` ${durationString} \``);
-        embed.addField("Expiration", `<t:${Math.round(member.communicationDisabledUntilTimestamp / 1000)}:R> ${durationMs === timeoutLimit ? "`Discord limited it to 28 days`" : ""}`);
+        const durationString = ` ${displayUnit(days, "day")}${displayUnit(
+            hours,
+            "hour",
+        )}${displayUnit(minutes, "minute")}`;
+        embed.setDescription(
+            `${target} has been timed out\nWith the reason: \`${reason}\`\nfor: \` ${durationString} \``,
+        );
+        embed.addField(
+            "Expiration",
+            `<t:${Math.round(
+                member.communicationDisabledUntilTimestamp / 1000,
+            )}:R> ${
+                durationMs === timeoutLimit
+                    ? "`Discord limited it to 28 days`"
+                    : ""
+            }`,
+        );
 
         return { embeds: [embed] };
     }

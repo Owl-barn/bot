@@ -34,7 +34,10 @@ module.exports = class WebhookCommand extends Command {
 
         const webhookClient = new WebhookClient({ url });
 
-        const deleted = await webhookClient.delete().catch(() => false).then(() => true);
+        const deleted = await webhookClient
+            .delete()
+            .catch(() => false)
+            .then(() => true);
 
         if (!deleted) return { content: "Failed" };
         return { content: "Webhook succesfully deleted" };

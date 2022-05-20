@@ -24,7 +24,10 @@ class AFKServiceClass {
             await db.afk.deleteMany({
                 where: {
                     OR: [
-                        { user_id: msg.author.id, guild_id: msg.guildId as string },
+                        {
+                            user_id: msg.author.id,
+                            guild_id: msg.guildId as string,
+                        },
                         { user_id: msg.author.id, global: true },
                     ],
                 },
@@ -40,32 +43,36 @@ class AFKServiceClass {
         const mentions = msg.mentions.users;
         const AFKPeople: Record<string, unknown>[] = [];
         if (mentions.size == 0) {
-            if (removeAFK) await msg.reply({ content: "Successfully removed your afk!" });
+            if (removeAFK)
+                await msg.reply({ content: "Successfully removed your afk!" });
             return;
         }
 
-
         let AFKString = "";
-        mentions.forEach(mention => {
+        mentions.forEach((mention) => {
             if (AFKPeople.length >= 3) return;
             if (mention.id == msg.author.id) return;
             if (this.guilds.has(`${mention.id}-${msg.guildId}`)) {
                 AFKPeople.push({ user_id: mention.id, guild_id: msg.guildId });
                 return;
             }
-            if (this.globals.has(mention.id)) AFKPeople.push({ user_id: mention.id, global: true });
+            if (this.globals.has(mention.id))
+                AFKPeople.push({ user_id: mention.id, global: true });
         });
 
         if (AFKPeople.length == 0) return;
 
         const afks = await db.afk.findMany({ where: { OR: AFKPeople } });
-        for (const x of afks) AFKString += `\n<@${x.user_id}> went afk <t:${Number(x.created) / 1000}:R>${x.reason ? ` with the reason: \`\`${x.reason}\`\`` : ""}`;
+        for (const x of afks)
+            AFKString += `\n<@${x.user_id}> went afk <t:${
+                Number(x.created) / 1000
+            }:R>${x.reason ? ` with the reason: \`\`${x.reason}\`\`` : ""}`;
 
         const embed = embedTemplate();
         embed.setDescription(AFKString);
         if (removeAFK) embed.setTitle("Removed your AFK!");
         await msg.reply({ embeds: [embed] });
-    }
+    };
 
     public initialize = async (): Promise<void> => {
         const afks = await db.afk.findMany();
@@ -75,12 +82,11 @@ class AFKServiceClass {
 
         for (const x of afks) this.setAFK(x);
         console.log(`AFK service initialized, ${afks.length} users`);
-    }
+    };
 }
 
 declare const global: NodeJS.Global & { AFKService: AFKServiceClass };
 const AFKService: AFKServiceClass = global.AFKService || new AFKServiceClass();
 if (process.env.NODE_ENV === "development") global.AFKService = AFKService;
-
 
 export default AFKService;

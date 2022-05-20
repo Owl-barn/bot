@@ -5,7 +5,11 @@ import WrongTokenException from "../exceptions/BadToken";
 import HttpException from "../exceptions/httpExceptions";
 import { RavenRequest } from "../types/web";
 
-async function authMiddleware(req: RavenRequest, _res: Response, next: NextFunction): Promise<void> {
+async function authMiddleware(
+    req: RavenRequest,
+    _res: Response,
+    next: NextFunction,
+): Promise<void> {
     const cookies: jwt.JwtPayload = req.signedCookies;
     if (req.headers.authorization === process.env.API_KEY) {
         req.user = "a";
@@ -14,7 +18,10 @@ async function authMiddleware(req: RavenRequest, _res: Response, next: NextFunct
     }
     if (cookies && cookies.session) {
         try {
-            const tokenData = jwt.verify(cookies.session, process.env.JWT_SECRET as string) as sessions;
+            const tokenData = jwt.verify(
+                cookies.session,
+                process.env.JWT_SECRET as string,
+            ) as sessions;
             // const user = await prisma.sessions.findFirst({ where: { session_id: tokenData.session_id } });
             if (tokenData) {
                 req.user = tokenData;

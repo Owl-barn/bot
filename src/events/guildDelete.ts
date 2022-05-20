@@ -9,14 +9,26 @@ export default class implements RavenEvent {
         try {
             if (!guild) throw "failed to log deleted guild";
 
-            console.log(`Left Guild, ID: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.red.bold);
+            console.log(
+                `Left Guild, ID: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`
+                    .red.bold,
+            );
 
             const notifEmbed = new MessageEmbed()
                 .setColor(process.env.EMBED_FAIL_COLOR as HexColorString)
                 .setTitle("Guild deleted")
-                .setDescription(`Name: ${guild.name}\nID: ${guild.id}\nOwner: ${guild.ownerId}\nMembercount: ${guild.memberCount}`);
+                .setDescription(
+                    `Name: ${guild.name}\n` +
+                        `ID: ${guild.id}\n` +
+                        `Owner: ${guild.ownerId}\n` +
+                        `Membercount: ${guild.memberCount}`,
+                );
 
-            await (await guild.client.users.fetch(process.env.OWNER_ID as string)).send({ embeds: [notifEmbed] }).catch(() => null);
+            await (
+                await guild.client.users.fetch(process.env.OWNER_ID as string)
+            )
+                .send({ embeds: [notifEmbed] })
+                .catch(() => null);
         } catch (e) {
             console.error(e);
         }

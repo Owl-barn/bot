@@ -38,16 +38,25 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         if (msg.user.id !== process.env.OWNER_ID) return {};
         let reason = msg.options.getString("reason");
-        reason = reason ? Util.escapeMarkdown(reason).substring(0, 256) : "No reason provided";
+        reason = reason
+            ? Util.escapeMarkdown(reason).substring(0, 256)
+            : "No reason provided";
         const target = msg.options.getMember("user", true) as GuildMember;
 
-        if (!target.bannable) return { ephemeral: true, content: "I cant ban that person" };
+        if (!target.bannable)
+            return { ephemeral: true, content: "I cant ban that person" };
 
         target.ban({ reason: reason.substring(0, 128), days: 1 });
 
         const embed = new MessageEmbed()
             .setTitle(`User has been banned`)
-            .setDescription(`<@${target.id}> has been banned with the reason: \`${Util.escapeMarkdown(reason)}\``)
+            .setDescription(
+                `<@${
+                    target.id
+                }> has been banned with the reason: \`${Util.escapeMarkdown(
+                    reason,
+                )}\``,
+            )
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed] };

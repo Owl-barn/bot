@@ -1,4 +1,10 @@
-import { Collection, Guild, InteractionReplyOptions, MessageAttachment, TextChannel } from "discord.js";
+import {
+    Collection,
+    Guild,
+    InteractionReplyOptions,
+    MessageAttachment,
+    TextChannel,
+} from "discord.js";
 import GuildConfig from "../../lib/guildconfig.service";
 import registerCommand from "../../modules/command.register";
 import { argumentType } from "../../types/argument";
@@ -118,10 +124,11 @@ module.exports = class statsCommand extends Command {
 
         return { content: "hmm yes" };
     }
-
 };
 
-async function guildBan(msg: RavenInteraction): Promise<InteractionReplyOptions> {
+async function guildBan(
+    msg: RavenInteraction,
+): Promise<InteractionReplyOptions> {
     const guildID = msg.options.getString("guild_id", true);
     const state = msg.options.getBoolean("state", true);
     const leave = msg.options.getBoolean("leave", false);
@@ -130,7 +137,10 @@ async function guildBan(msg: RavenInteraction): Promise<InteractionReplyOptions>
     const guild = client.guilds.cache.get(guildID);
     if (!guild) return { content: "Guild not found" };
 
-    await client.db.guilds.update({ where: { guild_id: guild.id }, data: { banned: state } });
+    await client.db.guilds.update({
+        where: { guild_id: guild.id },
+        data: { banned: state },
+    });
 
     if (state) await msg.guild?.commands.set([]);
     else await registerCommand(client, guild);
@@ -142,19 +152,34 @@ async function guildBan(msg: RavenInteraction): Promise<InteractionReplyOptions>
         if (leaveGuild) left = true;
     }
 
-    return { content: `ban state: \`${state ? "true" : "false"}\`\nLeft: \`${left ? "true" : "false"}\`\nName: \`${guild.name}\`` };
+    return {
+        content: `ban state: \`${state ? "true" : "false"}\`\nLeft: \`${
+            left ? "true" : "false"
+        }\`\nName: \`${guild.name}\``,
+    };
 }
 
-async function guildList(msg: RavenInteraction): Promise<InteractionReplyOptions> {
-    const guilds = msg.client.guilds.cache.sort((x, y) => y.memberCount - x.memberCount);
-    const output = guilds.map(x => `id: ${x.id} owner: ${x.ownerId} membercount: ${x.memberCount} name: ${x.name}`).join("\n");
+async function guildList(
+    msg: RavenInteraction,
+): Promise<InteractionReplyOptions> {
+    const guilds = msg.client.guilds.cache.sort(
+        (x, y) => y.memberCount - x.memberCount,
+    );
+    const output = guilds
+        .map(
+            (x) =>
+                `id: ${x.id} owner: ${x.ownerId} membercount: ${x.memberCount} name: ${x.name}`,
+        )
+        .join("\n");
 
     const attachment = new MessageAttachment(Buffer.from(output), "info.txt");
 
     return { files: [attachment] };
 }
 
-async function guildPremium(msg: RavenInteraction): Promise<InteractionReplyOptions> {
+async function guildPremium(
+    msg: RavenInteraction,
+): Promise<InteractionReplyOptions> {
     const guildID = msg.options.getString("guild_id", true);
     const premium = msg.options.getBoolean("state", true);
     const client = msg.client;
@@ -163,7 +188,10 @@ async function guildPremium(msg: RavenInteraction): Promise<InteractionReplyOpti
 
     if (!guild) return { content: "Guild not found" };
 
-    await client.db.guilds.update({ where: { guild_id: guild.id }, data: { premium } });
+    await client.db.guilds.update({
+        where: { guild_id: guild.id },
+        data: { premium },
+    });
 
     await registerCommand(client, guild);
     await GuildConfig.updateGuild(guild.id);
@@ -171,7 +199,9 @@ async function guildPremium(msg: RavenInteraction): Promise<InteractionReplyOpti
     return { content: `${guild.name}'s premium was set to \`${premium}\`` };
 }
 
-async function guildInfo(msg: RavenInteraction): Promise<InteractionReplyOptions> {
+async function guildInfo(
+    msg: RavenInteraction,
+): Promise<InteractionReplyOptions> {
     const guildID = msg.options.getString("guild_id");
     const client = msg.client;
 
@@ -181,14 +211,25 @@ async function guildInfo(msg: RavenInteraction): Promise<InteractionReplyOptions
         guild = client.guilds.cache.get(guildID) || guild;
     }
 
-    const query = await client.db.guilds.findUnique({ where: { guild_id: guild.id } });
+    const query = await client.db.guilds.findUnique({
+        where: { guild_id: guild.id },
+    });
 
-    let channels = guild.channels.cache.filter(x => ["GUILD_TEXT", "GUILD_VOICE"].includes(x.type)) as Collection<string, TextChannel>;
+    let channels = guild.channels.cache.filter((x) =>
+        ["GUILD_TEXT", "GUILD_VOICE"].includes(x.type),
+    ) as Collection<string, TextChannel>;
     channels = channels.sort((x, y) => y.rawPosition - x.rawPosition);
-    const channelOutput = channels.map(x => `id: ${x.id} view: ${x.viewable} type: ${x.type} name: ${x.name}`).join("\n");
+    const channelOutput = channels
+        .map(
+            (x) =>
+                `id: ${x.id} view: ${x.viewable} type: ${x.type} name: ${x.name}`,
+        )
+        .join("\n");
 
     const roles = guild.roles.cache.sort((x, y) => y.position - x.position);
-    const roleOutput = roles.map(x => `id: ${x.id} name: ${x.name}`).join("\n");
+    const roleOutput = roles
+        .map((x) => `id: ${x.id} name: ${x.name}`)
+        .join("\n");
 
     const output = `${guild.name}\n\npremium: ${query?.premium}\nlevel: ${query?.level}\n\nchannels:\n${channelOutput}\n\nroles:\n${roleOutput}`;
 

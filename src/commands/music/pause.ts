@@ -4,7 +4,6 @@ import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
-
 module.exports = class extends Command {
     constructor() {
         super({
@@ -25,19 +24,32 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const member = msg.member as GuildMember;
 
-        const failEmbed = new MessageEmbed()
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+        const failEmbed = new MessageEmbed().setColor(
+            process.env.EMBED_FAIL_COLOR as HexColorString,
+        );
 
         const vc = member.voice.channel;
-        if (vc === null) return { embeds: [failEmbed.setDescription("Join a voicechannel first.")] };
+        if (vc === null) {
+            const response = failEmbed.setDescription(
+                "Join a voice channel first.",
+            );
+            return { embeds: [response] };
+        }
 
-        const isDJ = member?.roles.cache.some(role => role.name === "DJ");
-        if (!isDJ) return { embeds: [failEmbed.setDescription("you dont have the DJ role")] };
+        const isDJ = member?.roles.cache.some((role) => role.name === "DJ");
+        if (!isDJ) {
+            const response = failEmbed.setDescription(
+                "You do not have the `DJ` role.",
+            );
+            return { embeds: [response] };
+        }
 
         const subscription = msg.client.musicService.get(member.guild.id);
-        if (!subscription) return { embeds: [failEmbed.setDescription("Play a song first!")] };
+        if (!subscription)
+            return { embeds: [failEmbed.setDescription("Play a song first!")] };
 
-        const paused = subscription.player.state.status === AudioPlayerStatus.Paused;
+        const paused =
+            subscription.player.state.status === AudioPlayerStatus.Paused;
 
         paused ? subscription.player.unpause() : subscription.player.pause();
 

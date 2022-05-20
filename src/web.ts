@@ -28,8 +28,14 @@ class WebServer {
         this.app.use(cookieParser(env.COOKIETOKEN));
         this.app.use((req, res, next) => {
             res.header("Access-Control-Allow-Credentials", "true");
-            res.header("Access-Control-Allow-Origin", "https://raven.xayania.com");
-            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+            res.header(
+                "Access-Control-Allow-Origin",
+                "https://raven.xayania.com",
+            );
+            res.header(
+                "Access-Control-Allow-Headers",
+                "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+            );
             next();
         });
 
@@ -48,7 +54,9 @@ class WebServer {
     }
 
     private initializeErrorHandling() {
-        this.app.use((_req: Request, _res: Response, next: NextFunction) => { next(new NotFoundException); });
+        this.app.use((_req: Request, _res: Response, next: NextFunction) => {
+            next(new NotFoundException());
+        });
         this.app.use(errorMiddleware);
 
         console.log(" ✓ Error handler initialized:".green.bold);
@@ -60,7 +68,10 @@ class WebServer {
 
     public listen(): void {
         this.app.listen(env.PORT, () => {
-            console.log(` > Web server ready at port ${env.PORT} - ${env.NODE_ENV}`.green.bold);
+            console.log(
+                ` > Web server ready at port ${env.PORT} - ${env.NODE_ENV}`
+                    .green.bold,
+            );
         });
     }
 }

@@ -13,26 +13,40 @@ export async function registerCommands(): Promise<Collection<string, Command>> {
     const folders = fs.readdirSync(path.join(__dirname, "../commands"));
 
     for (const folder of folders) {
-        const commandFiles = fs.readdirSync(path.join(__dirname, `../commands/${folder}`)).filter(file => file.endsWith(".js"));
+        const commandFiles = fs
+            .readdirSync(path.join(__dirname, `../commands/${folder}`))
+            .filter((file) => file.endsWith(".js"));
 
         for (const file of commandFiles) {
-            const cmdClass = (await import(`../commands/${folder}/${file}`)).default;
+            const cmdClass = (await import(`../commands/${folder}/${file}`))
+                .default;
             const command = new cmdClass() as Command;
 
-            if (command == undefined) { continue; }
-            if (command.group !== folder) throw `Command folder must match group: ${command.name}`;
+            if (command == undefined) {
+                continue;
+            }
+            if (command.group !== folder)
+                throw `Command folder must match group: ${command.name}`;
 
             command.path = `/${folder}/${file}`;
 
             if (commands.get(command.name) !== undefined) {
-                console.log(`duplicate commands with name: ${command.name}`.red.bold);
+                console.log(
+                    `duplicate commands with name: ${command.name}`.red.bold,
+                );
                 process.exit();
             }
 
             // Add command to client.
             commands.set(command.name, command);
             // Log.
-            console.log(`${" - Loaded Command:".cyan.italic} ${command.disabled ? command.name.red.italic : command.name.green.italic}`);
+            console.log(
+                `${" - Loaded Command:".cyan.italic} ${
+                    command.disabled
+                        ? command.name.red.italic
+                        : command.name.green.italic
+                }`,
+            );
         }
     }
 

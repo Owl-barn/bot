@@ -7,7 +7,6 @@ const guildsGet = async (req: RavenRequest, res: Response): Promise<void> => {
     const guilds = await prisma.guilds.findMany({ where: { level: true } });
     const client = bot.getClient();
 
-
     const response = [];
     for (const guild of guilds) {
         const guildCache = client.guilds.cache.get(guild.guild_id);

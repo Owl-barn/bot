@@ -7,7 +7,10 @@ import HttpException from "../../exceptions/httpExceptions";
 import webCache from "../../lib/webCache.service";
 import { RavenRequest } from "../../types/web";
 
-const GuildsGetService = async (req: RavenRequest, res: Response): Promise<void> => {
+const GuildsGetService = async (
+    req: RavenRequest,
+    res: Response,
+): Promise<void> => {
     if (!req.user) throw new ForbiddenException();
 
     // await new Promise((x) => setTimeout(x, 1000));
@@ -20,26 +23,32 @@ const GuildsGetService = async (req: RavenRequest, res: Response): Promise<void>
 
     const client = bot.getClient();
 
-    const clientGuilds = (await client.guilds.cache);
+    const clientGuilds = await client.guilds.cache;
 
     const guildRes = await fetch("https://discord.com/api/users/@me/guilds", {
         headers: { authorization: `Bearer ${req.user.access_token}` },
     });
 
-    if (!guildRes || !guildRes.body) throw new HttpException(401, "error getting guild");
+    if (!guildRes || !guildRes.body)
+        throw new HttpException(401, "error getting guild");
     const guilds = JSON.parse(guildRes.body) as Guild[];
 
     if (!guilds) throw new HttpException(401, "error getting guilds");
-
 
     const responseGuilds: responseGuilds[] = [];
 
     await guilds.forEach(async (guild) => {
         const botGuild = clientGuilds.get(guild.id);
         if (!botGuild) return;
-        const botGuildMember = await botGuild.members.fetch({ user: req.user?.user_id }) as unknown as GuildMember;
+        const botGuildMember = (await botGuild.members.fetch({
+            user: req.user?.user_id,
+        })) as unknown as GuildMember;
         if (!botGuildMember) return;
-        if (!botGuildMember.permissions.has("ADMINISTRATOR") && botGuildMember.id !== "140762569056059392") return;
+        if (
+            !botGuildMember.permissions.has("ADMINISTRATOR") &&
+            botGuildMember.id !== "140762569056059392"
+        )
+            return;
 
         responseGuilds.push({
             name: guild.name,
@@ -50,12 +59,10 @@ const GuildsGetService = async (req: RavenRequest, res: Response): Promise<void>
 
     webCache.setGuilds(req.user.user_id, responseGuilds);
 
-
     res.json(responseGuilds);
 };
 
 export default GuildsGetService;
-
 
 interface responseGuilds {
     name: string;

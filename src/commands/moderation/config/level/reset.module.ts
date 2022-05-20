@@ -2,10 +2,14 @@ import { HexColorString, MessageEmbed } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
-export async function configLevelReset(msg: RavenInteraction): Promise<returnMessage> {
+export async function configLevelReset(
+    msg: RavenInteraction,
+): Promise<returnMessage> {
     if (!msg.guildId) throw "no guild??";
 
-    const deleted = await msg.client.db.level.deleteMany({ where: { guild_id: msg.guildId } });
+    const deleted = await msg.client.db.level.deleteMany({
+        where: { guild_id: msg.guildId },
+    });
 
     const embed = new MessageEmbed()
         .setDescription(`Successfully deleted \`${deleted.count}\` user levels`)

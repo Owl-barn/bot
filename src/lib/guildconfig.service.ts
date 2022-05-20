@@ -8,13 +8,17 @@ class GuildConfigClass {
         const guildQuery = await db.guilds.findMany();
         for (const guild of guildQuery) this.updateGuild(guild);
         console.log("Loaded guild configs");
-    }
+    };
 
     public updateGuild = async (guild: guilds | string) => {
         if (typeof guild == "string") {
-            guild = await db.guilds.findUnique({ where: { guild_id: guild } }) as guilds;
+            guild = (await db.guilds.findUnique({
+                where: { guild_id: guild },
+            })) as guilds;
         }
-        const rooms = await db.private_vc.findMany({ where: { guild_id: guild.guild_id } });
+        const rooms = await db.private_vc.findMany({
+            where: { guild_id: guild.guild_id },
+        });
         const config: GuildConfigs = {
             privateRoomCategory: guild.vc_category_id,
             privateRoomID: guild.vc_channel_id,
@@ -33,15 +37,15 @@ class GuildConfigClass {
         };
 
         this.guilds.set(guild.guild_id, config);
-    }
+    };
 
     public getGuild = (id: string) => this.guilds.get(id);
 }
 
 declare const global: NodeJS.Global & { GuildConfig: GuildConfigClass };
-const GuildConfig: GuildConfigClass = global.GuildConfig || new GuildConfigClass();
+const GuildConfig: GuildConfigClass =
+    global.GuildConfig || new GuildConfigClass();
 if (process.env.NODE_ENV === "development") global.GuildConfig = GuildConfig;
-
 
 export default GuildConfig;
 

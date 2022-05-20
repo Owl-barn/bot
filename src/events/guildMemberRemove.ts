@@ -16,12 +16,21 @@ export default class implements RavenEvent {
         if (config.banned) return;
 
         const avatar = member.avatarURL() || member.user.avatarURL();
-        const channel = member.guild?.channels.cache.get(config.log_channel) as TextChannel;
+        const channel = member.guild?.channels.cache.get(
+            config.log_channel,
+        ) as TextChannel;
         const embed = failEmbedTemplate();
 
         embed.setTitle("Member Left");
-        embed.setDescription(`${member.user.id} left the server.\n${member.user.tag}\n${member}`);
-        embed.setFooter({ text: `${member.user.tag} <@${member.id}>`, iconURL: avatar || "" });
-        await channel.send({ embeds: [embed] }).catch((e) => { console.log(e); });
+        embed.setDescription(
+            `${member.user.id} left the server.\n${member.user.tag}\n${member}`,
+        );
+        embed.setFooter({
+            text: `${member.user.tag} <@${member.id}>`,
+            iconURL: avatar || "",
+        });
+        await channel.send({ embeds: [embed] }).catch((e) => {
+            console.log(e);
+        });
     }
 }

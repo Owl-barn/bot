@@ -14,7 +14,7 @@ class LevelService {
 
     public clearThrottle = (): void => {
         this.timeout = new Map();
-    }
+    };
 
     public message = async (msg: Message): Promise<void> => {
         if (!msg.guildId) return;
@@ -25,13 +25,18 @@ class LevelService {
         const id = `${msg.guildId}-${msg.author.id}`;
         const lastTimeout = this.timeout.get(id);
 
-        if (lastTimeout && Date.now() - (60 * 1000) < lastTimeout) return;
+        if (lastTimeout && Date.now() - 60 * 1000 < lastTimeout) return;
 
         const guild = msg.guildId;
         const user = msg.author.id;
 
-        let query = await this.db.level.findUnique({ where: { user_id_guild_id: { guild_id: guild, user_id: user } } });
-        if (!query) query = await this.db.level.create({ data: { user_id: user, guild_id: guild } });
+        let query = await this.db.level.findUnique({
+            where: { user_id_guild_id: { guild_id: guild, user_id: user } },
+        });
+        if (!query)
+            query = await this.db.level.create({
+                data: { user_id: user, guild_id: guild },
+            });
 
         const current = this.calculateLevel(query.experience);
 
@@ -42,11 +47,17 @@ class LevelService {
             current.level += 1;
 
             // Assign level roles.
-            const roleRewards = await this.db.level_reward.findMany({ where: { guild_id: guild, level: { lte: current.level } } });
+            const roleRewards = await this.db.level_reward.findMany({
+                where: { guild_id: guild, level: { lte: current.level } },
+            });
 
-            const currentRoles = msg.member?.roles.cache.map(x => x.id);
+            const currentRoles = msg.member?.roles.cache.map((x) => x.id);
 
-            const rolesToAdd = currentRoles ? roleRewards.filter(x => currentRoles?.indexOf(x.role_id) === -1) : roleRewards;
+            const rolesToAdd = currentRoles
+                ? roleRewards.filter(
+                      (x) => currentRoles?.indexOf(x.role_id) === -1,
+                  )
+                : roleRewards;
 
             if (rolesToAdd.length > 0) {
                 const roles: RoleResolvable[] = [];
@@ -58,18 +69,25 @@ class LevelService {
                 await msg.member?.roles.add(roles);
             }
 
-
             // Notify user.
             if (guildConfig.levelMessage) {
                 let message = guildConfig.levelMessage;
                 message = message.replace("{LEVEL}", String(current.level));
                 message = message.replace("{USER}", `<@${user}>`);
-                message = message.replace("{NEW_ROLES}", String(rolesToAdd.length));
+                message = message.replace(
+                    "{NEW_ROLES}",
+                    String(rolesToAdd.length),
+                );
 
                 if (guildConfig.levelChannel) {
-                    const channel = msg.guild?.channels.cache.get(guildConfig.levelChannel) as GuildTextBasedChannel;
+                    const channel = msg.guild?.channels.cache.get(
+                        guildConfig.levelChannel,
+                    ) as GuildTextBasedChannel;
                     if (!channel) {
-                        await this.db.guilds.update({ where: { guild_id: guild }, data: { level_channel: null } });
+                        await this.db.guilds.update({
+                            where: { guild_id: guild },
+                            data: { level_channel: null },
+                        });
                         msg.reply(message);
                     } else channel.send(message);
                 } else {
@@ -84,12 +102,14 @@ class LevelService {
         });
 
         this.timeout.set(id, Date.now());
-    }
+    };
 
-    private getRandomXP = (modifier = 1.0) => Math.floor(modifier * (Math.random() * (25 - 15) + 15));
+    private getRandomXP = (modifier = 1.0) =>
+        Math.floor(modifier * (Math.random() * (25 - 15) + 15));
 
     // The xp required to reach the next level from the current level.
-    private calculateLevelXP = (lvl: number) => 5 * (lvl * lvl) + (50 * lvl) + 100;
+    private calculateLevelXP = (lvl: number) =>
+        5 * (lvl * lvl) + 50 * lvl + 100;
 
     // Make an array of levels and their xp values.
     private makeLevelArray = (maxLevel: number) => {
@@ -104,7 +124,7 @@ class LevelService {
         }
         console.log(`Made level array in ${Date.now() - now}ms.`);
         return array;
-    }
+    };
 
     // Calculate level from total xp.
     public calculateLevel = (exp: number) => {
@@ -115,7 +135,8 @@ class LevelService {
             break;
         }
 
-        if (!currentLevel && currentLevel !== 0) throw "Couldn't calculate level.";
+        if (!currentLevel && currentLevel !== 0)
+            throw "Couldn't calculate level.";
 
         const current = this.levelArray[currentLevel];
 
@@ -125,7 +146,7 @@ class LevelService {
             levelXP: current.xp,
             currentXP: exp - current.total,
         };
-    }
+    };
 
     /*
     private levelFromXP = (xp: number, maxLevel = 100): number => {
@@ -138,7 +159,6 @@ class LevelService {
     */
 }
 
-
 interface LevelArray {
     level: number;
     total: number;
@@ -150,6 +170,5 @@ declare const global: NodeJS.Global & { levelService: LevelService };
 const levelService = global.levelService || new LevelService();
 
 if (process.env.NODE_ENV === "development") global.levelService = levelService;
-
 
 export default levelService;
