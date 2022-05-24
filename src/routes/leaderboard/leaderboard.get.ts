@@ -1,5 +1,5 @@
 import { NextFunction, Response } from "express";
-import bot from "../../app";
+import bot from "../../bot";
 import NotFoundException from "../../exceptions/notFound";
 import prisma from "../../lib/db.service";
 import GuildConfig from "../../lib/guildconfig.service";

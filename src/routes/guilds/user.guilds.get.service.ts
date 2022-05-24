@@ -1,7 +1,7 @@
 import { Guild, GuildMember } from "discord.js";
 import { Response } from "express";
 import fetch from "got";
-import bot from "../../app";
+import bot from "../../bot";
 import ForbiddenException from "../../exceptions/forbidden";
 import HttpException from "../../exceptions/httpExceptions";
 import webCache from "../../lib/webCache.service";

@@ -1,5 +1,5 @@
 import { Response } from "express";
-import bot from "../../app";
+import bot from "../../bot";
 import prisma from "../../lib/db.service";
 import { RavenRequest } from "../../types/web";
 

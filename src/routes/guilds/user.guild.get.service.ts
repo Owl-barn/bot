@@ -1,5 +1,5 @@
 import { Response } from "express";
-import bot from "../../app";
+import bot from "../../bot";
 import ForbiddenException from "../../exceptions/forbidden";
 import NotFoundException from "../../exceptions/notFound";
 import { RavenRequest } from "../../types/web";

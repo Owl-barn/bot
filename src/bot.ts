@@ -11,7 +11,7 @@ import GuildConfig from "./lib/guildconfig.service";
 import * as play from "play-dl";
 import bannedUsers from "./lib/banlist.service";
 
-export default class Bot {
+class Bot {
     private client: RavenClient;
 
     constructor() {
@@ -27,14 +27,19 @@ export default class Bot {
 
         this.client.musicService = new Map<Snowflake, musicService>();
 
-        this.initializeEvents();
-        this.initializeCommands();
-        this.initializeButtons();
+        this.init().then(() => this.listen());
+    }
+
+    private init = async () => {
         this.initializeDB();
         AFKService;
         GuildConfig.init();
         bannedUsers.init();
         birthdayCron.start();
+        await eventInitializer(this.client);
+        await this.initializeCommands();
+        await this.initializeButtons();
+
         play.setToken({
             spotify: {
                 client_id: process.env.SP_ID as string,
@@ -43,13 +48,7 @@ export default class Bot {
                 market: process.env.SP_MARKET as string,
             },
         });
-
-        this.listen();
-    }
-
-    private initializeEvents() {
-        eventInitializer(this.client);
-    }
+    };
 
     private async initializeCommands() {
         this.client.commands = await registerCommands().catch((e) => {
@@ -75,3 +74,9 @@ export default class Bot {
         await this.client.login(process.env.DISCORD_TOKEN);
     }
 }
+
+declare const global: NodeJS.Global & { bot?: Bot };
+const bot: Bot = global.bot || new Bot();
+if (process.env.NODE_ENV === "development") global.bot = bot;
+
+export default bot;

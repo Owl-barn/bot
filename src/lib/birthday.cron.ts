@@ -1,8 +1,9 @@
 import { birthdays, guilds } from "@prisma/client";
 import cron from "cron";
 import { TextBasedChannel } from "discord.js";
-import bot from "../app";
+import bot from "../bot";
 import RavenClient from "../types/ravenClient";
+import bannedUsers from "./banlist.service";
 import levelService from "./level.service";
 
 const birthdayCron = new cron.CronJob(
@@ -79,6 +80,7 @@ export async function birthdayLoop(): Promise<void> {
     for (const user of users) {
         const data = await getData(user, guildsDB, client);
         if (!data) continue;
+        if (bannedUsers.isBanned(user.user_id)) continue;
         const { guild, role, channel, member } = data;
 
         if (role) {

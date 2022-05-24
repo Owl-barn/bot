@@ -1,9 +1,8 @@
 import colors from "colors";
 import dotenv from "dotenv";
+import bot from "./bot";
 colors.enable();
 dotenv.config();
-
-import Bot from "./bot";
 
 import GuildsController from "./routes/guilds/guilds.controller";
 import LeaderboardController from "./routes/leaderboard/leaderboard.controller";
@@ -16,9 +15,4 @@ const web = new WebServer([
     new LeaderboardController(),
 ]);
 web.listen();
-
-declare const global: NodeJS.Global & { bot?: Bot };
-const bot: Bot = global.bot || new Bot();
-if (process.env.NODE_ENV === "development") global.bot = bot;
-
-export default bot;
+bot;

@@ -59,7 +59,7 @@ class WebServer {
         });
         this.app.use(errorMiddleware);
 
-        console.log(" ✓ Error handler initialized:".green.bold);
+        console.log(" ✓ Web error handler initialized".green.bold);
     }
 
     public getServer(): Application {
