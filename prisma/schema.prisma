@@ -19,6 +19,8 @@ model guilds {
   birthday_role    String? @db.Char(18)
   birthday_channel String? @db.Char(18)
 
+  staff_role String? @db.Char(18)
+
   vc_category_id String? @db.Char(18)
   vc_channel_id  String? @db.Char(18)
   vc_limit       Int     @default(4) @db.Integer()
@@ -40,6 +42,14 @@ model guilds {
   level_reward   level_reward[]
   afk            afk[]
   private_vc     private_vc[]
+}
+
+model banned_user {
+  created DateTime @default(now()) @db.Timestamp(0)
+  user_id String   @db.VarChar(19)
+  reason  String?  @db.VarChar(256)
+
+  @@unique([user_id])
 }
 
 model level {
