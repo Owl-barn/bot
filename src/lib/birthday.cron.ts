@@ -38,8 +38,6 @@ export async function birthdayLoop(): Promise<void> {
     and extract(day from birthday) = extract(day from current_timestamp)
     `) as birthdays[];
 
-    console.log(users);
-
     const guildsDB = await client.db.guilds.findMany({
         where: {
             OR: [

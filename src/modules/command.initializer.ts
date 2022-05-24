@@ -25,6 +25,7 @@ export async function registerCommands(): Promise<Collection<string, Command>> {
             if (command == undefined) {
                 continue;
             }
+
             if (command.group !== folder)
                 throw `Command folder must match group: ${command.name}`;
 

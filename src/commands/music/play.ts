@@ -188,7 +188,7 @@ module.exports = class extends Command {
         if (!searchQuery.startsWith("https"))
             return await this.searchVideo(searchQuery);
 
-        if (!play.is_expired()) {
+        if (play.is_expired()) {
             await play.refreshToken();
         }
 
