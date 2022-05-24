@@ -39,7 +39,6 @@
     "discord.js": "^13.4.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "genius-lyrics": "^4.3.6",
     "got": "^11.8.2",
     "jsonwebtoken": "^8.5.1",
     "libsodium-wrappers": "^0.7.9",
