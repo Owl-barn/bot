@@ -23,6 +23,17 @@ export default async function configVoiceToggle(
 
         if (channel) await channel.delete().catch((x) => console.error(x));
         if (category) await category.delete().catch((x) => console.error(x));
+
+        const vcs = await msg.client.db.private_vc.findMany({
+            where: { guild_id: msg.guildId as string },
+        });
+
+        for (const vc of vcs) {
+            const main = msg.guild?.channels.cache.get(vc.main_channel_id);
+            const wait = msg.guild?.channels.cache.get(vc.wait_channel_id);
+            await main?.delete().catch((x) => console.log(x));
+            await wait?.delete().catch((x) => console.log(x));
+        }
     } else {
         const category = await msg.guild?.channels.create("🔒 Private Rooms", {
             type: 4,
@@ -66,6 +77,7 @@ export default async function configVoiceToggle(
         where: { guild_id: msg.guildId as string },
         data: { vc_channel_id: channelID, vc_category_id: categoryID },
     });
+
     GuildConfig.updateGuild(query);
 
     const response = channelID
