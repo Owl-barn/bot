@@ -25,6 +25,8 @@ const adjectives = [
     "Sussy",
     "Goth",
     "Swedish",
+    "Smelly",
+    "British",
 ];
 
 const nouns = [
@@ -121,16 +123,6 @@ class VCServiceClass {
         }
     }
 
-    private startDelete(vc: VoiceState, delay: number) {
-        this.delays.set(
-            vc.channelId as string,
-            setTimeout(
-                () => this.disbandVC(vc).catch((e) => console.error(e)),
-                delay,
-            ),
-        );
-    }
-
     private async leaveHub(vc: VoiceState) {
         const memberCount = this.getMemberCount(vc);
         if (memberCount == 0) this.disbandVC(vc);
@@ -182,26 +174,30 @@ class VCServiceClass {
         }
 
         // Channel perms.
-        const roomOwner: OverwriteResolvable = {
+        const ownerPerms: OverwriteResolvable = {
             id: vc.member?.id as string,
             allow: ["MOVE_MEMBERS", "CONNECT", "VIEW_CHANNEL"],
         };
-        const roomBot: OverwriteResolvable = {
+
+        const botPerms: OverwriteResolvable = {
             id: vc.client.user?.id as string,
             allow: ["MANAGE_CHANNELS", "VIEW_CHANNEL", "CONNECT", "SPEAK"],
         };
-        const roomLock: OverwriteResolvable = {
+
+        const mainPerms: OverwriteResolvable = {
             id: vc.guild.id,
             deny: ["CONNECT"],
-            allow: ["STREAM", "SPEAK"],
+            allow: ["SPEAK", "STREAM"],
         };
-        const waitingRoom: OverwriteResolvable = {
+
+        const waitingPerms: OverwriteResolvable = {
             id: vc.guild.id,
             deny: ["SPEAK", "STREAM"],
         };
-        const finns: OverwriteResolvable = {
-            id: "399435813580046356",
-            allow: ["STREAM", "SPEAK", "CONNECT"],
+
+        const staffPerms: OverwriteResolvable = {
+            id: guildConfig.staff_role || "",
+            allow: ["VIEW_CHANNEL"],
         };
 
         // Generate channel name.
@@ -215,22 +211,26 @@ class VCServiceClass {
             parent: guildConfig.privateRoomCategory as string,
         };
 
-        const roomList = [roomBot, roomLock, roomOwner];
-        const waitList = [roomBot, roomOwner, waitingRoom];
+        const roomList = [botPerms, ownerPerms, mainPerms];
+        const waitList = [botPerms, ownerPerms, waitingPerms];
 
-        if (vc.guild.id == "396330910162616321") {
-            roomList.push(finns);
-            waitList.push(finns);
+        if (guildConfig.staff_role) {
+            roomList.push(staffPerms);
+            waitList.push(staffPerms);
         }
+
         // Create rooms.
-        const room = await vc.guild.channels.create(`🔒 ${channelName} VC`, {
+        const room = (await vc.guild.channels.create(`🔒 ${channelName} VC`, {
             ...roomConfig,
             permissionOverwrites: roomList,
-        });
-        const wait = await vc.guild.channels.create(
+        })) as VoiceChannel;
+
+        const wait = (await vc.guild.channels.create(
             `🕐 ${channelName} Waiting Room`,
             { ...roomConfig, permissionOverwrites: waitList },
-        );
+        )) as VoiceChannel;
+
+        await room.setBitrate(96_000).catch(() => null);
 
         // Put into db and update local config.
         await db.private_vc.create({
@@ -246,9 +246,6 @@ class VCServiceClass {
 
         // Move user.
         await vc.member?.voice.setChannel(room.id, "Created private room");
-
-        // Add Remove delay.
-        // this.startDelete(vc, 600000);
     }
 
     public async disbandVC(vc: VoiceState) {

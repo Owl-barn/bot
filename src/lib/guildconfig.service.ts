@@ -19,6 +19,7 @@ class GuildConfigClass {
         const rooms = await db.private_vc.findMany({
             where: { guild_id: guild.guild_id },
         });
+
         const config: GuildConfigs = {
             privateRoomCategory: guild.vc_category_id,
             privateRoomID: guild.vc_channel_id,
@@ -26,6 +27,7 @@ class GuildConfigClass {
             privateRooms: rooms,
 
             log_channel: guild.log_channel,
+            staff_role: guild.staff_role,
 
             premium: guild.premium,
             banned: guild.banned,
@@ -56,6 +58,8 @@ export interface GuildConfigs {
     privateRooms: private_vc[];
 
     log_channel: string | null;
+
+    staff_role: string | null;
 
     premium: boolean;
     banned: boolean;
