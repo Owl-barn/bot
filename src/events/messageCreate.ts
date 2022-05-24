@@ -10,7 +10,9 @@ import {
     TextChannel,
 } from "discord.js";
 import AFKService from "../lib/afk.service";
+import bannedUsers from "../lib/banlist.service";
 import prisma from "../lib/db.service";
+import { embedTemplate } from "../lib/embedTemplate";
 import { yearsAgo } from "../lib/functions.service";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
@@ -26,6 +28,7 @@ export default class InteractionCreate implements RavenEvent {
         if (!msg) return;
         if (msg.author.bot) return;
         if (msg.guildId && GuildConfig.getGuild(msg.guildId)?.banned) return;
+        if (bannedUsers.isBanned(msg.author.id)) return;
 
         levelService.message(msg).catch((x) => console.error(x));
         AFKService.onMessage(msg).catch((x) => console.error(x));
@@ -34,6 +37,67 @@ export default class InteractionCreate implements RavenEvent {
         if (msg.content === "-cookie" && msg.guildId === "396330910162616321") {
             msg.reply("$suppressErrors").catch((x) => console.log(x));
             return;
+        }
+
+        if (
+            msg.content === "music*" &&
+            msg.member?.id === process.env.OWNER_ID
+        ) {
+            const response = [];
+            for (const guild of client.musicService.values()) {
+                if (!guild || guild.destroyed) continue;
+
+                const paused = guild.player.state.status === "paused";
+                const queueLength = new Date(guild.queueLength() * 1000)
+                    .toISOString()
+                    .slice(11, 19);
+
+                const guildId = guild.voiceConnection.joinConfig.guildId;
+                const discordGuild = await client.guilds.fetch(guildId);
+                const output = [
+                    paused ? "❌" : "✅",
+                    queueLength,
+                    guild.getQueue().length,
+                    discordGuild.name,
+                ];
+
+                response.push(output.join(" - "));
+            }
+
+            if (response.length === 0) {
+                await msg.reply("No music is playing.");
+                return;
+            }
+
+            await msg.reply({
+                embeds: [embedTemplate().setDescription(response.join("\n"))],
+            });
+            return;
+        }
+
+        if (
+            msg.content === "reset*" &&
+            msg.member?.id === process.env.OWNER_ID
+        ) {
+            await msg.guild?.commands.set([]);
+            await msg.client.application?.commands.set([]);
+            return;
+        }
+
+        if (msg.content === "vc*" && msg.member?.id === process.env.OWNER_ID) {
+            const vcs = await client.db.private_vc.findMany({
+                where: { guild_id: msg.guildId as string },
+            });
+
+            for (const vc of vcs) {
+                const main = msg.guild?.channels.cache.get(vc.main_channel_id);
+                const wait = msg.guild?.channels.cache.get(vc.wait_channel_id);
+                await main?.delete().catch((x) => console.log(x));
+                await wait?.delete().catch((x) => console.log(x));
+                return;
+            }
+
+            msg.reply("Deleted private roomsm.");
         }
 
         if (

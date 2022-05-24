@@ -9,6 +9,7 @@ import { registerButtons } from "./modules/button.initializer";
 import AFKService from "./lib/afk.service";
 import GuildConfig from "./lib/guildconfig.service";
 import * as play from "play-dl";
+import bannedUsers from "./lib/banlist.service";
 
 export default class Bot {
     private client: RavenClient;
@@ -32,6 +33,7 @@ export default class Bot {
         this.initializeDB();
         AFKService;
         GuildConfig.init();
+        bannedUsers.init();
         birthdayCron.start();
         play.setToken({
             spotify: {

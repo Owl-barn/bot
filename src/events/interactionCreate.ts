@@ -1,4 +1,5 @@
 import { HexColorString, MessageEmbed } from "discord.js";
+import bannedUsers from "../lib/banlist.service";
 import GuildConfig from "../lib/guildconfig.service";
 import logService from "../lib/logger.service";
 import throttleService from "../lib/throttle.service";
@@ -20,6 +21,7 @@ export default class InteractionCreate implements RavenEvent {
 
     async execute(interaction: RavenInteraction): Promise<void> {
         const guildconfig = GuildConfig.getGuild(interaction.guildId || "");
+        if (bannedUsers.isBanned(interaction.user.id)) return;
         if (guildconfig?.banned) {
             await interaction
                 .reply({
