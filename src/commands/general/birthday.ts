@@ -34,7 +34,7 @@ module.exports = class extends Command {
                 {
                     type: argumentType.subCommand,
                     name: "set",
-                    description: "set your birthday",
+                    description: "Add your birthday to the bot!",
                     subCommands: [
                         {
                             type: argumentType.string,
@@ -48,7 +48,8 @@ module.exports = class extends Command {
                 {
                     type: argumentType.subCommand,
                     name: "difference",
-                    description: "get a user's birthday",
+                    description:
+                        "get the difference between your birthday and another user's",
                     subCommands: [
                         {
                             type: argumentType.user,

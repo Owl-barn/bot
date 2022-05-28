@@ -215,6 +215,9 @@ async function guildInfo(
         where: { guild_id: guild.id },
     });
 
+    const owner = await client.users.fetch(guild.ownerId);
+    const ownerString = `Server owner:\n name: ${owner.tag}\n ID: ${owner.id}`;
+
     let channels = guild.channels.cache.filter((x) =>
         ["GUILD_TEXT", "GUILD_VOICE"].includes(x.type),
     ) as Collection<string, TextChannel>;
@@ -231,9 +234,27 @@ async function guildInfo(
         .map((x) => `id: ${x.id} name: ${x.name}`)
         .join("\n");
 
-    const output = `${guild.name}\n\npremium: ${query?.premium}\nlevel: ${query?.level}\n\nchannels:\n${channelOutput}\n\nroles:\n${roleOutput}`;
+    const output = [
+        guild.name,
+        ownerString,
+        "\n",
+        `premium: ${query?.premium}`,
+        `level: ${query?.level}`,
+        `Banned: ${query?.banned}`,
+        `Dev: ${query?.dev}`,
+        "\n",
+        `Joined: ${query?.created}`,
+        `Staff: ${query?.staff_role}`,
+        "\n",
+        `channels:\n${channelOutput}`,
+        "\n",
+        `roles:\n${roleOutput}`,
+    ];
 
-    const attachment = new MessageAttachment(Buffer.from(output), "info.txt");
+    const attachment = new MessageAttachment(
+        Buffer.from(output.join("\n")),
+        "info.txt",
+    );
 
     return { files: [attachment] };
 }

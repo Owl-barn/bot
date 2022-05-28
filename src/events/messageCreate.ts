@@ -114,14 +114,13 @@ export default class InteractionCreate implements RavenEvent {
         ) {
             const guilds = client.guilds.cache;
             const start = Date.now();
-            await msg.reply("updating...");
+            const message = await msg.reply("updating...");
 
             for (const guild of guilds.values()) {
-                guild.commands.set([]);
                 await registerCommand(client, guild);
             }
 
-            await msg.reply(
+            await message.edit(
                 `Updated all server perms, took \`${Date.now() - start}ms\``,
             );
             return;
