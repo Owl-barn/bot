@@ -1,5 +1,6 @@
 import { GuildMember } from "discord.js";
 import { embedTemplate } from "../../lib/embedTemplate";
+import GuildConfig from "../../lib/guildconfig.service";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -96,8 +97,8 @@ async function transferRoom(msg: RavenInteraction): Promise<returnMessage> {
         MOVE_MEMBERS: false,
     };
 
-    await room.permissionOverwrites.create(msg.user.id, memberPermissions);
     await room.permissionOverwrites.create(member.id, roomOwnerPermissions);
+    await room.permissionOverwrites.create(msg.user.id, memberPermissions);
 
     if (waitRoom) {
         await waitRoom.permissionOverwrites.create(
@@ -105,12 +106,12 @@ async function transferRoom(msg: RavenInteraction): Promise<returnMessage> {
             roomOwnerPermissions,
         );
         await waitRoom.permissionOverwrites.create(
-            member.id,
+            msg.user.id,
             memberPermissions,
         );
     }
 
-    await msg.client.db.private_vc.update({
+    const updated = await msg.client.db.private_vc.update({
         where: {
             user_id_guild_id: {
                 user_id: msg.user.id,
@@ -119,6 +120,8 @@ async function transferRoom(msg: RavenInteraction): Promise<returnMessage> {
         },
         data: { user_id: member.id },
     });
+
+    GuildConfig.updateGuild(updated.guild_id);
 
     const responseEmbed = embedTemplate().setDescription(
         `Room is now owned by ${member.user}`,

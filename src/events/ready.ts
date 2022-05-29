@@ -21,15 +21,6 @@ export default class ready implements RavenEvent {
             url: "https://www.youtube.com/watch?v=VZrDxD0Za9I",
         });
 
-        const guildList = client.guilds.cache.map(
-            (guild) =>
-                ` - ID: ${guild.id.green}${` Owner: `.cyan}${
-                    guild.ownerId.green
-                }${` Name: `.cyan}${guild.name.green}\n`.italic.cyan,
-        );
-
         VCService.initialize(client);
-
-        console.log(guildList.join(""));
     }
 }

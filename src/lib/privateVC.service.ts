@@ -223,12 +223,12 @@ class VCServiceClass {
         const room = (await vc.guild.channels.create(`🔒 ${channelName} VC`, {
             ...roomConfig,
             permissionOverwrites: roomList,
-        })) as VoiceChannel;
+        })) as unknown as VoiceChannel;
 
         const wait = (await vc.guild.channels.create(
             `🕐 ${channelName} Waiting Room`,
             { ...roomConfig, permissionOverwrites: waitList },
-        )) as VoiceChannel;
+        )) as unknown as VoiceChannel;
 
         await room.setBitrate(96_000).catch(() => null);
 
