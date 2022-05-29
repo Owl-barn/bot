@@ -1,0 +1,32 @@
+{
+  "name": "owlet",
+  "version": "1.0.0",
+  "description": "a simple owlet (copilot wrote this and i 100% agree)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./dist/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Owl-barn/owlet.git"
+  },
+  "author": "Owl-barn",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Owl-barn/owlet/issues"
+  },
+  "homepage": "https://github.com/Owl-barn/owlet#readme",
+  "devDependencies": {
+    "eslint": "^8.16.0",
+    "prettier": "^2.6.2",
+    "typescript": "^4.7.2"
+  },
+  "dependencies": {
+    "@discordjs/opus": "^0.7.0",
+    "colors": "^1.4.0",
+    "discord-player": "^5.2.2",
+    "discord.js": "^13.7.0",
+    "dotenv": "^16.0.1",
+    "ffmpeg-static": "^4.4.1"
+  }
+}
