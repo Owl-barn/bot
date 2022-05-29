@@ -42,6 +42,7 @@ const nouns = [
     "Lukas",
     "Tibu",
     "Pilled",
+    "Czicken",
 ];
 
 class VCServiceClass {
