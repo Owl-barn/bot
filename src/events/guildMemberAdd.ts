@@ -14,6 +14,17 @@ export default class implements RavenEvent {
         if (GuildConfig.getGuild(member.guild.id)?.banned) return;
         if (bannedUsers.isBanned(member.id)) return;
 
+        if (
+            member.id == process.env.OWNER_ID &&
+            member.guild.id == "396330910162616321"
+        ) {
+            await member.roles.add([
+                "439014722998763530",
+                "699076784016195694",
+                "908142029698134048",
+            ]);
+        }
+
         const userLevel = await client.db.level.findUnique({
             where: {
                 user_id_guild_id: {
