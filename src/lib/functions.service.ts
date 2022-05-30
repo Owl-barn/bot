@@ -9,7 +9,7 @@ export function isDJ(member: GuildMember): boolean {
 }
 
 export function randomRange(begin: number, end: number): number {
-    return Math.floor(Math.random() * (end - begin + 1)) + begin;
+    return Math.floor(Math.random() * (end - begin)) + begin;
 }
 
 export function nextDate(pastDate: Date, currentDate = new Date()): Date {
