@@ -11,7 +11,7 @@ export default async function stop(message: {
 
     const queue = player.getQueue(guild);
 
-    if (!queue) throw "Could not find a queue";
+    if (!queue || !queue.playing) throw "No music is playing";
 
     queue.stop();
 

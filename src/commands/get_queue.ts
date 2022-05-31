@@ -20,7 +20,7 @@ export default async function getQueue(message: {
 
     const queue = player.getQueue(guild);
 
-    if (!queue) throw "No queue found";
+    if (!queue || !queue.playing) throw "No music is playing";
 
     let queueList = queue.tracks;
     const timeStamp = queue.getPlayerTimestamp();

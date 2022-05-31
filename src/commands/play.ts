@@ -7,7 +7,7 @@ import queueInfo from "../lib/queueInfo";
 export default async function play(message: {
     data: playData;
 }): Promise<{ track: Track; queueInfo: queueInfo }> {
-    const { channelId, guildId, query, userId } = message.data;
+    const { channelId, guildId, query, userId, force } = message.data;
     console.log(message);
 
     const client = bot.getClient();
@@ -22,7 +22,10 @@ export default async function play(message: {
     };
 
     const queue = player.createQueue(guild, queueOptions);
-    queue.setRepeatMode(0);
+
+    if (queue.repeatMode == 3) {
+        queue.setRepeatMode(0);
+    }
 
     try {
         if (!queue.connection) await queue.connect(channel);
@@ -41,7 +44,7 @@ export default async function play(message: {
 
     if (!track) throw "Could not find a track with that name";
 
-    await queue.play(track);
+    await queue.play(track, { immediate: force });
 
     track = formatTrack(track);
 
@@ -49,9 +52,10 @@ export default async function play(message: {
 }
 
 interface playData {
-    channelId: string;
     guildId: string;
+    channelId: string;
     userId: string;
+    force: boolean;
     query: string;
 }
 
