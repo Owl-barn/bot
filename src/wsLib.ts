@@ -95,11 +95,7 @@ export class RavenWS {
                             }
                         })
                         .catch((e: Error) => {
-                            this.send(
-                                "CommandResponse",
-                                { error: e.message },
-                                msg.mid,
-                            );
+                            this.send("CommandResponse", { error: e }, msg.mid);
                         });
                 }
             }
