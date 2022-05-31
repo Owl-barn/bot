@@ -5,6 +5,7 @@ import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
+import wsResponse from "../../types/wsResponse";
 
 module.exports = class extends Command {
     constructor() {
@@ -71,12 +72,30 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
-        const response = (await musicBot.stop(msg)).data;
+        const request = {
+            command: "Stop",
+            mid: msg.id,
+            data: {
+                guildId: msg.guild.id,
+            },
+        };
+
+        const response = (await musicBot.send(request)) as wsResponse;
 
         if (response.error)
             return { embeds: [failEmbed.setDescription(response.error)] };
 
-        const embed = embedTemplate().setDescription("Music stopped");
+        const bot = await msg.guild.members.fetch(musicBot.getId());
+        const embed = embedTemplate()
+            .setDescription("Music stopped")
+            .setAuthor({
+                name: bot.user.username,
+                iconURL: bot
+                    ? bot.avatarURL() ||
+                      bot.user.avatarURL() ||
+                      bot.user.defaultAvatarURL
+                    : undefined,
+            });
 
         return { embeds: [embed] };
     }

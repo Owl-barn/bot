@@ -1,10 +1,4 @@
-import {
-    GuildMember,
-    HexColorString,
-    MessageEmbed,
-    User,
-    Util,
-} from "discord.js";
+import { GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
 import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
@@ -14,6 +8,7 @@ import { CommandGroup } from "../../types/commandGroup";
 import { failEmbedTemplate } from "../../lib/embedTemplate";
 import Track from "../../types/track";
 import { QueueInfo } from "../../types/queueInfo";
+import wsResponse from "../../types/wsResponse";
 
 module.exports = class extends Command {
     constructor() {
@@ -90,20 +85,26 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
-        const response = await musicBot.play(msg, vc.id, query, force);
+        const request = {
+            command: "Play",
+            mid: msg.id,
+            data: {
+                guildId: msg.guild.id,
+                channelId: vc.id,
+                userId: msg.user.id,
+                query,
+                force,
+            },
+        };
 
-        if (response.data.error)
-            return { embeds: [failEmbed.setDescription(response.data.error)] };
+        const response = (await musicBot.send(request)) as response;
 
-        const botUser =
-            (await msg.guild.members.fetch(musicBot.getId())) ||
-            msg.guild.me?.user ||
-            msg.user;
-        const embed = makeEmbed(
-            response.data.track,
-            response.data.queueInfo,
-            botUser?.user,
-        );
+        if (response.error)
+            return { embeds: [failEmbed.setDescription(response.error)] };
+
+        const botUser = await msg.guild.members.fetch(musicBot.getId());
+
+        const embed = makeEmbed(response.track, response.queueInfo, botUser);
 
         return {
             embeds: [embed],
@@ -111,7 +112,7 @@ module.exports = class extends Command {
     };
 };
 
-function makeEmbed(track: Track, queueInfo: QueueInfo, bot: User) {
+function makeEmbed(track: Track, queueInfo: QueueInfo, bot: GuildMember) {
     let channelName = Util.escapeMarkdown(track.author);
     channelName = channelName.replace(/[()[\]]/g, "");
 
@@ -121,7 +122,11 @@ function makeEmbed(track: Track, queueInfo: QueueInfo, bot: User) {
         .setThumbnail(track.thumbnail)
         .setAuthor({
             name: queueInfo.size < 1 ? `Now playing` : "Song queued",
-            iconURL: bot.avatarURL() || bot.defaultAvatarURL,
+            iconURL: bot
+                ? bot.avatarURL() ||
+                  bot.user.avatarURL() ||
+                  bot.user.defaultAvatarURL
+                : undefined,
         })
         .setDescription(`**[${track.title}](${track.url})**`)
         .addField("Channel", `*${channelName}*`, true)
@@ -143,4 +148,9 @@ function makeEmbed(track: Track, queueInfo: QueueInfo, bot: User) {
     }
 
     return embed;
+}
+
+interface response extends wsResponse {
+    track: Track;
+    queueInfo: QueueInfo;
 }

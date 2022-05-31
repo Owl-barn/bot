@@ -1,8 +1,11 @@
-import { AudioPlayerStatus } from "@discordjs/voice";
 import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
+import { failEmbedTemplate } from "../../lib/embedTemplate";
+import { isDJ } from "../../lib/functions.service";
+import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
+import wsResponse from "../../types/wsResponse";
 
 module.exports = class extends Command {
     constructor() {
@@ -10,6 +13,15 @@ module.exports = class extends Command {
             name: "pause",
             description: "pause the bot",
             group: CommandGroup.music,
+
+            args: [
+                {
+                    name: "bot_id",
+                    description: "the id of the music bot",
+                    type: argumentType.string,
+                    required: false,
+                },
+            ],
 
             guildOnly: true,
             premium: true,
@@ -22,41 +34,79 @@ module.exports = class extends Command {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
+        const botId = msg.options.getString("bot_id");
+        if (!msg.guild) throw "no guild in stop command??";
+
         const member = msg.member as GuildMember;
-
-        const failEmbed = new MessageEmbed().setColor(
-            process.env.EMBED_FAIL_COLOR as HexColorString,
-        );
-
+        const dj = isDJ(member);
         const vc = member.voice.channel;
-        if (vc === null) {
+        const music = msg.client.musicService;
+
+        const failEmbed = failEmbedTemplate();
+
+        if (vc == null && botId == undefined) {
             const response = failEmbed.setDescription(
                 "Join a voice channel first.",
             );
             return { embeds: [response] };
         }
 
-        const isDJ = member?.roles.cache.some((role) => role.name === "DJ");
-        if (!isDJ) {
+        const musicBot = botId
+            ? music.getBotById(botId)
+            : vc && music.getBot(vc.id, vc.guildId);
+
+        if (!musicBot) {
             const response = failEmbed.setDescription(
-                "You do not have the `DJ` role.",
+                "No available music bots.",
             );
             return { embeds: [response] };
         }
 
-        const subscription = msg.client.musicService.get(member.guild.id);
-        if (!subscription)
-            return { embeds: [failEmbed.setDescription("Play a song first!")] };
+        if (vc) {
+            const memberCount = vc.members.filter((x) => !x.user.bot).size;
 
-        const paused =
-            subscription.player.state.status === AudioPlayerStatus.Paused;
+            if (
+                !dj &&
+                (vc.id !== musicBot.getGuild(msg.guild.id)?.channelId ||
+                    memberCount > 1)
+            ) {
+                const response = failEmbed.setDescription(
+                    "You do not have the `DJ` role.",
+                );
+                return { embeds: [response] };
+            }
+        }
 
-        paused ? subscription.player.unpause() : subscription.player.pause();
+        const request = {
+            command: "Pause",
+            mid: msg.id,
+            data: {
+                guildId: msg.guild.id,
+            },
+        };
 
+        const response = (await musicBot.send(request)) as response;
+
+        if (response.error)
+            return { embeds: [failEmbed.setDescription(response.error)] };
+
+        const bot = await msg.guild.members.fetch(musicBot.getId());
         const embed = new MessageEmbed()
-            .setDescription(`Song ${paused ? "resumed ▶️" : "paused ⏸️"}`)
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+            .setDescription(`Music ${response.paused ? "paused" : "resumed"}`)
+            .setAuthor({
+                name: "Pause",
+                iconURL: bot
+                    ? bot.avatarURL() ||
+                      bot.user.avatarURL() ||
+                      bot.user.defaultAvatarURL
+                    : undefined,
+            })
+            .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed] };
     }
 };
+
+interface response extends wsResponse {
+    paused: boolean;
+}

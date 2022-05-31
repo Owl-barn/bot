@@ -9,12 +9,14 @@ import {
 import moment from "moment";
 import { failEmbedTemplate } from "../../lib/embedTemplate";
 import progressBar from "../../lib/progressBar";
+import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import currentSong from "../../types/current";
 import RavenInteraction from "../../types/interaction";
 import { QueueInfo } from "../../types/queueInfo";
 import Track from "../../types/track";
+import wsResponse from "../../types/wsResponse";
 
 module.exports = class extends Command {
     constructor() {
@@ -22,6 +24,15 @@ module.exports = class extends Command {
             name: "queue",
             description: "shows queue",
             group: CommandGroup.music,
+
+            args: [
+                {
+                    name: "bot_id",
+                    description: "the id of the music bot",
+                    type: argumentType.string,
+                    required: false,
+                },
+            ],
 
             guildOnly: true,
             premium: true,
@@ -52,7 +63,7 @@ module.exports = class extends Command {
 
         const musicBot = botId
             ? music.getBotById(botId)
-            : music.getBot(vc.id, vc.guildId);
+            : vc && music.getBot(vc.id, vc.guildId);
 
         if (!musicBot) {
             const response = failEmbed.setDescription(
@@ -61,13 +72,29 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
-        const data = (await musicBot.getQueue(msg)).data;
+        const request = {
+            command: "Queue",
+            mid: msg.id,
+            data: {
+                guildId: msg.guild.id,
+            },
+        };
+
+        const data = (await musicBot.send(request)) as response;
+
+        if (data.error) {
+            const response = failEmbed.setDescription(data.error);
+            return { embeds: [response] };
+        }
+
+        const bot = await msg.guild.members.fetch(musicBot.getId());
 
         const embed = makeEmbed(
             data.queue,
             data.current,
             data.queueInfo,
             data.loop,
+            bot,
         );
 
         return { embeds: [embed] };
@@ -79,10 +106,19 @@ function makeEmbed(
     current: currentSong,
     queueInfo: QueueInfo,
     loop: boolean,
+    bot: GuildMember,
 ) {
     const embed = new MessageEmbed().setColor(
         process.env.EMBED_COLOR as HexColorString,
     );
+    embed.setAuthor({
+        iconURL: bot
+            ? bot.avatarURL() ||
+              bot.user.avatarURL() ||
+              bot.user.defaultAvatarURL
+            : undefined,
+        name: "Queue",
+    });
 
     if (!current) {
         embed.addField("Now playing:", "Nothing is playing right now");
@@ -127,4 +163,11 @@ function makeEmbed(
     });
 
     return embed;
+}
+
+interface response extends wsResponse {
+    queue: Track[];
+    current: currentSong;
+    queueInfo: QueueInfo;
+    loop: boolean;
 }
