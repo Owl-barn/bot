@@ -7,13 +7,12 @@ const defaultTheme = {
 };
 
 export default function progressBar(
-    current: number,
-    max: number,
+    percentage: number,
     size: number,
     theme: progressTheme = defaultTheme,
 ): string {
     let progress = theme.start;
-    const playPosition = Math.ceil((current / max) * size) - 1;
+    const playPosition = Math.ceil((percentage / 100) * size) - 1;
 
     for (let index = 0; index < size; index++) {
         if (index < playPosition || playPosition === size - 1)

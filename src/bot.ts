@@ -25,7 +25,7 @@ class Bot {
             allowedMentions: { parse: ["users"] },
         });
 
-        this.client.musicService = new Map<Snowflake, musicService>();
+        this.client.musicService = new musicService();
 
         this.init().then(() => this.listen());
     }

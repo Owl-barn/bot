@@ -29,6 +29,10 @@ export abstract class Command {
 
     public path?: string;
 
+    /**
+     * Execute the command.
+     * @param interaction The interaction that triggered the command.
+     */
     abstract execute(interaction: Interaction): Promise<returnMessage>;
 }
 
