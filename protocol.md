@@ -64,10 +64,7 @@ Sent by the music sub-bots to authenticate with the main bot.
 
 ```ts
 {
-    "command": "Authenticate",
-    "data": {
-        "password": String
-    }
+    password: String;
 }
 ```
 
@@ -79,24 +76,8 @@ Raven-bot also sends a discord token to the sub-bot.
 
 ```ts
 {
-    "command": "Authenticated"
-    "data": {
-        "success": Boolean,
-        "token": String
-    }
-}
-```
-
-## Initiated
-
-Sent by the sub-bot to confirm that it has been initiated.
-
-```ts
-{
-    "command": "Initiated"
-    "data": {
-        "id": String
-    }
+    token: String;
+    error?: String;
 }
 ```
 
@@ -104,24 +85,26 @@ Sent by the sub-bot to confirm that it has been initiated.
 
 Play a song
 
-request:
+command = `Play`
+
+### request:
 
 ```ts
 {
-    "command": "play",
-    "data": {
-        "vc": Snowflake,
-        "guild": Snowflake,
-        "song": String,
-        "user": Snowflake,
-    }
+    channelId: string,
+    guildId: string,
+    userId: string,
+    query: string,
+    fore: boolean,
 }
 ```
 
-response:
+### response:
 
 ```ts
 {
+    track: Track,
+    queueInfo: QueueInfo
 }
 ```
 
@@ -129,14 +112,20 @@ response:
 
 Stop playing
 
+command = `Stop`
+
+### request
+
 ```ts
 {
-    "command": "stop",
-    "data": {
-        "vc": Snowflake,
-        "guild": Snowflake
-    }
+    guildId: string,
 }
+```
+
+### response
+
+```ts
+
 ```
 
 ## Pause
@@ -145,14 +134,21 @@ Pause playing if pause is true.
 Resume playing if pause is false.
 To toggle pause, set pause is not present.
 
+command = `Pause`
+
+### request
+
 ```ts
 {
-    "command": "pause",
-    "data": {
-        "vc": Snowflake,
-        "guild": Snowflake
-        "pause": Boolean
-    }
+    guildId: string,
+}
+```
+
+### response
+
+```ts
+{
+    paused: boolean;
 }
 ```
 
@@ -160,27 +156,47 @@ To toggle pause, set pause is not present.
 
 Skip to the next song
 
+command = `Skip`
+
+### request
+
 ```ts
 {
-    "command": "skip",
-    "data": {
-        "vc": Snowflake,
-        "guild": Snowflake
-    }
+    guildId: string,
+    force: boolean,
+    index: number,
 }
+```
+
+### response
+
+```ts
+
 ```
 
 ## Queue
 
 Get the current queue
 
+command = `Queue`
+
+### request
+
 ```ts
 {
-    "command": "queue",
-    "data": {
-        "vc": Snowflake,
-        "guild": Snowflake
-    }
+   guildId: string,
+}
+```
+
+### response
+
+```ts
+{
+    queue: Track[],
+    current: CurrentSong,
+    queueInfo: QueueInfo
+    paused: boolean,
+    repeat: enum,
 }
 ```
 
@@ -188,27 +204,17 @@ Get the current queue
 
 Get the current status
 
-```ts
-{
-    "command": "status",
-}
-```
+command = `Status`
 
 ### Response
 
 ```ts
 {
-    "command": "status",
-    "data": {
-        "uptime": Number,
-        "guilds":
-        [
-            {
-                "guild": Snowflake,
-                Optional "vc": Snowflake,
-            }
-        ]
-    }
+    upTime: number,
+    guilds: {
+        id: string,
+        channelId?: string,
+    }[]
 }
 ```
 
@@ -220,8 +226,8 @@ Shuffle the queue
 {
     "command": "shuffle",
     "data": {
-        "vc": Snowflake,
-        "guild": Snowflake
+        "vc": string,
+        "guild": string
     }
 }
 ```
@@ -234,8 +240,8 @@ Repeat the playlist. If repeat is not present, toggle.
 {
     "command": "repeat",
     "data": {
-        "vc": Snowflake,
-        "guild": Snowflake,
+        "vc": string,
+        "guild": string,
         "repeat": Boolean
     }
 }
@@ -249,38 +255,38 @@ Clear the queue
 {
     "command": "clear",
     "data": {
-        "vc": Snowflake,
-        "guild": Snowflake
+        "vc": string,
+        "guild": string
     }
 }
 ```
 
 ## Remove
 
-Remove a song by Snowflake from the queue
+Remove a song by string from the queue
 
 ```ts
 {
     "command": "remove",
     "data": {
-        "vc": Snowflake,
-        "guild": Snowflake,
-        "song": Snowflake
+        "vc": string,
+        "guild": string,
+        "song": string
     }
 }
 ```
 
 ## Move
 
-Move a song by Snowflake in the queue
+Move a song by string in the queue
 
 ```ts
 {
     "command": "move",
     "data": {
-        "vc": Snowflake,
-        "guild": Snowflake,
-        "song": Snowflake,
+        "vc": string,
+        "guild": string,
+        "song": string,
         "index": Number
     }
 }
@@ -294,8 +300,8 @@ Lists all the songs in the queue
 {
     "command": "list",
     "data": {
-        "vc": Snowflake,
-        "guild": Snowflake
+        "vc": string,
+        "guild": string
     }
 }
 ```
@@ -306,18 +312,18 @@ Lists all the songs in the queue
 {
     "command": "list",
     "data": {
-        "vc": Snowflake,
-        "guild": Snowflake,
+        "vc": string,
+        "guild": string,
         "songs":
         [
             {
-                "id": Snowflake,
+                "id": string,
                 "author": String,
                 "description": String,
                 "duration": String,
                 "durationMS": Number,
                 "fromPlaylist": String,
-                "requestedBy": Snowflake,
+                "requestedBy": string,
                 "source": String,
                 "thumbnail": String,
                 "title": String,
