@@ -1,16 +1,15 @@
 import WebSocket from "ws";
-import RavenInteraction from "../types/interaction";
-import Queue from "../types/queue";
-import { QueueInfo } from "../types/queueInfo";
-import Track from "../types/track";
 import wsRequest from "../types/wsRequest";
-import wsResponse from "../types/wsResponse";
 
 export default class Owlet {
     private id: string;
     private guilds: Map<string, Guild> = new Map();
     private socket: WebSocket;
-    private promises: Map<string, Record<string, (x: any) => void>> = new Map();
+    private promises: Map<
+        string,
+        Record<"resolve" | "reject", (x: any) => void>
+    > = new Map();
+    private eventCallbacks: Map<string, ((x: any) => void)[]> = new Map();
 
     constructor(id: string, socket: WebSocket, guilds: Guild[]) {
         this.id = id;
@@ -29,10 +28,28 @@ export default class Owlet {
             return;
         }
 
-        console.log(message);
+        console.log(`owlet ${this.id} said:`.green, message);
 
         const promise = this.promises.get(message.mid);
-        if (promise) promise.resolve(message);
+        if (promise) {
+            promise.resolve(message.data);
+            this.promises.delete(message.mid);
+        }
+
+        const callbacks = this.eventCallbacks.get(message.command);
+
+        if (callbacks != null && this.eventCallbacks.get(message.command)) {
+            for (const callback of callbacks) {
+                callback(message);
+            }
+        }
+    };
+
+    public on = (event: string, callback: (x: any) => void): void => {
+        if (!this.eventCallbacks.has(event)) {
+            this.eventCallbacks.set(event, []);
+        }
+        this.eventCallbacks.get(event)?.push(callback);
     };
 
     public getId = (): string => this.id;
@@ -47,112 +64,27 @@ export default class Owlet {
         return this.guilds.get(id);
     }
 
+    /**
+     * Sends a command to the owlet.
+     * @param message message to send.
+     * @returns promise of the owlet's response.
+     */
     public async send<T>(message: wsRequest): Promise<T> {
-        console.log("Sent".yellow.bold + `${message}`);
+        console.log("Sent".yellow.bold, message);
 
         this.socket.send(JSON.stringify(message));
-        const a = new Promise<T>((resolve, reject) => {
+        const result = new Promise<T>((resolve, reject) => {
             this.promises.set(message.mid, { resolve, reject });
             setTimeout(() => {
                 reject("Timeout");
             }, 10000);
         });
 
-        return await a;
+        return await result;
     }
-
-    public stop = async (msg: RavenInteraction): Promise<wsResponse> => {
-        const response = {
-            mid: msg.id,
-            command: "Stop",
-            data: {
-                guildId: msg.guildId,
-            },
-        };
-
-        return await this.send(response);
-    };
-
-    public pause = async (msg: RavenInteraction): Promise<wsResponse> => {
-        const response = {
-            mid: msg.id,
-            command: "Pause",
-            data: {
-                guildId: msg.guildId,
-            },
-        };
-
-        return await this.send(response);
-    };
-
-    public getQueue = async (
-        msg: RavenInteraction,
-    ): Promise<wsResponse & { data: Queue }> => {
-        const response = {
-            mid: msg.id,
-            command: "Queue",
-            data: {
-                guildId: msg.guildId,
-            },
-        };
-
-        return await this.send(response);
-    };
-
-    public getCurrentTrack = async (
-        msg: RavenInteraction,
-    ): Promise<wsResponse & { data: { current: Track } }> => {
-        const response = await this.getQueue(msg);
-        return { ...response, data: { current: response.data.queue[0] } };
-    };
-
-    public loop = async (
-        msg: RavenInteraction,
-        loop: boolean,
-    ): Promise<wsResponse> => {
-        const response = {
-            mid: msg.id,
-            command: "Play",
-            data: {
-                guildId: msg.guildId,
-                loop,
-            },
-        };
-
-        return await this.send(response);
-    };
-
-    public play = async (
-        msg: RavenInteraction,
-        channelId: string,
-        query: string,
-        force: boolean,
-    ): Promise<playResponse> => {
-        const response = {
-            mid: msg.id,
-            command: "Play",
-            data: {
-                guildId: msg.guildId,
-                channelId,
-                userId: msg.user.id,
-                query,
-                force,
-            },
-        };
-
-        return await this.send(response);
-    };
 }
 
 interface Guild {
     id: string;
     channelId: string;
-}
-
-interface playResponse extends wsResponse {
-    data: {
-        error?: string;
-        track: Track;
-        queueInfo: QueueInfo;
-    };
 }

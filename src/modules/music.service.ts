@@ -29,20 +29,44 @@ export default class musicService {
 
         console.log("Received:".green.bold, message);
 
-        if (message.command == "Authenticate") {
-            this.authenticate(ws, message);
-            return;
-        }
-
-        if (message.command == "Status") {
-            this.status(ws, message);
-            return;
+        switch (message.command) {
+            case "Authenticate":
+                this.authenticate(ws, message);
+                break;
+            case "Status":
+                this.status(ws, message);
+                break;
         }
     };
 
-    private async authenticate(ws: WS, message: wsResponse): Promise<void> {
+    private async getCredentials() {
+        const credentialList = owlets;
+        for (const credential of credentialList) {
+            if (this.bots.has(credential.id)) continue;
+            return credential;
+        }
+        return undefined;
+    }
+
+    private async authenticate(ws: WS, message: apiRequest): Promise<void> {
         const pass = message.data.password;
         if (pass != "1234") {
+            ws.send(JSON.stringify({ mid: message.mid, success: false }));
+            return;
+        }
+
+        const id = message.data.id;
+        if (id) {
+            const bot = this.bots.get(id);
+            if (bot) {
+                ws.send(JSON.stringify({ mid: message.mid, success: true }));
+                return;
+            }
+        }
+
+        const credentials = await this.getCredentials();
+
+        if (!credentials) {
             ws.send(JSON.stringify({ mid: message.mid, success: false }));
             return;
         }
@@ -51,7 +75,7 @@ export default class musicService {
             command: "Authenticated",
             mid: message.mid,
             success: true,
-            token: owlets[0],
+            token: credentials.token,
         };
 
         console.log(`Authenticated an Owlet`);
@@ -62,6 +86,7 @@ export default class musicService {
     private async status(ws: WS, message: wsResponse): Promise<void> {
         const data = message.data as unknown as status;
         const bot = this.bots.get(data.id);
+        console.log(data.guilds);
         if (!bot) this.bots.set(data.id, new Owlet(data.id, ws, data.guilds));
         else bot.updateGuilds(data.guilds);
     }
@@ -111,4 +136,10 @@ interface status {
     id: string;
     uptime: number;
     guilds: { id: string; channelId: string }[];
+}
+
+interface apiRequest {
+    command: string;
+    mid: string;
+    data: any;
 }
