@@ -4,13 +4,30 @@ This file defines the protocol for websocket communication between raven-bot and
 
 # Message format
 
+Each message contains a message id `mid`, which is copied into any response.
+
 json:
 
 ```
 {
     "command": String,
+    "mid": String,
     "data": {
         String: any
+    }
+}
+```
+
+# Reponses
+
+json:
+
+```
+{
+    "mid": String,
+    "data": {
+        Optional error: String,
+        Additional data
     }
 }
 ```
@@ -58,11 +75,27 @@ Sent by the music sub-bots to authenticate with the main bot.
 
 Sent by the main bot to confirm that the music sub-bot has authenticated.
 
+Raven-bot also sends a discord token to the sub-bot.
+
 ```ts
 {
     "command": "Authenticated"
     "data": {
-        "success": Boolean
+        "success": Boolean,
+        "token": String
+    }
+}
+```
+
+## Initiated
+
+Sent by the sub-bot to confirm that it has been initiated.
+
+```ts
+{
+    "command": "Initiated"
+    "data": {
+        "id": String
     }
 }
 ```
@@ -70,6 +103,8 @@ Sent by the main bot to confirm that the music sub-bot has authenticated.
 ## Play
 
 Play a song
+
+request:
 
 ```ts
 {
@@ -80,6 +115,13 @@ Play a song
         "song": String,
         "user": Snowflake,
     }
+}
+```
+
+response:
+
+```ts
+{
 }
 ```
 
@@ -159,11 +201,11 @@ Get the current status
     "command": "status",
     "data": {
         "uptime": Number,
-        "guilds": 
+        "guilds":
         [
             {
                 "guild": Snowflake,
-                "vc": Snowflake,
+                Optional "vc": Snowflake,
             }
         ]
     }
@@ -266,7 +308,7 @@ Lists all the songs in the queue
     "data": {
         "vc": Snowflake,
         "guild": Snowflake,
-        "songs": 
+        "songs":
         [
             {
                 "id": Snowflake,
