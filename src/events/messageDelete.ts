@@ -10,6 +10,7 @@ export default class InteractionCreate implements RavenEvent {
     async execute(msg: Message): Promise<void> {
         if (!msg.guildId) return;
         if (msg.member?.user.bot) return;
+        if (msg.content == "") return;
         const config = GuildConfig.getGuild(msg.guildId);
         if (!config || !config.log_channel || config.banned) return;
 

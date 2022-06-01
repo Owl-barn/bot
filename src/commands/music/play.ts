@@ -121,8 +121,6 @@ function makeEmbed(track: Track, queueInfo: QueueInfo, bot: GuildMember) {
     let channelName = Util.escapeMarkdown(track.author);
     channelName = channelName.replace(/[()[\]]/g, "");
 
-    console.log(track);
-
     const embed = new EmbedBuilder()
         .setThumbnail(track.thumbnail)
         .setAuthor({

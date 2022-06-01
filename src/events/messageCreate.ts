@@ -96,7 +96,10 @@ export default class InteractionCreate implements RavenEvent {
                         queueInfo: QueueInfo;
                     }
 
-                    const data = (await bot.send(request)) as Response;
+                    const data = (await bot
+                        .send(request)
+                        .catch((e) => console.log(e))) as Response;
+                    if (!data || data.error) continue;
 
                     const queueLength = new Date(data.queueInfo.length)
                         .toISOString()

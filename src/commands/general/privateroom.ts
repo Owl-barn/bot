@@ -80,6 +80,8 @@ module.exports = class extends Command {
 async function transferRoom(msg: RavenInteraction): Promise<returnMessage> {
     const member = msg.options.getMember("user") as GuildMember | null;
     if (member == null) return { content: "User not found" };
+    if (member.user.bot)
+        return { content: "You can't transfer your private room to a bot" };
     if (member.id == msg.user.id)
         return { content: "You can't transfer your room to yourself" };
 

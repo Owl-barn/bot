@@ -153,8 +153,6 @@ function makeEmbed(
         ]);
     }
 
-    console.log(JSON.stringify(queue));
-
     embed.setFooter({
         text: `Queue length: ${moment()
             .startOf("day")
