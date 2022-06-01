@@ -64,6 +64,10 @@ export default class Owlet {
         return this.guilds.get(id);
     }
 
+    public terminate(): void {
+        this.send({ command: "Terminate", mid: "terminate", data: {} });
+    }
+
     /**
      * Sends a command to the owlet.
      * @param message message to send.
