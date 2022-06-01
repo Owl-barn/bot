@@ -21,8 +21,8 @@ class Bot {
                 GatewayIntentBits.GuildMessages,
                 GatewayIntentBits.GuildMembers,
                 GatewayIntentBits.GuildVoiceStates,
+                GatewayIntentBits.MessageContent,
             ],
-            partials: [Partials.Channel],
             allowedMentions: { parse: ["users"] },
         });
 
