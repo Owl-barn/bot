@@ -49,6 +49,10 @@ function argumentHanlder(
             .setName(arg.name)
             .setDescription(arg.description)
             .setRequired(arg.required ? true : false);
+        if (arg.choices) {
+            console.log(arg.choices);
+            option.addChoices(arg.choices);
+        }
 
         return option;
     }
