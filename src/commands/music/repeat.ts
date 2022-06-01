@@ -10,11 +10,22 @@ import wsResponse from "../../types/wsResponse";
 module.exports = class extends Command {
     constructor() {
         super({
-            name: "loop",
+            name: "repeat",
             description: "loops the queue",
             group: CommandGroup.music,
 
             args: [
+                {
+                    name: "repeat_mode",
+                    description: "the loop mode",
+                    type: argumentType.number,
+                    choices: [
+                        ["off", 0],
+                        ["track", 1],
+                        ["queue", 2],
+                    ],
+                    required: true,
+                },
                 {
                     name: "bot_id",
                     description: "the id of the music bot",
@@ -34,6 +45,7 @@ module.exports = class extends Command {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
+        const repeat = msg.options.getNumber("repeat_mode", true);
         const botId = msg.options.getString("bot_id");
         if (!msg.guild) throw "no guild in stop command??";
 
@@ -75,6 +87,7 @@ module.exports = class extends Command {
             mid: msg.id,
             data: {
                 guildId: msg.guild.id,
+                repeat,
             },
         };
 
@@ -82,8 +95,22 @@ module.exports = class extends Command {
 
         const bot = await msg.guild.members.fetch(musicBot.getId());
 
+        let repeatMode = "";
+
+        switch (response.repeat) {
+            case 0:
+                repeatMode = "❎ Off";
+                break;
+            case 1:
+                repeatMode = "🔂 Track";
+                break;
+            case 2:
+                repeatMode = "🔁 Queue";
+                break;
+        }
+
         const embed = new MessageEmbed()
-            .setDescription(`Loop ${response.loop ? "enabled" : "disabled"}`)
+            .setDescription(`now set to: ${repeatMode}`)
             .setAuthor({
                 name: "Loop",
                 iconURL: bot
