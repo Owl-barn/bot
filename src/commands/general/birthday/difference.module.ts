@@ -1,4 +1,4 @@
-import { GuildMember, MessageEmbed, HexColorString } from "discord.js";
+import { GuildMember, EmbedBuilder, HexColorString } from "discord.js";
 import { returnMessage } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -8,11 +8,15 @@ export default async function birthdayDifference(
     const client = msg.client;
     if (!msg.guildId) throw "No guildID???";
 
-    const first_user = msg.options.getMember("first_user", true) as GuildMember;
+    const first_user = msg.options.getMember(
+        "first_user",
+    ) as GuildMember | null;
+
+    if (first_user === null) throw "No first user?";
     let second_user = msg.options.getMember("second_user") as
         | GuildMember
         | undefined;
-    const embed = new MessageEmbed();
+    const embed = new EmbedBuilder();
     embed.setColor(process.env.EMBED_COLOR as HexColorString);
 
     if (!second_user) second_user = msg.member as GuildMember;
@@ -59,12 +63,14 @@ export default async function birthdayDifference(
     const youngest =
         users[1].user_id === second_user.id ? second_user : first_user;
 
-    embed.addField(
-        `Who is older?`,
-        `${oldest} is older than ${youngest} by ${differenceString} ${
-            percent_difference > 0.15 ? `(sussy)` : ""
-        }`,
-    );
+    embed.addFields([
+        {
+            name: `Who is older?`,
+            value: `${oldest} is older than ${youngest} by ${differenceString} ${
+                percent_difference > 0.15 ? `(sussy)` : ""
+            }`,
+        },
+    ]);
 
     return { embeds: [embed] };
 }

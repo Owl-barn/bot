@@ -1,5 +1,10 @@
-import { GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
-import { argumentType } from "../../types/argument";
+import {
+    GuildMember,
+    HexColorString,
+    EmbedBuilder,
+    Util,
+    ApplicationCommandOptionType,
+} from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
 import { isDJ } from "../../lib/functions.service";
@@ -22,13 +27,13 @@ module.exports = class extends Command {
 
             args: [
                 {
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     name: "song",
                     description: "song name or url",
                     required: true,
                 },
                 {
-                    type: argumentType.boolean,
+                    type: ApplicationCommandOptionType.Boolean,
                     name: "force",
                     description: "force play?",
                     required: false,
@@ -36,7 +41,7 @@ module.exports = class extends Command {
                 {
                     name: "bot_id",
                     description: "the id of the music bot",
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     required: false,
                 },
             ],
@@ -118,7 +123,7 @@ function makeEmbed(track: Track, queueInfo: QueueInfo, bot: GuildMember) {
 
     console.log(track);
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setThumbnail(track.thumbnail)
         .setAuthor({
             name: queueInfo.size < 1 ? `Now playing` : "Song queued",
@@ -129,13 +134,17 @@ function makeEmbed(track: Track, queueInfo: QueueInfo, bot: GuildMember) {
                 : undefined,
         })
         .setDescription(`**[${track.title}](${track.url})**`)
-        .addField("Channel", `*${channelName}*`, true)
-        .addField("Song Duration", `*${track.duration}*`, true)
-        .addField(
-            "Queue Position",
-            `*${queueInfo.size !== 0 ? queueInfo.size : "Currently playing"}*`,
-            true,
-        )
+        .addFields([
+            { name: "Channel", value: `*${channelName}*`, inline: true },
+            { name: "Duration", value: `${track.duration}`, inline: true },
+            {
+                name: "Queue Position",
+                value: `*${
+                    queueInfo.size !== 0 ? queueInfo.size : "Currently playing"
+                }*`,
+                inline: true,
+            },
+        ])
         .setColor(process.env.EMBED_COLOR as HexColorString);
 
     if (queueInfo.size !== 0) {
@@ -144,7 +153,13 @@ function makeEmbed(track: Track, queueInfo: QueueInfo, bot: GuildMember) {
             .milliseconds(queueInfo.length - track.durationMS)
             .format("H:mm:ss");
 
-        embed.addField("Time untill play", `*${timeTillPlay}*`, true);
+        embed.addFields([
+            {
+                name: "Time untill play",
+                value: `*${timeTillPlay}*`,
+                inline: true,
+            },
+        ]);
     }
 
     return embed;

@@ -5,9 +5,8 @@ import {
 } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
-import { ClientUser, Guild } from "discord.js";
-import { Argument, argumentType } from "../types/argument";
-import { SlashCommandOptionBase } from "@discordjs/builders/dist/interactions/slashCommands/mixins/CommandOptionBase";
+import { ApplicationCommandOptionType, ClientUser, Guild } from "discord.js";
+import { Argument } from "../types/argument";
 import RavenClient from "../types/ravenClient";
 import { CommandGroup } from "../types/commandGroup";
 
@@ -58,34 +57,34 @@ function argumentHanlder(
     }
 
     switch (arg.type) {
-        case argumentType.mentionable:
+        case ApplicationCommandOptionType.Mentionable:
             builder.addMentionableOption(content);
             break;
-        case argumentType.channel:
+        case ApplicationCommandOptionType.Channel:
             builder.addChannelOption(content);
             break;
-        case argumentType.role:
+        case ApplicationCommandOptionType.Role:
             builder.addRoleOption(content);
             break;
-        case argumentType.user:
+        case ApplicationCommandOptionType.User:
             builder.addUserOption(content);
             break;
-        case argumentType.string:
+        case ApplicationCommandOptionType.String:
             builder.addStringOption(content);
             break;
-        case argumentType.integer:
+        case ApplicationCommandOptionType.Integer:
             builder.addIntegerOption(content);
             break;
-        case argumentType.number:
+        case ApplicationCommandOptionType.Number:
             builder.addNumberOption(content);
             break;
-        case argumentType.boolean:
+        case ApplicationCommandOptionType.Boolean:
             builder.addBooleanOption(content);
             break;
-        case argumentType.subCommand:
+        case ApplicationCommandOptionType.Subcommand:
             builder = addSubcommand(builder as SlashCommandBuilder, arg);
             break;
-        case argumentType.subCommandGroup:
+        case ApplicationCommandOptionType.SubcommandGroup:
             builder = (builder as SlashCommandBuilder).addSubcommandGroup(
                 (option): SlashCommandSubcommandGroupBuilder => {
                     option.setName(arg.name);
@@ -143,8 +142,8 @@ export default async function registerCommand(
         if (
             !command.args?.find(
                 (x) =>
-                    x.type == argumentType.subCommand ||
-                    x.type == argumentType.subCommandGroup,
+                    x.type == ApplicationCommandOptionType.Subcommand ||
+                    x.type == ApplicationCommandOptionType.SubcommandGroup,
             )
         ) {
             builder.addBooleanOption((Option) =>

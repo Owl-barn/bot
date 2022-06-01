@@ -1,9 +1,10 @@
+import { ButtonBuilder } from "@discordjs/builders";
 import {
     Guild,
     HexColorString,
-    MessageActionRow,
-    MessageButton,
-    MessageEmbed,
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonStyle,
 } from "discord.js";
 import GuildConfig from "../lib/guildconfig.service";
 import registerCommand from "../modules/command.register";
@@ -35,15 +36,17 @@ export default class implements RavenEvent {
 
             if (!channel) return;
 
-            const embed = new MessageEmbed()
+            const embed = new EmbedBuilder()
                 .setTitle("Thank you!")
                 .setDescription(
                     "Thank you for inviting me! The server owner can configure the bot with /config",
                 )
-                .addField(
-                    "How do i play music?",
-                    `Right now the only way is to get a subscription, for more info and questions please [join the discord!](${process.env.SUPPORT_SERVER})`,
-                )
+                .addFields([
+                    {
+                        name: "How do i play music?",
+                        value: `Right now the only way is to get a subscription, for more info and questions please [join the discord!](${process.env.SUPPORT_SERVER})`,
+                    },
+                ])
                 .setThumbnail(
                     guild.client.user?.avatarURL() ||
                         (guild.client.user?.defaultAvatarURL as string),
@@ -51,23 +54,27 @@ export default class implements RavenEvent {
                 .setTimestamp()
                 .setColor(process.env.EMBED_COLOR as HexColorString);
 
-            const component = new MessageActionRow().addComponents(
-                new MessageButton()
-                    .setLabel("Donation")
-                    .setStyle("LINK")
-                    .setURL("https://ko-fi.com/owlive"),
-                new MessageButton()
-                    .setLabel("Discord")
-                    .setStyle("LINK")
-                    .setURL("https://discord.gg/CD5xsWNbmU"),
-            );
+            const donateButton = new ButtonBuilder()
+                .setLabel("Donation🗿")
+                .setStyle(ButtonStyle.Link)
+                .setURL("https://ko-fi.com/owlive");
+            const discordButton = new ButtonBuilder()
+                .setLabel("Discord")
+                .setStyle(ButtonStyle.Link)
+                .setURL("https://discord.gg/CD5xsWNbmU");
+
+            const component = new ActionRowBuilder().setComponents([
+                donateButton,
+                discordButton,
+            ]) as ActionRowBuilder<ButtonBuilder>;
 
             await channel
                 .send({ embeds: [embed], components: [component] })
                 .catch(() =>
                     console.log("Couldnt send message in new server."),
                 );
-            const notifEmbed = new MessageEmbed()
+
+            const notifEmbed = new EmbedBuilder()
                 .setColor(process.env.EMBED_COLOR as HexColorString)
                 .setTitle("New guild")
                 .setDescription(

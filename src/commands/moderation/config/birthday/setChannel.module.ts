@@ -1,5 +1,5 @@
 import {
-    MessageEmbed,
+    EmbedBuilder,
     HexColorString,
     GuildBasedChannel,
     ClientUser,
@@ -16,7 +16,7 @@ export async function configBirthdaySetChannel(
         | GuildBasedChannel
         | undefined;
 
-    const failEmbed = new MessageEmbed()
+    const failEmbed = new EmbedBuilder()
         .setDescription(`I cant assign this role.`)
         .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
@@ -28,7 +28,7 @@ export async function configBirthdaySetChannel(
         data: { birthday_channel: channel?.id || null },
     });
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setDescription(
             channel
                 ? `Successfully set ${channel} as the birthday message channel!`

@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed } from "discord.js";
+import { HexColorString, EmbedBuilder } from "discord.js";
 import bannedUsers from "../lib/banlist.service";
 import GuildConfig from "../lib/guildconfig.service";
 import logService from "../lib/logger.service";
@@ -13,7 +13,7 @@ export default class InteractionCreate implements RavenEvent {
     name = "interactionCreate";
     once = false;
     throttle = throttleService;
-    errorEmbed = new MessageEmbed()
+    errorEmbed = new EmbedBuilder()
         .setDescription(
             `An error occurred, please make a report of this in [the Raven bot discord server](${process.env.SUPPORT_SERVER})`,
         )

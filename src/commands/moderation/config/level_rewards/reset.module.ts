@@ -1,4 +1,9 @@
-import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
+import {
+    GuildMember,
+    HexColorString,
+    EmbedBuilder,
+    PermissionFlagsBits,
+} from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
@@ -7,11 +12,15 @@ export async function configLevelRewardReset(
 ): Promise<returnMessage> {
     if (!msg.guildId) throw "no guild??";
 
-    const failEmbed = new MessageEmbed().setColor(
+    const failEmbed = new EmbedBuilder().setColor(
         process.env.EMBED_FAIL_COLOR as HexColorString,
     );
 
-    if (!(msg.member as GuildMember).permissions.has("ADMINISTRATOR")) {
+    if (
+        !(msg.member as GuildMember).permissions.has(
+            PermissionFlagsBits.Administrator,
+        )
+    ) {
         const response = failEmbed.setDescription(
             "You need administator permissions to do this.",
         );
@@ -22,7 +31,7 @@ export async function configLevelRewardReset(
         where: { guild_id: msg.guildId },
     });
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setDescription(`Successfully removed ${deleted.count} level rewards.`)
         .setColor(process.env.EMBED_COLOR as HexColorString);
 

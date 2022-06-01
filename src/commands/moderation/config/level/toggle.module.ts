@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed } from "discord.js";
+import { HexColorString, EmbedBuilder } from "discord.js";
 import GuildConfig from "../../../../lib/guildconfig.service";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
@@ -15,7 +15,7 @@ export async function configLevelToggle(
     });
     GuildConfig.updateGuild(guild);
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setDescription(
             `Successfully toggled the level system, it is now \`${
                 state ? "on" : "off"

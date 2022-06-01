@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed } from "discord.js";
+import { HexColorString, EmbedBuilder } from "discord.js";
 import GuildConfig from "../../../../lib/guildconfig.service";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
@@ -9,7 +9,7 @@ export async function configLevelSetMessage(
     if (!msg.guildId) throw "no guild??";
     let message = msg.options.getString("message");
 
-    const embed = new MessageEmbed().setColor(
+    const embed = new EmbedBuilder().setColor(
         process.env.EMBED_COLOR as HexColorString,
     );
 

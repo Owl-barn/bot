@@ -1,6 +1,5 @@
-import { GuildMember } from "discord.js";
+import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import { embedTemplate } from "../../lib/embedTemplate";
-import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -16,13 +15,13 @@ module.exports = class extends Command {
 
             args: [
                 {
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     name: "nickname",
                     description: "Nickname to give the user",
                     required: true,
                 },
                 {
-                    type: argumentType.user,
+                    type: ApplicationCommandOptionType.User,
                     name: "user",
                     description: "User to change the nickname for",
                     required: false,
@@ -38,7 +37,7 @@ module.exports = class extends Command {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const nickname = msg.options.getString("nickname", true);
-        let target = msg.options.getMember("user", false) as GuildMember | null;
+        let target = msg.options.getMember("user") as GuildMember | null;
         if (!target) target = msg.member as GuildMember;
 
         await target.setNickname(nickname);

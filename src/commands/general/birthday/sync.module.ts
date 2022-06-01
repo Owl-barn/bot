@@ -1,4 +1,4 @@
-import { MessageEmbed, HexColorString } from "discord.js";
+import { EmbedBuilder, HexColorString } from "discord.js";
 import { returnMessage } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -8,7 +8,7 @@ export default async function birthdaySync(
     if (!msg.guildId) throw "No guildID???";
 
     const client = msg.client;
-    const embed = new MessageEmbed();
+    const embed = new EmbedBuilder();
     embed.setColor(process.env.EMBED_COLOR as HexColorString);
 
     const query = await client.db.birthdays.findFirst({

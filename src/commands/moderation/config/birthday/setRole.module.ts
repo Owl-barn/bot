@@ -1,4 +1,4 @@
-import { Role, MessageEmbed, HexColorString } from "discord.js";
+import { Role, EmbedBuilder, HexColorString } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
@@ -9,7 +9,7 @@ export async function configBirthdaySetRole(
 
     const role = msg.options.getRole("birthday_role") as Role | undefined;
 
-    const failEmbed = new MessageEmbed()
+    const failEmbed = new EmbedBuilder()
         .setDescription(`I cant assign this role.`)
         .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
@@ -20,7 +20,7 @@ export async function configBirthdaySetRole(
         data: { birthday_role: role?.id || null },
     });
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setDescription(
             role
                 ? `Successfully set ${role} as the birthday auto role!`

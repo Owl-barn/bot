@@ -3,13 +3,13 @@ import {
     EmbedFieldData,
     GuildMember,
     HexColorString,
-    MessageEmbed,
+    EmbedBuilder,
     Util,
+    ApplicationCommandOptionType,
 } from "discord.js";
 import moment from "moment";
 import { failEmbedTemplate } from "../../lib/embedTemplate";
 import progressBar from "../../lib/progressBar";
-import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import currentSong from "../../types/current";
@@ -29,7 +29,7 @@ module.exports = class extends Command {
                 {
                     name: "bot_id",
                     description: "the id of the music bot",
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     required: false,
                 },
             ],
@@ -45,7 +45,7 @@ module.exports = class extends Command {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
-        const botId = msg.options.getString("bot_id");
+        const botId = msg.options.get("bot_id") as string | null;
         if (!msg.guild) throw "no guild in stop command??";
 
         const member = msg.member as GuildMember;
@@ -101,7 +101,7 @@ function makeEmbed(
     queueInfo: QueueInfo,
     bot: GuildMember,
 ) {
-    const embed = new MessageEmbed().setColor(
+    const embed = new EmbedBuilder().setColor(
         process.env.EMBED_COLOR as HexColorString,
     );
     embed.setAuthor({
@@ -114,7 +114,9 @@ function makeEmbed(
     });
 
     if (!current) {
-        embed.addField("Now playing:", "Nothing is playing right now");
+        embed.addFields([
+            { name: "Now playing:", value: "Nothing is playing right now" },
+        ]);
         return embed;
     }
 
@@ -143,7 +145,12 @@ function makeEmbed(
 
     embed.addFields(list);
     if (queueInfo.repeat) {
-        embed.addField("Loop", queueInfo.repeat == 1 ? "🔂 Track" : "🔁 Queue");
+        embed.addFields([
+            {
+                name: "Loop",
+                value: queueInfo.repeat == 1 ? "🔂 Track" : "🔁 Queue",
+            },
+        ]);
     }
 
     console.log(JSON.stringify(queue));

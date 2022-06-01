@@ -1,4 +1,4 @@
-import { MessageEmbed, GuildMember } from "discord.js";
+import { EmbedBuilder, GuildMember } from "discord.js";
 import RavenButton from "../types/button";
 import { returnMessage } from "../types/Command";
 import { RavenButtonInteraction } from "../types/interaction";
@@ -25,16 +25,16 @@ export default class implements RavenButton {
         if (!query) return error;
 
         const hasRole = user.roles.cache.get(query.role_id);
-        const embed = new MessageEmbed();
+        const embed = new EmbedBuilder();
 
         if (hasRole) {
             user.roles.remove(query.role_id);
-            embed.setColor("RED");
+            embed.setColor("Red");
             embed.setDescription(`Role \`${query.name}\` removed!`);
             return { ephemeral: true, embeds: [embed] };
         } else {
             user.roles.add(query.role_id);
-            embed.setColor("GREEN");
+            embed.setColor("Green");
             embed.setDescription(`Role \`${query.name}\` added!`);
             return { ephemeral: true, embeds: [embed] };
         }

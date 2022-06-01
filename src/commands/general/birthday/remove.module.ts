@@ -1,4 +1,4 @@
-import { MessageEmbed, HexColorString } from "discord.js";
+import { EmbedBuilder, HexColorString } from "discord.js";
 import { returnMessage } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -9,7 +9,7 @@ export default async function birthdayRemove(
 
     const client = msg.client;
 
-    const embed = new MessageEmbed().setColor(
+    const embed = new EmbedBuilder().setColor(
         process.env.EMBED_COLOR as HexColorString,
     );
 

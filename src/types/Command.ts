@@ -1,7 +1,7 @@
 import {
     Interaction,
     InteractionReplyOptions,
-    PermissionString,
+    PermissionsString,
 } from "discord.js";
 import { Argument } from "./argument";
 import { CommandGroup } from "./commandGroup";
@@ -23,7 +23,7 @@ export abstract class Command {
 
     public args?: Argument[];
 
-    public permissions?: PermissionString[];
+    public permissions?: PermissionsString[];
 
     public throttling!: Throttling;
 
@@ -48,7 +48,7 @@ export interface CommandInfo {
 
     args?: Argument[];
 
-    permissions?: PermissionString[];
+    permissions?: PermissionsString[];
 
     throttling: Throttling;
 

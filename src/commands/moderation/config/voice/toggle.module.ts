@@ -1,4 +1,9 @@
-import { MessageEmbed, HexColorString } from "discord.js";
+import {
+    ChannelType,
+    EmbedBuilder,
+    HexColorString,
+    OverwriteResolvable,
+} from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 import GuildConfig from "../../../../lib/guildconfig.service";
@@ -35,26 +40,27 @@ export default async function configVoiceToggle(
             await wait?.delete().catch((x) => console.log(x));
         }
     } else {
-        const category = await msg.guild?.channels.create("🔒 Private Rooms", {
-            type: 4,
-            permissionOverwrites: [
-                {
-                    id: msg.client.user?.id as string,
-                    allow: [
-                        "VIEW_CHANNEL",
-                        "CONNECT",
-                        "MANAGE_CHANNELS",
-                        "MOVE_MEMBERS",
-                        "STREAM",
-                        "SPEAK",
-                    ],
-                },
-                {
-                    id: msg.guildId,
-                    allow: ["CONNECT"],
-                    deny: ["SPEAK", "STREAM"],
-                },
+        const botPermissions: OverwriteResolvable = {
+            id: msg.client.user?.id as string,
+            allow: [
+                "ViewChannel",
+                "Connect",
+                "ManageChannels",
+                "MoveMembers",
+                "Stream",
+                "Speak",
             ],
+        };
+
+        const basepermissions: OverwriteResolvable = {
+            id: msg.guildId,
+            allow: ["Connect"],
+            deny: ["Speak", "Stream"],
+        };
+
+        const category = await msg.guild?.channels.create("🔒 Private Rooms", {
+            type: ChannelType.GuildCategory,
+            permissionOverwrites: [botPermissions, basepermissions],
         });
 
         if (!category) throw "Couldnt make category channel.";
@@ -84,7 +90,7 @@ export default async function configVoiceToggle(
         ? `Enabled private vcs <#${channelID}>`
         : "Removed private vcs";
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setDescription(`${response}`)
         .setColor(process.env.EMBED_COLOR as HexColorString);
 

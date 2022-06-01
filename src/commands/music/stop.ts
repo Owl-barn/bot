@@ -1,7 +1,11 @@
-import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
+import {
+    GuildMember,
+    HexColorString,
+    EmbedBuilder,
+    ApplicationCommandOptionType,
+} from "discord.js";
 import { embedTemplate } from "../../lib/embedTemplate";
 import { isDJ } from "../../lib/functions.service";
-import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -21,7 +25,7 @@ module.exports = class extends Command {
                 {
                     name: "bot_id",
                     description: "the id of the music bot",
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     required: false,
                 },
             ],
@@ -42,7 +46,7 @@ module.exports = class extends Command {
         const dj = isDJ(member);
         const vc = member.voice.channel;
 
-        const failEmbed = new MessageEmbed().setColor(
+        const failEmbed = new EmbedBuilder().setColor(
             process.env.EMBED_FAIL_COLOR as HexColorString,
         );
 

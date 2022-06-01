@@ -1,8 +1,12 @@
-import { GuildMember, MessageActionRow, MessageButton } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
+import {
+    ApplicationCommandOptionType,
+    ButtonStyle,
+    GuildMember,
+} from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import levelService from "../../lib/level.service";
 import progressBar from "../../lib/progressBar";
-import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -18,12 +22,12 @@ module.exports = class extends Command {
 
             args: [
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "get",
                     description: "Get your or someone else's level.",
                     subCommands: [
                         {
-                            type: argumentType.user,
+                            type: ApplicationCommandOptionType.User,
                             name: "user",
                             description: "whose level",
                             required: false,
@@ -31,7 +35,7 @@ module.exports = class extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "top",
                     description: "See the leaderboard.",
                 },
@@ -79,12 +83,12 @@ function levelTop(msg: RavenInteraction): returnMessage {
         "Click the link below to view the server's leaderboard",
     );
 
-    const component = new MessageActionRow().addComponents(
-        new MessageButton()
-            .setLabel("Leaderboard")
-            .setStyle("LINK")
-            .setURL(`${process.env.URL}/leaderboard/${msg.guildId}`),
-    );
+    const button = new ButtonBuilder()
+        .setLabel("Leaderboard")
+        .setStyle(ButtonStyle.Link)
+        .setURL(`${process.env.URL}/leaderboard/${msg.guildId}`);
+
+    const component = new ActionRowBuilder().addComponents([button]);
 
     return { embeds: [embed], components: [component] };
 }
@@ -147,7 +151,7 @@ async function levelGet(msg: RavenInteraction): Promise<returnMessage> {
         indicator: ">",
     };
 
-    const progress = progressBar(stats.currentXP, stats.levelXP, 30, theme);
+    const progress = progressBar(stats.currentXP / stats.levelXP, 30, theme);
     const remaining = stats.levelXP - stats.currentXP;
 
     embed.setTitle(`${member.user.username}'s level`);
@@ -163,26 +167,33 @@ async function levelGet(msg: RavenInteraction): Promise<returnMessage> {
             `**Total XP:** ${formatNumber(stats.totalXP)}\n` +
             `\`\`\`${stats.level}${progress}${stats.level + 1}\`\`\``,
     );
-    embed.addField(
-        "Next level",
-        `**XP gained:** ${formatNumber(stats.currentXP)}\n` +
-            `**XP needed:** ${formatNumber(stats.levelXP)}`,
-        true,
-    );
-    embed.addField(
-        "Needed to level up",
-        `**XP:** ${formatNumber(remaining)}\n` +
-            `**Msg:** ~${formatNumber(Math.round(remaining / 20))}`,
-        true,
-    );
+    embed.addFields([
+        {
+            name: "Next level",
+            value:
+                `**XP gained:** ${formatNumber(stats.currentXP)}\n` +
+                `**XP needed:** ${formatNumber(stats.levelXP)}`,
+            inline: true,
+        },
+        {
+            name: "Needed to level up",
+            value:
+                `**XP:** ${formatNumber(remaining)}\n` +
+                `**Msg:** ~${formatNumber(Math.round(remaining / 20))}`,
+            inline: true,
+        },
+    ]);
 
     if (NextReward) {
-        embed.addField(
-            "Next reward",
-            `**Level:** ${NextReward.level}\n` +
-                `**Role:** <@&${NextReward.role_id}>`,
-            true,
-        );
+        embed.addFields([
+            {
+                name: "Next reward",
+                value:
+                    `**Level:** ${NextReward.level}\n` +
+                    `**Role:** <@&${NextReward.role_id}>`,
+                inline: true,
+            },
+        ]);
     }
 
     return { embeds: [embed] };

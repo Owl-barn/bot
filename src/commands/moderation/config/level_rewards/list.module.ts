@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed } from "discord.js";
+import { HexColorString, EmbedBuilder } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
@@ -16,7 +16,7 @@ export async function configLevelRewardList(
         .map((x) => `${x.level} - <@&${x.role_id}>`)
         .join("\n");
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setTitle("Level rewards")
         .setDescription(output || "No rewards.")
         .setColor(process.env.EMBED_COLOR as HexColorString);

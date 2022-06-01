@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed, Role } from "discord.js";
+import { HexColorString, EmbedBuilder, Role } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
@@ -9,7 +9,7 @@ export async function configLevelRewardAdd(
     const level = msg.options.getInteger("level", true);
     const role = msg.options.getRole("role", true) as Role;
 
-    const failEmbed = new MessageEmbed().setColor(
+    const failEmbed = new EmbedBuilder().setColor(
         process.env.EMBED_FAIL_COLOR as HexColorString,
     );
 
@@ -22,7 +22,7 @@ export async function configLevelRewardAdd(
         data: { guild_id: msg.guildId, role_id: role.id, level },
     });
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setDescription(
             `Successfully added ${role} as a level reward for level \`${level}\`.`,
         )

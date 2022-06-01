@@ -1,4 +1,3 @@
-import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -15,6 +14,7 @@ import { configBirthdaySetRole } from "./config/birthday/setRole.module";
 import { configLevelReset } from "./config/level/reset.module";
 import configVoiceLimit from "./config/voice/limit.module";
 import configVoiceToggle from "./config/voice/toggle.module";
+import { ApplicationCommandOptionType } from "discord.js";
 
 module.exports = class extends Command {
     constructor() {
@@ -29,23 +29,23 @@ module.exports = class extends Command {
 
             args: [
                 {
-                    type: argumentType.subCommandGroup,
+                    type: ApplicationCommandOptionType.SubcommandGroup,
                     name: "level_reward",
                     description: "Change level role rewards.",
                     subCommands: [
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "add",
                             description: "Add a role reward.",
                             subCommands: [
                                 {
-                                    type: argumentType.role,
+                                    type: ApplicationCommandOptionType.Role,
                                     name: "role",
                                     description: "What role to add as reward.",
                                     required: true,
                                 },
                                 {
-                                    type: argumentType.integer,
+                                    type: ApplicationCommandOptionType.Integer,
                                     name: "level",
                                     description:
                                         "What level to add a reward to.",
@@ -54,12 +54,12 @@ module.exports = class extends Command {
                             ],
                         },
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "remove",
                             description: "Remove a role reward",
                             subCommands: [
                                 {
-                                    type: argumentType.role,
+                                    type: ApplicationCommandOptionType.Role,
                                     name: "role",
                                     description: "What role to add as reward.",
                                     required: true,
@@ -67,29 +67,29 @@ module.exports = class extends Command {
                             ],
                         },
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "list",
                             description: "Shows current level rewards",
                         },
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "reset",
                             description: "Reset all role rewards",
                         },
                     ],
                 },
                 {
-                    type: argumentType.subCommandGroup,
+                    type: ApplicationCommandOptionType.SubcommandGroup,
                     name: "level",
                     description: "Configure the level system",
                     subCommands: [
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "toggle",
                             description: "Toggles the level system",
                             subCommands: [
                                 {
-                                    type: argumentType.boolean,
+                                    type: ApplicationCommandOptionType.Boolean,
                                     name: "state",
                                     description:
                                         "turn the level sytem on or off?",
@@ -98,12 +98,12 @@ module.exports = class extends Command {
                             ],
                         },
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "channel",
                             description: "changes the level channel",
                             subCommands: [
                                 {
-                                    type: argumentType.channel,
+                                    type: ApplicationCommandOptionType.Channel,
                                     name: "channel",
                                     description:
                                         "What to set the level up channel to",
@@ -112,12 +112,12 @@ module.exports = class extends Command {
                             ],
                         },
                         {
-                            type: argumentType.string,
+                            type: ApplicationCommandOptionType.String,
                             name: "message",
                             description: "Changes the level up message.",
                             subCommands: [
                                 {
-                                    type: argumentType.string,
+                                    type: ApplicationCommandOptionType.String,
                                     name: "message",
                                     description:
                                         "What to set the level up message to",
@@ -126,24 +126,24 @@ module.exports = class extends Command {
                             ],
                         },
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "reset",
                             description: "Reset all user levels.",
                         },
                     ],
                 },
                 {
-                    type: argumentType.subCommandGroup,
+                    type: ApplicationCommandOptionType.SubcommandGroup,
                     name: "birthday",
                     description: "Settings for birthday system",
                     subCommands: [
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "set_role",
                             description: "Set the birthday role",
                             subCommands: [
                                 {
-                                    type: argumentType.role,
+                                    type: ApplicationCommandOptionType.Role,
                                     name: "birthday_role",
                                     description:
                                         "What role to set as birthday role.",
@@ -152,12 +152,12 @@ module.exports = class extends Command {
                             ],
                         },
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "set_channel",
                             description: "Set the birthday channel",
                             subCommands: [
                                 {
-                                    type: argumentType.channel,
+                                    type: ApplicationCommandOptionType.Channel,
                                     name: "birthday_channel",
                                     description:
                                         "Where to send happy birthday messages.",
@@ -166,12 +166,12 @@ module.exports = class extends Command {
                             ],
                         },
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "reset_user",
                             description: "Resets someone's birthday and timer.",
                             subCommands: [
                                 {
-                                    type: argumentType.user,
+                                    type: ApplicationCommandOptionType.User,
                                     name: "birthday_user",
                                     description: "Who to reset.",
                                     required: true,
@@ -179,7 +179,7 @@ module.exports = class extends Command {
                             ],
                         },
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "reset_role",
                             description:
                                 "Reset the birthday role and turn off the auto role.",
@@ -187,22 +187,22 @@ module.exports = class extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommandGroup,
+                    type: ApplicationCommandOptionType.SubcommandGroup,
                     name: "voice",
                     description: "settings for private vc",
                     subCommands: [
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "toggle",
                             description: "toggles vc",
                         },
                         {
-                            type: argumentType.subCommand,
+                            type: ApplicationCommandOptionType.Subcommand,
                             name: "limit",
                             description: "set max amount of private rooms",
                             subCommands: [
                                 {
-                                    type: argumentType.integer,
+                                    type: ApplicationCommandOptionType.Integer,
                                     name: "amount",
                                     description: "How many rooms",
                                 },

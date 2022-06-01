@@ -1,4 +1,4 @@
-import { Guild, HexColorString, MessageEmbed } from "discord.js";
+import { Guild, HexColorString, EmbedBuilder } from "discord.js";
 import RavenEvent from "../types/event";
 
 export default class implements RavenEvent {
@@ -14,7 +14,7 @@ export default class implements RavenEvent {
                     .red.bold,
             );
 
-            const notifEmbed = new MessageEmbed()
+            const notifEmbed = new EmbedBuilder()
                 .setColor(process.env.EMBED_FAIL_COLOR as HexColorString)
                 .setTitle("Guild deleted")
                 .setDescription(

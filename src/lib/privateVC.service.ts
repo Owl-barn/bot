@@ -2,6 +2,8 @@ import {
     GuildChannelCreateOptions,
     GuildMember,
     OverwriteResolvable,
+    OverwriteType,
+    PermissionFlagsBits,
     VoiceChannel,
     VoiceState,
 } from "discord.js";
@@ -93,11 +95,11 @@ class VCServiceClass {
 
     public async onChange(old: VoiceState, current: VoiceState) {
         const member = current.member;
-        const me = current.guild.me;
+        const me = current.guild.members.me;
         if (!me) return;
         if (
-            !me.permissions.has("MANAGE_CHANNELS") ||
-            !me.permissions.has("MOVE_MEMBERS")
+            !me.permissions.has(PermissionFlagsBits.ManageChannels) ||
+            !me.permissions.has(PermissionFlagsBits.MoveMembers)
         )
             return;
 
@@ -145,8 +147,8 @@ class VCServiceClass {
         // Add join perms if not already have.
         if (vc.channel.permissionOverwrites.cache.get(member.id)) return;
         vc.channel.permissionOverwrites.create(member.id, {
-            CONNECT: true,
-            VIEW_CHANNEL: true,
+            Connect: true,
+            ViewChannel: true,
         });
     }
 
@@ -180,8 +182,13 @@ class VCServiceClass {
         for (const owlet of owlets) {
             const botPerms: OverwriteResolvable = {
                 id: owlet.id,
-                type: "member",
-                allow: ["MANAGE_CHANNELS", "VIEW_CHANNEL", "CONNECT", "SPEAK"],
+                type: OverwriteType.Member,
+                allow:
+                    PermissionFlagsBits.ManageChannels |
+                    PermissionFlagsBits.ViewChannel |
+                    PermissionFlagsBits.Connect |
+                    PermissionFlagsBits.Speak,
+                // allow: ["ManageChannels", "ViewChannel", "Connect", "Speak"],
             };
 
             owletsPerms.push(botPerms);
@@ -190,23 +197,26 @@ class VCServiceClass {
         // Channel perms.
         const ownerPerms: OverwriteResolvable = {
             id: vc.member?.id as string,
-            allow: ["MOVE_MEMBERS", "CONNECT", "VIEW_CHANNEL"],
+            allow:
+                PermissionFlagsBits.MoveMembers |
+                PermissionFlagsBits.Connect |
+                PermissionFlagsBits.ViewChannel,
         };
 
         const mainPerms: OverwriteResolvable = {
             id: vc.guild.id,
-            deny: ["CONNECT"],
-            allow: ["SPEAK", "STREAM"],
+            deny: PermissionFlagsBits.Connect,
+            allow: PermissionFlagsBits.Speak | PermissionFlagsBits.Stream,
         };
 
         const waitingPerms: OverwriteResolvable = {
             id: vc.guild.id,
-            deny: ["SPEAK", "STREAM"],
+            deny: PermissionFlagsBits.Speak | PermissionFlagsBits.Stream,
         };
 
         const staffPerms: OverwriteResolvable = {
             id: guildConfig.staff_role || "",
-            allow: ["VIEW_CHANNEL"],
+            allow: PermissionFlagsBits.ViewChannel,
         };
 
         // Generate channel name.

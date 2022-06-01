@@ -1,3 +1,5 @@
+import { ApplicationCommandOptionType } from "discord.js";
+
 // eslint-disable-next-line no-shadow
 export enum argumentType {
     string = 1,
@@ -13,7 +15,7 @@ export enum argumentType {
 }
 
 export interface Argument {
-    type: argumentType;
+    type: ApplicationCommandOptionType;
     name: string;
     description: string;
     required?: boolean;

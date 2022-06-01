@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed } from "discord.js";
+import { HexColorString, EmbedBuilder } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
@@ -11,7 +11,7 @@ export async function configLevelReset(
         where: { guild_id: msg.guildId },
     });
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setDescription(`Successfully deleted \`${deleted.count}\` user levels`)
         .setColor(process.env.EMBED_COLOR as HexColorString);
 

@@ -1,10 +1,10 @@
 import {
     HexColorString,
     InteractionReplyOptions,
-    MessageEmbed,
+    EmbedBuilder,
+    ApplicationCommandOptionType,
 } from "discord.js";
 import moment from "moment";
-import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -21,7 +21,7 @@ module.exports = class statsCommand extends Command {
 
             args: [
                 {
-                    type: argumentType.boolean,
+                    type: ApplicationCommandOptionType.Boolean,
                     name: "global",
                     description: "display global stats",
                     required: false,
@@ -63,59 +63,64 @@ module.exports = class statsCommand extends Command {
             where: global ? {} : { guild_id: msg.guildId as string },
         });
 
-        const embed = new MessageEmbed()
+        const fields = [
+            { name: "Users", value: users.toString(), inline: true },
+            {
+                name: "Servers",
+                value: client.guilds.cache.size.toString(),
+                inline: true,
+            },
+            {
+                name: "Channels",
+                value: client.channels.cache.size.toString(),
+                inline: true,
+            },
+            {
+                name: "Memory usage",
+                value: `${(
+                    process.memoryUsage().heapUsed /
+                    1024 /
+                    1024
+                ).toFixed(2)}MB`,
+                inline: true,
+            },
+            {
+                name: "Uptime",
+                value: moment(Date.now() - (client.uptime as number))
+                    .fromNow()
+                    .replace(" ago", ""),
+                inline: true,
+            },
+            {
+                name: "Commands",
+                value: `${client.commands.size} loaded modules`,
+                inline: true,
+            },
+            {
+                name: "Birthdays",
+                value: `${birthdays} registered birthdays.`,
+            },
+        ];
+
+        const embed = new EmbedBuilder()
             .setTitle(
                 global ? "Global bot stats" : `${msg.guild?.name}'s bot stats`,
             )
-            .addFields([
-                { name: "Users", value: users.toString(), inline: true },
-                {
-                    name: "Servers",
-                    value: client.guilds.cache.size.toString(),
-                    inline: true,
-                },
-                {
-                    name: "Channels",
-                    value: client.channels.cache.size.toString(),
-                    inline: true,
-                },
-            ])
-            .addField(
-                "Memory usage",
-                `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(
-                    2,
-                )}MB`,
-                true,
-            )
-            .addField(
-                "Uptime",
-                moment(Date.now() - (client.uptime as number))
-                    .fromNow()
-                    .replace(" ago", ""),
-                true,
-            )
-            .addField(
-                "Commands",
-                `${client.commands.size} loaded modules`,
-                true,
-            )
-            .addField("Birthdays", `${birthdays} registered birthdays.`)
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
         if (commandUsage && commandUsage.length > 0) {
-            embed.addField(
-                "Command Usage",
-                commandUsage
+            fields.push({
+                name: "Command Usage",
+                value: commandUsage
                     .map((x) => `**${x.command_name}:** ${x._count}`)
                     .join("\n"),
-            );
+            });
         }
 
         if (musicPlayed) {
-            embed.addField(
-                "Music Usage",
-                `
-                **Average:** \`${Math.round(
+            fields.push({
+                name: "Music Usage",
+                value: `**Average:** \`${Math.round(
                     (musicPlayed._avg.play_duration || 0) / 60,
                 )}/${Math.round(
                     (musicPlayed._avg.song_duration || 0) / 60,
@@ -127,8 +132,10 @@ module.exports = class statsCommand extends Command {
                 )}\` minutes
                 **amount:** \`${musicPlayed._count.uuid}\` songs played
             `,
-            );
+            });
         }
+
+        embed.addFields(fields);
 
         return { embeds: [embed] };
     }

@@ -1,5 +1,8 @@
-import { InteractionReplyOptions, WebhookClient } from "discord.js";
-import { argumentType } from "../../types/argument";
+import {
+    ApplicationCommandOptionType,
+    InteractionReplyOptions,
+    WebhookClient,
+} from "discord.js";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -15,7 +18,7 @@ module.exports = class WebhookCommand extends Command {
 
             args: [
                 {
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     name: "webhook",
                     description: "webhook URL",
                     required: true,

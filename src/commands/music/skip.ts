@@ -1,8 +1,7 @@
-import { GuildMember } from "discord.js";
+import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import { isDJ } from "../../lib/functions.service";
 import Owlet from "../../modules/owlet";
-import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import currentSong from "../../types/current";
@@ -23,13 +22,13 @@ module.exports = class extends Command {
 
             args: [
                 {
-                    type: argumentType.integer,
+                    type: ApplicationCommandOptionType.Integer,
                     name: "index",
                     description: "which song to skip",
                     required: false,
                 },
                 {
-                    type: argumentType.boolean,
+                    type: ApplicationCommandOptionType.Boolean,
                     name: "force",
                     description: "force skip?",
                     required: false,
@@ -37,7 +36,7 @@ module.exports = class extends Command {
                 {
                     name: "bot_id",
                     description: "the id of the music bot",
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     required: false,
                 },
             ],

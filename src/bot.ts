@@ -1,4 +1,4 @@
-import { Intents, Snowflake } from "discord.js";
+import { GatewayIntentBits, Partials } from "discord.js";
 import RavenClient from "./types/ravenClient";
 import { registerCommands } from "./modules/command.initializer";
 import eventInitializer from "./modules/event.initializer";
@@ -17,11 +17,12 @@ class Bot {
     constructor() {
         this.client = new RavenClient({
             intents: [
-                Intents.FLAGS.GUILDS,
-                Intents.FLAGS.GUILD_MESSAGES,
-                Intents.FLAGS.GUILD_VOICE_STATES,
-                Intents.FLAGS.GUILD_MEMBERS,
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.GuildMembers,
+                GatewayIntentBits.GuildVoiceStates,
             ],
+            partials: [Partials.Channel],
             allowedMentions: { parse: ["users"] },
         });
 

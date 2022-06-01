@@ -1,4 +1,4 @@
-import { MessageEmbed, HexColorString } from "discord.js";
+import { EmbedBuilder, HexColorString } from "discord.js";
 import moment from "moment";
 import {
     getStarSign,
@@ -25,7 +25,7 @@ export default async function birthdaySet(
         /(?<day>[0-9]{1,2})[/:-](?<month>[0-9]{1,2})[/:-](?<year>[0-9]{4})/g,
     );
 
-    const embed = new MessageEmbed().setColor(
+    const embed = new EmbedBuilder().setColor(
         process.env.EMBED_COLOR as HexColorString,
     );
 
@@ -66,10 +66,12 @@ export default async function birthdaySet(
     });
 
     if (hasBirthday && Date.now() - Number(hasBirthday.updated) > 600000) {
-        embed.addField(
-            "Not allowed",
-            "You can only change your birthday once a year, contact an admin if there was a mistake",
-        );
+        embed.addFields([
+            {
+                name: "Not allowed",
+                value: "You can only change your birthday once a year, contact an admin if there was a mistake",
+            },
+        ]);
 
         return { embeds: [embed] };
     }
@@ -96,23 +98,30 @@ export default async function birthdaySet(
     const age = yearsAgo(birthdayMoment.toDate());
     const starSign = getStarSign(query.birthday as Date);
 
-    embed
-        .setTitle("Birthday set!")
-        .addField(
-            `Birth Date`,
-            `**you were born on** ${birthdayMoment.format("DD-MM-YYYY")}`,
-        )
-        .addField(
-            `Info`,
-            `**Age:** ${age} years \n` +
+    embed.setTitle("Birthday set!").addFields([
+        {
+            name: `Birth Date`,
+            value: `**you were born on** ${birthdayMoment.format(
+                "DD-MM-YYYY",
+            )}`,
+        },
+        {
+            name: `Info`,
+            value:
+                `**Age:** ${age} years \n` +
                 `**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`,
-            true,
-        )
-        .addField("Star sign", `${starSign?.name} ${starSign?.icon}`, true)
-        .addField(
-            "Disclaimer",
-            "All times are recorded in UTC timezone. The “next birthday” and birthday role times may be inaccurate due to this.",
-        );
+            inline: true,
+        },
+        {
+            name: `Star Sign`,
+            value: `${starSign?.name} ${starSign?.icon}`,
+            inline: true,
+        },
+        {
+            name: "Disclaimer",
+            value: "All times are recorded in UTC timezone. The “next birthday” and birthday role times may be inaccurate due to this.",
+        },
+    ]);
 
     return { embeds: [embed] };
 }

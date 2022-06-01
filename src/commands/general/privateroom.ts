@@ -1,7 +1,10 @@
-import { GuildMember } from "discord.js";
+import {
+    ApplicationCommandOptionType,
+    GuildMember,
+    PermissionOverwriteOptions,
+} from "discord.js";
 import { embedTemplate } from "../../lib/embedTemplate";
 import GuildConfig from "../../lib/guildconfig.service";
-import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -17,17 +20,17 @@ module.exports = class extends Command {
 
             args: [
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "hide",
                     description: "hide/show room",
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "transfer",
                     description: "transfer room to another user",
                     subCommands: [
                         {
-                            type: argumentType.user,
+                            type: ApplicationCommandOptionType.User,
                             name: "user",
                             description: "user to transfer room to",
                             required: true,
@@ -35,12 +38,12 @@ module.exports = class extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "kick",
                     description: "kick user from room",
                     subCommands: [
                         {
-                            type: argumentType.user,
+                            type: ApplicationCommandOptionType.User,
                             name: "user",
                             description: "user to kick from the room",
                             required: true,
@@ -75,7 +78,8 @@ module.exports = class extends Command {
 };
 
 async function transferRoom(msg: RavenInteraction): Promise<returnMessage> {
-    const member = msg.options.getMember("user", true) as GuildMember;
+    const member = msg.options.getMember("user") as GuildMember | null;
+    if (member == null) return { content: "User not found" };
     if (member.id == msg.user.id)
         return { content: "You can't transfer your room to yourself" };
 
@@ -86,15 +90,15 @@ async function transferRoom(msg: RavenInteraction): Promise<returnMessage> {
 
     const waitRoom = await msg.guild?.channels.fetch(dbRoom.wait_channel_id);
 
-    const roomOwnerPermissions = {
-        VIEW_CHANNEL: true,
-        CONNECT: true,
-        MOVE_MEMBERS: true,
+    const roomOwnerPermissions: PermissionOverwriteOptions = {
+        ViewChannel: true,
+        Connect: true,
+        MoveMembers: true,
     };
-    const memberPermissions = {
-        VIEW_CHANNEL: true,
-        CONNECT: true,
-        MOVE_MEMBERS: false,
+    const memberPermissions: PermissionOverwriteOptions = {
+        ViewChannel: true,
+        Connect: true,
+        MoveMembers: false,
     };
 
     await room.permissionOverwrites.create(member.id, roomOwnerPermissions);
@@ -138,13 +142,15 @@ async function hideRoom(msg: RavenInteraction): Promise<returnMessage> {
 
     let currentState = room
         .permissionsFor(msg.guildId as string)
-        ?.has("VIEW_CHANNEL");
+        ?.has("ViewChannel");
+
     currentState = currentState == undefined ? true : currentState;
+
     await room.permissionOverwrites.edit(msg.guildId as string, {
-        VIEW_CHANNEL: !currentState,
-        CONNECT: false,
-        STREAM: true,
-        SPEAK: true,
+        ViewChannel: !currentState,
+        Connect: false,
+        Stream: true,
+        Speak: true,
     });
 
     const responseEmbed = embedTemplate().setDescription(
@@ -155,7 +161,8 @@ async function hideRoom(msg: RavenInteraction): Promise<returnMessage> {
 }
 
 async function kick(msg: RavenInteraction): Promise<returnMessage> {
-    const member = msg.options.getMember("user", true) as GuildMember;
+    const member = msg.options.getMember("user") as GuildMember | null;
+    if (member == null) return { content: "Member not found" };
     if (member.id == msg.user.id) return { content: "You can't kick yourself" };
 
     const { room } = await fetchRoom(msg).catch((x) =>

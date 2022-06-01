@@ -1,5 +1,10 @@
-import { GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
-import { argumentType } from "../../types/argument";
+import {
+    GuildMember,
+    HexColorString,
+    EmbedBuilder,
+    Util,
+    ApplicationCommandOptionType,
+} from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -15,24 +20,24 @@ module.exports = class extends Command {
 
             args: [
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "set",
                     description: "put someone on timeout",
                     subCommands: [
                         {
-                            type: argumentType.user,
+                            type: ApplicationCommandOptionType.User,
                             name: "user",
                             description: "User to put on timeout",
                             required: true,
                         },
                         {
-                            type: argumentType.string,
+                            type: ApplicationCommandOptionType.String,
                             name: "duration",
                             description: "for how long",
                             required: true,
                         },
                         {
-                            type: argumentType.string,
+                            type: ApplicationCommandOptionType.String,
                             name: "reason",
                             description: "why?",
                             required: false,
@@ -40,12 +45,12 @@ module.exports = class extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "clear",
                     description: "Remove timeout",
                     subCommands: [
                         {
-                            type: argumentType.user,
+                            type: ApplicationCommandOptionType.User,
                             name: "user",
                             description: "User to remove from timeout",
                             required: true,
@@ -54,7 +59,7 @@ module.exports = class extends Command {
                 },
             ],
 
-            permissions: ["MODERATE_MEMBERS"],
+            permissions: ["ModerateMembers"],
             throttling: {
                 duration: 30,
                 usages: 3,
@@ -67,16 +72,17 @@ module.exports = class extends Command {
         const timeoutLimit = 2419200000;
 
         let reason = msg.options.getString("reason", false);
-        const target = msg.options.getMember("user", true) as GuildMember;
+        const target = msg.options.getMember("user") as GuildMember | null;
+        if (!target) return { content: "No user provided" };
         const durationCheck = new RegExp(
             /((?<days>[0-9]{1,2}) ?(?:d) ?)?((?<hours>[0-9]{1,2}) ?(?:h) ?)?((?<minutes>[0-9]{1,2}) ?(?:m))?/g,
         );
 
-        const embed = new MessageEmbed().setColor(
+        const embed = new EmbedBuilder().setColor(
             process.env.EMBED_COLOR as HexColorString,
         );
 
-        const failEmbed = new MessageEmbed().setColor(
+        const failEmbed = new EmbedBuilder().setColor(
             process.env.EMBED_FAIL_COLOR as HexColorString,
         );
 
@@ -144,16 +150,18 @@ module.exports = class extends Command {
         embed.setDescription(
             `${target} has been timed out\nWith the reason: \`${reason}\`\nfor: \` ${durationString} \``,
         );
-        embed.addField(
-            "Expiration",
-            `<t:${Math.round(
-                member.communicationDisabledUntilTimestamp / 1000,
-            )}:R> ${
-                durationMs === timeoutLimit
-                    ? "`Discord limited it to 28 days`"
-                    : ""
-            }`,
-        );
+        embed.addFields([
+            {
+                name: "Expiration",
+                value: `<t:${Math.round(
+                    member.communicationDisabledUntilTimestamp / 1000,
+                )}:R> ${
+                    durationMs === timeoutLimit
+                        ? "`Discord limited it to 28 days`"
+                        : ""
+                }`,
+            },
+        ]);
 
         return { embeds: [embed] };
     }

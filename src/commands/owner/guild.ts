@@ -1,13 +1,14 @@
 import {
+    ApplicationCommandOptionType,
+    Attachment,
+    ChannelType,
     Collection,
     Guild,
     InteractionReplyOptions,
-    MessageAttachment,
     TextChannel,
 } from "discord.js";
 import GuildConfig from "../../lib/guildconfig.service";
 import registerCommand from "../../modules/command.register";
-import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -23,17 +24,17 @@ module.exports = class statsCommand extends Command {
 
             args: [
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "list",
                     description: "See all guilds",
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "info",
                     description: "See guild info",
                     subCommands: [
                         {
-                            type: argumentType.string,
+                            type: ApplicationCommandOptionType.String,
                             name: "guild_id",
                             description: "guild id",
                             required: true,
@@ -41,18 +42,18 @@ module.exports = class statsCommand extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "premium",
                     description: "sets guild premium state",
                     subCommands: [
                         {
-                            type: argumentType.boolean,
+                            type: ApplicationCommandOptionType.Boolean,
                             name: "state",
                             description: "premium status",
                             required: true,
                         },
                         {
-                            type: argumentType.string,
+                            type: ApplicationCommandOptionType.String,
                             name: "guild_id",
                             description: "guild id",
                             required: true,
@@ -60,12 +61,12 @@ module.exports = class statsCommand extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "leave",
                     description: "leave guild",
                     subCommands: [
                         {
-                            type: argumentType.string,
+                            type: ApplicationCommandOptionType.String,
                             name: "guild_id",
                             description: "guild id",
                             required: true,
@@ -73,24 +74,24 @@ module.exports = class statsCommand extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "ban",
                     description: "ban guild",
                     subCommands: [
                         {
-                            type: argumentType.string,
+                            type: ApplicationCommandOptionType.String,
                             name: "guild_id",
                             description: "guild id",
                             required: true,
                         },
                         {
-                            type: argumentType.boolean,
+                            type: ApplicationCommandOptionType.Boolean,
                             name: "state",
                             description: "ban status",
                             required: true,
                         },
                         {
-                            type: argumentType.boolean,
+                            type: ApplicationCommandOptionType.Boolean,
                             name: "leave",
                             description: "leave guild",
                             required: false,
@@ -172,7 +173,7 @@ async function guildList(
         )
         .join("\n");
 
-    const attachment = new MessageAttachment(Buffer.from(output), "info.txt");
+    const attachment = new Attachment(Buffer.from(output), "info.txt");
 
     return { files: [attachment] };
 }
@@ -219,9 +220,11 @@ async function guildInfo(
     const ownerString = `Server owner:\n name: ${owner.tag}\n ID: ${owner.id}`;
 
     let channels = guild.channels.cache.filter((x) =>
-        ["GUILD_TEXT", "GUILD_VOICE"].includes(x.type),
+        [ChannelType.GuildText, ChannelType.GuildVoice].includes(x.type),
     ) as Collection<string, TextChannel>;
+
     channels = channels.sort((x, y) => y.rawPosition - x.rawPosition);
+
     const channelOutput = channels
         .map(
             (x) =>
@@ -251,7 +254,7 @@ async function guildInfo(
         `roles:\n${roleOutput}`,
     ];
 
-    const attachment = new MessageAttachment(
+    const attachment = new Attachment(
         Buffer.from(output.join("\n")),
         "info.txt",
     );

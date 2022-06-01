@@ -1,4 +1,4 @@
-import { GuildMember, MessageEmbed, HexColorString } from "discord.js";
+import { GuildMember, EmbedBuilder, HexColorString } from "discord.js";
 import moment from "moment";
 import {
     getStarSign,
@@ -24,7 +24,7 @@ export default async function birthdayGet(
         },
     });
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setColor(process.env.EMBED_COLOR as HexColorString)
         .setTitle(`${user.user.username}'s birthday`);
 
@@ -42,19 +42,28 @@ export default async function birthdayGet(
 
     const birthdayString = moment(query.birthday).format("DD-MM-YYYY");
 
-    embed
-        .addField(`Birth Date`, `**${userString} born on** ${birthdayString}`)
-        .addField(
-            `Info`,
-            `**Age:** ${age} years\n` +
+    embed.addFields([
+        {
+            name: `Birth Date`,
+            value: `**${userString} born on** ${birthdayString}`,
+        },
+        {
+            name: "Info",
+            value:
+                `**Age:** ${age} years\n` +
                 `**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`,
-            true,
-        )
-        .addField("Star sign", `${starSign?.name} ${starSign?.icon}`, true)
-        .addField(
-            "Note",
-            "All times are recorded in UTC timezone. The “next birthday” and birthday role times may be inaccurate due to this.",
-        );
+            inline: true,
+        },
+        {
+            name: "Star Sign",
+            value: `${starSign?.name} ${starSign?.icon}`,
+            inline: true,
+        },
+        {
+            name: "Note",
+            value: "All times are recorded in UTC timezone. The “next birthday” and birthday role times may be inaccurate due to this.",
+        },
+    ]);
 
     return { embeds: [embed] };
 }

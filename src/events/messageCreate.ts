@@ -1,13 +1,12 @@
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { self_role_main } from "@prisma/client";
 import {
     Guild,
     HexColorString,
     Message,
-    MessageActionRow,
-    MessageActionRowComponent,
-    MessageButton,
-    MessageEmbed,
+    EmbedBuilder,
     TextChannel,
+    ButtonStyle,
 } from "discord.js";
 import AFKService from "../lib/afk.service";
 import bannedUsers from "../lib/banlist.service";
@@ -113,15 +112,18 @@ export default class InteractionCreate implements RavenEvent {
 
                     botList.push(output.join(" - "));
                 }
-                embed.addField(
-                    botUser.username,
-                    botList.length == 0
-                        ? "Nothing playing"
-                        : botList.join("\n"),
-                );
+                embed.addFields([
+                    {
+                        name: botUser.username,
+                        value:
+                            botList.length == 0
+                                ? "Nothing playing"
+                                : botList.join("\n"),
+                    },
+                ]);
             }
 
-            if (embed.fields.length == 0) {
+            if (embed.data.fields?.length == 0) {
                 await msg.reply("No bots.");
                 return;
             }
@@ -161,7 +163,7 @@ export default class InteractionCreate implements RavenEvent {
             msg.content === "perms*" &&
             msg.member?.id === process.env.OWNER_ID
         ) {
-            console.log(msg.guild?.me?.permissions.toArray());
+            console.log(msg.guild?.members.me?.permissions.toArray());
             return;
         }
 
@@ -293,25 +295,29 @@ export default class InteractionCreate implements RavenEvent {
             ) as TextChannel;
 
             if (!channel) throw "aa";
-            const embed = new MessageEmbed()
+            const embed = new EmbedBuilder()
                 .setTitle(main.title)
                 .setFooter({ text: main.uuid })
                 .setDescription(main.message)
                 .setColor(process.env.EMBED_COLOR as HexColorString);
 
-            const buttons: MessageActionRowComponent[] = [];
+            const buttons: ButtonBuilder[] = [];
 
             roles.forEach((x) => {
-                embed.addField(`${x.emote} ${x.name} `, x.description);
+                embed.addFields([
+                    { name: `${x.emote} ${x.name} `, value: x.description },
+                ]);
                 buttons.push(
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setCustomId(`selfrole_${x.uuid} `)
                         .setLabel(`${x.emote} ${x.name} `)
-                        .setStyle("PRIMARY"),
+                        .setStyle(ButtonStyle.Primary),
                 );
             });
 
-            const component = new MessageActionRow().addComponents(buttons);
+            const component =
+                new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;
+            component.setComponents(buttons);
 
             channel.send({ components: [component], embeds: [embed] });
         }

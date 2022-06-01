@@ -1,5 +1,9 @@
-import { HexColorString, MessageEmbed, Util } from "discord.js";
-import { argumentType } from "../../types/argument";
+import {
+    HexColorString,
+    EmbedBuilder,
+    Util,
+    ApplicationCommandOptionType,
+} from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -15,13 +19,13 @@ module.exports = class extends Command {
 
             args: [
                 {
-                    type: argumentType.user,
+                    type: ApplicationCommandOptionType.User,
                     name: "user",
                     description: "User to warn",
                     required: true,
                 },
                 {
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     name: "reason",
                     description: "Reason why the user is getting warned",
                     required: true,
@@ -76,7 +80,7 @@ module.exports = class extends Command {
                 break;
         }
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(
                 `${target.username}#${target.discriminator} has been warned, ${warnCount} total`,
             )

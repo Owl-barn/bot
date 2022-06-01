@@ -1,4 +1,4 @@
-import { MessageEmbed, HexColorString, GuildMember } from "discord.js";
+import { EmbedBuilder, HexColorString, GuildMember } from "discord.js";
 import RavenButton from "../types/button";
 import { returnMessage } from "../types/Command";
 import { RavenButtonInteraction } from "../types/interaction";
@@ -12,7 +12,7 @@ export default class implements RavenButton {
         const skipID = msg.customId.split("_")[1];
         const member = msg.member as GuildMember;
 
-        const failEmbed = new MessageEmbed().setColor(
+        const failEmbed = new EmbedBuilder().setColor(
             process.env.EMBED_FAIL_COLOR as HexColorString,
         );
 
@@ -21,7 +21,7 @@ export default class implements RavenButton {
             components: [],
         };
 
-        const embed = new MessageEmbed().setColor(
+        const embed = new EmbedBuilder().setColor(
             process.env.EMBED_COLOR as HexColorString,
         );
 

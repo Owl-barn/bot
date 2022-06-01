@@ -1,4 +1,4 @@
-import { argumentType } from "../../types/argument";
+import { ApplicationCommandOptionType } from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -19,12 +19,12 @@ module.exports = class extends Command {
 
             args: [
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "get",
                     description: "get a user's birthday",
                     subCommands: [
                         {
-                            type: argumentType.user,
+                            type: ApplicationCommandOptionType.User,
                             name: "user",
                             description: "Who's birthday to get",
                             required: false,
@@ -32,12 +32,12 @@ module.exports = class extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "set",
                     description: "Add your birthday to the bot!",
                     subCommands: [
                         {
-                            type: argumentType.string,
+                            type: ApplicationCommandOptionType.String,
                             name: "birthday",
                             description:
                                 "your birthday date formatted like: dd/mm/yyyy",
@@ -46,19 +46,19 @@ module.exports = class extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "difference",
                     description:
                         "get the difference between your birthday and another user's",
                     subCommands: [
                         {
-                            type: argumentType.user,
+                            type: ApplicationCommandOptionType.User,
                             name: "first_user",
                             description: "Who's birthday to compare",
                             required: true,
                         },
                         {
-                            type: argumentType.user,
+                            type: ApplicationCommandOptionType.User,
                             name: "second_user",
                             description: "Who's birthday to compare",
                             required: false,
@@ -66,12 +66,12 @@ module.exports = class extends Command {
                     ],
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "sync",
                     description: "Fetch birthday from other server.",
                 },
                 {
-                    type: argumentType.subCommand,
+                    type: ApplicationCommandOptionType.Subcommand,
                     name: "remove",
                     description: "Remove your birthday from this server.",
                 },

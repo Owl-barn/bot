@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed } from "discord.js";
+import { HexColorString, EmbedBuilder } from "discord.js";
 import { returnMessage } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
@@ -14,7 +14,7 @@ export async function configBirthdayResetUser(
         },
     });
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setDescription(`Successfully reset <@${user.id}>'s birthday`)
         .setColor(process.env.EMBED_COLOR as HexColorString);
 

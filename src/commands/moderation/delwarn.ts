@@ -1,9 +1,9 @@
 import {
     HexColorString,
     InteractionReplyOptions,
-    MessageEmbed,
+    EmbedBuilder,
+    ApplicationCommandOptionType,
 } from "discord.js";
-import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -19,13 +19,13 @@ export default class extends Command {
 
             args: [
                 {
-                    type: argumentType.user,
+                    type: ApplicationCommandOptionType.User,
                     name: "user",
                     description: "which user's warning to remove.",
                     required: true,
                 },
                 {
-                    type: argumentType.integer,
+                    type: ApplicationCommandOptionType.Integer,
                     name: "index",
                     description: "which warning.",
                     required: true,
@@ -45,7 +45,7 @@ export default class extends Command {
         const index = msg.options.getInteger("index", true);
         const target = msg.options.getUser("user", true);
 
-        const failEmbed = new MessageEmbed().setColor(
+        const failEmbed = new EmbedBuilder().setColor(
             process.env.EMBED_FAIL_COLOR as HexColorString,
         );
 
@@ -66,7 +66,7 @@ export default class extends Command {
 
         await db.warnings.delete({ where: { uuid: query.uuid } });
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(
                 `${target.username}#${target.discriminator}'s ${index}${
                     index > 1 ? "nd" : "st"
