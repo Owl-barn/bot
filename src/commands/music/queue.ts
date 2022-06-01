@@ -89,13 +89,7 @@ module.exports = class extends Command {
 
         const bot = await msg.guild.members.fetch(musicBot.getId());
 
-        const embed = makeEmbed(
-            data.queue,
-            data.current,
-            data.queueInfo,
-            data.loop,
-            bot,
-        );
+        const embed = makeEmbed(data.queue, data.current, data.queueInfo, bot);
 
         return { embeds: [embed] };
     }
@@ -105,7 +99,6 @@ function makeEmbed(
     queue: Track[],
     current: currentSong,
     queueInfo: QueueInfo,
-    loop: boolean,
     bot: GuildMember,
 ) {
     const embed = new MessageEmbed().setColor(
@@ -149,8 +142,8 @@ function makeEmbed(
     }
 
     embed.addFields(list);
-    if (loop) {
-        embed.addField("Loop", "🔁 *enabled*");
+    if (queueInfo.repeat) {
+        embed.addField("Loop", queueInfo.repeat == 1 ? "🔂 Track" : "🔁 Queue");
     }
 
     console.log(JSON.stringify(queue));
@@ -169,5 +162,4 @@ interface response extends wsResponse {
     queue: Track[];
     current: currentSong;
     queueInfo: QueueInfo;
-    loop: boolean;
 }

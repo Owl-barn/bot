@@ -18,4 +18,5 @@ export interface Argument {
     description: string;
     required?: boolean;
     subCommands?: Argument[];
+    choices?: [name: string, value: string | number][];
 }

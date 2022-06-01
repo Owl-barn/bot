@@ -17,8 +17,12 @@ import { yearsAgo } from "../lib/functions.service";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import registerCommand from "../modules/command.register";
+import currentSong from "../types/current";
 import RavenEvent from "../types/event";
+import { QueueInfo } from "../types/queueInfo";
 import RavenClient from "../types/ravenClient";
+import Track from "../types/track";
+import wsResponse from "../types/wsResponse";
 
 export default class InteractionCreate implements RavenEvent {
     name = "messageCreate";
@@ -40,37 +44,90 @@ export default class InteractionCreate implements RavenEvent {
         }
 
         if (
+            msg.content === "chaos*" &&
+            msg.member?.id === process.env.OWNER_ID
+        ) {
+            await client.musicService.broadcast({
+                command: "Play",
+                mid: msg.id,
+                data: {
+                    query: "me and michael",
+                    guildId: msg.guild?.id,
+                    channelId: msg.member?.voice.channelId,
+                    userId: msg.member?.id,
+                    force: true,
+                },
+            });
+        }
+
+        if (
+            msg.content === "kill*" &&
+            msg.member?.id === process.env.OWNER_ID
+        ) {
+            const request = {
+                command: "Terminate",
+                mid: msg.id,
+                data: {},
+            };
+            client.musicService.broadcast(request);
+        }
+
+        if (
             msg.content === "music*" &&
             msg.member?.id === process.env.OWNER_ID
         ) {
-            const response = [];
-            for (const guild of client.musicService.values()) {
-                if (!guild || guild.destroyed) continue;
+            if (!msg.guild) return;
+            const embed = embedTemplate();
+            embed.setTitle("Music Bot List");
+            const bots = client.musicService.getBots();
+            for (const bot of bots.values()) {
+                const botList = [];
+                const botUser = await msg.client.users.fetch(bot.getId());
+                for (const guild of bot.getGuilds().values()) {
+                    if (!guild.channelId) continue;
+                    const request = {
+                        command: "Queue",
+                        mid: msg.id,
+                        data: { guildId: msg.guild.id },
+                    };
 
-                const paused = guild.player.state.status === "paused";
-                const queueLength = new Date(guild.queueLength() * 1000)
-                    .toISOString()
-                    .slice(11, 19);
+                    interface Response extends wsResponse {
+                        queue: Track[];
+                        current: currentSong;
+                        queueInfo: QueueInfo;
+                    }
 
-                const guildId = guild.voiceConnection.joinConfig.guildId;
-                const discordGuild = await client.guilds.fetch(guildId);
-                const output = [
-                    paused ? "❌" : "✅",
-                    queueLength,
-                    guild.getQueue().length,
-                    discordGuild.name,
-                ];
+                    const data = (await bot.send(request)) as Response;
 
-                response.push(output.join(" - "));
+                    const queueLength = new Date(data.queueInfo.length)
+                        .toISOString()
+                        .slice(11, 19);
+
+                    const discordGuild = await client.guilds.fetch(guild.id);
+                    const output = [
+                        data.queueInfo.paused ? "❌" : "✅",
+                        queueLength,
+                        data.queue.length,
+                        discordGuild.name,
+                    ];
+
+                    botList.push(output.join(" - "));
+                }
+                embed.addField(
+                    botUser.username,
+                    botList.length == 0
+                        ? "Nothing playing"
+                        : botList.join("\n"),
+                );
             }
 
-            if (response.length === 0) {
-                await msg.reply("No music is playing.");
+            if (embed.fields.length == 0) {
+                await msg.reply("No bots.");
                 return;
             }
 
             await msg.reply({
-                embeds: [embedTemplate().setDescription(response.join("\n"))],
+                embeds: [embed],
             });
             return;
         }

@@ -9,6 +9,7 @@ import RavenClient from "../types/ravenClient";
 import db from "./db.service";
 import { randomRange } from "./functions.service";
 import GuildConfig from "./guildconfig.service";
+import owlets from "../owlets.json";
 
 const adjectives = [
     "Cool",
@@ -174,15 +175,22 @@ class VCServiceClass {
             }
         }
 
+        const owletsPerms: OverwriteResolvable[] = [];
+
+        for (const owlet of owlets) {
+            const botPerms: OverwriteResolvable = {
+                id: owlet.id,
+                type: "member",
+                allow: ["MANAGE_CHANNELS", "VIEW_CHANNEL", "CONNECT", "SPEAK"],
+            };
+
+            owletsPerms.push(botPerms);
+        }
+
         // Channel perms.
         const ownerPerms: OverwriteResolvable = {
             id: vc.member?.id as string,
             allow: ["MOVE_MEMBERS", "CONNECT", "VIEW_CHANNEL"],
-        };
-
-        const botPerms: OverwriteResolvable = {
-            id: vc.client.user?.id as string,
-            allow: ["MANAGE_CHANNELS", "VIEW_CHANNEL", "CONNECT", "SPEAK"],
         };
 
         const mainPerms: OverwriteResolvable = {
@@ -212,8 +220,8 @@ class VCServiceClass {
             parent: guildConfig.privateRoomCategory as string,
         };
 
-        const roomList = [botPerms, ownerPerms, mainPerms];
-        const waitList = [botPerms, ownerPerms, waitingPerms];
+        const roomList = [ownerPerms, mainPerms].concat(owletsPerms);
+        const waitList = [ownerPerms, waitingPerms].concat(owletsPerms);
 
         if (guildConfig.staff_role) {
             roomList.push(staffPerms);

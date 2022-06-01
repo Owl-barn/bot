@@ -14,11 +14,11 @@ export default class musicService {
         this.wss.on("connection", this.onConnection);
     }
 
-    public onConnection = (socket: WS, request: IncomingMessage): void => {
+    private onConnection = (socket: WS, _request: IncomingMessage): void => {
         socket.on("message", (x) => this.onMessage(socket, x));
     };
 
-    public onMessage = async (ws: WS, data: WS.Data): Promise<void> => {
+    private onMessage = async (ws: WS, data: WS.Data): Promise<void> => {
         let message;
 
         try {
@@ -27,7 +27,8 @@ export default class musicService {
             return;
         }
 
-        console.log("Received:".green.bold, message);
+        if (process.env.NODE_ENV == "development")
+            console.log("Received:".yellow.bold, message);
 
         switch (message.command) {
             case "Authenticate":
@@ -39,6 +40,18 @@ export default class musicService {
         }
     };
 
+    /**
+     * broadcasts a message to all owlets.
+     * @param data message to send
+     */
+    public broadcast(data: apiRequest): void {
+        this.wss.clients.forEach((ws) => ws.send(JSON.stringify(data)));
+    }
+
+    /**
+     * Returns the first unused bot account.
+     * @returns Owlet credentials.
+     */
     private async getCredentials() {
         const credentialList = owlets;
         for (const credential of credentialList) {
@@ -48,52 +61,99 @@ export default class musicService {
         return undefined;
     }
 
+    /**
+     * Remove the bot from the list.
+     * @param id bot id.
+     */
+    private removeBot(id: string) {
+        this.bots.delete(id);
+        console.log(
+            `Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold,
+        );
+    }
+    /**
+     * Authenticates the owlet.
+     */
     private async authenticate(ws: WS, message: apiRequest): Promise<void> {
         const pass = message.data.password;
+
+        // Check password.
         if (pass != "1234") {
-            ws.send(JSON.stringify({ mid: message.mid, success: false }));
-            return;
+            return ws.send(
+                JSON.stringify({
+                    mid: message.mid,
+                    error: "incorrect password",
+                }),
+            );
         }
 
-        const id = message.data.id;
-        if (id) {
-            const bot = this.bots.get(id);
-            if (bot) {
-                ws.send(JSON.stringify({ mid: message.mid, success: true }));
-                return;
-            }
+        // Check if bot is already in the system.
+        const botUserId = message.data.userId as string | undefined;
+        if (botUserId && this.bots.get(botUserId)) {
+            return ws.send(
+                JSON.stringify({
+                    mid: message.mid,
+                    error: "bot account already in use",
+                }),
+            );
         }
 
+        // Get credentials.
         const credentials = await this.getCredentials();
 
         if (!credentials) {
-            ws.send(JSON.stringify({ mid: message.mid, success: false }));
-            return;
+            return ws.send(
+                JSON.stringify({
+                    mid: message.mid,
+                    error: "No bot accounts left",
+                }),
+            );
         }
 
+        // return success.
         const response = {
-            command: "Authenticated",
+            command: "Authenticate",
             mid: message.mid,
-            success: true,
             token: credentials.token,
         };
 
-        console.log(`Authenticated an Owlet`);
+        // Add bot to the list.
+        this.bots.set(credentials.id, new Owlet(credentials.id, ws, []));
+
+        // If the bot disconnects remove it from the list.
+        ws.on("close", () => this.removeBot(credentials.id));
+
+        console.log(
+            `Owlet authenticated <@${credentials.id}>, ${this.bots.size} active`
+                .green.bold,
+        );
 
         ws.send(JSON.stringify(response));
     }
 
+    /**
+     * Updates the current status of the owlet.
+     * @param ws websocket
+     * @param message message
+     * @returns nothing
+     */
     private async status(ws: WS, message: wsResponse): Promise<void> {
         const data = message.data as unknown as status;
         const bot = this.bots.get(data.id);
-        console.log(data.guilds);
-        if (!bot) this.bots.set(data.id, new Owlet(data.id, ws, data.guilds));
-        else bot.updateGuilds(data.guilds);
+
+        if (!bot) {
+            return ws.send(
+                JSON.stringify({
+                    mid: message.mid,
+                    error: "bot not found",
+                }),
+            );
+        }
+
+        bot.updateGuilds(data.guilds);
     }
 
-    public updateBot(bot: Owlet): void {
-        this.bots.set(bot.getId(), bot);
-    }
+    public getBots = (): Map<string, Owlet> => this.bots;
 
     /**
      * Returns the Owlet by the given id.

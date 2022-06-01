@@ -16,7 +16,6 @@ export default class Owlet {
         this.socket = socket;
         this.socket.on("message", this.onMessage);
         guilds.forEach((guild) => this.guilds.set(guild.id, guild));
-        console.log(`Owlet ${id} connected`);
     }
 
     private onMessage = async (data: WebSocket.Data): Promise<void> => {
@@ -27,8 +26,6 @@ export default class Owlet {
         } catch (e) {
             return;
         }
-
-        console.log(`owlet ${this.id} said:`.green, message);
 
         const promise = this.promises.get(message.mid);
         if (promise) {
@@ -57,7 +54,10 @@ export default class Owlet {
     public getGuilds = (): Map<string, Guild> => this.guilds;
 
     public updateGuilds = (guilds: Guild[]): void => {
-        guilds.forEach((guild) => this.guilds.set(guild.id, guild));
+        console.log(`Updating guilds for ${this.id}`.yellow.bold);
+        for (const guild of guilds) {
+            this.guilds.set(guild.id, guild);
+        }
     };
 
     public getGuild(id: string): Guild | undefined {
