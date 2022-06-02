@@ -23,7 +23,8 @@ export abstract class Command {
 
     public args?: Argument[];
 
-    public permissions?: PermissionsString[];
+    public userPermissions?: PermissionsString[];
+    public botPermissions?: PermissionsString[];
 
     public throttling!: Throttling;
 
@@ -48,7 +49,8 @@ export interface CommandInfo {
 
     args?: Argument[];
 
-    permissions?: PermissionsString[];
+    userPermissions?: PermissionsString[];
+    botPermissions?: PermissionsString[];
 
     throttling: Throttling;
 

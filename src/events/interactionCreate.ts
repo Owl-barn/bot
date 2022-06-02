@@ -60,6 +60,7 @@ export default class InteractionCreate implements RavenEvent {
 
         if (!command) return;
 
+        // Chek if owner command.
         if (
             command.group === CommandGroup.owner &&
             msg.user.id !== process.env.OWNER_ID
@@ -68,12 +69,15 @@ export default class InteractionCreate implements RavenEvent {
                 msg,
                 "You are not allowed to do this command.",
             );
+
+        // Check if premium command.
         if (
             command.premium &&
             (!msg.guildId || !GuildConfig.getGuild(msg.guildId)?.premium)
         )
             return await this.quickReply(msg, "This command is premium only.");
 
+        // Check if the user is throttled.
         const isThrottled = this.throttle.isThrottled(
             msg.guildId || "e",
             msg.user.id,
@@ -85,6 +89,19 @@ export default class InteractionCreate implements RavenEvent {
                 msg,
                 `Throttled, try again in \`${isThrottled}\` seconds`,
             );
+
+        // Check if the bot has the needed permissions.
+        if (command.botPermissions) {
+            const missingPerms = command.botPermissions.filter(
+                (x) => !msg.guild?.members.me?.permissions.has(x),
+            );
+
+            if (missingPerms.length > 0)
+                return await this.quickReply(
+                    msg,
+                    `Missing permissions: \`${missingPerms.join("`, `")}\``,
+                );
+        }
 
         this.respond(msg, command?.execute);
     }

@@ -39,6 +39,8 @@ module.exports = class extends Command {
                 },
             ],
 
+            botPermissions: ["BanMembers"],
+
             throttling: {
                 duration: 30,
                 usages: 3,

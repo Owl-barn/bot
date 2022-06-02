@@ -20,5 +20,5 @@ export interface Argument {
     description: string;
     required?: boolean;
     subCommands?: Argument[];
-    choices?: [name: string, value: string | number][];
+    choices?: { name: string; value: string | number }[];
 }

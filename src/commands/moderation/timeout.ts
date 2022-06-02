@@ -59,7 +59,9 @@ module.exports = class extends Command {
                 },
             ],
 
-            permissions: ["ModerateMembers"],
+            userPermissions: ["ModerateMembers"],
+            botPermissions: ["ModerateMembers"],
+
             throttling: {
                 duration: 30,
                 usages: 3,
