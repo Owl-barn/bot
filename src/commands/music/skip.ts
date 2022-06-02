@@ -1,6 +1,10 @@
-import { ApplicationCommandOptionType, GuildMember } from "discord.js";
+import {
+    ApplicationCommandOptionType,
+    EmbedAuthorOptions,
+    GuildMember,
+} from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
-import { isDJ } from "../../lib/functions.service";
+import { botIcon, isDJ } from "../../lib/functions.service";
 import Owlet from "../../modules/owlet";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -69,6 +73,9 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
+        await msg.deferReply();
+
+        // Get bot.
         const musicBot = botId
             ? music.getBotById(botId)
             : vc && music.getBot(vc.id, vc.guildId);
@@ -80,8 +87,19 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
+        const bot = await msg.guild.members.fetch(musicBot.getId());
+        const author: EmbedAuthorOptions = {
+            name: "Queue",
+            iconURL: botIcon(bot),
+        };
+
+        embed.setAuthor(author);
+        failEmbed.setAuthor(author);
+
         const djBool = dj && force;
         let aloneBool = false;
+
+        // Calculate if the user is alone in the voice channel
         if (vc) {
             const memberCount = vc.members.filter((x) => !x.user.bot).size;
             aloneBool = vc.id == musicBot.getGuild(msg.guild.id)?.channelId;
@@ -120,30 +138,55 @@ module.exports = class extends Command {
         const current = queueResponse.current;
 
         // Index is specified.
-        if (index !== null && index !== 0) {
+        if (index !== 0) {
+            // User provided an index that is out of bounds.
+            if (queue.length == 0 || index > queue.length) {
+                const fail = failEmbed.setDescription(
+                    "I couldn't find a song at that position, Try a lower number? fucking dumbass, moron if you will, pissbaby even!??",
+                );
+                return { embeds: [fail] };
+            }
+
+            // User provided a valid index but doesnt own the song.
             const selected = queue[index - 1];
             if (!selected || selected.requestedBy !== msg.user.id) {
-                failEmbed.setDescription("You can't skip that song.");
+                failEmbed.setDescription(
+                    `You can't skip \`${selected.title}\` because you didn't request it.`,
+                );
                 return { embeds: [failEmbed] };
             }
+
+            // User provided a valid index and owns the song.
             const response = await skip(msg, musicBot, index, force);
             if (response.error) {
                 failEmbed.setDescription(response.error);
                 return { embeds: [failEmbed] };
             }
-            return { embeds: [embed.setDescription("Song skipped")] };
-            // user tried skipping current song and they added the song.
+            return {
+                embeds: [
+                    embed.setDescription(
+                        `Successfully skipped \`${selected.title}\``,
+                    ),
+                ],
+            };
+
+            // User tried skipping current song and they added the song.
         } else if (current.requestedBy == msg.user.id) {
             const response = await skip(msg, musicBot, index, force);
             if (response.error) {
                 failEmbed.setDescription(response.error);
                 return { embeds: [failEmbed] };
             }
-            return { embeds: [embed.setDescription("Song skipped")] };
+            return {
+                embeds: [
+                    embed.setDescription(
+                        `Successfully skipped \`${current.title}\``,
+                    ),
+                ],
+            };
         }
 
         // brain too much ouchie
-
         return { content: "a" };
     };
 };

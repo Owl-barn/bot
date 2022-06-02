@@ -1,4 +1,4 @@
-import { GatewayIntentBits, Partials } from "discord.js";
+import { GatewayIntentBits } from "discord.js";
 import RavenClient from "./types/ravenClient";
 import { registerCommands } from "./modules/command.initializer";
 import eventInitializer from "./modules/event.initializer";

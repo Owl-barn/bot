@@ -24,9 +24,9 @@ module.exports = class extends Command {
                     description: "the loop mode",
                     type: ApplicationCommandOptionType.Number,
                     choices: [
-                        ["off", 0],
-                        ["track", 1],
-                        ["queue", 2],
+                        { name: "off", value: 0 },
+                        { name: "track", value: 1 },
+                        { name: "queue", value: 2 },
                     ],
                     required: true,
                 },
