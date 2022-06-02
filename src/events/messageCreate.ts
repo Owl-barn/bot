@@ -11,17 +11,12 @@ import {
 import AFKService from "../lib/afk.service";
 import bannedUsers from "../lib/banlist.service";
 import prisma from "../lib/db.service";
-import { embedTemplate } from "../lib/embedTemplate";
 import { yearsAgo } from "../lib/functions.service";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import registerCommand from "../modules/command.register";
-import currentSong from "../types/current";
 import RavenEvent from "../types/event";
-import { QueueInfo } from "../types/queueInfo";
 import RavenClient from "../types/ravenClient";
-import Track from "../types/track";
-import wsResponse from "../types/wsResponse";
 
 export default class InteractionCreate implements RavenEvent {
     name = "messageCreate";
@@ -57,84 +52,6 @@ export default class InteractionCreate implements RavenEvent {
                     force: true,
                 },
             });
-        }
-
-        if (
-            msg.content === "kill*" &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
-            const request = {
-                command: "Terminate",
-                mid: msg.id,
-                data: {},
-            };
-            client.musicService.broadcast(request);
-        }
-
-        if (
-            msg.content === "music*" &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
-            if (!msg.guild) return;
-            const embed = embedTemplate();
-            embed.setTitle("Music Bot List");
-            const bots = client.musicService.getBots();
-            for (const bot of bots.values()) {
-                const botList = [];
-                const botUser = await msg.client.users.fetch(bot.getId());
-                for (const guild of bot.getGuilds().values()) {
-                    if (!guild.channelId) continue;
-                    const request = {
-                        command: "Queue",
-                        mid: msg.id,
-                        data: { guildId: msg.guild.id },
-                    };
-
-                    interface Response extends wsResponse {
-                        queue: Track[];
-                        current: currentSong;
-                        queueInfo: QueueInfo;
-                    }
-
-                    const data = (await bot
-                        .send(request)
-                        .catch((e) => console.log(e))) as Response;
-                    if (!data || data.error) continue;
-
-                    const queueLength = new Date(data.queueInfo.length)
-                        .toISOString()
-                        .slice(11, 19);
-
-                    const discordGuild = await client.guilds.fetch(guild.id);
-                    const output = [
-                        data.queueInfo.paused ? "❌" : "✅",
-                        queueLength,
-                        data.queue.length,
-                        discordGuild.name,
-                    ];
-
-                    botList.push(output.join(" - "));
-                }
-                embed.addFields([
-                    {
-                        name: botUser.username,
-                        value:
-                            botList.length == 0
-                                ? "Nothing playing"
-                                : botList.join("\n"),
-                    },
-                ]);
-            }
-
-            if (embed.data.fields?.length == 0) {
-                await msg.reply("No bots.");
-                return;
-            }
-
-            await msg.reply({
-                embeds: [embed],
-            });
-            return;
         }
 
         if (

@@ -32,6 +32,12 @@ interface starSign {
     name: string;
 }
 
+export function botIcon(bot: GuildMember | undefined): string | undefined {
+    return bot
+        ? bot.avatarURL() || bot.user.avatarURL() || bot.user.defaultAvatarURL
+        : undefined;
+}
+
 export function getStarSign(date: Date): starSign {
     const month = date.getMonth() + 1;
     const day = date.getUTCDate();

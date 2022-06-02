@@ -48,6 +48,20 @@ export default class musicService {
         this.wss.clients.forEach((ws) => ws.send(JSON.stringify(data)));
     }
 
+    public terminate(): number {
+        const request = {
+            command: "Terminate",
+            mid: "massTerminate",
+            data: {},
+        };
+
+        const botCount = this.bots.size;
+
+        this.broadcast(request);
+
+        return botCount;
+    }
+
     /**
      * Returns the first unused bot account.
      * @returns Owlet credentials.
