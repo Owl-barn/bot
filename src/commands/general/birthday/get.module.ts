@@ -18,11 +18,19 @@ export default async function birthdayGet(
 
     if (!user) user = msg.member as GuildMember;
 
-    const query = await client.db.birthdays.findUnique({
-        where: {
-            user_id_guild_id: { user_id: user.id, guild_id: msg.guildId },
-        },
-    });
+    // Fetch the birthday.
+    let query: { birthday: Date | null } | null;
+    if (!user.user.bot) {
+        query = await client.db.birthdays.findUnique({
+            where: {
+                user_id_guild_id: { user_id: user.id, guild_id: msg.guildId },
+            },
+        });
+    } else {
+        query = {
+            birthday: user.user.createdAt,
+        };
+    }
 
     const embed = new EmbedBuilder()
         .setColor(process.env.EMBED_COLOR as HexColorString)
@@ -33,6 +41,7 @@ export default async function birthdayGet(
         return { embeds: [embed] };
     }
 
+    // Transform data.
     const nextBirthday = nextDate(new Date(query.birthday));
     const age = yearsAgo(query.birthday);
     const starSign = getStarSign(query.birthday);
@@ -42,6 +51,7 @@ export default async function birthdayGet(
 
     const birthdayString = moment(query.birthday).format("DD-MM-YYYY");
 
+    // Format the response.
     embed.addFields([
         {
             name: `Birth Date`,
@@ -51,7 +61,9 @@ export default async function birthdayGet(
             name: "Info",
             value:
                 `**Age:** ${age} years\n` +
-                `**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`,
+                `**Next birthday:** <t:${Math.round(
+                    Number(nextBirthday) / 1000,
+                )}:R>`,
             inline: true,
         },
         {
