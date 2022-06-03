@@ -1,11 +1,10 @@
 import {
     GuildMember,
-    HexColorString,
-    EmbedBuilder,
     ApplicationCommandOptionType,
+    EmbedAuthorOptions,
 } from "discord.js";
-import { failEmbedTemplate } from "../../lib/embedTemplate";
-import { isDJ } from "../../lib/functions";
+import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
+import { botIcon, isDJ } from "../../lib/functions";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -22,7 +21,7 @@ module.exports = class extends Command {
                 {
                     name: "repeat_mode",
                     description: "the loop mode",
-                    type: ApplicationCommandOptionType.Integer,
+                    type: ApplicationCommandOptionType.Number,
                     choices: [
                         { name: "off", value: 0 },
                         { name: "track", value: 1 },
@@ -59,6 +58,7 @@ module.exports = class extends Command {
         const music = msg.client.musicService;
 
         const failEmbed = failEmbedTemplate();
+        const embed = embedTemplate();
 
         if (vc == null && botId == undefined) {
             const response = failEmbed.setDescription(
@@ -78,12 +78,27 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
+        const bot = await msg.guild.members.fetch(musicBot.getId());
+        const author: EmbedAuthorOptions = {
+            name: "Repeat",
+            iconURL: botIcon(bot),
+        };
+
+        failEmbed.setAuthor(author);
+        embed.setAuthor(author);
+
         if (
             !dj ||
             !vc ||
             vc?.id !== musicBot.getGuild(msg.guild.id)?.channelId
         ) {
-            return { embeds: [failEmbed.setDescription("You cant do that.")] };
+            return {
+                embeds: [
+                    failEmbed.setDescription(
+                        "You need the `DJ` role to do that!",
+                    ),
+                ],
+            };
         }
 
         const request = {
@@ -96,8 +111,6 @@ module.exports = class extends Command {
         };
 
         const response = (await musicBot.send(request)) as response;
-
-        const bot = await msg.guild.members.fetch(musicBot.getId());
 
         let repeatMode = "";
 
@@ -113,17 +126,7 @@ module.exports = class extends Command {
                 break;
         }
 
-        const embed = new EmbedBuilder()
-            .setDescription(`now set to: ${repeatMode}`)
-            .setAuthor({
-                name: "Loop",
-                iconURL: bot
-                    ? bot.avatarURL() ||
-                      bot.user.avatarURL() ||
-                      bot.user.defaultAvatarURL
-                    : undefined,
-            })
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        embed.setDescription(`now set to: ${repeatMode}`);
 
         return { embeds: [embed] };
     }

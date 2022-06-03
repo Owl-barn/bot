@@ -143,33 +143,29 @@ module.exports = class extends Command {
             // User provided an index that is out of bounds.
             if (queue.length == 0 || index > queue.length) {
                 const fail = failEmbed.setDescription(
-                    "I couldn't find a song at that position, Try a lower number? fucking dumbass, moron if you will, pissbaby even!??",
+                    "I couldn't find a song at that position, Try a lower number?",
                 );
                 return { embeds: [fail] };
             }
 
             // User provided a valid index but doesnt own the song.
             const selected = queue[index - 1];
-            if (!selected || selected.requestedBy !== msg.user.id) {
-                failEmbed.setDescription(
-                    `You can't skip \`${selected.title}\` because you didn't request it.`,
-                );
-                return { embeds: [failEmbed] };
-            }
 
-            // User provided a valid index and owns the song.
-            const response = await skip(msg, musicBot, index, force);
-            if (response.error) {
-                failEmbed.setDescription(response.error);
-                return { embeds: [failEmbed] };
+            if (selected && selected.requestedBy === msg.user.id) {
+                // User provided a valid index and owns the song.
+                const response = await skip(msg, musicBot, index, force);
+                if (response.error) {
+                    failEmbed.setDescription(response.error);
+                    return { embeds: [failEmbed] };
+                }
+                return {
+                    embeds: [
+                        embed.setDescription(
+                            `Successfully skipped \`${selected.title}\``,
+                        ),
+                    ],
+                };
             }
-            return {
-                embeds: [
-                    embed.setDescription(
-                        `Successfully skipped \`${selected.title}\``,
-                    ),
-                ],
-            };
 
             // User tried skipping current song and they added the song.
         } else if (current.requestedBy == msg.user.id) {
@@ -187,8 +183,11 @@ module.exports = class extends Command {
             };
         }
 
-        // brain too much ouchie
-        return { content: "a" };
+        failEmbed.setDescription(
+            `You can't skip that song because you didn't request it.`,
+        );
+
+        return { embeds: [failEmbed] };
     };
 };
 

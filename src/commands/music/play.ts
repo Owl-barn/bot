@@ -4,13 +4,14 @@ import {
     EmbedBuilder,
     Util,
     ApplicationCommandOptionType,
+    EmbedAuthorOptions,
 } from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
-import { isDJ } from "../../lib/functions";
+import { botIcon, isDJ } from "../../lib/functions";
 import moment from "moment";
 import { CommandGroup } from "../../types/commandGroup";
-import { failEmbedTemplate } from "../../lib/embedTemplate";
+import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import Track from "../../types/track";
 import { QueueInfo } from "../../types/queueInfo";
 import wsResponse from "../../types/wsResponse";
@@ -66,6 +67,7 @@ module.exports = class extends Command {
         const music = msg.client.musicService;
 
         const failEmbed = failEmbedTemplate();
+        let embed = embedTemplate();
 
         if (vc == null) {
             const response = failEmbed.setDescription(
@@ -90,6 +92,14 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
+        const bot = await msg.guild.members.fetch(musicBot.getId());
+        const author: EmbedAuthorOptions = {
+            name: "Play",
+            iconURL: botIcon(bot),
+        };
+
+        failEmbed.setAuthor(author);
+
         const request = {
             command: "Play",
             mid: msg.id,
@@ -107,9 +117,8 @@ module.exports = class extends Command {
         if (response.error)
             return { embeds: [failEmbed.setDescription(response.error)] };
 
-        const botUser = await msg.guild.members.fetch(musicBot.getId());
-
-        const embed = makeEmbed(response.track, response.queueInfo, botUser);
+        embed = makeEmbed(embed, response.track, response.queueInfo);
+        embed.setAuthor(author);
 
         return {
             embeds: [embed],
@@ -117,20 +126,13 @@ module.exports = class extends Command {
     };
 };
 
-function makeEmbed(track: Track, queueInfo: QueueInfo, bot: GuildMember) {
+function makeEmbed(embed: EmbedBuilder, track: Track, queueInfo: QueueInfo) {
     let channelName = Util.escapeMarkdown(track.author);
     channelName = channelName.replace(/[()[\]]/g, "");
 
-    const embed = new EmbedBuilder()
+    embed
         .setThumbnail(track.thumbnail)
-        .setAuthor({
-            name: queueInfo.size < 1 ? `Now playing` : "Song queued",
-            iconURL: bot
-                ? bot.avatarURL() ||
-                  bot.user.avatarURL() ||
-                  bot.user.defaultAvatarURL
-                : undefined,
-        })
+        .setTitle(queueInfo.size < 1 ? `Now playing` : "Song queued")
         .setDescription(`**[${track.title}](${track.url})**`)
         .addFields([
             { name: "Channel", value: `*${channelName}*`, inline: true },

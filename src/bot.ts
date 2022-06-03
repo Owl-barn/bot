@@ -8,7 +8,6 @@ import birthdayCron from "./lib/birthday.cron";
 import { registerButtons } from "./modules/button.initializer";
 import AFKService from "./lib/afk.service";
 import GuildConfig from "./lib/guildconfig.service";
-import * as play from "play-dl";
 import bannedUsers from "./lib/banlist.service";
 
 class Bot {
@@ -40,15 +39,6 @@ class Bot {
         await eventInitializer(this.client);
         await this.initializeCommands();
         await this.initializeButtons();
-
-        play.setToken({
-            spotify: {
-                client_id: process.env.SP_ID as string,
-                client_secret: process.env.SP_SECRET as string,
-                refresh_token: process.env.SP_RT as string,
-                market: process.env.SP_MARKET as string,
-            },
-        });
     };
 
     private async initializeCommands() {

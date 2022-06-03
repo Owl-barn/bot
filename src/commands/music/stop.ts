@@ -1,11 +1,10 @@
 import {
     GuildMember,
-    HexColorString,
-    EmbedBuilder,
     ApplicationCommandOptionType,
+    EmbedAuthorOptions,
 } from "discord.js";
-import { embedTemplate } from "../../lib/embedTemplate";
-import { isDJ } from "../../lib/functions";
+import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
+import { botIcon, isDJ } from "../../lib/functions";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -46,9 +45,8 @@ module.exports = class extends Command {
         const dj = isDJ(member);
         const vc = member.voice.channel;
 
-        const failEmbed = new EmbedBuilder().setColor(
-            process.env.EMBED_FAIL_COLOR as HexColorString,
-        );
+        const failEmbed = failEmbedTemplate();
+        const embed = embedTemplate();
 
         if (vc == null) {
             const response = failEmbed.setDescription(
@@ -67,11 +65,20 @@ module.exports = class extends Command {
         if (!musicBot || !botState || !botState.channelId)
             return { embeds: [failEmbed.setDescription("No music playing")] };
 
+        const bot = await msg.guild.members.fetch(musicBot.getId());
+        const author: EmbedAuthorOptions = {
+            name: "Stop",
+            iconURL: botIcon(bot),
+        };
+
+        failEmbed.setAuthor(author);
+        embed.setAuthor(author);
+
         const memberCount = vc.members.filter((x) => !x.user.bot).size;
 
         if (!dj && (vc.id !== botState.channelId || memberCount > 1)) {
             const response = failEmbed.setDescription(
-                "You do not have the `DJ` role.",
+                "You need the `DJ` role to do that!",
             );
             return { embeds: [response] };
         }
@@ -89,17 +96,7 @@ module.exports = class extends Command {
         if (response.error)
             return { embeds: [failEmbed.setDescription(response.error)] };
 
-        const bot = await msg.guild.members.fetch(musicBot.getId());
-        const embed = embedTemplate()
-            .setDescription("Music stopped")
-            .setAuthor({
-                name: bot.user.username,
-                iconURL: bot
-                    ? bot.avatarURL() ||
-                      bot.user.avatarURL() ||
-                      bot.user.defaultAvatarURL
-                    : undefined,
-            });
+        embed.setDescription("Music stopped");
 
         return { embeds: [embed] };
     }

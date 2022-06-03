@@ -1,11 +1,10 @@
 import {
     GuildMember,
-    HexColorString,
-    EmbedBuilder,
     ApplicationCommandOptionType,
+    EmbedAuthorOptions,
 } from "discord.js";
-import { failEmbedTemplate } from "../../lib/embedTemplate";
-import { isDJ } from "../../lib/functions";
+import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
+import { botIcon, isDJ } from "../../lib/functions";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -47,6 +46,7 @@ module.exports = class extends Command {
         const music = msg.client.musicService;
 
         const failEmbed = failEmbedTemplate();
+        const embed = embedTemplate();
 
         if (vc == null && botId == undefined) {
             const response = failEmbed.setDescription(
@@ -65,6 +65,15 @@ module.exports = class extends Command {
             );
             return { embeds: [response] };
         }
+
+        const bot = await msg.guild.members.fetch(musicBot.getId());
+        const author: EmbedAuthorOptions = {
+            name: "Pause",
+            iconURL: botIcon(bot),
+        };
+
+        failEmbed.setAuthor(author);
+        embed.setAuthor(author);
 
         if (vc) {
             const memberCount = vc.members.filter((x) => !x.user.bot).size;
@@ -94,18 +103,7 @@ module.exports = class extends Command {
         if (response.error)
             return { embeds: [failEmbed.setDescription(response.error)] };
 
-        const bot = await msg.guild.members.fetch(musicBot.getId());
-        const embed = new EmbedBuilder()
-            .setDescription(`Music ${response.paused ? "paused" : "resumed"}`)
-            .setAuthor({
-                name: "Pause",
-                iconURL: bot
-                    ? bot.avatarURL() ||
-                      bot.user.avatarURL() ||
-                      bot.user.defaultAvatarURL
-                    : undefined,
-            })
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        embed.setDescription(`Music ${response.paused ? "paused" : "resumed"}`);
 
         return { embeds: [embed] };
     }

@@ -244,7 +244,7 @@ function argumentHandler<T extends builderType>(
         if (argument.choices) {
             if (option.type == ApplicationCommandOptionType.String)
                 option.setChoices(...(argument as Argument<string>).choices);
-            if (option.type == ApplicationCommandOptionType.Integer)
+            if (option.type == ApplicationCommandOptionType.Number)
                 option.setChoices(...(argument as Argument<number>).choices);
         }
 

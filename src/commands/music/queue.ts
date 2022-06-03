@@ -1,14 +1,14 @@
-import { italic } from "@discordjs/builders";
+import { EmbedAuthorOptions, italic } from "@discordjs/builders";
 import {
     EmbedFieldData,
     GuildMember,
-    HexColorString,
     EmbedBuilder,
     Util,
     ApplicationCommandOptionType,
 } from "discord.js";
 import moment from "moment";
-import { failEmbedTemplate } from "../../lib/embedTemplate";
+import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
+import { botIcon } from "../../lib/functions";
 import progressBar from "../../lib/progressBar";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -53,6 +53,7 @@ module.exports = class extends Command {
         const music = msg.client.musicService;
 
         const failEmbed = failEmbedTemplate();
+        let embed = embedTemplate();
 
         if (vc == null && botId == undefined) {
             const response = failEmbed.setDescription(
@@ -72,6 +73,15 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
+        const bot = await msg.guild.members.fetch(musicBot.getId());
+        const author: EmbedAuthorOptions = {
+            name: "Queue",
+            iconURL: botIcon(bot),
+        };
+
+        failEmbed.setAuthor(author);
+        embed.setAuthor(author);
+
         const request = {
             command: "Queue",
             mid: msg.id,
@@ -87,32 +97,18 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
-        const bot = await msg.guild.members.fetch(musicBot.getId());
-
-        const embed = makeEmbed(data.queue, data.current, data.queueInfo, bot);
+        embed = makeEmbed(embed, data.queue, data.current, data.queueInfo);
 
         return { embeds: [embed] };
     }
 };
 
 function makeEmbed(
+    embed: EmbedBuilder,
     queue: Track[],
     current: currentSong,
     queueInfo: QueueInfo,
-    bot: GuildMember,
 ) {
-    const embed = new EmbedBuilder().setColor(
-        process.env.EMBED_COLOR as HexColorString,
-    );
-    embed.setAuthor({
-        iconURL: bot
-            ? bot.avatarURL() ||
-              bot.user.avatarURL() ||
-              bot.user.defaultAvatarURL
-            : undefined,
-        name: "Queue",
-    });
-
     if (!current) {
         embed.addFields([
             { name: "Now playing:", value: "Nothing is playing right now" },
