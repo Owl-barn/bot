@@ -46,7 +46,7 @@ function convert(
 )[] {
     const commandzzzz = commands.map(
         (command: CommandEnum, name: string): [string[], CommandEnum] => [
-            name.split("_"),
+            name.split("-"),
             command,
         ],
     );
@@ -126,24 +126,28 @@ function convert(
             ) as [string[], SubCommandGroup][] | undefined;
 
             // Process the subCommands.
-            subcommands?.forEach((sub_command) => {
-                builder = builder.addSubcommand(
-                    buildSubCommand(sub_command[1]),
-                );
+            subcommands?.forEach((subCommand) => {
+                builder.addSubcommand(buildSubCommand(subCommand[1]));
             });
 
             // Process the subcommand groups.
-            if (subcommandGroups == undefined) continue;
+            if (subcommandGroups == undefined) {
+                commandsArray.push(builder);
+                continue;
+            }
 
             const subCommandsLen3 = subCommandsByLength.get(3) as
                 | [string[], SubCommand][]
                 | undefined;
 
-            if (subCommandsLen3 == undefined) continue;
+            if (subCommandsLen3 == undefined) {
+                commandsArray.push(builder);
+                continue;
+            }
 
             const subCommandGroups = groupBy(
                 subCommandsLen3,
-                (a: [string[], SubCommand]) => a[0].slice(0, 2).join("_"),
+                (a: [string[], SubCommand]) => a[0].slice(0, 2).join("-"),
             );
 
             // Loop through the subcommand groups.
@@ -151,7 +155,7 @@ function convert(
                 const [GroupName, GroupCmd] = subCommandGroup;
 
                 const group = subCommandGroups.get(
-                    GroupName.slice(0, 2).join("_"),
+                    GroupName.slice(0, 2).join("-"),
                 );
 
                 if (group == undefined) continue;

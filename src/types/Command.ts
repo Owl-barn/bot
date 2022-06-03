@@ -101,6 +101,8 @@ export abstract class Command extends BaseCommand {
     public botPermissions?: PermissionsString[];
 
     public throttling!: Throttling;
+
+    abstract execute(interaction: RavenInteraction): Promise<returnMessage>;
 }
 
 export interface CommandInfo extends BaseCommandInfo {
@@ -142,6 +144,8 @@ export abstract class SubCommand extends BaseCommand {
     public botPermissions?: PermissionsString[];
 
     public throttling!: Throttling;
+
+    abstract execute(interaction: RavenInteraction): Promise<returnMessage>;
 }
 
 export interface SubCommandInfo extends BaseCommandInfo {
@@ -160,55 +164,6 @@ export interface SubCommandInfo extends BaseCommandInfo {
     throttling: Throttling;
 }
 
-/*
-export abstract class Command {
-    public constructor(info: CommandInfo) {
-        Object.assign(this, info);
-    }
-
-    public name!: string;
-    public description!: string;
-    public group!: CommandGroup;
-    public type = CommandType.Default;
-
-    public guildOnly = false;
-    public adminOnly?: boolean;
-    public premium?: boolean;
-    public disabled?: boolean;
-
-    public args?: Argument[];
-
-    public userPermissions?: PermissionsString[];
-    public botPermissions?: PermissionsString[];
-
-    public throttling!: Throttling;
-
-    public path?: string;
-
-    abstract execute(interaction: Interaction): Promise<returnMessage>;
-}
-
-export interface CommandInfo {
-    name: string;
-    description: string;
-    group: CommandGroup;
-    type: CommandType;
-
-    guildOnly?: boolean;
-    adminOnly?: boolean;
-    premium?: boolean;
-    disabled?: boolean;
-
-    args?: Argument[];
-
-    userPermissions?: PermissionsString[];
-    botPermissions?: PermissionsString[];
-
-    throttling: Throttling;
-
-    path?: string;
-}
-*/
 // eslint-disable-next-line no-shadow
 export enum CommandType {
     Parent = "Parent",
