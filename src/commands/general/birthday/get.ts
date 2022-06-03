@@ -6,16 +6,16 @@ import {
 } from "discord.js";
 import moment from "moment";
 import { nextDate, yearsAgo, getStarSign } from "../../../lib/functions";
-import { Command, returnMessage } from "../../../types/Command";
+import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "get",
             description: "get a user's birthday",
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.User,
                     name: "user",

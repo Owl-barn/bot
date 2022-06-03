@@ -18,7 +18,7 @@ module.exports = class extends Command {
 
             guildOnly: true,
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.Subcommand,
                     name: "set",

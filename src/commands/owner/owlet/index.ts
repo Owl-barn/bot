@@ -1,5 +1,5 @@
+import { ParentCommand } from "../../../types/Command";
 import { CommandGroup } from "../../../types/commandGroup";
-import { ParentCommand } from "../../../types/ParentCommand";
 
 module.exports = class extends ParentCommand {
     constructor() {

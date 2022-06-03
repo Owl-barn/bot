@@ -1,16 +1,16 @@
 import { ApplicationCommandOptionType } from "discord.js";
 import { embedTemplate } from "../../../../lib/embedTemplate";
 import GuildConfig from "../../../../lib/guildconfig.service";
-import { Command, returnMessage } from "../../../../types/Command";
+import { returnMessage, SubCommand } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "set_channel",
             description: "Set the channel for level up messages",
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.Channel,
                     name: "channel",

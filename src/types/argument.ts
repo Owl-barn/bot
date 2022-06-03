@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, LocalizationMap } from "discord.js";
 
 // eslint-disable-next-line no-shadow
 export enum argumentType {
@@ -14,17 +14,27 @@ export enum argumentType {
     subCommandGroup = 10,
 }
 
-export interface Argument {
+export type Argument<T = string | number> = {
     type: Omit<
         ApplicationCommandOptionType,
         | ApplicationCommandOptionType.Subcommand
         | ApplicationCommandOptionType.SubcommandGroup
     >;
-    min?: number;
-    max?: number;
+
     name: string;
     description: string;
     required?: boolean;
-    subCommands?: Argument[];
-    choices?: { name: string; value: string | number }[];
-}
+
+    nameLocalization?: LocalizationMap;
+    descriptionLocalization?: LocalizationMap;
+
+    min?: number;
+    max?: number;
+    choices?: ArgumentChoice<T>[];
+    autoComplete?: boolean;
+};
+
+export type ArgumentChoice<T> = {
+    name: string;
+    value: T;
+};

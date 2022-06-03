@@ -18,11 +18,11 @@ module.exports = class extends Command {
             description: "loops the queue",
             group: CommandGroup.music,
 
-            args: [
+            arguments: [
                 {
                     name: "repeat_mode",
                     description: "the loop mode",
-                    type: ApplicationCommandOptionType.Number,
+                    type: ApplicationCommandOptionType.Integer,
                     choices: [
                         { name: "off", value: 0 },
                         { name: "track", value: 1 },

@@ -4,17 +4,17 @@ import {
     HexColorString,
     ApplicationCommandOptionType,
 } from "discord.js";
-import { Command, returnMessage } from "../../../types/Command";
+import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "difference",
             description:
                 "get the difference between your birthday and another user's",
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.User,
                     name: "first_user",

@@ -4,12 +4,13 @@ colors.enable();
 import { Collection } from "discord.js";
 import fs from "fs";
 import path from "path";
-import { Command } from "../types/Command";
-import { ParentCommand } from "../types/ParentCommand";
+import { CommandEnum, ParentCommand } from "../types/Command";
 
-export async function registerCommands(): Promise<Collection<string, Command>> {
+export async function registerCommands(): Promise<
+    Collection<string, CommandEnum>
+> {
     console.log(" > Loading commands".green.bold);
-    const commands = new Collection() as Collection<string, Command>;
+    const commands = new Collection() as Collection<string, CommandEnum>;
 
     const folders = fs.readdirSync(path.join(__dirname, "../commands"));
 
@@ -52,7 +53,7 @@ export async function registerCommands(): Promise<Collection<string, Command>> {
 
 interface returnType {
     name: string;
-    command: Command;
+    command: CommandEnum;
 }
 
 async function generateSimpleCommand(
@@ -60,13 +61,11 @@ async function generateSimpleCommand(
     preName?: string,
 ): Promise<returnType | undefined> {
     const cmdClass = (await import(commandPath)).default;
-    const command = new cmdClass() as Command;
+    const command = new cmdClass() as CommandEnum;
 
     if (command == undefined) {
         return;
     }
-
-    command.path = commandPath;
 
     preName ? (command.name = `${preName}_${command.name}`) : null;
 
@@ -91,7 +90,6 @@ async function generateSubCommand(
 
     // Loop through all sub commands
     for (const file of commandFiles) {
-        if (file == "index.js") continue;
         if (file.endsWith(".js")) {
             const command = await generateSimpleCommand(
                 `${folderPath}/${file}`,
@@ -100,7 +98,10 @@ async function generateSubCommand(
             if (!command) continue;
 
             commands.push({
-                name: `${commandName}_${command.name}`,
+                name:
+                    file == "index.js"
+                        ? command.name
+                        : `${commandName}_${command.name}`,
                 command: command.command,
             });
 

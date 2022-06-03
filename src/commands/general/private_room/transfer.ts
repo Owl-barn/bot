@@ -6,16 +6,16 @@ import {
 import { embedTemplate } from "../../../lib/embedTemplate";
 import fetchRoom from "../../../lib/fetch_room";
 import GuildConfig from "../../../lib/guildconfig.service";
-import { Command, returnMessage } from "../../../types/Command";
+import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "transfer",
             description: "transfer room to another user",
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.User,
                     name: "user",

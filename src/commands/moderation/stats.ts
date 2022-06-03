@@ -19,7 +19,7 @@ module.exports = class statsCommand extends Command {
             guildOnly: false,
             premium: false,
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.Boolean,
                     name: "global",

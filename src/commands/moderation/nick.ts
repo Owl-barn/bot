@@ -13,7 +13,7 @@ module.exports = class extends Command {
 
             guildOnly: true,
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.String,
                     name: "nickname",

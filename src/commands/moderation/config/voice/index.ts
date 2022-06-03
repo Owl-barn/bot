@@ -1,6 +1,6 @@
-import { ParentCommand } from "../../../../types/ParentCommand";
+import { SubCommandGroup } from "../../../../types/Command";
 
-module.exports = class extends ParentCommand {
+module.exports = class extends SubCommandGroup {
     constructor() {
         super({
             name: "voice",

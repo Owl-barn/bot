@@ -1,16 +1,16 @@
 import { ApplicationCommandOptionType } from "discord.js";
 import GuildConfig from "../../../lib/guildconfig.service";
 import registerCommand from "../../../modules/command.register";
-import { Command, returnMessage } from "../../../types/Command";
+import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "ban",
             description: "ban a guild",
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.String,
                     name: "guild_id",

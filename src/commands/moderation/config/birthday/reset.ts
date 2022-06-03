@@ -3,16 +3,16 @@ import {
     EmbedBuilder,
     HexColorString,
 } from "discord.js";
-import { Command, returnMessage } from "../../../../types/Command";
+import { returnMessage, SubCommand } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "reset",
             description: "Reset a user's birthday and their birthday timeout.",
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.User,
                     name: "user",

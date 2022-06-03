@@ -4,16 +4,16 @@ import {
     ApplicationCommandOptionType,
     Role,
 } from "discord.js";
-import { Command, returnMessage } from "../../../../types/Command";
+import { returnMessage, SubCommand } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "set_role",
             description: "Set the role for the birthday announcements",
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.Role,
                     name: "birthday_role",

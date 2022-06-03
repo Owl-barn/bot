@@ -16,7 +16,7 @@ module.exports = class extends Command {
 
             guildOnly: false,
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.String,
                     name: "webhook",

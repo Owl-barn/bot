@@ -1,9 +1,9 @@
 import { embedTemplate } from "../../../lib/embedTemplate";
 import fetchRoom from "../../../lib/fetch_room";
-import { Command, returnMessage } from "../../../types/Command";
+import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "hide",

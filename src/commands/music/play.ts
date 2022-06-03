@@ -25,7 +25,7 @@ module.exports = class extends Command {
             guildOnly: true,
             premium: true,
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.String,
                     name: "song",

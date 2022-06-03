@@ -1,16 +1,16 @@
 import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import GuildConfig from "../../../lib/guildconfig.service";
-import { Command, returnMessage } from "../../../types/Command";
+import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "top",
             description: "View the server leaderboard.",
 
-            args: [],
+            arguments: [],
 
             throttling: {
                 duration: 60,

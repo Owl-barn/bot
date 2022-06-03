@@ -21,7 +21,7 @@ module.exports = class extends Command {
             guildOnly: true,
             premium: true,
 
-            args: [
+            arguments: [
                 {
                     name: "bot_id",
                     description: "the id of the music bot",

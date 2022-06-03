@@ -24,11 +24,12 @@ module.exports = class extends Command {
             guildOnly: true,
             premium: true,
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.Integer,
                     name: "index",
                     description: "which song to skip",
+                    min: 0,
                     required: false,
                 },
                 {

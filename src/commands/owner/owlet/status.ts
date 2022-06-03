@@ -1,12 +1,12 @@
 import { embedTemplate } from "../../../lib/embedTemplate";
-import { Command, returnMessage } from "../../../types/Command";
+import { returnMessage, SubCommand } from "../../../types/Command";
 import currentSong from "../../../types/current";
 import RavenInteraction from "../../../types/interaction";
 import { QueueInfo } from "../../../types/queueInfo";
 import Track from "../../../types/track";
 import wsResponse from "../../../types/wsResponse";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "status",

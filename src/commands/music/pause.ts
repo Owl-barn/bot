@@ -18,7 +18,7 @@ module.exports = class extends Command {
             description: "pause the bot",
             group: CommandGroup.music,
 
-            args: [
+            arguments: [
                 {
                     name: "bot_id",
                     description: "the id of the music bot",

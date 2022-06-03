@@ -17,7 +17,7 @@ export default class extends Command {
 
             guildOnly: true,
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.User,
                     name: "user",
@@ -28,6 +28,7 @@ export default class extends Command {
                     type: ApplicationCommandOptionType.Integer,
                     name: "index",
                     description: "which warning.",
+                    min: 0,
                     required: true,
                 },
             ],

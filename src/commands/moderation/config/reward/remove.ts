@@ -1,15 +1,15 @@
 import { ApplicationCommandOptionType, Role } from "discord.js";
 import { embedTemplate } from "../../../../lib/embedTemplate";
-import { Command, returnMessage } from "../../../../types/Command";
+import { returnMessage, SubCommand } from "../../../../types/Command";
 import RavenInteraction from "../../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "remove",
             description: "Remove a role reward.",
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.Role,
                     name: "role",

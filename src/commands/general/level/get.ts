@@ -4,16 +4,16 @@ import formatNumber from "../../../lib/formatNumber";
 import GuildConfig from "../../../lib/guildconfig.service";
 import levelService from "../../../lib/level.service";
 import progressBar from "../../../lib/progressBar";
-import { Command, returnMessage } from "../../../types/Command";
+import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "get",
             description: "Get your own or your friends current level!",
 
-            args: [
+            arguments: [
                 {
                     type: ApplicationCommandOptionType.User,
                     name: "user",
