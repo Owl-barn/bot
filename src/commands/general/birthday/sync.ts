@@ -1,4 +1,4 @@
-import { EmbedBuilder, HexColorString } from "discord.js";
+import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -19,8 +19,8 @@ module.exports = class extends SubCommand {
         if (!msg.guildId) throw "No guildID???";
 
         const client = msg.client;
-        const embed = new EmbedBuilder();
-        embed.setColor(process.env.EMBED_COLOR as HexColorString);
+        const embed = embedTemplate();
+        const failEmbed = failEmbedTemplate();
 
         const query = await client.db.birthdays.findFirst({
             where: {
@@ -30,8 +30,8 @@ module.exports = class extends SubCommand {
         });
 
         if (!query) {
-            const response = embed.setDescription(
-                "You dont have a birthday registered anywhere else.",
+            const response = failEmbed.setDescription(
+                "You don't have a birthday registered anywhere else.",
             );
             return { embeds: [response] };
         }
@@ -47,7 +47,7 @@ module.exports = class extends SubCommand {
             .catch(() => null);
 
         if (!result) {
-            const response = embed.setDescription(
+            const response = failEmbed.setDescription(
                 "You already have a birthday registered here",
             );
             return { embeds: [response] };

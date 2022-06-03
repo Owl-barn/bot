@@ -1,9 +1,6 @@
-import {
-    EmbedBuilder,
-    HexColorString,
-    ApplicationCommandOptionType,
-} from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
 import moment from "moment";
+import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { nextDate, yearsAgo, getStarSign } from "../../../lib/functions";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
@@ -40,25 +37,26 @@ module.exports = class extends SubCommand {
             /(?<day>[0-9]{1,2})[/:-](?<month>[0-9]{1,2})[/:-](?<year>[0-9]{4})/g,
         );
 
-        const embed = new EmbedBuilder().setColor(
-            process.env.EMBED_COLOR as HexColorString,
-        );
+        const embed = embedTemplate();
+        const failEmbed = failEmbedTemplate();
 
         const match = Array.from(birthday.matchAll(birthdayCheck));
 
-        if (!match[0]?.groups)
-            return {
-                ephemeral: true,
-                content: "Invalid input format, the format is `DD/MM/YYYY`",
-            };
+        if (!match[0]?.groups) {
+            failEmbed.setDescription(
+                "Invalid input format, the format is `DD/MM/YYYY`",
+            );
+            return { embeds: [failEmbed], ephemeral: true };
+        }
 
         let { day, month, year } = match[0]?.groups as unknown as dateInput;
 
-        if (!day && !month && !year)
-            return {
-                ephemeral: true,
-                content: "Invalid input format, the format is `DD/MM/YYYY`",
-            };
+        if (!day && !month && !year) {
+            failEmbed.setDescription(
+                "Invalid input format, the format is `DD/MM/YYYY`",
+            );
+            return { embeds: [failEmbed], ephemeral: true };
+        }
 
         day = Number(day);
         month = Number(month);
@@ -66,13 +64,15 @@ module.exports = class extends SubCommand {
 
         const birthdayMoment = moment(birthday, "DD-MM-YYYY");
 
-        if (birthdayMoment.isAfter(moment(Date.now())))
-            return {
-                ephemeral: true,
-                content: "That date is in the future.",
-            };
+        if (birthdayMoment.isAfter(moment(Date.now()))) {
+            failEmbed.setDescription("That date is in the future");
+            return { embeds: [failEmbed], ephemeral: true };
+        }
 
-        if (!birthdayMoment.isValid()) return { content: "Invalid date" };
+        if (!birthdayMoment.isValid()) {
+            failEmbed.setDescription("Invalid Date");
+            return { embeds: [failEmbed], ephemeral: true };
+        }
 
         const hasBirthday = await client.db.birthdays.findUnique({
             where: {
@@ -84,13 +84,9 @@ module.exports = class extends SubCommand {
         });
 
         if (hasBirthday && Date.now() - Number(hasBirthday.updated) > 600000) {
-            embed.addFields([
-                {
-                    name: "Not allowed",
-                    value: "You can only change your birthday once a year, contact an admin if there was a mistake",
-                },
-            ]);
-
+            failEmbed.setDescription(
+                "You can only change your birthday once a year, contact an admin if there was a mistake",
+            );
             return { embeds: [embed] };
         }
 

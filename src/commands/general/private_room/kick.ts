@@ -8,7 +8,7 @@ module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "kick",
-            description: "kick user from your private roomroom",
+            description: "kick a user from your private room.",
 
             arguments: [
                 {
@@ -30,7 +30,7 @@ module.exports = class extends SubCommand {
         const member = msg.options.getMember("user") as GuildMember | null;
         if (member == null) return { content: "Member not found" };
         if (member.id == msg.user.id)
-            return { content: "You can't kick yourself" };
+            return { content: "You can't kick yourself", ephemeral: true };
 
         const { room } = await fetchRoom(msg).catch((x) =>
             x == "noRoom" ? { room: null, dbRoom: null } : Promise.reject(x),

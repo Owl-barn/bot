@@ -1,10 +1,6 @@
-import {
-    GuildMember,
-    EmbedBuilder,
-    HexColorString,
-    ApplicationCommandOptionType,
-} from "discord.js";
+import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import moment from "moment";
+import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { nextDate, yearsAgo, getStarSign } from "../../../lib/functions";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
@@ -13,13 +9,13 @@ module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "get",
-            description: "get a user's birthday",
+            description: "See when it is your friends birthday!",
 
             arguments: [
                 {
                     type: ApplicationCommandOptionType.User,
                     name: "user",
-                    description: "Who's birthday to get",
+                    description: "Who's birthday to get.",
                     required: false,
                 },
             ],
@@ -56,12 +52,13 @@ module.exports = class extends SubCommand {
             };
         }
 
-        const embed = new EmbedBuilder()
-            .setColor(process.env.EMBED_COLOR as HexColorString)
-            .setTitle(`${user.user.username}'s birthday`);
+        const embed = embedTemplate();
+        const failEmbed = failEmbedTemplate();
+
+        embed.setTitle(`${user.user.username}'s birthday`);
 
         if (!query?.birthday) {
-            embed.setDescription("This user has no birthday registered");
+            failEmbed.setDescription("This user has no birthday registered");
             return { embeds: [embed] };
         }
 

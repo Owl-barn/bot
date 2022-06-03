@@ -1,9 +1,5 @@
-import {
-    GuildMember,
-    EmbedBuilder,
-    HexColorString,
-    ApplicationCommandOptionType,
-} from "discord.js";
+import { GuildMember, ApplicationCommandOptionType } from "discord.js";
+import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -48,8 +44,9 @@ module.exports = class extends SubCommand {
         let second_user = msg.options.getMember("second_user") as
             | GuildMember
             | undefined;
-        const embed = new EmbedBuilder();
-        embed.setColor(process.env.EMBED_COLOR as HexColorString);
+
+        const embed = embedTemplate();
+        const failEmbed = failEmbedTemplate();
 
         if (!second_user) second_user = msg.member as GuildMember;
 
@@ -63,8 +60,8 @@ module.exports = class extends SubCommand {
         });
 
         if (users.length !== 2) {
-            const response = embed.setDescription(
-                "one or more of you dont have a birthday registered",
+            const response = failEmbed.setDescription(
+                "One or more of you don't have a birthday registered.",
             );
             return { embeds: [response] };
         }

@@ -1,4 +1,4 @@
-import { EmbedBuilder, HexColorString } from "discord.js";
+import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -16,13 +16,12 @@ module.exports = class extends SubCommand {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
-        if (!msg.guildId) throw "No guildID???";
+        if (!msg.guildId) throw "No guildID in remove_birthday??";
 
         const client = msg.client;
 
-        const embed = new EmbedBuilder().setColor(
-            process.env.EMBED_COLOR as HexColorString,
-        );
+        const embed = embedTemplate();
+        const failEmbed = failEmbedTemplate();
 
         const query = await client.db.birthdays.updateMany({
             where: {
@@ -34,7 +33,7 @@ module.exports = class extends SubCommand {
         });
 
         if (!query || query.count === 0)
-            return { embeds: [embed.setDescription("No birthday set")] };
+            return { embeds: [failEmbed.setDescription("No birthday set")] };
 
         return {
             embeds: [embed.setDescription("Birthday removed successfully!")],
