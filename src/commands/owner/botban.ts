@@ -1,12 +1,14 @@
-import { InteractionReplyOptions } from "discord.js";
+import {
+    ApplicationCommandOptionType,
+    InteractionReplyOptions,
+} from "discord.js";
 import bannedUsers from "../../lib/banlist.service";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
-import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
-module.exports = class BotBanCommand extends Command {
+module.exports = class extends Command {
     constructor() {
         super({
             name: "botban",
@@ -15,15 +17,15 @@ module.exports = class BotBanCommand extends Command {
 
             guildOnly: false,
 
-            args: [
+            arguments: [
                 {
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     name: "target",
                     description: "User ID of the user to ban",
                     required: true,
                 },
                 {
-                    type: argumentType.boolean,
+                    type: ApplicationCommandOptionType.Boolean,
                     name: "state",
                     description: "Whether to ban or unban the user",
                     required: true,

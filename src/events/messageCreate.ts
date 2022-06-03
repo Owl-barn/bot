@@ -1,19 +1,17 @@
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { self_role_main } from "@prisma/client";
 import {
     Guild,
     HexColorString,
     Message,
-    MessageActionRow,
-    MessageActionRowComponent,
-    MessageButton,
-    MessageEmbed,
+    EmbedBuilder,
     TextChannel,
+    ButtonStyle,
 } from "discord.js";
 import AFKService from "../lib/afk.service";
 import bannedUsers from "../lib/banlist.service";
 import prisma from "../lib/db.service";
-import { embedTemplate } from "../lib/embedTemplate";
-import { yearsAgo } from "../lib/functions.service";
+import { yearsAgo } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import registerCommand from "../modules/command.register";
@@ -40,39 +38,20 @@ export default class InteractionCreate implements RavenEvent {
         }
 
         if (
-            msg.content === "music*" &&
+            msg.content === "chaos*" &&
             msg.member?.id === process.env.OWNER_ID
         ) {
-            const response = [];
-            for (const guild of client.musicService.values()) {
-                if (!guild || guild.destroyed) continue;
-
-                const paused = guild.player.state.status === "paused";
-                const queueLength = new Date(guild.queueLength() * 1000)
-                    .toISOString()
-                    .slice(11, 19);
-
-                const guildId = guild.voiceConnection.joinConfig.guildId;
-                const discordGuild = await client.guilds.fetch(guildId);
-                const output = [
-                    paused ? "❌" : "✅",
-                    queueLength,
-                    guild.getQueue().length,
-                    discordGuild.name,
-                ];
-
-                response.push(output.join(" - "));
-            }
-
-            if (response.length === 0) {
-                await msg.reply("No music is playing.");
-                return;
-            }
-
-            await msg.reply({
-                embeds: [embedTemplate().setDescription(response.join("\n"))],
+            await client.musicService.broadcast({
+                command: "Play",
+                mid: msg.id,
+                data: {
+                    query: "me and michael",
+                    guildId: msg.guild?.id,
+                    channelId: msg.member?.voice.channelId,
+                    userId: msg.member?.id,
+                    force: true,
+                },
             });
-            return;
         }
 
         if (
@@ -104,7 +83,7 @@ export default class InteractionCreate implements RavenEvent {
             msg.content === "perms*" &&
             msg.member?.id === process.env.OWNER_ID
         ) {
-            console.log(msg.guild?.me?.permissions.toArray());
+            console.log(msg.guild?.members.me?.permissions.toArray());
             return;
         }
 
@@ -236,25 +215,29 @@ export default class InteractionCreate implements RavenEvent {
             ) as TextChannel;
 
             if (!channel) throw "aa";
-            const embed = new MessageEmbed()
+            const embed = new EmbedBuilder()
                 .setTitle(main.title)
                 .setFooter({ text: main.uuid })
                 .setDescription(main.message)
                 .setColor(process.env.EMBED_COLOR as HexColorString);
 
-            const buttons: MessageActionRowComponent[] = [];
+            const buttons: ButtonBuilder[] = [];
 
             roles.forEach((x) => {
-                embed.addField(`${x.emote} ${x.name} `, x.description);
+                embed.addFields([
+                    { name: `${x.emote} ${x.name} `, value: x.description },
+                ]);
                 buttons.push(
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setCustomId(`selfrole_${x.uuid} `)
                         .setLabel(`${x.emote} ${x.name} `)
-                        .setStyle("PRIMARY"),
+                        .setStyle(ButtonStyle.Primary),
                 );
             });
 
-            const component = new MessageActionRow().addComponents(buttons);
+            const component =
+                new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;
+            component.setComponents(buttons);
 
             channel.send({ components: [component], embeds: [embed] });
         }

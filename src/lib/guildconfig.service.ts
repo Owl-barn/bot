@@ -30,6 +30,7 @@ class GuildConfigClass {
             staff_role: guild.staff_role,
 
             premium: guild.premium,
+            dev: guild.dev,
             banned: guild.banned,
 
             levelEnabled: guild.level,
@@ -62,6 +63,7 @@ export interface GuildConfigs {
     staff_role: string | null;
 
     premium: boolean;
+    dev: boolean;
     banned: boolean;
 
     levelEnabled: boolean;

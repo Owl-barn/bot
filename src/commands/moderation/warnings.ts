@@ -1,9 +1,9 @@
 import {
     HexColorString,
     InteractionReplyOptions,
-    MessageEmbed,
+    EmbedBuilder,
+    ApplicationCommandOptionType,
 } from "discord.js";
-import { argumentType } from "../../types/argument";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -17,9 +17,9 @@ module.exports = class extends Command {
 
             guildOnly: true,
 
-            args: [
+            arguments: [
                 {
-                    type: argumentType.user,
+                    type: ApplicationCommandOptionType.User,
                     name: "user",
                     description: "which user's warnings to display.",
                     required: true,
@@ -74,7 +74,7 @@ module.exports = class extends Command {
                 break;
         }
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setAuthor({
                 name: `${target.tag} has ${warnings.length} warnings.`,
                 iconURL: target.avatarURL() as string,

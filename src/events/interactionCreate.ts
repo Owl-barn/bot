@@ -1,4 +1,4 @@
-import { HexColorString, MessageEmbed } from "discord.js";
+import { HexColorString, EmbedBuilder } from "discord.js";
 import bannedUsers from "../lib/banlist.service";
 import GuildConfig from "../lib/guildconfig.service";
 import logService from "../lib/logger.service";
@@ -13,7 +13,7 @@ export default class InteractionCreate implements RavenEvent {
     name = "interactionCreate";
     once = false;
     throttle = throttleService;
-    errorEmbed = new MessageEmbed()
+    errorEmbed = new EmbedBuilder()
         .setDescription(
             `An error occurred, please make a report of this in [the Raven bot discord server](${process.env.SUPPORT_SERVER})`,
         )
@@ -53,13 +53,20 @@ export default class InteractionCreate implements RavenEvent {
     async commandEvent(msg: RavenInteraction): Promise<void> {
         const client = msg.client as RavenClient;
 
-        const { commandName } = msg;
+        let { commandName } = msg;
         if (!msg.guildId) return;
+
+        const subCommandGroup = msg.options.getSubcommandGroup(false);
+        const subCommand = msg.options.getSubcommand(false);
+
+        subCommandGroup ? (commandName += `_${subCommandGroup}`) : null;
+        subCommand ? (commandName += `_${subCommand}`) : null;
 
         const command = client.commands.get(commandName);
 
         if (!command) return;
 
+        // Chek if owner command.
         if (
             command.group === CommandGroup.owner &&
             msg.user.id !== process.env.OWNER_ID
@@ -68,12 +75,15 @@ export default class InteractionCreate implements RavenEvent {
                 msg,
                 "You are not allowed to do this command.",
             );
+
+        // Check if premium command.
         if (
             command.premium &&
             (!msg.guildId || !GuildConfig.getGuild(msg.guildId)?.premium)
         )
             return await this.quickReply(msg, "This command is premium only.");
 
+        // Check if the user is throttled.
         const isThrottled = this.throttle.isThrottled(
             msg.guildId || "e",
             msg.user.id,
@@ -85,6 +95,19 @@ export default class InteractionCreate implements RavenEvent {
                 msg,
                 `Throttled, try again in \`${isThrottled}\` seconds`,
             );
+
+        // Check if the bot has the needed permissions.
+        if (command.botPermissions) {
+            const missingPerms = command.botPermissions.filter(
+                (x) => !msg.guild?.members.me?.permissions.has(x),
+            );
+
+            if (missingPerms.length > 0)
+                return await this.quickReply(
+                    msg,
+                    `Missing permissions: \`${missingPerms.join("`, `")}\``,
+                );
+        }
 
         this.respond(msg, command?.execute);
     }

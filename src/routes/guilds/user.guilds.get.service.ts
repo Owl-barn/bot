@@ -1,4 +1,4 @@
-import { Guild, GuildMember } from "discord.js";
+import { Guild, GuildMember, PermissionFlagsBits } from "discord.js";
 import { Response } from "express";
 import fetch from "got";
 import bot from "../../bot";
@@ -45,7 +45,9 @@ const GuildsGetService = async (
         })) as unknown as GuildMember;
         if (!botGuildMember) return;
         if (
-            !botGuildMember.permissions.has("ADMINISTRATOR") &&
+            !botGuildMember.permissions.has(
+                PermissionFlagsBits.Administrator,
+            ) &&
             botGuildMember.id !== "140762569056059392"
         )
             return;

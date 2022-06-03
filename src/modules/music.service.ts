@@ -1,279 +1,219 @@
-import {
-    AudioPlayer,
-    VoiceConnection,
-    createAudioPlayer,
-    VoiceConnectionStatus,
-    AudioPlayerStatus,
-    AudioPlayerState,
-    entersState,
-} from "@discordjs/voice";
-import { MessageEmbed, HexColorString } from "discord.js";
-import prisma from "../lib/db.service";
-import { returnMessage } from "../types/Command";
-import Song from "../types/song";
+import { Snowflake } from "discord.js";
+import Owlet from "./owlet";
+import wsResponse from "../types/wsResponse";
+import WS from "ws";
+import { IncomingMessage } from "http";
+import owlets from "../owlets.json";
 
 export default class musicService {
-    public readonly player: AudioPlayer;
-    public readonly voiceConnection: VoiceConnection;
+    private bots: Map<string, Owlet> = new Map();
+    private wss: WS.Server;
 
-    private queue: Song[];
-    private current: Song | null;
-    private queueLock = false;
-
-    private currentVote: Vote | null = null;
-    private voted: Set<string> = new Set();
-
-    private secondsPlayed = 0;
-    private lastpause = 0;
-
-    private loop = false;
-
-    private idle: NodeJS.Timeout;
-    private timeout: NodeJS.Timeout;
-    public destroyed = false;
-
-    constructor(voiceConnection: VoiceConnection) {
-        this.voiceConnection = voiceConnection;
-        this.player = createAudioPlayer();
-        this.queue = [];
-
-        this.player.on("stateChange", this.statechange);
-
-        this.voiceConnection.on(
-            VoiceConnectionStatus.Disconnected,
-            this.disconnectVoice,
-        );
-        this.voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
-            this.startStopTimer();
-        });
-
-        this.player.on(AudioPlayerStatus.Paused, this.pause);
-
-        this.player.on("error", (error) => console.error(error));
-
-        voiceConnection.subscribe(this.player);
+    constructor() {
+        this.wss = new WS.Server({ port: 8080 });
+        this.wss.on("connection", this.onConnection);
     }
 
-    private disconnectVoice = async (): Promise<void> => {
+    private onConnection = (socket: WS, _request: IncomingMessage): void => {
+        socket.on("message", (x) => this.onMessage(socket, x));
+    };
+
+    private onMessage = async (ws: WS, data: WS.Data): Promise<void> => {
+        let message;
+
         try {
-            // try reconnect.
-            await Promise.race([
-                entersState(
-                    this.voiceConnection,
-                    VoiceConnectionStatus.Signalling,
-                    5_000,
-                ),
-                entersState(
-                    this.voiceConnection,
-                    VoiceConnectionStatus.Connecting,
-                    5_000,
-                ),
-            ]);
-        } catch (error) {
-            // actual disconnect, dont recover.
-            this.voiceConnection.destroy();
-        }
-    };
-
-    private statechange = (
-        oldState: AudioPlayerState,
-        newState: AudioPlayerState,
-    ): void => {
-        if (
-            newState.status === AudioPlayerStatus.Idle &&
-            oldState.status !== AudioPlayerStatus.Idle
-        ) {
-            void this.queueService();
-        }
-    };
-
-    private pause = (
-        oldState: AudioPlayerState,
-        newState: AudioPlayerState,
-    ) => {
-        if (
-            oldState.status === AudioPlayerStatus.Playing &&
-            newState.status === AudioPlayerStatus.Paused
-        ) {
-            if (this.lastpause === 0) return;
-            this.secondsPlayed += (Date.now() - this.lastpause) / 1000;
-        }
-
-        if (
-            oldState.status === AudioPlayerStatus.Paused &&
-            newState.status === AudioPlayerStatus.Playing
-        ) {
-            this.lastpause = Date.now();
-        }
-    };
-
-    public getCurrent = (): Song | null => this.current;
-
-    public stop(): void {
-        this.queue = [];
-        this.player.stop(true);
-        if (
-            this.voiceConnection.state.status !==
-            VoiceConnectionStatus.Destroyed
-        )
-            this.voiceConnection.destroy();
-
-        this.destroyed = true;
-    }
-
-    // IDLE
-    public setIdle = (x: boolean): void => {
-        x
-            ? (this.idle = setTimeout(() => this.stop(), 180000))
-            : clearTimeout(this.idle);
-    };
-
-    // LOOP
-
-    public toggleLoop = (): boolean => (this.loop = !this.loop);
-
-    public getLoop = (): boolean => this.loop;
-
-    // VOTE SKIP
-
-    public getVoteLock = (): Vote | null => this.currentVote;
-
-    public setVoteLock = (): void => {
-        if (!this.current?.id) throw "No song playing";
-        this.currentVote = {
-            id: this.current.id,
-            start: Date.now(),
-        };
-    };
-
-    public addVote = (user: string): Set<string> => this.voted.add(user);
-
-    public removeVote = (user: string): Set<string> => {
-        this.voted.delete(user);
-
-        return this.voted;
-    };
-
-    public getVotes = (): Set<string> => this.voted;
-
-    public skip = (index?: number | null): returnMessage => {
-        const failEmbed = new MessageEmbed()
-            .setDescription(`Out of range`)
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
-
-        const queue = this.getQueue();
-        if (!index) this.player.stop();
-        else if (index > queue.length) return { embeds: [failEmbed] };
-        else {
-            const skipped = this.queue.splice(index - 1, 1)[0];
-            this.logDuration(skipped, null);
-        }
-
-        const embed = new MessageEmbed()
-            .setDescription("Song skipped!")
-            .setColor(process.env.EMBED_COLOR as HexColorString);
-
-        return { embeds: [embed], components: [] };
-    };
-
-    // TIMING
-
-    public getPlaytime = (): number => {
-        return Math.floor(
-            this.secondsPlayed + (Date.now() - this.lastpause) / 1000,
-        );
-    };
-
-    public queueLength = (): number => {
-        let queueLength = 0;
-
-        for (const song of this.queue) queueLength += song.duration.seconds;
-
-        if (!this.current) return queueLength;
-
-        return this.current.duration.seconds - this.getPlaytime() + queueLength;
-    };
-
-    private logDuration = async (
-        song: Song,
-        played: number | null,
-    ): Promise<void> => {
-        if (song.duration.seconds === 0) return;
-        if (played && played > song.duration.seconds)
-            played = song.duration.seconds;
-        await prisma.songs_played.create({
-            data: {
-                guild_id: this.voiceConnection.joinConfig.guildId,
-                user_id: song.user.id,
-                song_duration: song.duration.seconds,
-                play_duration: played ? Math.round(played) : null,
-            },
-        });
-    };
-
-    public startStopTimer(): void {
-        this.timeout = setTimeout(() => this.stop(), 180000);
-    }
-
-    // QUEUE
-
-    public getQueue = (): Song[] => this.queue;
-
-    public addToQueue = (song: Song): void => {
-        this.queue.push(song);
-        void this.queueService();
-    };
-
-    private reset = (): void => {
-        this.currentVote = null;
-        this.voted = new Set();
-        this.queueLock = false;
-    };
-
-    private queueService = async (): Promise<void> => {
-        if (
-            this.queueLock ||
-            this.player.state.status !== AudioPlayerStatus.Idle
-        ) {
-            return;
-        }
-
-        this.queueLock = true;
-
-        if (this.current) {
-            this.secondsPlayed += (Date.now() - this.lastpause) / 1000;
-            this.logDuration(this.current, this.secondsPlayed);
-            this.secondsPlayed = 0;
-            this.lastpause = 0;
-
-            if (this.loop) this.queue.push(this.current);
-        }
-
-        if (this.queue.length === 0) {
-            this.reset();
-            this.current = null;
-            this.startStopTimer();
-            return;
-        }
-
-        if (this.timeout) clearTimeout(this.timeout);
-
-        const nextSong = this.queue.shift() as Song;
-        try {
-            this.reset();
-            const resource = await nextSong.getStream();
-            this.player.play(resource);
-            this.lastpause = Date.now();
-            this.current = nextSong;
+            message = JSON.parse(data.toString());
         } catch (e) {
-            this.queueLock = false;
-            console.error(e);
-            return this.queueService();
+            return;
         }
+
+        if (process.env.NODE_ENV == "development")
+            console.log("Received:".yellow.bold, message);
+
+        switch (message.command) {
+            case "Authenticate":
+                this.authenticate(ws, message);
+                break;
+            case "Status":
+                this.status(ws, message);
+                break;
+        }
+    };
+
+    /**
+     * broadcasts a message to all owlets.
+     * @param data message to send
+     */
+    public broadcast(data: apiRequest): void {
+        this.wss.clients.forEach((ws) => ws.send(JSON.stringify(data)));
+    }
+
+    public terminate(): number {
+        const request = {
+            command: "Terminate",
+            mid: "massTerminate",
+            data: {},
+        };
+
+        const botCount = this.bots.size;
+
+        this.broadcast(request);
+
+        return botCount;
+    }
+
+    /**
+     * Returns the first unused bot account.
+     * @returns Owlet credentials.
+     */
+    private async getCredentials() {
+        const credentialList = owlets;
+        for (const credential of credentialList) {
+            if (this.bots.has(credential.id)) continue;
+            return credential;
+        }
+        return undefined;
+    }
+
+    /**
+     * Remove the bot from the list.
+     * @param id bot id.
+     */
+    private removeBot(id: string) {
+        this.bots.delete(id);
+        console.log(
+            `Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold,
+        );
+    }
+    /**
+     * Authenticates the owlet.
+     */
+    private async authenticate(ws: WS, message: apiRequest): Promise<void> {
+        const pass = message.data.password;
+
+        // Check password.
+        if (pass != "1234") {
+            return ws.send(
+                JSON.stringify({
+                    mid: message.mid,
+                    error: "incorrect password",
+                }),
+            );
+        }
+
+        // Check if bot is already in the system.
+        const botUserId = message.data.userId as string | undefined;
+        if (botUserId && this.bots.get(botUserId)) {
+            return ws.send(
+                JSON.stringify({
+                    mid: message.mid,
+                    error: "bot account already in use",
+                }),
+            );
+        }
+
+        // Get credentials.
+        const credentials = await this.getCredentials();
+
+        if (!credentials) {
+            return ws.send(
+                JSON.stringify({
+                    mid: message.mid,
+                    error: "No bot accounts left",
+                }),
+            );
+        }
+
+        // return success.
+        const response = {
+            command: "Authenticate",
+            mid: message.mid,
+            token: credentials.token,
+        };
+
+        // Add bot to the list.
+        this.bots.set(credentials.id, new Owlet(credentials.id, ws, []));
+
+        // If the bot disconnects remove it from the list.
+        ws.on("close", () => this.removeBot(credentials.id));
+
+        console.log(
+            `Owlet authenticated <@${credentials.id}>, ${this.bots.size} active`
+                .green.bold,
+        );
+
+        ws.send(JSON.stringify(response));
+    }
+
+    /**
+     * Updates the current status of the owlet.
+     * @param ws websocket
+     * @param message message
+     * @returns nothing
+     */
+    private async status(ws: WS, message: wsResponse): Promise<void> {
+        const data = message.data as unknown as status;
+        const bot = this.bots.get(data.id);
+
+        if (!bot) {
+            return ws.send(
+                JSON.stringify({
+                    mid: message.mid,
+                    error: "bot not found",
+                }),
+            );
+        }
+
+        bot.updateGuilds(data.guilds);
+    }
+
+    public getBots = (): Map<string, Owlet> => this.bots;
+
+    /**
+     * Returns the Owlet by the given id.
+     */
+    public getBotById = (botId: string): Owlet | undefined =>
+        this.bots.get(botId);
+
+    /**
+     * Returns the Owlet currently connected to that channel or an available one
+     * otherwise undefined
+     */
+    public getBot = (
+        channelId: Snowflake,
+        guildId: Snowflake,
+    ): Owlet | undefined => {
+        // search for a bot in that channel
+        for (const bot of this.bots.values()) {
+            for (const guild of bot.getGuilds().values()) {
+                if (guild.channelId === channelId) {
+                    return bot;
+                }
+            }
+        }
+
+        // otherwise, search for available bot
+        for (const bot of this.bots.values()) {
+            for (const guild of bot.getGuilds().values()) {
+                if (guild.id === guildId && !guild.channelId) {
+                    return bot;
+                }
+            }
+        }
+
+        // return undefined if no bot is available.
+        return undefined;
     };
 }
 
-export interface Vote {
+interface status {
     id: string;
-    start: number;
+    uptime: number;
+    guilds: { id: string; channelId: string }[];
+}
+
+interface apiRequest {
+    command: string;
+    mid: string;
+    data: any;
 }

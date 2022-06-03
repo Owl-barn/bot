@@ -1,11 +1,11 @@
+import { ImageURLOptions } from "@discordjs/rest";
 import {
     GuildMember,
     HexColorString,
-    ImageURLOptions,
-    MessageEmbed,
+    EmbedBuilder,
+    ApplicationCommandOptionType,
 } from "discord.js";
 import moment from "moment";
-import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -19,9 +19,9 @@ module.exports = class extends Command {
 
             guildOnly: true,
 
-            args: [
+            arguments: [
                 {
-                    type: argumentType.user,
+                    type: ApplicationCommandOptionType.User,
                     name: "user",
                     description: "Who's info to get",
                     required: false,
@@ -37,8 +37,8 @@ module.exports = class extends Command {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const settings: ImageURLOptions = { dynamic: true, size: 4096 };
-        let member = msg.options.getMember("user") as GuildMember;
-        member = member || msg.member;
+        let member = msg.options.getMember("user") as GuildMember | null;
+        if (member === null) member = msg.member as GuildMember;
 
         const avatar =
             member.avatarURL(settings) || member.user.avatarURL(settings);
@@ -84,12 +84,14 @@ module.exports = class extends Command {
 
         list = list.join("\n");
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(`${member.user.username}`)
             .setDescription(`${member.user.username}'s user info!`)
             .setThumbnail(avatar || member.user.defaultAvatarURL)
-            .addField("Base info", list)
-            .addField("Roles", `${roles.map((x) => `${x}`).join(" ")}`)
+            .addFields([
+                { name: "Base info", value: list },
+                { name: "Roles", value: roles.map((x) => `${x}`).join(" ") },
+            ])
             .setColor(process.env.EMBED_COLOR as HexColorString);
 
         return { embeds: [embed] };

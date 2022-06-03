@@ -1,6 +1,6 @@
 import { birthdays, guilds } from "@prisma/client";
 import cron from "cron";
-import { TextBasedChannel } from "discord.js";
+import { ActivityType, TextBasedChannel } from "discord.js";
 import bot from "../bot";
 import RavenClient from "../types/ravenClient";
 import bannedUsers from "./banlist.service";
@@ -29,7 +29,7 @@ export async function birthdayLoop(): Promise<void> {
         0,
     );
     await client.user.setActivity(`for ${usercount} members`, {
-        type: "STREAMING",
+        type: ActivityType.Streaming,
         url: "https://www.youtube.com/watch?v=VZrDxD0Za9I",
     });
 

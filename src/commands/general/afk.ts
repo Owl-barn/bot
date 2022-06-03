@@ -1,6 +1,9 @@
-import { HexColorString, MessageEmbed } from "discord.js";
+import {
+    HexColorString,
+    EmbedBuilder,
+    ApplicationCommandOptionType,
+} from "discord.js";
 import AFKService from "../../lib/afk.service";
-import { argumentType } from "../../types/argument";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -14,15 +17,15 @@ module.exports = class extends Command {
 
             guildOnly: true,
 
-            args: [
+            arguments: [
                 {
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     name: "reason",
                     description: "Why are you going AFK?",
                     required: false,
                 },
                 {
-                    type: argumentType.boolean,
+                    type: ApplicationCommandOptionType.Boolean,
                     name: "global",
                     description:
                         "Go AFK everywhere or just here? (defaults to true)",
@@ -66,7 +69,7 @@ module.exports = class extends Command {
         AFKService.setAFK(createQuery);
         const reasonString = reason ? ` message: \`\`${reason}\`\`` : "";
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(`AFK set`)
             .setDescription(`Successfully set you as AFK${reasonString}.`)
             .setColor(process.env.EMBED_COLOR as HexColorString);

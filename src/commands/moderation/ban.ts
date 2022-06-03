@@ -1,5 +1,10 @@
-import { GuildMember, HexColorString, MessageEmbed, Util } from "discord.js";
-import { argumentType } from "../../types/argument";
+import {
+    GuildMember,
+    HexColorString,
+    EmbedBuilder,
+    Util,
+    ApplicationCommandOptionType,
+} from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -13,20 +18,28 @@ module.exports = class extends Command {
 
             guildOnly: true,
 
-            args: [
+            arguments: [
                 {
-                    type: argumentType.user,
+                    type: ApplicationCommandOptionType.User,
                     name: "user",
                     description: "User to ban",
                     required: true,
                 },
                 {
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     name: "reason",
                     description: "Reason why the user is getting banned",
                     required: true,
                 },
+                {
+                    type: ApplicationCommandOptionType.Integer,
+                    name: "days",
+                    description: "Number of days to delete messages",
+                    required: false,
+                },
             ],
+
+            botPermissions: ["BanMembers"],
 
             throttling: {
                 duration: 30,
@@ -36,19 +49,24 @@ module.exports = class extends Command {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
-        if (msg.user.id !== process.env.OWNER_ID) return {};
         let reason = msg.options.getString("reason");
+        const days = msg.options.getInteger("days") ?? 0;
+
         reason = reason
             ? Util.escapeMarkdown(reason).substring(0, 256)
             : "No reason provided";
-        const target = msg.options.getMember("user", true) as GuildMember;
+        const target = msg.options.getMember("user") as GuildMember | null;
+        if (!target) return { content: "No user provided" };
 
         if (!target.bannable)
             return { ephemeral: true, content: "I cant ban that person" };
 
-        target.ban({ reason: reason.substring(0, 128), days: 1 });
+        target.ban({
+            reason: reason.substring(0, 128),
+            deleteMessageDays: days,
+        });
 
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(`User has been banned`)
             .setDescription(
                 `<@${

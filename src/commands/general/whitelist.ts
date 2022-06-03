@@ -1,5 +1,9 @@
-import { GuildMember, HexColorString, MessageEmbed } from "discord.js";
-import { argumentType } from "../../types/argument";
+import {
+    GuildMember,
+    HexColorString,
+    EmbedBuilder,
+    ApplicationCommandOptionType,
+} from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
 import { getMcUUID, RCONHandler } from "../../lib/mc.service";
@@ -14,9 +18,9 @@ module.exports = class extends Command {
 
             guildOnly: true,
 
-            args: [
+            arguments: [
                 {
-                    type: argumentType.string,
+                    type: ApplicationCommandOptionType.String,
                     name: "mc_name",
                     description: "What mc account to whitelist",
                     required: true,
@@ -35,11 +39,11 @@ module.exports = class extends Command {
 
         await msg.deferReply();
 
-        const embed = new MessageEmbed().setColor(
+        const embed = new EmbedBuilder().setColor(
             process.env.EMBED_COLOR as HexColorString,
         );
 
-        const failEmbed = new MessageEmbed().setColor(
+        const failEmbed = new EmbedBuilder().setColor(
             process.env.EMBED_FAIL_COLOR as HexColorString,
         );
 

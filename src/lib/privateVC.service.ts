@@ -2,55 +2,39 @@ import {
     GuildChannelCreateOptions,
     GuildMember,
     OverwriteResolvable,
+    OverwriteType,
+    PermissionFlagsBits,
     VoiceChannel,
     VoiceState,
 } from "discord.js";
 import RavenClient from "../types/ravenClient";
 import db from "./db.service";
-import { randomRange } from "./functions.service";
+import { randomRange } from "./functions";
 import GuildConfig from "./guildconfig.service";
-
-const adjectives = [
-    "Cool",
-    "Fancy",
-    "Nice",
-    "Swaggy",
-    "Based",
-    "Stinky",
-    "Mommy",
-    "Irish",
-    "Musical",
-    "Happy",
-    "Big",
-    "Sussy",
-    "Goth",
-    "Swedish",
-    "Smelly",
-    "British",
-];
-
-const nouns = [
-    "Owl",
-    "Borb",
-    "Frog",
-    "Froggy",
-    "Pigeon",
-    "Ogre",
-    "Clara",
-    "HousePlant",
-    "Goth",
-    "Lukas",
-    "Tibu",
-    "Pilled",
-    "Czicken",
-];
+import owlets from "../owlets.json";
+import { private_vc } from "@prisma/client";
+import roomNames from "../roomNames.json";
 
 class VCServiceClass {
-    private ratelimit: Set<string> = new Set();
+    private createRateLimit: Set<string> = new Set();
+    private notifyRatelimit: Set<string> = new Set();
     private delays: Map<string, NodeJS.Timeout> = new Map();
+    private adjectives: string[] = [];
+    private nouns: string[] = [];
 
     public async initialize(client: RavenClient) {
         const rooms = await db.private_vc.findMany();
+        if (
+            roomNames &&
+            roomNames.adjectives.length > 0 &&
+            roomNames.nouns.length > 0
+        ) {
+            this.adjectives = roomNames.adjectives;
+            this.nouns = roomNames.nouns;
+        } else {
+            this.adjectives = ["Private", "Secret", "Hidden", "Secret"];
+            this.nouns = ["Room", "Basement", "Attic", "Chambers"];
+        }
 
         for (const room of rooms) {
             const guild = client.guilds.cache.get(room.guild_id);
@@ -92,11 +76,11 @@ class VCServiceClass {
 
     public async onChange(old: VoiceState, current: VoiceState) {
         const member = current.member;
-        const me = current.guild.me;
+        const me = current.guild.members.me;
         if (!me) return;
         if (
-            !me.permissions.has("MANAGE_CHANNELS") ||
-            !me.permissions.has("MOVE_MEMBERS")
+            !me.permissions.has(PermissionFlagsBits.ManageChannels) ||
+            !me.permissions.has(PermissionFlagsBits.MoveMembers)
         )
             return;
 
@@ -106,7 +90,10 @@ class VCServiceClass {
         const guildConfig = GuildConfig.getGuild(current.guild.id);
         const rooms = guildConfig?.privateRooms;
 
+        // Didnt join/leave.
         if (old.channelId == current.channelId) return;
+
+        // Left a private room.
         if (
             old.channelId &&
             rooms?.find((x) => x.main_channel_id == old.channelId)
@@ -115,11 +102,23 @@ class VCServiceClass {
         }
 
         if (current.channelId) {
+            // User joined the main room.
             if (guildConfig?.privateRoomID == current.channelId) {
                 this.createHub(current).catch((e) => console.error(e));
             }
+
+            // User joined a private room.
             if (rooms?.find((x) => x.main_channel_id == current.channelId)) {
                 this.joinHub(current).catch((e) => console.error(e));
+            }
+            // User joined waiting room.
+            const waitJoin = rooms?.find(
+                (x) => x.wait_channel_id == current.channelId,
+            );
+            if (waitJoin) {
+                this.joinWaiting(current, waitJoin).catch((e) =>
+                    console.error(e),
+                );
             }
         }
     }
@@ -128,6 +127,26 @@ class VCServiceClass {
         const memberCount = this.getMemberCount(vc);
         if (memberCount == 0) this.disbandVC(vc);
         // else if (memberCount == 1) this.startDelete(vc, 180000);
+    }
+
+    private async joinWaiting(vc: VoiceState, room: private_vc) {
+        const member = vc.member as GuildMember;
+        if (this.notifyRatelimit.has(member.id)) return;
+
+        const mainRoom = await vc.guild.channels.fetch(room.main_channel_id);
+        if (!mainRoom) return;
+
+        if (mainRoom.permissionOverwrites.cache.get(member.id)) return;
+        if (!mainRoom.isTextBased()) return;
+
+        await mainRoom
+            .send(
+                `Hey <@${room.user_id}>, ${member.displayName} has joined the waiting room.`,
+            )
+            .catch((e) => console.error(e));
+
+        this.notifyRatelimit.add(member.id);
+        setTimeout(() => this.notifyRatelimit.delete(member.id), 180000);
     }
 
     private async joinHub(vc: VoiceState) {
@@ -144,15 +163,15 @@ class VCServiceClass {
         // Add join perms if not already have.
         if (vc.channel.permissionOverwrites.cache.get(member.id)) return;
         vc.channel.permissionOverwrites.create(member.id, {
-            CONNECT: true,
-            VIEW_CHANNEL: true,
+            Connect: true,
+            ViewChannel: true,
         });
     }
 
     private async createHub(vc: VoiceState) {
         const member = vc.member as GuildMember;
 
-        if (this.ratelimit.has(member.id)) return;
+        if (this.createRateLimit.has(member.id)) return;
 
         const guildConfig = GuildConfig.getGuild(vc.guild.id);
         if (!guildConfig) return;
@@ -174,37 +193,52 @@ class VCServiceClass {
             }
         }
 
+        const owletsPerms: OverwriteResolvable[] = [];
+
+        for (const owlet of owlets) {
+            const botPerms: OverwriteResolvable = {
+                id: owlet.id,
+                type: OverwriteType.Member,
+                allow:
+                    PermissionFlagsBits.ManageChannels |
+                    PermissionFlagsBits.ViewChannel |
+                    PermissionFlagsBits.Connect |
+                    PermissionFlagsBits.Speak,
+                // allow: ["ManageChannels", "ViewChannel", "Connect", "Speak"],
+            };
+
+            owletsPerms.push(botPerms);
+        }
+
         // Channel perms.
         const ownerPerms: OverwriteResolvable = {
             id: vc.member?.id as string,
-            allow: ["MOVE_MEMBERS", "CONNECT", "VIEW_CHANNEL"],
-        };
-
-        const botPerms: OverwriteResolvable = {
-            id: vc.client.user?.id as string,
-            allow: ["MANAGE_CHANNELS", "VIEW_CHANNEL", "CONNECT", "SPEAK"],
+            allow:
+                PermissionFlagsBits.MoveMembers |
+                PermissionFlagsBits.Connect |
+                PermissionFlagsBits.ViewChannel,
         };
 
         const mainPerms: OverwriteResolvable = {
             id: vc.guild.id,
-            deny: ["CONNECT"],
-            allow: ["SPEAK", "STREAM"],
+            deny: PermissionFlagsBits.Connect,
+            allow: PermissionFlagsBits.Speak | PermissionFlagsBits.Stream,
         };
 
         const waitingPerms: OverwriteResolvable = {
             id: vc.guild.id,
-            deny: ["SPEAK", "STREAM"],
+            deny: PermissionFlagsBits.Speak | PermissionFlagsBits.Stream,
         };
 
         const staffPerms: OverwriteResolvable = {
             id: guildConfig.staff_role || "",
-            allow: ["VIEW_CHANNEL"],
+            allow: PermissionFlagsBits.ViewChannel,
         };
 
         // Generate channel name.
-        const random1 = randomRange(0, adjectives.length);
-        const random2 = randomRange(0, nouns.length);
-        const channelName = adjectives[random1] + nouns[random2];
+        const random1 = randomRange(0, this.adjectives.length);
+        const random2 = randomRange(0, this.nouns.length);
+        const channelName = this.adjectives[random1] + this.nouns[random2];
 
         // Room config.
         const roomConfig: GuildChannelCreateOptions = {
@@ -212,8 +246,8 @@ class VCServiceClass {
             parent: guildConfig.privateRoomCategory as string,
         };
 
-        const roomList = [botPerms, ownerPerms, mainPerms];
-        const waitList = [botPerms, ownerPerms, waitingPerms];
+        const roomList = [ownerPerms, mainPerms].concat(owletsPerms);
+        const waitList = [ownerPerms, waitingPerms].concat(owletsPerms);
 
         if (guildConfig.staff_role) {
             roomList.push(staffPerms);
@@ -257,8 +291,8 @@ class VCServiceClass {
         });
         if (!query) return;
 
-        this.ratelimit.add(query.user_id);
-        setTimeout(() => this.ratelimit.delete(query.user_id), 180000);
+        this.createRateLimit.add(query.user_id);
+        setTimeout(() => this.createRateLimit.delete(query.user_id), 180000);
 
         const mainRoom = await vc.guild.channels
             .fetch(query.main_channel_id)

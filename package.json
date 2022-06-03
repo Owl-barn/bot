@@ -18,6 +18,7 @@
     "@types/jsonwebtoken": "^8.5.5",
     "@types/morgan": "^1.9.3",
     "@types/node": "^13.13.52",
+    "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "^4.28.1",
     "@typescript-eslint/parser": "^4.28.1",
     "eslint": "^7.29.0",
@@ -28,15 +29,13 @@
     "typescript": "^4.4.3"
   },
   "dependencies": {
-    "@discordjs/builders": "^0.6.0",
     "@discordjs/rest": "^0.1.0-canary.0",
-    "@discordjs/voice": "^0.6.0",
     "axios": "^0.24.0",
     "colors": "^1.4.0",
     "cookie-parser": "^1.4.5",
     "cron": "^1.8.2",
     "discord-api-types": "^0.23.1",
-    "discord.js": "^13.4.0",
+    "discord.js": "^14.0.0-dev.1653480262-68d5169",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "got": "^11.8.2",
@@ -44,7 +43,7 @@
     "libsodium-wrappers": "^0.7.9",
     "moment": "^2.29.1",
     "morgan": "^1.10.0",
-    "play-dl": "^1.4.4",
-    "rcon-client": "^4.2.3"
+    "rcon-client": "^4.2.3",
+    "ws": "^8.7.0"
   }
 }
