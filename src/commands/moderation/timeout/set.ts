@@ -1,113 +1,63 @@
-import {
-    GuildMember,
-    HexColorString,
-    EmbedBuilder,
-    Util,
-    ApplicationCommandOptionType,
-} from "discord.js";
-import { Command, returnMessage } from "../../types/Command";
-import { CommandGroup } from "../../types/commandGroup";
-import RavenInteraction from "../../types/interaction";
+import { ApplicationCommandOptionType, GuildMember, Util } from "discord.js";
+import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
+import { returnMessage, SubCommand } from "../../../types/Command";
+import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends Command {
+module.exports = class extends SubCommand {
     constructor() {
         super({
-            name: "timeout",
-            description: "puts a user on timeout",
-            group: CommandGroup.moderation,
-
-            guildOnly: true,
+            name: "set",
+            description: "Add your birthday to the bot!",
 
             arguments: [
                 {
-                    type: ApplicationCommandOptionType.Subcommand,
-                    name: "set",
-                    description: "put someone on timeout",
-                    subCommands: [
-                        {
-                            type: ApplicationCommandOptionType.User,
-                            name: "user",
-                            description: "User to put on timeout",
-                            required: true,
-                        },
-                        {
-                            type: ApplicationCommandOptionType.String,
-                            name: "duration",
-                            description: "for how long",
-                            required: true,
-                        },
-                        {
-                            type: ApplicationCommandOptionType.String,
-                            name: "reason",
-                            description: "why?",
-                            required: false,
-                        },
-                    ],
+                    type: ApplicationCommandOptionType.User,
+                    name: "user",
+                    description: "User to put on timeout",
+                    required: true,
                 },
                 {
-                    type: ApplicationCommandOptionType.Subcommand,
-                    name: "clear",
-                    description: "Remove timeout",
-                    subCommands: [
-                        {
-                            type: ApplicationCommandOptionType.User,
-                            name: "user",
-                            description: "User to remove from timeout",
-                            required: true,
-                        },
-                    ],
+                    type: ApplicationCommandOptionType.String,
+                    name: "duration",
+                    description: "for how long",
+                    required: true,
+                },
+                {
+                    type: ApplicationCommandOptionType.String,
+                    name: "reason",
+                    description: "why?",
+                    required: false,
                 },
             ],
 
-            userPermissions: ["ModerateMembers"],
             botPermissions: ["ModerateMembers"],
 
             throttling: {
-                duration: 30,
+                duration: 60,
                 usages: 3,
             },
         });
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
-        const command = msg.options.getSubcommand(true);
         const timeoutLimit = 2419200000;
 
         let reason = msg.options.getString("reason", false);
+
         const target = msg.options.getMember("user") as GuildMember | null;
         if (!target) return { content: "No user provided" };
+
         const durationCheck = new RegExp(
             /((?<days>[0-9]{1,2}) ?(?:d) ?)?((?<hours>[0-9]{1,2}) ?(?:h) ?)?((?<minutes>[0-9]{1,2}) ?(?:m))?/g,
         );
 
-        const embed = new EmbedBuilder().setColor(
-            process.env.EMBED_COLOR as HexColorString,
-        );
-
-        const failEmbed = new EmbedBuilder().setColor(
-            process.env.EMBED_FAIL_COLOR as HexColorString,
-        );
-
-        if (command === "clear") {
-            if (!target.communicationDisabledUntil)
-                return {
-                    ephemeral: true,
-                    embeds: [
-                        failEmbed.setDescription("This user isnt timed out."),
-                    ],
-                };
-            await target.timeout(null);
-
-            const response = embed.setDescription(
-                `${target}'s timeout has been cleared`,
-            );
-
-            return { embeds: [response] };
-        }
+        const embed = embedTemplate();
+        const failEmbed = failEmbedTemplate();
 
         const duration = Util.escapeMarkdown(
             msg.options.getString("duration", true),
         ).trim();
+
         if (!target.moderatable)
             return {
                 embeds: [failEmbed.setDescription("I cant time-out that user")],
@@ -121,6 +71,7 @@ module.exports = class extends Command {
                 ephemeral: true,
                 embeds: [embed.setDescription("Couldnt determine duration")],
             };
+
         days = Number(days);
         hours = Number(hours);
         minutes = Number(minutes);
@@ -152,6 +103,7 @@ module.exports = class extends Command {
         embed.setDescription(
             `${target} has been timed out\nWith the reason: \`${reason}\`\nfor: \` ${durationString} \``,
         );
+
         embed.addFields([
             {
                 name: "Expiration",
