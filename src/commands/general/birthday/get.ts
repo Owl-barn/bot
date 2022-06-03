@@ -59,7 +59,7 @@ module.exports = class extends SubCommand {
 
         if (!query?.birthday) {
             failEmbed.setDescription("This user has no birthday registered");
-            return { embeds: [embed] };
+            return { embeds: [failEmbed] };
         }
 
         // Transform data.

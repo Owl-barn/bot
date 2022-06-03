@@ -227,7 +227,11 @@ class VCServiceClass {
 
         const waitingPerms: OverwriteResolvable = {
             id: vc.guild.id,
-            deny: PermissionFlagsBits.Speak | PermissionFlagsBits.Stream,
+            deny:
+                PermissionFlagsBits.Speak |
+                PermissionFlagsBits.Stream |
+                PermissionFlagsBits.AttachFiles |
+                PermissionFlagsBits.EmbedLinks,
         };
 
         const staffPerms: OverwriteResolvable = {
