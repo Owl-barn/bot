@@ -1,4 +1,4 @@
-import { Command } from "../types/Command";
+import { Command, SubCommand } from "../types/Command";
 
 class ThrottleService {
     private list: Record<string, Record<string, ThrottleCommandMap[]>> = {};
@@ -6,7 +6,7 @@ class ThrottleService {
     public isThrottled(
         guild: string,
         user: string,
-        command: Command,
+        command: Command | SubCommand,
     ): number | boolean {
         const listUser = this.list[guild]?.[user];
         if (!listUser) return false;

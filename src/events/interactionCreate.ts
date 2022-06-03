@@ -3,7 +3,12 @@ import bannedUsers from "../lib/banlist.service";
 import GuildConfig from "../lib/guildconfig.service";
 import logService from "../lib/logger.service";
 import throttleService from "../lib/throttle.service";
-import { returnMessage } from "../types/Command";
+import {
+    Command,
+    ParentCommand,
+    returnMessage,
+    SubCommand,
+} from "../types/Command";
 import { CommandGroup } from "../types/commandGroup";
 import RavenEvent from "../types/event";
 import RavenInteraction, { RavenButtonInteraction } from "../types/interaction";
@@ -59,18 +64,31 @@ export default class InteractionCreate implements RavenEvent {
         const subCommandGroup = msg.options.getSubcommandGroup(false);
         const subCommand = msg.options.getSubcommand(false);
 
-        subCommandGroup ? (commandName += `_${subCommandGroup}`) : null;
-        subCommand ? (commandName += `_${subCommand}`) : null;
+        subCommandGroup ? (commandName += `-${subCommandGroup}`) : null;
+        subCommand ? (commandName += `-${subCommand}`) : null;
 
-        const command = client.commands.get(commandName);
+        const command = client.commands.get(commandName) as
+            | SubCommand
+            | Command;
 
         if (!command) return;
 
-        // Chek if owner command.
+        let parentCommand: ParentCommand | undefined;
+        if (commandName.includes("-")) {
+            // if the command includes a dash, that means its a subcommand
+            parentCommand = client.commands.get(
+                commandName.split("-")[0],
+            ) as ParentCommand;
+        }
+
+        const group = (command as Command).group || parentCommand?.group;
+        if (!group) return;
+
         if (
-            command.group === CommandGroup.owner &&
+            group === CommandGroup.owner &&
             msg.user.id !== process.env.OWNER_ID
         )
+            // Chek if owner command.
             return await this.quickReply(
                 msg,
                 "You are not allowed to do this command.",

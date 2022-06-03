@@ -4,7 +4,7 @@ colors.enable();
 import { Collection } from "discord.js";
 import fs from "fs";
 import path from "path";
-import { CommandEnum, ParentCommand } from "../types/Command";
+import { CommandEnum, ParentCommand, SubCommandGroup } from "../types/Command";
 
 export async function registerCommands(): Promise<
     Collection<string, CommandEnum>
@@ -67,7 +67,7 @@ async function generateSimpleCommand(
         return;
     }
 
-    preName ? (command.name = `${preName}_${command.name}`) : null;
+    preName ? (command.name = `${preName}-${command.name}`) : null;
 
     return { name: command.name, command };
 }
@@ -81,15 +81,20 @@ async function generateSubCommand(
 
     const mainCommandClass = (await import(`${folderPath}/index.js`)).default;
 
-    const mainCommand = new mainCommandClass() as ParentCommand;
+    const mainCommand = new mainCommandClass() as
+        | ParentCommand
+        | SubCommandGroup;
 
     if (!mainCommand) throw new Error("No main command found");
 
     const commandName = mainCommand.name;
     const commands: returnType[] = [];
 
+    commands.push({ name: mainCommand.name, command: mainCommand });
+
     // Loop through all sub commands
     for (const file of commandFiles) {
+        if (file == "index.js") continue;
         if (file.endsWith(".js")) {
             const command = await generateSimpleCommand(
                 `${folderPath}/${file}`,
@@ -98,10 +103,7 @@ async function generateSubCommand(
             if (!command) continue;
 
             commands.push({
-                name:
-                    file == "index.js"
-                        ? command.name
-                        : `${commandName}_${command.name}`,
+                name: `${commandName}-${command.name}`,
                 command: command.command,
             });
 
@@ -113,7 +115,7 @@ async function generateSubCommand(
 
         for (const subCommand of subCommands) {
             commands.push({
-                name: `${commandName}_${subCommand.name}`,
+                name: `${commandName}-${subCommand.name}`,
                 command: subCommand.command,
             });
         }

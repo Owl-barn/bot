@@ -10,8 +10,6 @@ module.exports = class extends SubCommand {
             name: "top",
             description: "View the server leaderboard.",
 
-            arguments: [],
-
             throttling: {
                 duration: 60,
                 usages: 3,
