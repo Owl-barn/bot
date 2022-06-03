@@ -178,7 +178,6 @@ function convert(
                 builder.addSubcommandGroup(groupBuilder);
             }
         }
-        if (top_level_command.name == "skip") console.log(builder);
 
         commandsArray.push(builder);
     }

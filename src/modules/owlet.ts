@@ -74,7 +74,8 @@ export default class Owlet {
      * @returns promise of the owlet's response.
      */
     public async send<T>(message: wsRequest): Promise<T> {
-        console.log("Sent".yellow.bold, message);
+        if (process.env.NODE_ENV === "development")
+            console.log("Sent".yellow.bold, message);
 
         this.socket.send(JSON.stringify(message));
         const result = new Promise<T>((resolve, reject) => {
