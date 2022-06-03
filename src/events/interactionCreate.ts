@@ -53,8 +53,14 @@ export default class InteractionCreate implements RavenEvent {
     async commandEvent(msg: RavenInteraction): Promise<void> {
         const client = msg.client as RavenClient;
 
-        const { commandName } = msg;
+        let { commandName } = msg;
         if (!msg.guildId) return;
+
+        const subCommandGroup = msg.options.getSubcommandGroup(false);
+        const subCommand = msg.options.getSubcommand(false);
+
+        subCommandGroup ? (commandName += `_${subCommandGroup}`) : null;
+        subCommand ? (commandName += `_${subCommand}`) : null;
 
         const command = client.commands.get(commandName);
 

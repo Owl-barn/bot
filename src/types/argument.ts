@@ -15,7 +15,13 @@ export enum argumentType {
 }
 
 export interface Argument {
-    type: ApplicationCommandOptionType;
+    type: Omit<
+        ApplicationCommandOptionType,
+        | ApplicationCommandOptionType.Subcommand
+        | ApplicationCommandOptionType.SubcommandGroup
+    >;
+    min?: number;
+    max?: number;
     name: string;
     description: string;
     required?: boolean;

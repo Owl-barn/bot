@@ -4,7 +4,7 @@ import {
     GuildMember,
 } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
-import { botIcon, isDJ } from "../../lib/functions.service";
+import { botIcon, isDJ } from "../../lib/functions";
 import Owlet from "../../modules/owlet";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";

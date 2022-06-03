@@ -9,7 +9,7 @@ import {
 } from "discord.js";
 import RavenClient from "../types/ravenClient";
 import db from "./db.service";
-import { randomRange } from "./functions.service";
+import { randomRange } from "./functions";
 import GuildConfig from "./guildconfig.service";
 import owlets from "../owlets.json";
 import { private_vc } from "@prisma/client";

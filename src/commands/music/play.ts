@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
-import { isDJ } from "../../lib/functions.service";
+import { isDJ } from "../../lib/functions";
 import moment from "moment";
 import { CommandGroup } from "../../types/commandGroup";
 import { failEmbedTemplate } from "../../lib/embedTemplate";

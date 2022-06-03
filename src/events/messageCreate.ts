@@ -11,7 +11,7 @@ import {
 import AFKService from "../lib/afk.service";
 import bannedUsers from "../lib/banlist.service";
 import prisma from "../lib/db.service";
-import { yearsAgo } from "../lib/functions.service";
+import { yearsAgo } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import registerCommand from "../modules/command.register";

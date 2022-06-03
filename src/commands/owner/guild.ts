@@ -13,7 +13,7 @@ import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
-module.exports = class statsCommand extends Command {
+module.exports = class extends Command {
     constructor() {
         super({
             name: "guild",

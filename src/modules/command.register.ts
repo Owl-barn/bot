@@ -111,6 +111,7 @@ export default async function registerCommand(
 ): Promise<void> {
     const commandBuilder: SlashCommandBuilder[] = [];
     const commands = client.commands;
+
     let botGuild = await client.db.guilds.findUnique({
         where: { guild_id: guild.id },
     });
@@ -124,44 +125,16 @@ export default async function registerCommand(
         if (command.group === CommandGroup.owner && !botGuild.dev) continue;
         let permission = true;
 
-        let builder = new SlashCommandBuilder()
+        const builder = new SlashCommandBuilder()
             .setName(command.name)
             .setDescription(command.description);
 
-        if (command.args) {
-            command.args.forEach(
-                (arg) =>
-                    (builder = argumentHanlder(
-                        builder,
-                        arg,
-                    ) as SlashCommandBuilder),
-            );
-        }
-
-        if (
-            !command.args?.find(
-                (x) =>
-                    x.type == ApplicationCommandOptionType.Subcommand ||
-                    x.type == ApplicationCommandOptionType.SubcommandGroup,
-            )
-        ) {
-            builder.addBooleanOption((Option) =>
-                Option.setName("hidden")
-                    .setDescription("hide result?")
-                    .setRequired(false),
-            );
-        }
-
         const limitedGroups = [CommandGroup.moderation, CommandGroup.owner];
 
-        if (
-            limitedGroups.includes(command.group) ||
-            (command.premium && !botGuild.premium)
-        ) {
-            permission = false;
-        }
+        limitedGroups.includes(command.group) && (permission = false);
+        command.premium && !botGuild.premium && (permission = false);
 
-        builder.setDefaultPermission(permission); // *******
+        !permission && builder.setDefaultMemberPermissions(0);
 
         commandBuilder.push(builder);
     }

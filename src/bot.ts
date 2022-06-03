@@ -52,9 +52,7 @@ class Bot {
     };
 
     private async initializeCommands() {
-        this.client.commands = await registerCommands().catch((e) => {
-            throw ` x Couldnt load commands \n ${e}`.red.bold;
-        });
+        this.client.commands = await registerCommands();
     }
 
     private async initializeButtons() {

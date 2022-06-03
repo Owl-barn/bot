@@ -1,21 +1,17 @@
-import {
-    Interaction,
-    InteractionReplyOptions,
-    PermissionsString,
-} from "discord.js";
+import { PermissionsString, ApplicationCommandOptionType } from "discord.js";
 import { Argument } from "./argument";
+import { Throttling, returnMessage } from "./Command";
 import RavenInteraction from "./interaction";
 
-export abstract class Command {
-    public constructor(info: CommandInfo) {
+export abstract class SubCommand {
+    public constructor(info: SubCommandInfo) {
         Object.assign(this, info);
     }
 
     public name!: string;
     public description!: string;
+    public type!: ApplicationCommandOptionType.Subcommand;
 
-    public guildOnly = false;
-    public adminOnly?: boolean;
     public premium?: boolean;
     public disabled?: boolean;
 
@@ -32,15 +28,14 @@ export abstract class Command {
      * Execute the command.
      * @param interaction The interaction that triggered the command.
      */
-    abstract execute(interaction: Interaction): Promise<returnMessage>;
+    abstract execute(interaction: RavenInteraction): Promise<returnMessage>;
 }
 
-export interface CommandInfo {
+interface SubCommandInfo {
     name: string;
     description: string;
+    type: ApplicationCommandOptionType.Subcommand;
 
-    guildOnly?: boolean;
-    adminOnly?: boolean;
     premium?: boolean;
     disabled?: boolean;
 
@@ -52,23 +47,4 @@ export interface CommandInfo {
     throttling: Throttling;
 
     path?: string;
-}
-
-// eslint-disable-next-line no-shadow
-export enum CommandType {
-    normal,
-    wrapper,
-}
-
-export interface Throttling {
-    duration: number;
-    usages: number;
-}
-
-export interface Permissions {
-    test: string;
-}
-
-export interface returnMessage extends InteractionReplyOptions {
-    callback?: (interaction: RavenInteraction) => Promise<returnMessage | void>;
 }

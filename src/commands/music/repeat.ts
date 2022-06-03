@@ -5,7 +5,7 @@ import {
     ApplicationCommandOptionType,
 } from "discord.js";
 import { failEmbedTemplate } from "../../lib/embedTemplate";
-import { isDJ } from "../../lib/functions.service";
+import { isDJ } from "../../lib/functions";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
