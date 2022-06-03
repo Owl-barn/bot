@@ -83,7 +83,7 @@ module.exports = class extends SubCommand {
             const channel = await msg.guild?.channels.create(
                 "Create private room",
                 {
-                    type: 2,
+                    type: ChannelType.GuildVoice,
                     parent: category.id,
                 },
             );
