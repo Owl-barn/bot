@@ -90,7 +90,7 @@ module.exports = class extends Command {
 
         const bot = await msg.guild.members.fetch(musicBot.getId());
         const author: EmbedAuthorOptions = {
-            name: "Queue",
+            name: "Skip",
             iconURL: botIcon(bot),
         };
 
