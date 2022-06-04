@@ -101,6 +101,7 @@ function convert(
                     argument,
                 );
             });
+            builder = hideCommand(builder as SlashCommandBuilder);
             // Command is a parent command.
         } else if (top_level_command.type == CommandType.Parent) {
             const subCommandsByLength = groupBy(
@@ -207,6 +208,8 @@ function buildSubCommand(
         builder = argumentHandler(builder, argument);
     });
 
+    builder = hideCommand(builder);
+
     return builder;
 }
 
@@ -221,6 +224,17 @@ type OptionBuilder =
     | SlashCommandBooleanOption;
 
 type builderType = SlashCommandBuilder | SlashCommandSubcommandBuilder;
+
+function hideCommand<T extends builderType>(builder: T): T {
+    builder.addBooleanOption((option) => {
+        option.setName("hidden");
+        option.setDescription("Hide this command from others.");
+        option.setRequired(false);
+        return option;
+    });
+
+    return builder;
+}
 
 function argumentHandler<T extends builderType>(
     builder: T,
