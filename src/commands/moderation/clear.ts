@@ -27,6 +27,8 @@ module.exports = class extends Command {
                 },
             ],
 
+            botPermissions: ["ManageMessages"],
+
             throttling: {
                 duration: 30,
                 usages: 3,

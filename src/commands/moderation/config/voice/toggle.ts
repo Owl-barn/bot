@@ -14,6 +14,8 @@ module.exports = class extends SubCommand {
             name: "toggle",
             description: "Toggle private vcs.",
 
+            botPermissions: ["ManageChannels", "ManageRoles"],
+
             throttling: {
                 duration: 60,
                 usages: 3,

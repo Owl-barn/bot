@@ -18,6 +18,8 @@ module.exports = class extends SubCommand {
                 },
             ],
 
+            botPermissions: ["ModerateMembers"],
+
             throttling: {
                 duration: 60,
                 usages: 3,

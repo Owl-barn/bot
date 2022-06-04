@@ -28,6 +28,8 @@ module.exports = class extends Command {
                 },
             ],
 
+            botPermissions: ["ManageNicknames", "ChangeNickname"],
+
             throttling: {
                 duration: 30,
                 usages: 3,
