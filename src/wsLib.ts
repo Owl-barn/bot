@@ -10,21 +10,18 @@ export class RavenWS {
     currentScene: string;
     sceneList: never[];
     ws: import("ws");
-    resolve: any;
+    resolve: (token: string) => void;
+    token: string;
+    timeout: number;
 
     /**
      * Creates a new RavenWS instance without connecting
      */
-    constructor(
-        address: string,
-        password: string,
-        callback: (x: any) => Promise<Client>,
-        logging = false,
-    ) {
+    constructor(address: string, password: string, logging = false) {
         this.address = address;
         this.logging = logging;
         this.password = password;
-        this.resolve = callback;
+        this.timeout = 5000;
 
         this.eventCallbacks = {};
         this.sends = {};
@@ -38,39 +35,74 @@ export class RavenWS {
      */
     connect(): Promise<string> {
         this.ws = new WebSocket(this.address);
-        this.ws.onopen = () => {
-            this.send("Authenticate", { password: this.password }).then(
-                async (msg: any) => {
-                    if (!msg.success) {
-                        throw new Error("Password incorrect");
+        this.ws.onopen = async () => {
+            if (this.token != null) {
+                await this.send("Authenticate", {
+                    password: this.password,
+                    token: this.token,
+                }).then(async (msg: any) => {
+                    if (msg.error) {
+                        throw new Error(msg.error);
                     }
 
-                    if (msg.token == null) {
-                        throw new Error("No token received");
+                    if (msg.token != null && msg.token !== this.token) {
+                        throw new Error("Token received when not expected");
                     }
 
-                    if (this.resolve) await this.resolve(msg.token);
+                    if (this.resolve) this.resolve(this.token);
+
+                    this.timeout = 5000;
 
                     if (this.eventCallbacks["ConnectionOpened"]) {
                         for (const callback of this.eventCallbacks[
                             "ConnectionOpened"
                         ]) {
-                            callback();
+                            const res = await callback();
+                            this.send("Status", res, msg.mid);
                         }
                     }
-                },
-            );
+                });
+            } else {
+                this.send("Authenticate", { password: this.password }).then(
+                    async (msg: any) => {
+                        if (msg.error) {
+                            throw new Error(msg.error);
+                        }
+
+                        if (msg.token == null) {
+                            throw new Error("No token received");
+                        }
+
+                        if (this.resolve) this.resolve(msg.token);
+
+                        this.timeout = 5000;
+
+                        if (this.eventCallbacks["ConnectionOpened"]) {
+                            for (const callback of this.eventCallbacks[
+                                "ConnectionOpened"
+                            ]) {
+                                const res = await callback();
+                                this.send("Status", res, msg.mid);
+                            }
+                        }
+                    },
+                );
+            }
         };
 
         this.ws.onclose = (e: { reason: any }) => {
             if (!e.reason) {
                 console.log(
-                    "Socket is closed. Reconnect will be attempted in 5 seconds.",
+                    `Socket is closed. Reconnect will be attempted in ${
+                        this.timeout / 1000
+                    } seconds`,
                     e.reason,
                 );
                 setTimeout(() => {
                     this.connect();
-                }, 5000);
+                }, this.timeout);
+
+                this.timeout < 300000 ? (this.timeout *= 2) : null;
             }
         };
 

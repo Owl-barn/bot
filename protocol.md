@@ -62,22 +62,28 @@ json:
 
 Sent by the music sub-bots to authenticate with the main bot.
 
+### Request
+
+command = `Authenticate`
+
+`userid` is sent, id the bot is already connected to discord.
+
 ```ts
 {
     password: String;
+    userId?: String;
 }
 ```
 
-## Authenticated
+### Response
 
 Sent by the main bot to confirm that the music sub-bot has authenticated.
 
-Raven-bot also sends a discord token to the sub-bot.
+Raven-bot also sends a discord token to the sub-bot if the sub-bot is not already connected to discord.
 
 ```ts
 {
-    token: String;
-    error?: String;
+    token?: String;
 }
 ```
 
@@ -195,8 +201,38 @@ command = `Queue`
     queue: Track[],
     current: CurrentSong,
     queueInfo: QueueInfo
-    paused: boolean,
-    repeat: enum,
+}
+```
+
+```ts
+interface QueueInfo {
+    length: number;
+    size: number;
+    paused: boolean;
+    repeat: QueueRepeatMode;
+}
+```
+
+## Repeat
+
+Repeat the playlist. If repeat is not present, toggle.
+
+command = `Repeat`
+
+### request
+
+```ts
+{
+    GuildId: string,
+    Repeat: QueueRepeatMode
+}
+```
+
+### response
+
+```ts
+{
+    Repeat: QueueRepeatMode;
 }
 ```
 
@@ -228,21 +264,6 @@ Shuffle the queue
     "data": {
         "vc": string,
         "guild": string
-    }
-}
-```
-
-## Repeat
-
-Repeat the playlist. If repeat is not present, toggle.
-
-```ts
-{
-    "command": "repeat",
-    "data": {
-        "vc": string,
-        "guild": string,
-        "repeat": Boolean
     }
 }
 ```

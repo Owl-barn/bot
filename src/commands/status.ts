@@ -3,6 +3,8 @@ import bot from "../app";
 export default async function getStatus(): Promise<{}> {
     const client = bot.getClient();
 
+    if (!client) return { error: "No client" };
+    
     const id = client.user?.id;
 
     if (!id)
@@ -25,7 +27,6 @@ export default async function getStatus(): Promise<{}> {
         guilds,
     };
 
-    console.log(status.guilds);
     return { ...status };
 }
 

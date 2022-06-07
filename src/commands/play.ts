@@ -3,12 +3,12 @@ import { Util, VoiceChannel } from "discord.js";
 import bot from "../app";
 import formatTrack from "../lib/formatTrack";
 import queueInfo from "../lib/queueInfo";
+import playdl from "play-dl";
 
 export default async function play(message: {
     data: playData;
 }): Promise<{ track: Track; queueInfo: queueInfo }> {
     const { channelId, guildId, query, userId, force } = message.data;
-    console.log(message);
 
     const client = bot.getClient();
     const player = client.player;
@@ -19,9 +19,21 @@ export default async function play(message: {
         leaveOnEnd: true,
         leaveOnStop: true,
         leaveOnEmptyCooldown: 30000,
+        // async onBeforeCreateStream(track, source, _queue): Promise<any> {
+        //     if (source === "youtube") {
+        //         return (
+        //             await playdl.stream(track.url, {
+        //                 discordPlayerCompatibility: true,
+        //                 quality: 2,
+        //             })
+        //         ).stream;
+        //     }
+        // },
     };
 
-    const queue = player.createQueue(guild, queueOptions);
+    let queue = player.getQueue(guild);
+
+    if (!queue) queue = player.createQueue(guild, queueOptions);
 
     if (queue.repeatMode == 3) {
         queue.setRepeatMode(0);

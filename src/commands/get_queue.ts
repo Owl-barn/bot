@@ -5,12 +5,7 @@ import queueInfo, { QueueInfo } from "../lib/queueInfo";
 
 export default async function getQueue(message: {
     data: GetQueueData;
-}): Promise<{
-    queueInfo: QueueInfo;
-    queue: Track[];
-    current: currentSong;
-    loop: boolean;
-}> {
+}): Promise<response> {
     const { guildId } = message.data;
     const client = bot.getClient();
     const player = client.player;
@@ -34,7 +29,6 @@ export default async function getQueue(message: {
         queueInfo: queueInfo(queue),
         queue: queueList,
         current,
-        loop: queue.repeatMode == 2,
     };
 }
 
@@ -46,4 +40,10 @@ interface currentSong extends TrackJSON {
     current: string;
     end: string;
     progress: number;
+}
+
+interface response {
+    queue: Track[];
+    current: currentSong;
+    queueInfo: QueueInfo;
 }

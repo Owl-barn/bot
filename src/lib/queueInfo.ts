@@ -1,9 +1,8 @@
-import { Queue } from "discord-player";
+import { Queue, QueueRepeatMode } from "discord-player";
 
 export default function queueInfo(queue: Queue) {
     let length = queue.tracks.reduce((x, y) => x + y.durationMS, 0);
     const current = queue.current;
-    console.log(queue.getPlayerTimestamp().progress);
 
     length +=
         current.durationMS -
@@ -14,10 +13,14 @@ export default function queueInfo(queue: Queue) {
     return {
         length,
         size: queue.tracks.length,
+        repeat: queue.repeatMode,
+        paused: queue.connection.paused,
     };
 }
 
 export interface QueueInfo {
     length: number;
     size: number;
+    paused: boolean;
+    repeat: QueueRepeatMode;
 }

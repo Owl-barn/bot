@@ -1,6 +1,6 @@
 import bot from "../app";
 
-export default async function stop(message: {
+export default async function skip(message: {
     data: { guildId: string; index: number };
 }): Promise<{}> {
     const { guildId, index } = message.data;
@@ -11,9 +11,10 @@ export default async function stop(message: {
 
     const queue = player.getQueue(guild);
 
-    if (!queue || !queue.playing) throw "No music is playing";
+    if (!queue || !queue.playing) throw "No music is playing right now.";
 
-    if (index > queue.tracks.length - 1) throw "Index out of bounds";
+    if (index !== 0 && index > queue.tracks.length)
+        throw "I couldn't find a song at that position.";
 
     if (index == 0) queue.skip();
     else queue.remove(index - 1);
