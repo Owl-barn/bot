@@ -92,7 +92,7 @@ export default class musicService {
         const pass = message.data.password;
 
         // Check password.
-        if (pass != "1234") {
+        if (pass != process.env.OWLET_PASSWORD) {
             return ws.send(
                 JSON.stringify({
                     mid: message.mid,
