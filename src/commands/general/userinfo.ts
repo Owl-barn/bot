@@ -70,6 +70,13 @@ module.exports = class extends Command {
         );
         const birthday = birthdayQuery ? `**Birthday:** ${birthdayTime}` : "";
         const warnings = `**Warnings:** ${warnQuery}`;
+        const muted =
+            member.communicationDisabledUntilTimestamp !== null
+                ? `**Mute will be removed** <t:${Math.round(
+                      member.communicationDisabledUntilTimestamp / 1000,
+                  )}:R>`
+                : "";
+
         const bot = `${member.user.bot ? "**Bot:** ✅" : ""}`;
 
         let list: string | string[] = [
@@ -79,6 +86,7 @@ module.exports = class extends Command {
             joined,
             birthday,
             warnings,
+            muted,
             bot,
         ];
 
