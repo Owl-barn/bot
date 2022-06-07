@@ -10,8 +10,8 @@ import loop from "./commands/loop";
 import skip from "./commands/skip";
 const bot = new Bot();
 const ws = new RavenWS(
-    "ws:localhost:8080",
-    "1234",
+    process.env.ADDRESS as string,
+    process.env.PASSWORD as string,
     process.env.NODE_ENV === "development",
 );
 
