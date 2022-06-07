@@ -258,13 +258,19 @@ command = `Status`
 
 Shuffle the queue
 
+command = `Shuffle`
+
 ```ts
 {
-    "command": "shuffle",
-    "data": {
-        "vc": string,
-        "guild": string
-    }
+    GuildId: string,
+}
+```
+
+### response
+
+```ts
+{
+    queue: Track[],
 }
 ```
 
@@ -274,84 +280,6 @@ Clear the queue
 
 ```ts
 {
-    "command": "clear",
-    "data": {
-        "vc": string,
-        "guild": string
-    }
-}
-```
-
-## Remove
-
-Remove a song by string from the queue
-
-```ts
-{
-    "command": "remove",
-    "data": {
-        "vc": string,
-        "guild": string,
-        "song": string
-    }
-}
-```
-
-## Move
-
-Move a song by string in the queue
-
-```ts
-{
-    "command": "move",
-    "data": {
-        "vc": string,
-        "guild": string,
-        "song": string,
-        "index": Number
-    }
-}
-```
-
-## List
-
-Lists all the songs in the queue
-
-```ts
-{
-    "command": "list",
-    "data": {
-        "vc": string,
-        "guild": string
-    }
-}
-```
-
-### Response
-
-```ts
-{
-    "command": "list",
-    "data": {
-        "vc": string,
-        "guild": string,
-        "songs":
-        [
-            {
-                "id": string,
-                "author": String,
-                "description": String,
-                "duration": String,
-                "durationMS": Number,
-                "fromPlaylist": String,
-                "requestedBy": string,
-                "source": String,
-                "thumbnail": String,
-                "title": String,
-                "url": String,
-                "views": Number
-            }
-        ]
-    }
+    GuildId: string,
 }
 ```
