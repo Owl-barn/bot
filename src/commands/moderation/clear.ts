@@ -1,10 +1,9 @@
 import {
     BaseGuildTextChannel,
-    HexColorString,
     InteractionReplyOptions,
-    EmbedBuilder,
     ApplicationCommandOptionType,
 } from "discord.js";
+import { embedTemplate } from "../../lib/embedTemplate";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -42,9 +41,7 @@ module.exports = class extends Command {
 
         (msg.channel as BaseGuildTextChannel).bulkDelete(amount, true);
 
-        const embed = new EmbedBuilder().setColor(
-            process.env.EMBED_COLOR as HexColorString,
-        );
+        const embed = embedTemplate();
 
         return { embeds: [embed.setDescription(`deleted ${amount} messages`)] };
     }

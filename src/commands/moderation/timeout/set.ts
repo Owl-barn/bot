@@ -1,5 +1,6 @@
 import { ApplicationCommandOptionType, GuildMember, Util } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
+import GuildConfig from "../../../lib/guildconfig.service";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -41,10 +42,12 @@ module.exports = class extends SubCommand {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const timeoutLimit = 2419200000;
+        if (!msg.guildId) throw "No guild on timeoutset??";
 
         let reason = msg.options.getString("reason", false);
-
+        let duration = msg.options.getString("duration", true);
         const target = msg.options.getMember("user") as GuildMember | null;
+
         if (!target) return { content: "No user provided" };
 
         const durationCheck = new RegExp(
@@ -54,16 +57,19 @@ module.exports = class extends SubCommand {
         const embed = embedTemplate();
         const failEmbed = failEmbedTemplate();
 
-        const duration = Util.escapeMarkdown(
-            msg.options.getString("duration", true),
-        ).trim();
+        const guildInfo = GuildConfig.getGuild(msg.guildId);
+        const isStaff =
+            guildInfo?.staff_role &&
+            target.roles.cache.get(guildInfo.staff_role);
 
-        if (!target.moderatable)
+        if (!target.moderatable || isStaff)
             return {
                 embeds: [failEmbed.setDescription("I cant time-out that user")],
             };
 
+        duration = Util.escapeMarkdown(duration).trim();
         const match = Array.from(duration.matchAll(durationCheck));
+
         let { days, hours, minutes } = match[0].groups as unknown as TimeInput;
 
         if (!days && !hours && !minutes)
@@ -92,28 +98,31 @@ module.exports = class extends SubCommand {
 
         const member = await target.timeout(durationMs, reason);
 
-        embed.setTitle("User timed out");
-
         if (!member.communicationDisabledUntilTimestamp) throw "??";
 
-        const durationString = ` ${displayUnit(days, "day")}${displayUnit(
-            hours,
-            "hour",
-        )}${displayUnit(minutes, "minute")}`;
-        embed.setDescription(
-            `${target} has been timed out\nWith the reason: \`${reason}\`\nfor: \` ${durationString} \``,
-        );
+        const durationString =
+            displayUnit(days, "day") +
+            displayUnit(hours, "hour") +
+            displayUnit(minutes, "minute");
 
+        embed.setTitle("Timeout Set");
+        embed.setDescription(`<@${target.id}> has been timed out.`);
         embed.addFields([
+            {
+                name: "Reason",
+                value: reason,
+            },
+            {
+                name: "Duration",
+                value: durationString,
+                inline: true,
+            },
             {
                 name: "Expiration",
                 value: `<t:${Math.round(
                     member.communicationDisabledUntilTimestamp / 1000,
-                )}:R> ${
-                    durationMs === timeoutLimit
-                        ? "`Discord limited it to 28 days`"
-                        : ""
-                }`,
+                )}:R> `,
+                inline: true,
             },
         ]);
 
@@ -131,3 +140,7 @@ interface TimeInput {
     hours: string | number;
     minutes: string | number;
 }
+
+// durationMs === timeoutLimit
+//     ? "`Discord limited it to 28 days`"
+//     : ""

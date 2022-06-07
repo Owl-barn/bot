@@ -40,6 +40,7 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const nickname = msg.options.getString("nickname", true);
         let target = msg.options.getMember("user") as GuildMember | null;
+
         if (!target) target = msg.member as GuildMember;
 
         await target.setNickname(nickname);

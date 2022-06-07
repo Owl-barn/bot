@@ -1,10 +1,9 @@
 import {
-    HexColorString,
     InteractionReplyOptions,
-    EmbedBuilder,
     ApplicationCommandOptionType,
 } from "discord.js";
 import moment from "moment";
+import { embedTemplate } from "../../lib/embedTemplate";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -102,11 +101,10 @@ module.exports = class statsCommand extends Command {
             },
         ];
 
-        const embed = new EmbedBuilder()
-            .setTitle(
-                global ? "Global bot stats" : `${msg.guild?.name}'s bot stats`,
-            )
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        const embed = embedTemplate();
+        embed.setTitle(
+            global ? "Global bot stats" : `${msg.guild?.name}'s bot stats`,
+        );
 
         if (commandUsage && commandUsage.length > 0) {
             fields.push({

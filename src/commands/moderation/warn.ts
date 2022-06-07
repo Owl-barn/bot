@@ -43,10 +43,10 @@ module.exports = class extends Command {
         const db = msg.client.db;
 
         const hidden = msg.options.getBoolean("hidden");
-        const reason = Util.escapeMarkdown(
-            msg.options.getString("reason", true),
-        ).substring(0, 256);
         const target = msg.options.getUser("user", true);
+        let reason = msg.options.getString("reason", true);
+
+        reason = Util.escapeMarkdown(reason).substring(0, 256);
 
         await db.warnings
             .create({

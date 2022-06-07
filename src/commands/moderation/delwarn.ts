@@ -1,9 +1,8 @@
 import {
-    HexColorString,
     InteractionReplyOptions,
-    EmbedBuilder,
     ApplicationCommandOptionType,
 } from "discord.js";
+import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import { Command } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -46,20 +45,19 @@ export default class extends Command {
         const index = msg.options.getInteger("index", true);
         const target = msg.options.getUser("user", true);
 
-        const failEmbed = new EmbedBuilder().setColor(
-            process.env.EMBED_FAIL_COLOR as HexColorString,
-        );
+        const failEmbed = failEmbedTemplate();
+        const embed = embedTemplate();
 
         if (index < 1)
             return { embeds: [failEmbed.setDescription("Invalid index")] };
 
         const query = await db.warnings.findFirst({
+            orderBy: { created: "asc" },
+            skip: index - 1,
             where: {
                 target_id: target.id,
                 guild_id: msg.guildId as string,
             },
-            orderBy: { created: "asc" },
-            skip: index - 1,
         });
 
         if (query === null)
@@ -67,13 +65,11 @@ export default class extends Command {
 
         await db.warnings.delete({ where: { uuid: query.uuid } });
 
-        const embed = new EmbedBuilder()
-            .setTitle(
-                `${target.username}#${target.discriminator}'s ${index}${
-                    index > 1 ? "nd" : "st"
-                } warning was removed`,
-            )
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        embed.setTitle(
+            `${target.username}#${target.discriminator}'s ${index}${
+                index > 1 ? "nd" : "st"
+            } warning was removed`,
+        );
 
         return { embeds: [embed] };
     }
