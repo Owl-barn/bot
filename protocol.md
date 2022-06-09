@@ -66,12 +66,12 @@ Sent by the music sub-bots to authenticate with the main bot.
 
 command = `Authenticate`
 
-`userid` is sent, id the bot is already connected to discord.
+`token` is sent, id the bot is already connected to discord.
 
 ```ts
 {
     password: String;
-    userId?: String;
+    token?: String;
 }
 ```
 
