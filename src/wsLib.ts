@@ -49,6 +49,8 @@ export class RavenWS {
                         throw new Error("Token received when not expected");
                     }
 
+                    console.log(" > Successfully reconnected".cyan.bold);
+
                     if (this.resolve) this.resolve(this.token);
 
                     this.timeout = 5000;
@@ -73,7 +75,11 @@ export class RavenWS {
                             throw new Error("No token received");
                         }
 
+                        this.token = msg.token;
+
                         if (this.resolve) this.resolve(msg.token);
+
+                        console.log(" > Successfully connected".cyan.bold);
 
                         this.timeout = 5000;
 
