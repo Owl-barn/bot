@@ -1,3 +1,4 @@
+import { moderation_type } from "@prisma/client";
 import { GuildMember, Util, ApplicationCommandOptionType } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import GuildConfig from "../../lib/guildconfig.service";
@@ -71,7 +72,7 @@ module.exports = class extends Command {
                 embeds: [failEmbed.setDescription("I cant ban that person")],
             };
 
-        target.ban({
+        await target.ban({
             reason: reason.substring(0, 128),
             deleteMessageDays: days,
         });
@@ -84,6 +85,16 @@ module.exports = class extends Command {
                 reason,
             )}\``,
         );
+
+        await msg.client.db.moderation_log.create({
+            data: {
+                user: target.id,
+                reason: reason,
+                guild_id: msg.guildId as string,
+                moderator: msg.user.id,
+                moderation_type: moderation_type.ban,
+            },
+        });
 
         return { embeds: [embed] };
     }

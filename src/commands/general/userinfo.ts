@@ -55,9 +55,32 @@ module.exports = class extends Command {
             },
         });
 
-        const warnQuery = await msg.client.db.warnings.count({
-            where: { target_id: member.id as string },
+        const moderationLogQuery = await msg.client.db.moderation_log.groupBy({
+            by: ["moderation_type"],
+            _count: true,
+            where: {
+                guild_id: msg.guildId as string,
+                user: member.id,
+            },
         });
+
+        const moderationCounts = {
+            warns: 0,
+            bans: 0,
+            kicks: 0,
+            timeouts: 0,
+        };
+
+        for (const modLog of moderationLogQuery) {
+            if (modLog.moderation_type == "warn")
+                moderationCounts.warns = modLog._count;
+            else if (modLog.moderation_type == "ban")
+                moderationCounts.bans = modLog._count;
+            else if (modLog.moderation_type == "kick")
+                moderationCounts.kicks = modLog._count;
+            else if (modLog.moderation_type == "timeout")
+                moderationCounts.timeouts = modLog._count;
+        }
 
         const tag = `**tag:** ${member}`;
         const id = `**ID:** \`${member.id}\``;
@@ -69,26 +92,41 @@ module.exports = class extends Command {
             "DD-MM-YYYY",
         );
         const birthday = birthdayQuery ? `**Birthday:** ${birthdayTime}` : "";
-        const warnings = `**Warnings:** ${warnQuery}`;
+
+        const warnings = moderationCounts.warns
+            ? `**Warnings:** ${moderationCounts.warns}`
+            : null;
+
+        const bans = moderationCounts.bans
+            ? `**Bans:** ${moderationCounts.bans}`
+            : null;
+
+        const kicks = moderationCounts.kicks
+            ? `**Kicks:** ${moderationCounts.kicks}`
+            : null;
+
+        const timeouts = moderationCounts.timeouts
+            ? `**Timeouts:** ${moderationCounts.timeouts}`
+            : null;
+
+        const muteTimeStamp = member.communicationDisabledUntilTimestamp;
         const muted =
-            member.communicationDisabledUntilTimestamp !== null
+            muteTimeStamp && muteTimeStamp > Date.now()
                 ? `**Mute will be removed** <t:${Math.round(
-                      member.communicationDisabledUntilTimestamp / 1000,
+                      muteTimeStamp / 1000,
                   )}:R>`
-                : "";
+                : null;
 
         const bot = `${member.user.bot ? "**Bot:** ✅" : ""}`;
 
-        let list: string | string[] = [
-            tag,
-            id,
-            created,
-            joined,
-            birthday,
-            warnings,
-            muted,
-            bot,
-        ];
+        let list: string | string[] = [tag, id, created, joined];
+        if (birthday) list.push(birthday);
+        if (warnings) list.push(warnings);
+        if (bans) list.push(bans);
+        if (kicks) list.push(kicks);
+        if (timeouts) list.push(timeouts);
+        if (muted) list.push(muted);
+        if (bot) list.push(bot);
 
         list = list.join("\n");
 

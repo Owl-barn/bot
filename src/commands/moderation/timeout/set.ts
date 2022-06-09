@@ -1,3 +1,4 @@
+import { moderation_type } from "@prisma/client";
 import { ApplicationCommandOptionType, GuildMember, Util } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import GuildConfig from "../../../lib/guildconfig.service";
@@ -125,6 +126,16 @@ module.exports = class extends SubCommand {
                 inline: true,
             },
         ]);
+
+        await msg.client.db.moderation_log.create({
+            data: {
+                user: target.id,
+                reason: reason,
+                guild_id: msg.guildId as string,
+                moderator: msg.user.id,
+                moderation_type: moderation_type.timeout,
+            },
+        });
 
         return { embeds: [embed] };
     }

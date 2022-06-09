@@ -1,9 +1,11 @@
+import { moderation_type } from "@prisma/client";
 import {
     HexColorString,
     EmbedBuilder,
     Util,
     ApplicationCommandOptionType,
 } from "discord.js";
+import { failEmbedTemplate } from "../../lib/embedTemplate";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -48,13 +50,21 @@ module.exports = class extends Command {
 
         reason = Util.escapeMarkdown(reason).substring(0, 256);
 
-        await db.warnings
+        const failEmbed = failEmbedTemplate();
+
+        if (target.bot) {
+            const response = failEmbed.setDescription("You can't warn bots");
+            return { embeds: [response] };
+        }
+
+        await db.moderation_log
             .create({
                 data: {
-                    target_id: target.id,
+                    user: target.id,
                     reason: reason,
                     guild_id: msg.guildId as string,
-                    mod_id: msg.user.id,
+                    moderator: msg.user.id,
+                    moderation_type: moderation_type.warn,
                 },
             })
             .catch((e: Error) => {
@@ -62,8 +72,12 @@ module.exports = class extends Command {
                 throw "couldnt create warn??";
             });
 
-        const warnCount = await db.warnings.count({
-            where: { target_id: target.id, guild_id: msg.guildId as string },
+        const warnCount = await db.moderation_log.count({
+            where: {
+                user: target.id,
+                guild_id: msg.guildId as string,
+                moderation_type: moderation_type.warn,
+            },
         });
 
         let colour: HexColorString;
