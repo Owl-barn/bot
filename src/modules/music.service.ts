@@ -101,15 +101,54 @@ export default class musicService {
             );
         }
 
-        // Check if bot is already in the system.
-        const botUserId = message.data.userId as string | undefined;
-        if (botUserId && this.bots.get(botUserId)) {
-            return ws.send(
-                JSON.stringify({
-                    mid: message.mid,
-                    error: "bot account already in use",
-                }),
+        // Check if bot is reconnecting.
+        const botToken = message.data.token as string | undefined;
+        if (botToken) {
+            const owletInfo = owlets.find((x) => x.token == botToken);
+
+            // Bot account not in list.
+            if (!owletInfo) {
+                return ws.send(
+                    JSON.stringify({
+                        mid: message.mid,
+                        error: "No bot account with that id in the system.",
+                    }),
+                );
+            }
+
+            // Bot account already active.
+            if (this.bots.get(owletInfo.id)) {
+                return ws.send(
+                    JSON.stringify({
+                        mid: message.mid,
+                        error: "bot account already in use",
+                    }),
+                );
+            }
+
+            // return success.
+            const response = {
+                command: "Authenticate",
+                mid: message.mid,
+                data: {
+                    token: owletInfo.token,
+                },
+            };
+
+            // Add bot to the list.
+            this.bots.set(owletInfo.id, new Owlet(owletInfo.id, ws, []));
+
+            // If the bot disconnects remove it from the list.
+            ws.on("close", () => this.removeBot(owletInfo.id));
+
+            console.log(
+                `Owlet authenticated <@${owletInfo.id}>, ${this.bots.size} active`
+                    .green.bold,
             );
+
+            ws.send(JSON.stringify(response));
+
+            return;
         }
 
         // Get credentials.
