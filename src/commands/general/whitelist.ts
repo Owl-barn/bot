@@ -90,15 +90,19 @@ module.exports = class extends Command {
         }
 
         // Execute command.
-        const response = await RCONHandler(`whitelist add ${username}`, {
+        const response = await RCONHandler([`whitelist add ${username}`], {
             host: rconGuild.host,
             port: rconGuild.port,
             password: rconGuild.password,
-        });
+        }).catch(() => null);
 
         // If already whitelisted.
-        if (response.code !== "SUCCESS")
-            return { embeds: [failEmbed.setDescription(response.message)] };
+        if (response === null) {
+            const fail = failEmbed.setDescription(
+                "This account is already whitelisted or the server couldnt be reached",
+            );
+            return { embeds: [fail] };
+        }
 
         // Add to db.
         await db.whitelist.create({

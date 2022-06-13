@@ -1,4 +1,4 @@
-import { guilds, private_vc } from "@prisma/client";
+import { guilds, private_vc, rcon } from "@prisma/client";
 import db from "./db.service";
 
 class GuildConfigClass {
@@ -20,11 +20,17 @@ class GuildConfigClass {
             where: { guild_id: guild.guild_id },
         });
 
+        const rconQuery = await db.rcon.findUnique({
+            where: { guild_id: guild.guild_id },
+        });
+
         const config: GuildConfigs = {
             privateRoomCategory: guild.vc_category_id,
             privateRoomID: guild.vc_channel_id,
             privateRoomLimit: guild.vc_limit,
+
             privateRooms: rooms,
+            rcon: rconQuery,
 
             log_channel: guild.log_channel,
             staff_role: guild.staff_role,
@@ -57,6 +63,7 @@ export interface GuildConfigs {
     privateRoomCategory: string | null;
     privateRoomLimit: number;
     privateRooms: private_vc[];
+    rcon: rcon | null;
 
     log_channel: string | null;
 

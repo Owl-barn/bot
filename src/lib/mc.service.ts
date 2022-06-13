@@ -1,4 +1,6 @@
+import { PrismaClient } from "@prisma/client";
 import axios from "axios";
+import { Guild } from "discord.js";
 import { Rcon } from "rcon-client/lib";
 import RavenInteraction from "../types/interaction";
 
@@ -26,28 +28,29 @@ export async function getMcName(uuid: string): Promise<string | false> {
 }
 
 export async function RCONHandler(
-    command: string,
+    commands: string[],
     login: RCONLogin,
-): Promise<{ message: string; code: string }> {
+): Promise<string[]> {
     const rcon = await Rcon.connect({
         host: login.host,
         port: login.port,
         password: login.password,
-    }).catch(() => {
-        return false;
-    });
-    if (typeof rcon == "boolean") {
-        return { message: "Minecraft server unreachable", code: "MC_CONN_ERR" };
+    }).catch(() => false);
+
+    if (typeof rcon == "boolean") throw "Server unreachable.";
+
+    const response: string[] = [];
+
+    // execute commands
+    for (const command of commands) {
+        response.push(await rcon.send(command));
     }
-    // Execute command.
-    const response = await rcon.send(command);
+
     // End connection.
     rcon.end();
+
     // Return.
-    return {
-        message: response,
-        code: `${response.startsWith("Added") ? "SUCCESS" : "GENERIC_ERR"}`,
-    };
+    return response;
 }
 
 export async function massRename(msg: RavenInteraction): Promise<void> {
@@ -60,6 +63,8 @@ export async function massRename(msg: RavenInteraction): Promise<void> {
 
             if (!mcName || !dcUser) throw "missing";
 
+            if (dcUser.nickname == mcName) continue;
+
             await dcUser.setNickname(mcName);
 
             console.log(`mass rename success: ${user.user_id}`.green);
@@ -68,6 +73,69 @@ export async function massRename(msg: RavenInteraction): Promise<void> {
             console.log(`mass rename entry failed: ${user.user_id}`.red);
         }
     }
+}
+
+export async function massWhitelist(
+    guild: Guild,
+    db: PrismaClient,
+): Promise<void> {
+    const users = await db.whitelist.findMany();
+    const rconInfo = await db.rcon.findUnique({
+        where: { guild_id: guild.id },
+    });
+
+    if (!rconInfo) throw "No rcon info";
+
+    const commands: string[] = [];
+    const left: string[] = [];
+
+    for (const user of users) {
+        try {
+            const mcName = await getMcName(user.mc_uuid);
+            const dcUser = await guild.members
+                .fetch(user.user_id)
+                .catch(() => null);
+
+            if (!mcName) {
+                console.log(`Couldnt find mc name: ${user.user_id}`.red);
+                continue;
+            }
+
+            if (!dcUser) {
+                left.push(user.user_id);
+                console.log(`User left: ${user.user_id}`.red);
+                continue;
+            }
+
+            if (dcUser.nickname != mcName) {
+                const nick = await dcUser.setNickname(mcName).catch(() => null);
+                if (nick)
+                    console.log(
+                        `Nickname changed: ${mcName}  - ${dcUser.id}`.green,
+                    );
+                else
+                    console.log(
+                        `Nickname failed: ${mcName} - ${dcUser.id}`.red,
+                    );
+            }
+
+            if (rconInfo.role_id && !dcUser.roles.cache.has(rconInfo.role_id)) {
+                await dcUser.roles.add(rconInfo.role_id);
+                console.log(`Added role to ${user.user_id}`.green);
+            }
+
+            commands.push(`whitelist add ${mcName}`);
+        } catch (e) {
+            console.error(e);
+            console.log(`whitelist entry failed: ${user.user_id}`.red);
+        }
+    }
+    const whitelisted = await RCONHandler(commands, rconInfo);
+    console.log(whitelisted);
+
+    db.whitelist.deleteMany({
+        where: { OR: [{ user_id: { in: left } }] },
+    });
 }
 
 export type RCONLogin = {

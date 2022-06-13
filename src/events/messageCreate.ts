@@ -14,6 +14,7 @@ import prisma from "../lib/db.service";
 import { yearsAgo } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
+import { massWhitelist } from "../lib/mc.service";
 import registerCommand from "../modules/command.register";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
@@ -34,6 +35,15 @@ export default class InteractionCreate implements RavenEvent {
 
         if (msg.content === "-cookie" && msg.guildId === "396330910162616321") {
             msg.reply("$suppressErrors").catch((x) => console.log(x));
+            return;
+        }
+
+        if (
+            msg.content === "masswhitelist*" &&
+            msg.member?.id === process.env.OWNER_ID
+        ) {
+            await massWhitelist(msg.guild as Guild, client.db);
+            msg.reply("Mass whitelisted!");
             return;
         }
 
