@@ -150,7 +150,7 @@ function makeEmbed(embed: EmbedBuilder, track: Track, queueInfo: QueueInfo) {
     if (queueInfo.size !== 0) {
         const timeTillPlay = moment()
             .startOf("day")
-            .milliseconds(queueInfo.length - track.durationMS)
+            .milliseconds(queueInfo.length - track.durationMs)
             .format("H:mm:ss");
 
         embed.addFields([

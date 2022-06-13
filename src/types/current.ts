@@ -4,7 +4,6 @@ import Track from "./track";
 /*  eslint semi: ["off", "always"]*/
 
 export default interface currentSong extends Track {
-    current: string;
-    end: string;
-    progress: number;
+    progress: string;
+    progressMs: number;
 }

@@ -161,7 +161,9 @@ module.exports = class extends Command {
                 return {
                     embeds: [
                         embed.setDescription(
-                            `Successfully skipped \`${selected.title}\``,
+                            `Successfully skipped \`${
+                                (response.track as Track).title
+                            }\``,
                         ),
                     ],
                 };
@@ -177,7 +179,9 @@ module.exports = class extends Command {
             return {
                 embeds: [
                     embed.setDescription(
-                        `Successfully skipped \`${current.title}\``,
+                        `Successfully skipped \`${
+                            (response.track as Track).title
+                        }\``,
                     ),
                 ],
             };

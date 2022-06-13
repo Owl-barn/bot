@@ -116,11 +116,11 @@ function makeEmbed(
         return embed;
     }
 
-    const progress = progressBar(current.progress / 100, 20);
+    const progress = progressBar(current.progressMs / current.durationMs, 20);
 
     const fieldContent = `
     [${Util.escapeMarkdown(current.title.substring(0, 40))}](${current.url})
-    **${current.current}** ${progress} **${current.end}**
+    **${current.progress}** ${progress} **${current.duration}**
     ${italic(`Requested by: <@!${current.requestedBy}>`)}
     `;
 
