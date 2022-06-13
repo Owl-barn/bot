@@ -42,9 +42,12 @@ module.exports = class extends SubCommand {
         }
 
         const infraction = await db.moderation_log
-            .delete({
+            .update({
                 where: {
                     guild_id_uuid: { uuid, guild_id: msg.guildId as string },
+                },
+                data: {
+                    deleted: true,
                 },
             })
             .catch((e) => {

@@ -1,6 +1,7 @@
 import { moderation_type } from "@prisma/client";
 import { ApplicationCommandOptionType } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
+import formatInfraction from "../../../lib/formatinfraction";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -83,22 +84,28 @@ module.exports = class extends SubCommand {
             take: 20,
         });
 
-        const logList = logs.map((log, index) => ({
+        const logList = logs.map((infraction, index) => ({
             name: `#${index + 1}`,
-            value:
-                `**ID:** \`${log.uuid}\`\n` +
-                `**type:** \`${log.moderation_type}\`\n` +
-                `**user:** <@!${log.user}>\n` +
-                `**mod:** <@!${log.moderator}>\n` +
-                `**reason:** *${log.reason}*\n` +
-                `**Date:** <t:${Number(log.created) / 1000}:R>`,
+            value: formatInfraction(infraction, true),
+            inline: true,
         }));
 
         logList.length !== 0
             ? embed.addFields(logList)
-            : embed.setDescription("No results found");
+            : embed.addFields([
+                  {
+                      name: "No logs found",
+                      value: "Please try another search query",
+                  },
+              ]);
+
+        let description = "";
+        if (user) description += `**User**: \`${user.tag}\`\n`;
+        if (query) description += `**Query**: \`${query}\`\n`;
+        if (type) description += `**Type**: \`${type}\`\n`;
 
         embed.setTitle("Search results:");
+        embed.setDescription(description);
 
         return { embeds: [embed] };
     }

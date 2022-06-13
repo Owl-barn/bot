@@ -1,5 +1,6 @@
 import { moderation_type } from "@prisma/client";
 import { ApplicationCommandOptionType, GuildMember, Util } from "discord.js";
+import stringDurationToMs, { msToString } from "../../../lib/durationconvert";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import GuildConfig from "../../../lib/guildconfig.service";
 import { returnMessage, SubCommand } from "../../../types/Command";
@@ -9,7 +10,7 @@ module.exports = class extends SubCommand {
     constructor() {
         super({
             name: "set",
-            description: "Add your birthday to the bot!",
+            description: "Set a timeout for a user",
 
             arguments: [
                 {
@@ -46,14 +47,10 @@ module.exports = class extends SubCommand {
         if (!msg.guildId) throw "No guild on timeoutset??";
 
         let reason = msg.options.getString("reason", false);
-        let duration = msg.options.getString("duration", true);
+        const duration = msg.options.getString("duration", true);
         const target = msg.options.getMember("user") as GuildMember | null;
 
         if (!target) return { content: "No user provided" };
-
-        const durationCheck = new RegExp(
-            /((?<days>[0-9]{1,2}) ?(?:d) ?)?((?<hours>[0-9]{1,2}) ?(?:h) ?)?((?<minutes>[0-9]{1,2}) ?(?:m))?/g,
-        );
 
         const embed = embedTemplate();
         const failEmbed = failEmbedTemplate();
@@ -68,26 +65,7 @@ module.exports = class extends SubCommand {
                 embeds: [failEmbed.setDescription("I cant time-out that user")],
             };
 
-        duration = Util.escapeMarkdown(duration).trim();
-        const match = Array.from(duration.matchAll(durationCheck));
-
-        let { days, hours, minutes } = match[0].groups as unknown as TimeInput;
-
-        if (!days && !hours && !minutes)
-            return {
-                ephemeral: true,
-                embeds: [embed.setDescription("Couldnt determine duration")],
-            };
-
-        days = Number(days);
-        hours = Number(hours);
-        minutes = Number(minutes);
-
-        let durationMs = 0;
-
-        durationMs += days ? Number(days) * 24 * 60 * 60 * 1000 : 0;
-        durationMs += hours ? Number(hours) * 60 * 60 * 1000 : 0;
-        durationMs += minutes ? Number(minutes) * 60 * 1000 : 0;
+        let durationMs = stringDurationToMs(duration);
 
         if (durationMs < 10 * 1000) durationMs = 60 * 1000;
 
@@ -101,10 +79,7 @@ module.exports = class extends SubCommand {
 
         if (!member.communicationDisabledUntilTimestamp) throw "??";
 
-        const durationString =
-            displayUnit(days, "day") +
-            displayUnit(hours, "hour") +
-            displayUnit(minutes, "minute");
+        const durationString = msToString(durationMs);
 
         embed.setTitle("Timeout Set");
         embed.setDescription(`<@${target.id}> has been timed out.`);
@@ -129,6 +104,7 @@ module.exports = class extends SubCommand {
 
         await msg.client.db.moderation_log.create({
             data: {
+                expiry: new Date(Date.now() + durationMs),
                 user: target.id,
                 reason: reason,
                 guild_id: msg.guildId as string,
@@ -140,18 +116,3 @@ module.exports = class extends SubCommand {
         return { embeds: [embed] };
     }
 };
-
-function displayUnit(num: number, name: string, plural = "s") {
-    if (!num || num === 0) return "";
-    return `${num} ${name}${num > 1 ? plural : ""} `;
-}
-
-interface TimeInput {
-    days: string | number;
-    hours: string | number;
-    minutes: string | number;
-}
-
-// durationMs === timeoutLimit
-//     ? "`Discord limited it to 28 days`"
-//     : ""

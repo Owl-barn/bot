@@ -193,7 +193,9 @@ model moderation_log {
   moderator String? @db.VarChar(19)
   guild_id  String  @db.Char(18)
 
-  reason String? @db.VarChar(256)
+  reason  String?   @db.VarChar(256)
+  expiry  DateTime? @db.Timestamp(0)
+  deleted Boolean   @default(false) @db.Boolean
 
   moderation_type moderation_type
 

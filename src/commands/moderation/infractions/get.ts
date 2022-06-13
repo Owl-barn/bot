@@ -1,9 +1,11 @@
+import { moderation_type } from "@prisma/client";
 import {
     ApplicationCommandOptionType,
     EmbedBuilder,
     HexColorString,
 } from "discord.js";
 import { failEmbedTemplate } from "../../../lib/embedTemplate";
+import formatInfraction from "../../../lib/formatinfraction";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -39,20 +41,30 @@ module.exports = class extends SubCommand {
             return { embeds: [failEmbed.setDescription("No user provided")] };
 
         const logs = await msg.client.db.moderation_log.findMany({
-            where: { user: target.id, guild_id: msg.guildId as string },
+            where: {
+                user: target.id,
+                guild_id: msg.guildId as string,
+                deleted: false,
+                OR: [
+                    { moderation_type: { not: moderation_type.warn } },
+                    {
+                        moderation_type: moderation_type.warn,
+                        OR: [
+                            { expiry: { equals: null } },
+                            { expiry: { gt: new Date() } },
+                        ],
+                    },
+                ],
+            },
             orderBy: {
                 created: "asc",
             },
         });
 
-        const logList = logs.map((log, x) => ({
+        const logList = logs.map((infraction, x) => ({
             name: `#${x + 1}`,
-            value:
-                `**ID:** \`${log.uuid}\`\n` +
-                `**type:** \`${log.moderation_type}\`\n` +
-                `**mod:** <@!${log.moderator}>\n` +
-                `**reason:** *${log.reason}*\n` +
-                `**Date:** <t:${Number(log.created) / 1000}:R>`,
+            value: formatInfraction(infraction),
+            inline: true,
         }));
 
         let colour: HexColorString;

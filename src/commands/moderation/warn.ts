@@ -5,6 +5,7 @@ import {
     Util,
     ApplicationCommandOptionType,
 } from "discord.js";
+import stringDurationToMs from "../../lib/durationconvert";
 import { failEmbedTemplate } from "../../lib/embedTemplate";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -32,6 +33,13 @@ module.exports = class extends Command {
                     description: "Reason why the user is getting warned",
                     required: true,
                 },
+                {
+                    type: ApplicationCommandOptionType.String,
+                    name: "duration",
+                    description:
+                        "How long to keep the warn `0d0h`, default: forever",
+                    required: false,
+                },
             ],
 
             throttling: {
@@ -46,6 +54,7 @@ module.exports = class extends Command {
 
         const hidden = msg.options.getBoolean("hidden");
         const target = msg.options.getUser("user", true);
+        const duration = msg.options.getString("duration");
         let reason = msg.options.getString("reason", true);
 
         reason = Util.escapeMarkdown(reason).substring(0, 256);
@@ -57,13 +66,21 @@ module.exports = class extends Command {
             return { embeds: [response] };
         }
 
+        // Expiry
+        let expiry: Date | undefined = undefined;
+        const durationMs = duration ? stringDurationToMs(duration) : 0;
+        if (durationMs !== 0) {
+            expiry = new Date(Date.now() + durationMs);
+        }
+
         await db.moderation_log
             .create({
                 data: {
-                    user: target.id,
+                    expiry,
                     reason: reason,
-                    guild_id: msg.guildId as string,
+                    user: target.id,
                     moderator: msg.user.id,
+                    guild_id: msg.guildId as string,
                     moderation_type: moderation_type.warn,
                 },
             })
@@ -77,6 +94,11 @@ module.exports = class extends Command {
                 user: target.id,
                 guild_id: msg.guildId as string,
                 moderation_type: moderation_type.warn,
+                deleted: false,
+                OR: [
+                    { expiry: { equals: null } },
+                    { expiry: { gt: new Date() } },
+                ],
             },
         });
 
@@ -94,11 +116,23 @@ module.exports = class extends Command {
                 break;
         }
 
+        const fields = [
+            {
+                name: "Reason",
+                value: `\`\`\`${reason}\`\`\``,
+            },
+        ];
+        if (expiry)
+            fields.push({
+                name: "Expires",
+                value: `<t:${Math.round(Number(expiry) / 1000)}:D>`,
+            });
+
         const embed = new EmbedBuilder()
             .setTitle(
                 `${target.username}#${target.discriminator} has been warned, ${warnCount} total`,
             )
-            .setDescription(`**reason:** ${reason}`)
+            .addFields(fields)
             .setColor(colour);
 
         return { embeds: [embed], content: hidden ? undefined : `${target}` };
