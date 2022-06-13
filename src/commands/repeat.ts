@@ -1,8 +1,7 @@
-import { QueueRepeatMode } from "discord-player";
 import bot from "../app";
 import RepeatMode from "../types/repeatmode";
 
-export default async function loop(message: {
+export default async function repeat(message: {
     data: { guildId: string; repeat: RepeatMode };
 }): Promise<{}> {
     const { guildId, repeat } = message.data;

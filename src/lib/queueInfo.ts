@@ -7,11 +7,7 @@ export default function queueInfo(queue: Queue) {
     let length = tracks.reduce((x, y) => x + y.durationMs, 0);
     const current = queue.nowPlaying();
 
-    // length +=
-    //     current.durationMs -
-    //     Math.round(
-    //         (queue.getPlayerTimestamp().progress / 100) * current.durationMs,
-    //     );
+    if (current) length += current.durationMs - current.progressMs;
 
     return {
         length,

@@ -50,3 +50,8 @@ type TrackInput = {
     durationMs: number;
     requestedBy: string;
 };
+
+export interface CurrentTrack extends Track {
+    progress: string;
+    progressMs: number;
+}

@@ -6,8 +6,9 @@ import stop from "./commands/stop";
 import getStatus from "./commands/status";
 import { RavenWS } from "./wsLib";
 import { exit } from "process";
-import loop from "./commands/loop";
+import repeat from "./commands/repeat";
 import skip from "./commands/skip";
+
 const bot = new Bot();
 const ws = new RavenWS(
     process.env.ADDRESS as string,
@@ -18,7 +19,7 @@ const ws = new RavenWS(
 const main = async () => {
     ws.on("Status", getStatus);
     ws.on("Play", play);
-    ws.on("Loop", loop);
+    ws.on("Loop", repeat);
     ws.on("Queue", getQueue);
     ws.on("Stop", stop);
     ws.on("Skip", skip);

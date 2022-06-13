@@ -1,4 +1,5 @@
 import bot from "../app";
+import Track from "../music/track";
 
 export default async function skip(message: {
     data: { guildId: string; index: number };
@@ -12,11 +13,11 @@ export default async function skip(message: {
 
     if (!queue || queue.destroyed) throw "No music is playing right now.";
 
-    if (index !== 0 && index > queue.getTracks().length)
-        throw "I couldn't find a song at that position.";
+    let removed: Track | null;
+    if (index == 0) removed = queue.skip();
+    else removed = queue.removeTrack(index - 1);
 
-    if (index == 0) queue.skip();
-    else queue.removeTrack(index - 1);
+    if (!removed) throw "I couldn't find that song.";
 
-    return {};
+    return { track: removed };
 }
