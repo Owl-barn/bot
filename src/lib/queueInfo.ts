@@ -1,20 +1,23 @@
-import { Queue, QueueRepeatMode } from "discord-player";
+import { AudioPlayerStatus } from "@discordjs/voice";
+import Queue from "../music/queue";
+import RepeatMode from "../types/repeatmode";
 
 export default function queueInfo(queue: Queue) {
-    let length = queue.tracks.reduce((x, y) => x + y.durationMS, 0);
-    const current = queue.current;
+    const tracks = queue.getTracks();
+    let length = tracks.reduce((x, y) => x + y.durationMs, 0);
+    const current = queue.nowPlaying();
 
-    length +=
-        current.durationMS -
-        Math.round(
-            (queue.getPlayerTimestamp().progress / 100) * current.durationMS,
-        );
+    // length +=
+    //     current.durationMs -
+    //     Math.round(
+    //         (queue.getPlayerTimestamp().progress / 100) * current.durationMs,
+    //     );
 
     return {
         length,
-        size: queue.tracks.length,
-        repeat: queue.repeatMode,
-        paused: queue.connection.paused,
+        size: tracks.length,
+        repeat: queue.getRepeatMode(),
+        paused: queue.player.state.status === AudioPlayerStatus.Paused,
     };
 }
 
@@ -22,5 +25,5 @@ export interface QueueInfo {
     length: number;
     size: number;
     paused: boolean;
-    repeat: QueueRepeatMode;
+    repeat: RepeatMode;
 }

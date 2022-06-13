@@ -7,11 +7,10 @@ export default async function stop(message: {
 
     const client = bot.getClient();
     const player = client.player;
-    const guild = await client.guilds.fetch(guildId);
 
-    const queue = player.getQueue(guild);
+    const queue = player.getQueue(guildId);
 
-    if (!queue || !queue.playing) throw "No music is playing";
+    if (!queue || queue.destroyed) throw "No music is playing";
 
     queue.stop();
 

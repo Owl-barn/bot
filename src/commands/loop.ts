@@ -1,18 +1,18 @@
 import { QueueRepeatMode } from "discord-player";
 import bot from "../app";
+import RepeatMode from "../types/repeatmode";
 
 export default async function loop(message: {
-    data: { guildId: string; repeat: QueueRepeatMode };
+    data: { guildId: string; repeat: RepeatMode };
 }): Promise<{}> {
     const { guildId, repeat } = message.data;
 
     const client = bot.getClient();
     const player = client.player;
-    const guild = await client.guilds.fetch(guildId);
 
-    const queue = player.getQueue(guild);
+    const queue = player.getQueue(guildId);
 
-    if (!queue || !queue.playing) throw "No music is playing";
+    if (!queue || queue.destroyed) throw "No music is playing";
 
     queue.setRepeatMode(repeat);
 

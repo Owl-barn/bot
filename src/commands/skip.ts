@@ -7,17 +7,16 @@ export default async function skip(message: {
 
     const client = bot.getClient();
     const player = client.player;
-    const guild = await client.guilds.fetch(guildId);
 
-    const queue = player.getQueue(guild);
+    const queue = player.getQueue(guildId);
 
-    if (!queue || !queue.playing) throw "No music is playing right now.";
+    if (!queue || queue.destroyed) throw "No music is playing right now.";
 
-    if (index !== 0 && index > queue.tracks.length)
+    if (index !== 0 && index > queue.getTracks().length)
         throw "I couldn't find a song at that position.";
 
     if (index == 0) queue.skip();
-    else queue.remove(index - 1);
+    else queue.removeTrack(index - 1);
 
     return {};
 }

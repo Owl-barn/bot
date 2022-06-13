@@ -1,9 +1,10 @@
 import { Player } from "discord-player";
-import Discord, { Intents, VoiceChannel } from "discord.js";
+import Discord, { GatewayIntentBits } from "discord.js";
 import Client from "./types/client";
 
 import colors from "colors";
 import dotenv from "dotenv";
+import MusicPlayer from "./music/manager";
 colors.enable();
 dotenv.config();
 
@@ -23,15 +24,11 @@ export default class Bot {
 
     private async init(): Promise<Client> {
         const client = new Discord.Client({
-            intents: [
-                Intents.FLAGS.GUILDS,
-                Intents.FLAGS.GUILD_MESSAGES,
-                Intents.FLAGS.GUILD_VOICE_STATES,
-            ],
+            intents:
+                GatewayIntentBits.Guilds | GatewayIntentBits.GuildVoiceStates,
         }) as Client;
 
-        const player = new Player(client);
-        client.player = player;
+        client.player = new MusicPlayer();
         return client;
     }
 }

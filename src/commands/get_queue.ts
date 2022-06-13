@@ -1,7 +1,6 @@
-import { Track, TrackJSON } from "discord-player";
 import bot from "../app";
-import formatTrack from "../lib/formatTrack";
 import queueInfo, { QueueInfo } from "../lib/queueInfo";
+import Track from "../music/track";
 
 export default async function getQueue(message: {
     data: GetQueueData;
@@ -13,17 +12,21 @@ export default async function getQueue(message: {
 
     if (!guild) throw "Could not find guild";
 
-    const queue = player.getQueue(guild);
+    const queue = player.getQueue(guildId);
 
-    if (!queue || !queue.playing) throw "No music is playing";
+    if (!queue || queue.destroyed) throw "No music is playing";
 
-    let queueList = queue.tracks;
-    const timeStamp = queue.getPlayerTimestamp();
-    const nowPlaying = queue.nowPlaying().toJSON();
+    let queueList = queue.getTracks();
+    const nowPlaying = queue.nowPlaying();
+
+    // temporary
+    const timeStamp = {
+        current: "00",
+        end: nowPlaying?.durationMs ?? 0,
+        progress: 20,
+    };
 
     const current = { ...nowPlaying, ...timeStamp };
-
-    queueList = queueList.map((x) => formatTrack(x));
 
     return {
         queueInfo: queueInfo(queue),
@@ -36,7 +39,7 @@ interface GetQueueData {
     guildId: string;
 }
 
-interface currentSong extends TrackJSON {
+interface currentTrack extends Track {
     current: string;
     end: string;
     progress: number;
@@ -44,6 +47,6 @@ interface currentSong extends TrackJSON {
 
 interface response {
     queue: Track[];
-    current: currentSong;
+    current: currentTrack;
     queueInfo: QueueInfo;
 }
