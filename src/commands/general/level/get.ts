@@ -101,6 +101,7 @@ module.exports = class extends SubCommand {
             theme,
         );
         const remaining = stats.levelXP - stats.currentXP;
+        const remainingMsg = Math.round(remaining / 20) || 1;
 
         embed.setTitle(`${member.user.username}'s level`);
         embed.setThumbnail(
@@ -127,7 +128,7 @@ module.exports = class extends SubCommand {
                 name: "Needed to level up",
                 value:
                     `**XP:** ${formatNumber(remaining)}\n` +
-                    `**Msg:** ~${formatNumber(Math.round(remaining / 20))}`,
+                    `**Msg:** ~${formatNumber(remainingMsg)}`,
                 inline: true,
             },
         ]);
