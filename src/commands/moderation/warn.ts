@@ -4,6 +4,7 @@ import {
     EmbedBuilder,
     Util,
     ApplicationCommandOptionType,
+    APIEmbedField,
 } from "discord.js";
 import stringDurationToMs from "../../lib/durationconvert";
 import { failEmbedTemplate } from "../../lib/embedTemplate";
@@ -50,9 +51,9 @@ module.exports = class extends Command {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
+        if (!msg.guild) throw "No guild on warn command";
         const db = msg.client.db;
 
-        const hidden = msg.options.getBoolean("hidden");
         const target = msg.options.getUser("user", true);
         const duration = msg.options.getString("duration");
         let reason = msg.options.getString("reason", true);
@@ -116,7 +117,7 @@ module.exports = class extends Command {
                 break;
         }
 
-        const fields = [
+        const fields: APIEmbedField[] = [
             {
                 name: "Reason",
                 value: `\`\`\`${reason}\`\`\``,
@@ -126,15 +127,27 @@ module.exports = class extends Command {
             fields.push({
                 name: "Expires",
                 value: `<t:${Math.round(Number(expiry) / 1000)}:D>`,
+                inline: true,
             });
 
-        const embed = new EmbedBuilder()
-            .setTitle(
-                `${target.username}#${target.discriminator} has been warned, ${warnCount} total`,
-            )
-            .addFields(fields)
-            .setColor(colour);
+        const embed = new EmbedBuilder();
+        embed.setTitle(`You have been warned in "${msg.guild.name}"`);
+        embed.setFields(fields);
+        embed.setColor(colour);
 
-        return { embeds: [embed], content: hidden ? undefined : `${target}` };
+        const dm = await target.send({ embeds: [embed] }).catch(() => null);
+
+        embed.setTitle(
+            `${target.username}#${target.discriminator} has been warned, ${warnCount} total`,
+        );
+        embed.addFields([
+            {
+                name: "Notified",
+                value: dm ? "🟢 Yes" : "🔴 No",
+                inline: true,
+            },
+        ]);
+
+        return { embeds: [embed] };
     }
 };

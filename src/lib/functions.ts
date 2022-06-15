@@ -32,9 +32,13 @@ interface starSign {
     name: string;
 }
 
-export function botIcon(bot: GuildMember | undefined): string | undefined {
-    return bot
-        ? bot.avatarURL() || bot.user.avatarURL() || bot.user.defaultAvatarURL
+export function MemberAvatar(
+    member: GuildMember | undefined,
+): string | undefined {
+    return member
+        ? member.avatarURL() ||
+              member.user.avatarURL() ||
+              member.user.defaultAvatarURL
         : undefined;
 }
 

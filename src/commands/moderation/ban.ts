@@ -59,7 +59,7 @@ module.exports = class extends Command {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
-        if (!msg.guildId) throw "No guild on ban??";
+        if (!msg.guild) throw "No guild on ban??";
         let reason = msg.options.getString("reason");
         const days = msg.options.getInteger("delete") ?? 0;
         const duration = msg.options.getString("duration");
@@ -75,7 +75,7 @@ module.exports = class extends Command {
         if (!target)
             return { embeds: [failEmbed.setDescription("No user provided")] };
 
-        const guildInfo = GuildConfig.getGuild(msg.guildId);
+        const guildInfo = GuildConfig.getGuild(msg.guild.id);
         const isStaff =
             guildInfo?.staff_role &&
             target.roles.cache.get(guildInfo.staff_role);
@@ -85,11 +85,6 @@ module.exports = class extends Command {
                 ephemeral: true,
                 embeds: [failEmbed.setDescription("I cant ban that person")],
             };
-
-        await target.ban({
-            reason: reason.substring(0, 128),
-            deleteMessageDays: days,
-        });
 
         // Expiry
         let expiry: Date | undefined = undefined;
@@ -110,14 +105,8 @@ module.exports = class extends Command {
         });
         const fields: APIEmbedField[] = [
             {
-                name: "User",
-                value: `${target.user.tag} (${target.id})`,
-                inline: true,
-            },
-            {
                 name: "Reason",
-                value: Util.escapeMarkdown(reason),
-                inline: true,
+                value: `\`\`\`${reason}\`\`\``,
             },
         ];
 
@@ -129,8 +118,32 @@ module.exports = class extends Command {
             });
         }
 
-        embed.setTitle(`User has been banned`);
-        embed.addFields(fields);
+        embed.setTitle(`You have been banned from "${msg.guild.name}"`);
+        embed.setFields(fields);
+
+        const dm = await target.send({ embeds: [embed] }).catch(() => null);
+
+        await target.ban({
+            reason: reason,
+            deleteMessageDays: days,
+        });
+
+        const avatar = target.user.avatarURL() ?? target.user.defaultAvatarURL;
+
+        embed.setTitle(
+            `${target.user.username}#${target.user.discriminator} has been banned.`,
+        );
+        embed.addFields([
+            {
+                name: "Notified",
+                value: dm ? "🟢 Yes" : "🔴 No",
+                inline: true,
+            },
+        ]);
+        embed.setFooter({
+            text: `${target.user.tag} <@${target.id}>`,
+            iconURL: avatar || "",
+        });
 
         return { embeds: [embed] };
     }

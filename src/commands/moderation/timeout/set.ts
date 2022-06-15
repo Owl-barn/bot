@@ -2,6 +2,7 @@ import { moderation_type } from "@prisma/client";
 import { ApplicationCommandOptionType, GuildMember, Util } from "discord.js";
 import stringDurationToMs, { msToString } from "../../../lib/durationconvert";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
+import { MemberAvatar } from "../../../lib/functions";
 import GuildConfig from "../../../lib/guildconfig.service";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
@@ -43,8 +44,8 @@ module.exports = class extends SubCommand {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
+        if (!msg.guild) throw "No guild on timeout command";
         const timeoutLimit = 2419200000;
-        if (!msg.guildId) throw "No guild on timeoutset??";
 
         let reason = msg.options.getString("reason", false);
         const duration = msg.options.getString("duration", true);
@@ -55,7 +56,7 @@ module.exports = class extends SubCommand {
         const embed = embedTemplate();
         const failEmbed = failEmbedTemplate();
 
-        const guildInfo = GuildConfig.getGuild(msg.guildId);
+        const guildInfo = GuildConfig.getGuild(msg.guild.id);
         const isStaff =
             guildInfo?.staff_role &&
             target.roles.cache.get(guildInfo.staff_role);
@@ -81,12 +82,11 @@ module.exports = class extends SubCommand {
 
         const durationString = msToString(durationMs);
 
-        embed.setTitle("Timeout Set");
-        embed.setDescription(`<@${target.id}> has been timed out.`);
+        embed.setTitle(`You have been timed out in "${msg.guild.name}"`);
         embed.addFields([
             {
                 name: "Reason",
-                value: reason,
+                value: `\`\`\`${reason}\`\`\``,
             },
             {
                 name: "Duration",
@@ -102,13 +102,30 @@ module.exports = class extends SubCommand {
             },
         ]);
 
+        const dm = await target.send({ embeds: [embed] }).catch(() => null);
+
+        const avatar = MemberAvatar(target);
+
+        embed.setTitle("Timeout Set");
+        embed.setFooter({
+            text: `${target.user.tag} <@${target.id}>`,
+            iconURL: avatar,
+        });
+        embed.addFields([
+            {
+                name: "Notified",
+                value: dm ? "🟢 Yes" : "🔴 No",
+                inline: true,
+            },
+        ]);
+
         await msg.client.db.moderation_log.create({
             data: {
                 expiry: new Date(Date.now() + durationMs),
+                reason,
                 user: target.id,
-                reason: reason,
-                guild_id: msg.guildId as string,
                 moderator: msg.user.id,
+                guild_id: msg.guildId as string,
                 moderation_type: moderation_type.timeout,
             },
         });

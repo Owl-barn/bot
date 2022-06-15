@@ -84,6 +84,18 @@ export default class InteractionCreate implements RavenEvent {
         const group = (command as Command).group || parentCommand?.group;
         if (!group) return;
 
+        // if (
+        //     group === CommandGroup.music &&
+        //     msg.guildId !== "315428379316846592"
+        // ) {
+        //     const response = failEmbedTemplate();
+        //     response.setDescription(
+        //         "The music system is currently disabled due to instability.",
+        //     );
+        //     msg.reply({ embeds: [response] }).catch((e) => console.error(e));
+        //     return;
+        // }
+
         if (
             group === CommandGroup.owner &&
             msg.user.id !== process.env.OWNER_ID
