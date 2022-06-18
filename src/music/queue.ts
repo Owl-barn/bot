@@ -143,10 +143,15 @@ export default class Queue {
      * @param track The track to play.
      */
     public play = (track: Track): void => {
-        track.getStream().then((stream) => {
-            this.player.play(stream);
-            this.current = track;
-        });
+        track
+            .getStream()
+            .then((stream) => {
+                this.player.play(stream);
+                this.current = track;
+            })
+            .catch(() => {
+                this.emit(QueueEvent.SongError, track);
+            });
     };
 
     /**
@@ -190,7 +195,6 @@ export default class Queue {
      * @param duration The time in milliseconds to wait before stopping the queue.
      */
     public setIdle = (duration: number): void => {
-        console.log("Setting idle timeout");
         this.leaveTimeout = setTimeout(() => this.stop(), duration);
     };
 
@@ -198,7 +202,6 @@ export default class Queue {
      * Clear the timeout to stop the bot.
      */
     public clearIdle = (): void => {
-        console.log("Clearing idle timeout");
         if (this.leaveTimeout) clearTimeout(this.leaveTimeout);
     };
 
@@ -241,12 +244,8 @@ export default class Queue {
     };
 
     private onIdle = (): void => {
-        if (
-            this.queueLock ||
-            this.player.state.status !== AudioPlayerStatus.Idle
-        ) {
-            return;
-        }
+        const isIdle = this.player.state.status === AudioPlayerStatus.Idle;
+        if (this.queueLock || !isIdle) return;
 
         this.queueLock = true;
 
@@ -264,14 +263,14 @@ export default class Queue {
 
         // Queue is empty
         if (this.queue.length === 0) {
-            this.leaveTimeout = setTimeout(this.stop, 20000);
+            this.setIdle(20000);
             this.current = null;
             this.queueLock = false;
             this.emit(QueueEvent.QueueEnd, this.guild);
             return;
         }
 
-        if (this.leaveTimeout) clearTimeout(this.leaveTimeout);
+        this.clearIdle();
 
         const nextSong = this.queue.shift() as Track;
 
