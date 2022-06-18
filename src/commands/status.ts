@@ -1,4 +1,4 @@
-import bot from "../app";
+import { bot } from "../app";
 
 export default async function getStatus(): Promise<{}> {
     const client = bot.getClient();

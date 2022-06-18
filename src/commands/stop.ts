@@ -1,4 +1,4 @@
-import bot from "../app";
+import { bot } from "../app";
 
 export default async function stop(message: {
     data: { guildId: string };

@@ -14,6 +14,7 @@ import moment from "moment";
 import RepeatMode from "../types/repeatmode";
 import MusicPlayer from "./manager";
 import Track, { CurrentTrack } from "./track";
+import QueueEvent from "../types/queueevent";
 
 export default class Queue {
     private readonly guild: string;
@@ -28,6 +29,9 @@ export default class Queue {
 
     private lastpause: number = 0;
     private playedMs: number = 0;
+
+    private callbacks: Map<string, ((...args: any[]) => Promise<void>)[]> =
+        new Map();
 
     private queue: Track[] = [];
     private current: Track | null = null;
@@ -58,7 +62,7 @@ export default class Queue {
 
         // Initialize the audio player.
         this.player = createAudioPlayer();
-        this.player.on("stateChange", this.onStateChange);
+        this.player.on("stateChange" as any, this.onStateChange);
         this.player.on(AudioPlayerStatus.Paused, this.onPause);
         this.player.on("error", (error) => console.error(error));
 
@@ -182,21 +186,53 @@ export default class Queue {
     };
 
     /**
+     * Start a timeout to stop the bot.
+     * @param duration The time in milliseconds to wait before stopping the queue.
+     */
+    public setIdle = (duration: number): void => {
+        console.log("Setting idle timeout");
+        this.leaveTimeout = setTimeout(() => this.stop(), duration);
+    };
+
+    /**
+     * Clear the timeout to stop the bot.
+     */
+    public clearIdle = (): void => {
+        console.log("Clearing idle timeout");
+        if (this.leaveTimeout) clearTimeout(this.leaveTimeout);
+    };
+
+    /**
      * Add Event listeners to the queue.
      * @param event The event to listen to.
      * @param callback The callback to call when the event is triggered.
      */
     public on(
-        event: QueueEvents.QueueEnd,
-        callback: (guildId: string) => void,
+        event: QueueEvent.QueueEnd,
+        callback: (queue: Queue) => Promise<void>,
     ): void;
-    public on(
-        event: QueueEvents.SongEnd,
-        callback: (track: Track) => void,
-    ): void;
-    public on(event: QueueEvents, callback: (...args: any[]) => void): void {}
 
-    private emit = (event: string, ...args: any[]): void => {};
+    public on(
+        event: QueueEvent.SongEnd,
+        callback: (track: Track) => Promise<void>,
+    ): void;
+
+    public on(
+        event: QueueEvent,
+        callback: (...args: any[]) => Promise<void>,
+    ): void {
+        if (!this.callbacks.get(event)) this.callbacks.set(event, []);
+        this.callbacks.get(event)?.push(callback);
+    }
+
+    private emit = (event: string, ...args: any[]): void => {
+        console.log(`Emitting ${event}`);
+        const promises = this.callbacks
+            .get(event)
+            ?.map((callback) => callback(...args));
+        if (!promises) return;
+        Promise.all(promises).catch(console.error);
+    };
 
     private onIdle = (): void => {
         if (
@@ -217,7 +253,7 @@ export default class Queue {
                 this.queue.unshift(this.current);
             else if (this.repeatMode === RepeatMode.Queue)
                 this.queue.push(this.current);
-            this.emit(QueueEvents.SongEnd, this.current);
+            this.emit(QueueEvent.SongEnd, this.current);
         }
 
         // Queue is empty
@@ -225,7 +261,7 @@ export default class Queue {
             this.leaveTimeout = setTimeout(this.stop, 20000);
             this.current = null;
             this.queueLock = false;
-            this.emit(QueueEvents.QueueEnd, this.guild);
+            this.emit(QueueEvent.QueueEnd, this.guild);
             return;
         }
 
@@ -296,10 +332,4 @@ export default class Queue {
             this.voiceConnection.destroy();
         }
     };
-}
-
-const enum QueueEvents {
-    SongEnd = "songEnd",
-    SongStart = "songStart",
-    QueueEnd = "queueEnd",
 }

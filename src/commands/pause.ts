@@ -1,5 +1,5 @@
 import { AudioPlayerStatus } from "@discordjs/voice";
-import bot from "../app";
+import { bot } from "../app";
 
 export default async function pause(message: {
     data: { guildId: string };

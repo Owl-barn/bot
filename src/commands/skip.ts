@@ -1,4 +1,4 @@
-import bot from "../app";
+import { bot } from "../app";
 import Track from "../music/track";
 
 export default async function skip(message: {

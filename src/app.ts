@@ -8,9 +8,10 @@ import { RavenWS } from "./wsLib";
 import { exit } from "process";
 import repeat from "./commands/repeat";
 import skip from "./commands/skip";
+import voiceStateUpdate from "./events/voicestateupdate";
 
-const bot = new Bot();
-const ws = new RavenWS(
+export const bot = new Bot();
+export const ws = new RavenWS(
     process.env.ADDRESS as string,
     process.env.PASSWORD as string,
     process.env.NODE_ENV === "development",
@@ -33,19 +34,7 @@ const main = async () => {
     const status = await getStatus();
     ws.send("Status", status);
 
-    client.on("voiceStateUpdate", async (oldState, newState) => {
-        /*
-        console.log(
-            `old: ${oldState.id} - ${oldState.channelId} - ${oldState.serverDeaf} - ${oldState.serverMute} `,
-        );
-        console.log(
-            `new: ${newState.id} - ${newState.channelId} - ${newState.serverDeaf} - ${newState.serverMute} `,
-        );
-        */
-        if (oldState.id !== newState.client.user?.id) return;
-        const status = await getStatus();
-        ws.send("Status", status);
-    });
+    client.on("voiceStateUpdate", voiceStateUpdate);
 
     client.on("guildCreate", async (guild) => {
         const status = await getStatus();
@@ -61,9 +50,6 @@ const main = async () => {
         const status = await getStatus();
         ws.send("Status", status);
     });
-
-    const player = client.player;
 };
 
-export default bot;
 main();

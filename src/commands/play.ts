@@ -1,7 +1,8 @@
-import { Util, VoiceChannel } from "discord.js";
-import bot from "../app";
+import { VoiceChannel } from "discord.js";
+import { bot } from "../app";
 import QueueInfo from "../lib/queueInfo";
 import Track from "../music/track";
+import QueueEvent from "../types/queueevent";
 
 export default async function play(message: {
     data: playData;
@@ -16,7 +17,9 @@ export default async function play(message: {
     if (!channel.joinable) throw "I can't join this channel";
 
     let queue = player.getQueue(guildId);
-    if (!queue || queue.destroyed) queue = player.createQueue(channel);
+    if (!queue || queue.destroyed) {
+        queue = player.createQueue(channel);
+    }
 
     let track = await player.search(query, userId);
 

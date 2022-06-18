@@ -1,4 +1,4 @@
-import bot from "../app";
+import { bot } from "../app";
 import RepeatMode from "../types/repeatmode";
 
 export default async function repeat(message: {

@@ -1,4 +1,4 @@
-import bot from "../app";
+import { bot } from "../app";
 import queueInfo, { QueueInfo } from "../lib/queueInfo";
 import Track, { CurrentTrack } from "../music/track";
 
