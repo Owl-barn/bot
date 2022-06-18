@@ -1,4 +1,3 @@
-import { Player } from "discord-player";
 import Discord, { GatewayIntentBits } from "discord.js";
 import Client from "./types/client";
 

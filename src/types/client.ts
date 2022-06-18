@@ -1,4 +1,3 @@
-import { Player } from "discord-player";
 import discord, { ClientOptions } from "discord.js";
 import MusicPlayer from "../music/manager";
 
