@@ -225,6 +225,12 @@ export default class Queue {
         this.callbacks.get(event)?.push(callback);
     }
 
+    /**
+     * This function calls all callbacks for the given event.
+     * @param event The event to emit.
+     * @param args The arguments to pass to the callback.
+     * @returns `void`
+     */
     private emit = (event: string, ...args: any[]): void => {
         console.log(`Emitting ${event}`);
         const promises = this.callbacks
