@@ -6,10 +6,12 @@ import stop from "./commands/stop";
 import getStatus from "./commands/status";
 import { RavenWS } from "./wsLib";
 import { exit } from "process";
-import loop from "./commands/loop";
+import repeat from "./commands/repeat";
 import skip from "./commands/skip";
-const bot = new Bot();
-const ws = new RavenWS(
+import voiceStateUpdate from "./events/voicestateupdate";
+
+export const bot = new Bot();
+export const ws = new RavenWS(
     process.env.ADDRESS as string,
     process.env.PASSWORD as string,
     process.env.NODE_ENV === "development",
@@ -18,7 +20,7 @@ const ws = new RavenWS(
 const main = async () => {
     ws.on("Status", getStatus);
     ws.on("Play", play);
-    ws.on("Loop", loop);
+    ws.on("Loop", repeat);
     ws.on("Queue", getQueue);
     ws.on("Stop", stop);
     ws.on("Skip", skip);
@@ -32,19 +34,7 @@ const main = async () => {
     const status = await getStatus();
     ws.send("Status", status);
 
-    client.on("voiceStateUpdate", async (oldState, newState) => {
-        /*
-        console.log(
-            `old: ${oldState.id} - ${oldState.channelId} - ${oldState.serverDeaf} - ${oldState.serverMute} `,
-        );
-        console.log(
-            `new: ${newState.id} - ${newState.channelId} - ${newState.serverDeaf} - ${newState.serverMute} `,
-        );
-        */
-        if (oldState.id !== newState.client.user?.id) return;
-        const status = await getStatus();
-        ws.send("Status", status);
-    });
+    client.on("voiceStateUpdate", voiceStateUpdate);
 
     client.on("guildCreate", async (guild) => {
         const status = await getStatus();
@@ -60,20 +50,6 @@ const main = async () => {
         const status = await getStatus();
         ws.send("Status", status);
     });
-
-    const player = client.player;
-
-    player.on("error", (queue, error) => {
-        console.log(
-            `[${queue.guild.name}] Error emitted from the queue: ${error.message}`,
-        );
-    });
-    player.on("connectionError", (queue, error) => {
-        console.log(
-            `[${queue.guild.name}] Error emitted from the connection: ${error.message}`,
-        );
-    });
 };
 
-export default bot;
 main();

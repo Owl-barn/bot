@@ -1,10 +1,10 @@
-import bot from "../app";
+import { bot } from "../app";
 
 export default async function getStatus(): Promise<{}> {
     const client = bot.getClient();
 
     if (!client) return { error: "No client" };
-    
+
     const id = client.user?.id;
 
     if (!id)
@@ -16,7 +16,7 @@ export default async function getStatus(): Promise<{}> {
 
     for (const guild of client.guilds.cache.values()) {
         const item: Guild = { id: guild.id };
-        const channelId = guild.me?.voice.channelId;
+        const channelId = guild.members.me?.voice.channelId;
         channelId ? (item.channelId = channelId) : null;
         guilds.push(item);
     }

@@ -211,6 +211,11 @@ interface QueueInfo {
     paused: boolean;
     repeat: QueueRepeatMode;
 }
+
+interface CurrentTrack extends Track {
+    progress: string;
+    progressMs: number;
+}
 ```
 
 ## Repeat

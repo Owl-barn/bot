@@ -1,4 +1,5 @@
-import bot from "../app";
+import { bot } from "../app";
+import Track from "../music/track";
 
 export default async function skip(message: {
     data: { guildId: string; index: number };
@@ -7,17 +8,16 @@ export default async function skip(message: {
 
     const client = bot.getClient();
     const player = client.player;
-    const guild = await client.guilds.fetch(guildId);
 
-    const queue = player.getQueue(guild);
+    const queue = player.getQueue(guildId);
 
-    if (!queue || !queue.playing) throw "No music is playing right now.";
+    if (!queue || queue.destroyed) throw "No music is playing right now.";
 
-    if (index !== 0 && index > queue.tracks.length)
-        throw "I couldn't find a song at that position.";
+    let removed: Track | null;
+    if (index == 0) removed = queue.skip();
+    else removed = queue.removeTrack(index - 1);
 
-    if (index == 0) queue.skip();
-    else queue.remove(index - 1);
+    if (!removed) throw "I couldn't find that song.";
 
-    return {};
+    return { track: removed };
 }

@@ -1,4 +1,5 @@
-import bot from "../app";
+import { AudioPlayerStatus } from "@discordjs/voice";
+import { bot } from "../app";
 
 export default async function pause(message: {
     data: { guildId: string };
@@ -7,15 +8,14 @@ export default async function pause(message: {
 
     const client = bot.getClient();
     const player = client.player;
-    const guild = await client.guilds.fetch(guildId);
 
-    const queue = player.getQueue(guild);
+    const queue = player.getQueue(guildId);
 
-    if (!queue || !queue.playing) throw "No music is playing";
+    if (!queue || queue.destroyed) throw "No music is playing";
 
-    const paused = !queue.connection.paused;
+    const paused = queue.player.state.status != AudioPlayerStatus.Paused;
 
-    queue.setPaused(paused);
+    queue.pause();
 
     return { paused };
 }
