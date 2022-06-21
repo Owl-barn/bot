@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
-import { MemberAvatar, isDJ } from "../../lib/functions";
+import { getAvatar, isDJ } from "../../lib/functions";
 import moment from "moment";
 import { CommandGroup } from "../../types/commandGroup";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
@@ -95,7 +95,7 @@ module.exports = class extends Command {
         const bot = await msg.guild.members.fetch(musicBot.getId());
         const author: EmbedAuthorOptions = {
             name: "Play",
-            iconURL: MemberAvatar(bot),
+            iconURL: getAvatar(bot),
         };
 
         failEmbed.setAuthor(author);

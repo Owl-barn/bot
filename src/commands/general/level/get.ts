@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import { failEmbedTemplate, embedTemplate } from "../../../lib/embedTemplate";
 import formatNumber from "../../../lib/formatNumber";
+import { getAvatar } from "../../../lib/functions";
 import GuildConfig from "../../../lib/guildconfig.service";
 import levelService from "../../../lib/level.service";
 import progressBar from "../../../lib/progressBar";
@@ -104,11 +105,7 @@ module.exports = class extends SubCommand {
         const remainingMsg = Math.round(remaining / 20) || 1;
 
         embed.setTitle(`${member.user.username}'s level`);
-        embed.setThumbnail(
-            member.avatarURL() ||
-                member.user.avatarURL() ||
-                member.user.defaultAvatarURL,
-        );
+        embed.setThumbnail(getAvatar(member) || null);
 
         embed.setDescription(
             `**Level:** ${stats.level}\n` +

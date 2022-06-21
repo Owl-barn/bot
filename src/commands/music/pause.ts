@@ -4,7 +4,7 @@ import {
     EmbedAuthorOptions,
 } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
-import { MemberAvatar, isDJ } from "../../lib/functions";
+import { getAvatar, isDJ } from "../../lib/functions";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -69,7 +69,7 @@ module.exports = class extends Command {
         const bot = await msg.guild.members.fetch(musicBot.getId());
         const author: EmbedAuthorOptions = {
             name: "Pause",
-            iconURL: MemberAvatar(bot),
+            iconURL: getAvatar(bot),
         };
 
         failEmbed.setAuthor(author);

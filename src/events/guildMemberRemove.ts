@@ -1,6 +1,7 @@
 import { rcon } from "@prisma/client";
 import { GuildMember, TextChannel } from "discord.js";
 import { failEmbedTemplate } from "../lib/embedTemplate";
+import { getAvatar } from "../lib/functions";
 import GuildConfig, { GuildConfigs } from "../lib/guildconfig.service";
 import { getMcName, RCONHandler } from "../lib/mc.service";
 import RavenEvent from "../types/event";
@@ -22,7 +23,7 @@ export default class implements RavenEvent {
 }
 
 async function logLeave(member: GuildMember, config: GuildConfigs) {
-    const avatar = member.avatarURL() || member.user.avatarURL();
+    const avatar = getAvatar(member);
     const channel = member.guild?.channels.cache.get(
         config.log_channel as string,
     ) as TextChannel;
@@ -34,7 +35,7 @@ async function logLeave(member: GuildMember, config: GuildConfigs) {
     );
     embed.setFooter({
         text: `${member.user.tag} <@${member.id}>`,
-        iconURL: avatar || "",
+        iconURL: avatar,
     });
     await channel.send({ embeds: [embed] }).catch((e) => {
         console.log(e);

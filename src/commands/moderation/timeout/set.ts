@@ -2,7 +2,7 @@ import { moderation_type } from "@prisma/client";
 import { ApplicationCommandOptionType, GuildMember, Util } from "discord.js";
 import stringDurationToMs, { msToString } from "../../../lib/durationconvert";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
-import { MemberAvatar } from "../../../lib/functions";
+import { getAvatar } from "../../../lib/functions";
 import GuildConfig from "../../../lib/guildconfig.service";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
@@ -104,7 +104,7 @@ module.exports = class extends SubCommand {
 
         const dm = await target.send({ embeds: [embed] }).catch(() => null);
 
-        const avatar = MemberAvatar(target);
+        const avatar = getAvatar(target);
 
         embed.setTitle("Timeout Set");
         embed.setFooter({

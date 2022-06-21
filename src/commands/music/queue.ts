@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import moment from "moment";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
-import { MemberAvatar } from "../../lib/functions";
+import { getAvatar } from "../../lib/functions";
 import progressBar from "../../lib/progressBar";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -76,7 +76,7 @@ module.exports = class extends Command {
         const bot = await msg.guild.members.fetch(musicBot.getId());
         const author: EmbedAuthorOptions = {
             name: "Queue",
-            iconURL: MemberAvatar(bot),
+            iconURL: getAvatar(bot),
         };
 
         failEmbed.setAuthor(author);

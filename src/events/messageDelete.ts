@@ -1,5 +1,6 @@
 import { GuildMember, Message, TextChannel } from "discord.js";
 import { failEmbedTemplate } from "../lib/embedTemplate";
+import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import RavenEvent from "../types/event";
 
@@ -15,7 +16,7 @@ export default class InteractionCreate implements RavenEvent {
         if (!config || !config.log_channel || config.banned) return;
 
         const member = msg.member as GuildMember;
-        const avatar = member.avatarURL() || member.user.avatarURL();
+        const avatar = getAvatar(member);
         const channel = msg.guild?.channels.cache.get(
             config.log_channel,
         ) as TextChannel;

@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import { failEmbedTemplate } from "../../../lib/embedTemplate";
 import formatInfraction from "../../../lib/formatinfraction";
+import { getAvatar } from "../../../lib/functions";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -87,7 +88,7 @@ module.exports = class extends SubCommand {
         const embed = new EmbedBuilder();
         embed.setAuthor({
             name: `${target.tag} has ${logs.length} infractions.`,
-            iconURL: target.avatarURL() as string,
+            iconURL: getAvatar(target),
         });
         embed.setColor(colour);
 

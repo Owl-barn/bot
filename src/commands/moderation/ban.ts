@@ -7,6 +7,7 @@ import {
 } from "discord.js";
 import stringDurationToMs from "../../lib/durationconvert";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
+import { getAvatar } from "../../lib/functions";
 import GuildConfig from "../../lib/guildconfig.service";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -128,8 +129,6 @@ module.exports = class extends Command {
             deleteMessageDays: days,
         });
 
-        const avatar = target.user.avatarURL() ?? target.user.defaultAvatarURL;
-
         embed.setTitle(
             `${target.user.username}#${target.user.discriminator} has been banned.`,
         );
@@ -142,7 +141,7 @@ module.exports = class extends Command {
         ]);
         embed.setFooter({
             text: `${target.user.tag} <@${target.id}>`,
-            iconURL: avatar || "",
+            iconURL: getAvatar(target),
         });
 
         return { embeds: [embed] };

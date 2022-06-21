@@ -4,7 +4,7 @@ import {
     GuildMember,
 } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
-import { MemberAvatar, isDJ } from "../../lib/functions";
+import { getAvatar, isDJ } from "../../lib/functions";
 import Owlet from "../../modules/owlet";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -91,7 +91,7 @@ module.exports = class extends Command {
         const bot = await msg.guild.members.fetch(musicBot.getId());
         const author: EmbedAuthorOptions = {
             name: "Skip",
-            iconURL: MemberAvatar(bot),
+            iconURL: getAvatar(bot),
         };
 
         embed.setAuthor(author);

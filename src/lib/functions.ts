@@ -1,4 +1,5 @@
-import { GuildMember } from "discord.js";
+import { ImageURLOptions } from "@discordjs/rest";
+import { GuildMember, User } from "discord.js";
 
 export function isDJ(member: GuildMember): boolean {
     return (
@@ -32,14 +33,25 @@ interface starSign {
     name: string;
 }
 
-export function MemberAvatar(
-    member: GuildMember | undefined,
+export function getAvatar(
+    member: GuildMember | User | undefined,
 ): string | undefined {
-    return member
-        ? member.avatarURL() ||
-              member.user.avatarURL() ||
-              member.user.defaultAvatarURL
-        : undefined;
+    let avatar = undefined;
+    if (!member) return avatar;
+    const settings: ImageURLOptions = { dynamic: true, size: 4096 };
+
+    if (member instanceof GuildMember) {
+        avatar =
+            member.avatarURL(settings) ||
+            member.user.avatarURL(settings) ||
+            member.user.defaultAvatarURL ||
+            undefined;
+    } else {
+        avatar =
+            member.avatarURL(settings) || member.defaultAvatarURL || undefined;
+    }
+
+    return avatar;
 }
 
 export function groupBy<K, V>(

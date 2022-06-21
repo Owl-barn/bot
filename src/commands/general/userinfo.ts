@@ -1,4 +1,3 @@
-import { ImageURLOptions } from "@discordjs/rest";
 import {
     GuildMember,
     HexColorString,
@@ -6,6 +5,7 @@ import {
     ApplicationCommandOptionType,
 } from "discord.js";
 import moment from "moment";
+import { getAvatar } from "../../lib/functions";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -36,12 +36,9 @@ module.exports = class extends Command {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
-        const settings: ImageURLOptions = { dynamic: true, size: 4096 };
         let member = msg.options.getMember("user") as GuildMember | null;
         if (member === null) member = msg.member as GuildMember;
 
-        const avatar =
-            member.avatarURL(settings) || member.user.avatarURL(settings);
         const roles = member.roles.cache.sort(
             (x, y) => y.position - x.position,
         );
@@ -133,7 +130,7 @@ module.exports = class extends Command {
         const embed = new EmbedBuilder()
             .setTitle(`${member.user.username}`)
             .setDescription(`${member.user.username}'s user info!`)
-            .setThumbnail(avatar || member.user.defaultAvatarURL)
+            .setThumbnail(getAvatar(member) || null)
             .addFields([
                 { name: "Base info", value: list },
                 { name: "Roles", value: roles.map((x) => `${x}`).join(" ") },
