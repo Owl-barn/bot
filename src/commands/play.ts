@@ -1,6 +1,7 @@
 import { VoiceChannel } from "discord.js";
-import { bot } from "../app";
+import { bot, ws } from "../app";
 import QueueInfo from "../lib/queueInfo";
+import Queue from "../music/queue";
 import Track from "../music/track";
 import QueueEvent from "../types/queueevent";
 
@@ -19,6 +20,21 @@ export default async function play(message: {
     let queue = player.getQueue(guildId);
     if (!queue || queue.destroyed) {
         queue = player.createQueue(channel);
+
+        queue.on(QueueEvent.SongStart, (track: Track, queue: Queue) => {
+            ws.send(QueueEvent.SongStart, {
+                track,
+                channelId: channelId,
+                guildId: guildId,
+            });
+        });
+
+        queue.on(QueueEvent.QueueEnd, () => {
+            ws.send(QueueEvent.QueueEnd, { 
+                channelId: channelId,
+                guildId: guildId, 
+             });
+        });
     }
 
     let track = await player.search(query, userId);

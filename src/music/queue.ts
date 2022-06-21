@@ -30,8 +30,10 @@ export default class Queue {
     private lastpause: number = 0;
     private playedMs: number = 0;
 
-    private callbacks: Map<string, ((...args: any[]) => Promise<void>)[]> =
-        new Map();
+    private callbacks: Map<
+        string,
+        ((...args: any[]) => Promise<void> | void)[]
+    > = new Map();
 
     private queue: Track[] = [];
     private current: Track | null = null;
@@ -147,9 +149,12 @@ export default class Queue {
             .getStream()
             .then((stream) => {
                 this.player.play(stream);
+                if (this.current)
+                    this.emit(QueueEvent.SongStart, track, this.queue);
                 this.current = track;
             })
-            .catch(() => {
+            .catch((e) => {
+                console.error(e);
                 this.emit(QueueEvent.SongError, track);
             });
     };
@@ -212,17 +217,17 @@ export default class Queue {
      */
     public on(
         event: QueueEvent.QueueEnd,
-        callback: (queue: Queue) => Promise<void>,
+        callback: (queue: Queue) => Promise<void> | void,
     ): void;
 
     public on(
-        event: QueueEvent.SongEnd,
-        callback: (track: Track) => Promise<void>,
+        event: QueueEvent.SongEnd | QueueEvent.SongStart | QueueEvent.SongError,
+        callback: (track: Track, queue: Queue) => Promise<void> | void,
     ): void;
 
     public on(
         event: QueueEvent,
-        callback: (...args: any[]) => Promise<void>,
+        callback: (...args: any[]) => Promise<void> | void,
     ): void {
         if (!this.callbacks.get(event)) this.callbacks.set(event, []);
         this.callbacks.get(event)?.push(callback);
@@ -258,6 +263,7 @@ export default class Queue {
                 this.queue.unshift(this.current);
             else if (this.repeatMode === RepeatMode.Queue)
                 this.queue.push(this.current);
+
             this.emit(QueueEvent.SongEnd, this.current);
         }
 
@@ -266,6 +272,7 @@ export default class Queue {
             this.setIdle(20000);
             this.current = null;
             this.queueLock = false;
+
             this.emit(QueueEvent.QueueEnd, this.guild);
             return;
         }
