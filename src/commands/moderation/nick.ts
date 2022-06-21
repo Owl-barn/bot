@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, GuildMember } from "discord.js";
-import { embedTemplate } from "../../lib/embedTemplate";
+import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -42,6 +42,15 @@ module.exports = class extends Command {
         let target = msg.options.getMember("user") as GuildMember | null;
 
         if (!target) target = msg.member as GuildMember;
+        if (!target.moderatable) {
+            const embed = failEmbedTemplate();
+            embed.setDescription("I cant nickname that person");
+
+            return {
+                ephemeral: true,
+                embeds: [embed],
+            };
+        }
 
         await target.setNickname(nickname);
 
