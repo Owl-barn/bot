@@ -1,4 +1,7 @@
 import WebSocket from "ws";
+import Queue from "../types/queue";
+import QueueEvent from "../types/queueevent";
+import Track from "../types/track";
 import wsRequest from "../types/wsRequest";
 
 export default class Owlet {
@@ -9,7 +12,10 @@ export default class Owlet {
         string,
         Record<"resolve" | "reject", (x: any) => void>
     > = new Map();
-    private eventCallbacks: Map<string, ((x: any) => void)[]> = new Map();
+    private callbacks: Map<
+        string,
+        ((...args: any[]) => Promise<void> | void)[]
+    > = new Map();
 
     constructor(id: string, socket: WebSocket, guilds: Guild[]) {
         this.id = id;
@@ -19,7 +25,11 @@ export default class Owlet {
     }
 
     private onMessage = async (data: WebSocket.Data): Promise<void> => {
-        let message;
+        let message: {
+            mid: string;
+            data: { track: Track; channelId: string; guildId: string };
+            command: string;
+        };
 
         try {
             message = JSON.parse(data.toString());
@@ -33,21 +43,37 @@ export default class Owlet {
             this.promises.delete(message.mid);
         }
 
-        const callbacks = this.eventCallbacks.get(message.command);
+        const messageData = message.data;
 
-        if (callbacks != null && this.eventCallbacks.get(message.command)) {
-            for (const callback of callbacks) {
-                callback(message);
-            }
-        }
+        const callbacks = this.callbacks
+            .get(message.command)
+            ?.map((callback) => callback(...Object.values(messageData)));
+
+        if (!callbacks) return;
+
+        Promise.all(callbacks).catch(console.error);
     };
 
-    public on = (event: string, callback: (x: any) => void): void => {
-        if (!this.eventCallbacks.has(event)) {
-            this.eventCallbacks.set(event, []);
-        }
-        this.eventCallbacks.get(event)?.push(callback);
-    };
+    public on(
+        event: QueueEvent.QueueEnd,
+        callback: (queue: Queue) => Promise<void> | void,
+    ): void;
+
+    public on(
+        event: QueueEvent.SongEnd | QueueEvent.SongStart | QueueEvent.SongError,
+        callback: (
+            track: Track,
+            channelId: string,
+            guildId: string,
+        ) => Promise<void> | void,
+    ): void;
+    public on(
+        event: QueueEvent | string,
+        callback: (...args: any[]) => Promise<void> | void,
+    ): void {
+        if (!this.callbacks.get(event)) this.callbacks.set(event, []);
+        this.callbacks.get(event)?.push(callback);
+    }
 
     public getId = (): string => this.id;
 

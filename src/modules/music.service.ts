@@ -4,6 +4,10 @@ import wsResponse from "../types/wsResponse";
 import WS from "ws";
 import { IncomingMessage } from "http";
 import owlets from "../owlets.json";
+import QueueEvent from "../types/queueevent";
+import Bot from "../bot";
+import { embedTemplate } from "../lib/embedTemplate";
+import { getAvatar } from "../lib/functions";
 
 export default class musicService {
     private bots: Map<string, Owlet> = new Map();
@@ -85,6 +89,54 @@ export default class musicService {
             `Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold,
         );
     }
+
+    private addBot(id: string, ws: WS, guilds: any): void {
+        const owlet = new Owlet(id, ws, guilds);
+
+        owlet.on(QueueEvent.SongStart, async (track, channelId, guildId) => {
+            const client = Bot.getClient();
+            const guild = client.guilds.cache.get(guildId);
+            if (!guild) return;
+            const channel = await client.channels.fetch(channelId);
+            if (!channel) return;
+            const bot = await guild?.members.fetch(id);
+            if (!bot) return;
+
+            if (!channel?.isVoice()) return;
+            const embed = embedTemplate();
+
+            embed.setAuthor({
+                iconURL: getAvatar(bot),
+                name: "Now playing",
+            });
+
+            embed.setThumbnail(track.thumbnail);
+
+            embed.addFields([
+                {
+                    name: "Title",
+                    value: track.title,
+                    inline: true,
+                },
+                {
+                    name: "Duration",
+                    value: track.duration,
+                    inline: true,
+                },
+            ]);
+
+            await channel.send({ embeds: [embed] });
+        });
+
+        // If the bot disconnects remove it from the list.
+        ws.on("close", () => this.removeBot(id));
+
+        console.log(
+            `Owlet connected <@${id}>, ${this.bots.size} active.`.green.bold,
+        );
+
+        this.bots.set(id, owlet);
+    }
     /**
      * Authenticates the owlet.
      */
@@ -135,53 +187,33 @@ export default class musicService {
                 },
             };
 
-            // Add bot to the list.
-            this.bots.set(owletInfo.id, new Owlet(owletInfo.id, ws, []));
-
-            // If the bot disconnects remove it from the list.
-            ws.on("close", () => this.removeBot(owletInfo.id));
-
-            console.log(
-                `Owlet authenticated <@${owletInfo.id}>, ${this.bots.size} active`
-                    .green.bold,
-            );
+            this.addBot(owletInfo.id, ws, []);
 
             ws.send(JSON.stringify(response));
+        } else {
+            // Get credentials.
+            const credentials = await this.getCredentials();
 
-            return;
+            if (!credentials) {
+                return ws.send(
+                    JSON.stringify({
+                        mid: message.mid,
+                        error: "No bot accounts left",
+                    }),
+                );
+            }
+
+            // return success.
+            const response = {
+                command: "Authenticate",
+                mid: message.mid,
+                token: credentials.token,
+            };
+
+            this.addBot(credentials.id, ws, []);
+
+            ws.send(JSON.stringify(response));
         }
-
-        // Get credentials.
-        const credentials = await this.getCredentials();
-
-        if (!credentials) {
-            return ws.send(
-                JSON.stringify({
-                    mid: message.mid,
-                    error: "No bot accounts left",
-                }),
-            );
-        }
-
-        // return success.
-        const response = {
-            command: "Authenticate",
-            mid: message.mid,
-            token: credentials.token,
-        };
-
-        // Add bot to the list.
-        this.bots.set(credentials.id, new Owlet(credentials.id, ws, []));
-
-        // If the bot disconnects remove it from the list.
-        ws.on("close", () => this.removeBot(credentials.id));
-
-        console.log(
-            `Owlet authenticated <@${credentials.id}>, ${this.bots.size} active`
-                .green.bold,
-        );
-
-        ws.send(JSON.stringify(response));
     }
 
     /**
