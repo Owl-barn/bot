@@ -84,7 +84,9 @@ module.exports = class extends SubCommand {
 
         const yearString = years ? `${years} year${years == 1 ? "" : "s"}` : "";
         const dayString = `${days} day${days == 1 ? "" : "s"}`;
-        const differenceString = `${yearString} and ${dayString}`;
+        const differenceString = years
+            ? `${yearString} and ${dayString}`
+            : dayString;
 
         const oldest =
             users[0].user_id === second_user.id ? second_user : first_user;
