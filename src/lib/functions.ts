@@ -1,5 +1,5 @@
 import { ImageURLOptions } from "@discordjs/rest";
-import { GuildMember, User } from "discord.js";
+import { APIInteractionGuildMember, GuildMember, User } from "discord.js";
 
 export function isDJ(member: GuildMember): boolean {
     return (
@@ -34,7 +34,7 @@ interface starSign {
 }
 
 export function getAvatar(
-    member: GuildMember | User | undefined,
+    member: GuildMember | User | undefined | APIInteractionGuildMember,
 ): string | undefined {
     let avatar = undefined;
     if (!member) return avatar;
@@ -46,7 +46,7 @@ export function getAvatar(
             member.user.avatarURL(settings) ||
             member.user.defaultAvatarURL ||
             undefined;
-    } else {
+    } else if (member instanceof User) {
         avatar =
             member.avatarURL(settings) || member.defaultAvatarURL || undefined;
     }

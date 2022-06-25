@@ -172,7 +172,7 @@ model command_log {
   uuid    String   @id(map: "command_log_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   created DateTime @default(now()) @db.Timestamp(0)
 
-  guild_id   String  @db.Char(18)
+  guild_id   String? @db.Char(18)
   channel_id String? @db.Char(18)
 
   command_name String  @db.VarChar(32)
@@ -180,7 +180,7 @@ model command_log {
 
   hidden Boolean @db.Boolean
 
-  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+  guilds guilds? @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
   @@index([guild_id], map: "command_log_FK")
 }

@@ -1,7 +1,8 @@
-import { GuildMember, Message, TextChannel, Util } from "discord.js";
+import { GuildMember, Message, Util } from "discord.js";
 import { warningEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
+import logService from "../modules/logger.service";
 import RavenEvent from "../types/event";
 
 export default class implements RavenEvent {
@@ -16,22 +17,30 @@ export default class implements RavenEvent {
         if (old.content == current.content) return;
 
         const member = current.member as GuildMember;
-        const channel = current.guild?.channels.cache.get(
-            config.log_channel,
-        ) as TextChannel;
+
         const embed = warningEmbedTemplate();
+
+        const oldMsg = old.content
+            ? `\`\`\`${Util.escapeMarkdown(old.content)}\`\`\`\n`
+            : "*empty*\n";
+
+        const newMsg = current.content
+            ? `\`\`\`${Util.escapeMarkdown(current.content)}\`\`\`\n`
+            : "*empty*\n";
 
         embed.setTitle("Message updated");
         embed.setDescription(
-            `old:\n` +
-                `\`\`\`${Util.escapeMarkdown(old.content)}\`\`\`\n` +
-                `current:\n` +
-                `\`\`\`${Util.escapeMarkdown(current.content)}\`\`\``,
+            `<#${current.channelId}>\n` +
+                "**old:**\n" +
+                oldMsg +
+                "**current:**\n" +
+                newMsg,
         );
         embed.setFooter({
             text: `${member.user.tag} <@${member.id}>`,
             iconURL: getAvatar(member),
         });
-        channel.send({ embeds: [embed] });
+
+        logService.logEvent(embed, current.guildId);
     }
 }

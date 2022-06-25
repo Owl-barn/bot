@@ -1,9 +1,10 @@
 import { rcon } from "@prisma/client";
-import { GuildMember, TextChannel } from "discord.js";
+import { GuildMember } from "discord.js";
 import { failEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
-import GuildConfig, { GuildConfigs } from "../lib/guildconfig.service";
+import GuildConfig from "../lib/guildconfig.service";
 import { getMcName, RCONHandler } from "../lib/mc.service";
+import logService from "../modules/logger.service";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -13,33 +14,31 @@ export default class implements RavenEvent {
 
     async execute(member: GuildMember): Promise<void> {
         if (!member.guild.id) return;
-        if (member.user.bot) return;
         const config = GuildConfig.getGuild(member.guild.id);
-        if (!config) return;
-        if (config.banned) return;
-        if (config.log_channel) logLeave(member, config);
-        if (config.rcon) await whitelistLeave(member, config.rcon);
+
+        if (config?.banned) return;
+        if (config?.log_channel) logLeave(member);
+        if (config?.rcon) await whitelistLeave(member, config.rcon);
     }
 }
 
-async function logLeave(member: GuildMember, config: GuildConfigs) {
-    const avatar = getAvatar(member);
-    const channel = member.guild?.channels.cache.get(
-        config.log_channel as string,
-    ) as TextChannel;
+async function logLeave(member: GuildMember) {
     const embed = failEmbedTemplate();
+    const isBot = member.user.bot ? "**Bot:** 🤖" : "";
+    const createdAt = Math.round(Number(member.user.createdAt) / 1000);
 
     embed.setTitle("Member Left");
     embed.setDescription(
-        `${member.user.id} left the server.\n${member.user.tag}\n${member}`,
+        `**User:** <@${member.id}>\n` +
+            `**Account creation:** <t:${createdAt}:R>\n` +
+            isBot,
     );
     embed.setFooter({
         text: `${member.user.tag} <@${member.id}>`,
-        iconURL: avatar,
+        iconURL: getAvatar(member),
     });
-    await channel.send({ embeds: [embed] }).catch((e) => {
-        console.log(e);
-    });
+
+    logService.logEvent(embed, member.guild.id);
 }
 
 async function whitelistLeave(member: GuildMember, config: rcon) {

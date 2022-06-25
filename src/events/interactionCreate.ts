@@ -1,8 +1,8 @@
 import { HexColorString, EmbedBuilder } from "discord.js";
 import bannedUsers from "../lib/banlist.service";
 import GuildConfig from "../lib/guildconfig.service";
-import logService from "../lib/logger.service";
-import throttleService from "../lib/throttle.service";
+import logService from "../modules/logger.service";
+import throttleService from "../modules/throttle.service";
 import {
     Command,
     ParentCommand,
@@ -84,17 +84,12 @@ export default class InteractionCreate implements RavenEvent {
         const group = (command as Command).group || parentCommand?.group;
         if (!group) return;
 
-        // if (
-        //     group === CommandGroup.music &&
-        //     msg.guildId !== "315428379316846592"
-        // ) {
-        //     const response = failEmbedTemplate();
-        //     response.setDescription(
-        //         "The music system is currently disabled due to instability.",
-        //     );
-        //     msg.reply({ embeds: [response] }).catch((e) => console.error(e));
-        //     return;
-        // }
+        if (
+            group === CommandGroup.moderation &&
+            msg.user.id == "213911889325981697"
+        ) {
+            return;
+        }
 
         if (
             group === CommandGroup.owner &&

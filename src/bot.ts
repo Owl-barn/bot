@@ -20,6 +20,7 @@ class Bot {
                 GatewayIntentBits.GuildMessages,
                 GatewayIntentBits.GuildMembers,
                 GatewayIntentBits.GuildVoiceStates,
+                GatewayIntentBits.GuildPresences,
                 GatewayIntentBits.MessageContent,
             ],
             allowedMentions: { parse: ["users"] },

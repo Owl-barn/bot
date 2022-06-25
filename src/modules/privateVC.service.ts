@@ -8,12 +8,14 @@ import {
     VoiceState,
 } from "discord.js";
 import RavenClient from "../types/ravenClient";
-import db from "./db.service";
-import { randomRange } from "./functions";
-import GuildConfig from "./guildconfig.service";
+import db from "../lib/db.service";
+import { getAvatar, randomRange } from "../lib/functions";
+import GuildConfig from "../lib/guildconfig.service";
 import owlets from "../owlets.json";
 import { private_vc } from "@prisma/client";
 import roomNames from "../roomNames.json";
+import logService from "./logger.service";
+import { embedTemplate } from "../lib/embedTemplate";
 
 class VCServiceClass {
     private createRateLimit: Set<string> = new Set();
@@ -37,7 +39,7 @@ class VCServiceClass {
         }
 
         for (const room of rooms) {
-            const guild = client.guilds.cache.get(room.guild_id);
+            const guild = await client.guilds.fetch(room.guild_id);
             if (!guild) {
                 await db.private_vc.deleteMany({
                     where: { guild_id: room.guild_id },
@@ -45,12 +47,12 @@ class VCServiceClass {
                 continue;
             }
 
-            const mainRoom = guild.channels.cache.get(
+            const mainRoom = (await guild.channels.fetch(
                 room.main_channel_id,
-            ) as VoiceChannel;
-            const waitRoom = guild.channels.cache.get(
+            )) as VoiceChannel;
+            const waitRoom = (await guild.channels.fetch(
                 room.wait_channel_id,
-            ) as VoiceChannel;
+            )) as VoiceChannel;
 
             if (!mainRoom && !waitRoom) {
                 await db.private_vc.delete({
@@ -281,10 +283,40 @@ class VCServiceClass {
             },
         });
 
-        GuildConfig.updateGuild(vc.guild.id);
+        await GuildConfig.updateGuild(vc.guild.id);
 
         // Move user.
-        await vc.member?.voice.setChannel(room.id, "Created private room");
+        const moved = await vc.member?.voice
+            .setChannel(room.id, "Created private room")
+            .catch(() => null);
+
+        if (!moved) {
+            await room.delete().catch(() => null);
+            await wait.delete().catch(() => null);
+            return;
+        }
+
+        // Log event.
+        const embed = embedTemplate();
+        embed.setTitle("Private Room Created");
+        embed.addFields([
+            {
+                name: "Name",
+                value: `🔒 ${channelName} VC\n<#${room.id}>`,
+                inline: true,
+            },
+            {
+                name: "Created",
+                value: `<t:${Math.round(Date.now() / 1000)}:R>`,
+                inline: true,
+            },
+        ]);
+        embed.setFooter({
+            text: `${member.user.tag} <@${member.id}>`,
+            iconURL: getAvatar(member),
+        });
+
+        logService.logEvent(embed, vc.guild.id);
     }
 
     public async disbandVC(vc: VoiceState) {
@@ -321,6 +353,13 @@ class VCServiceClass {
         await db.private_vc.delete({ where: { main_channel_id: channelId } });
 
         GuildConfig.updateGuild(vc.guild.id);
+
+        // Log event.
+        const embed = embedTemplate();
+        embed.setTitle("Private Room Disbanded");
+        embed.setDescription(mainRoom?.name || "Unknown name");
+
+        logService.logEvent(embed, vc.guild.id);
     }
 
     private getMemberCount(vc: VoiceState) {

@@ -24,10 +24,8 @@ export default class GuildManager {
 
         const deleted = await prisma
             .$transaction([
-                prisma.warnings.deleteMany(query),
                 prisma.rcon.deleteMany(query),
                 prisma.whitelist.deleteMany(query),
-                prisma.logs.deleteMany(query),
                 prisma.guilds.delete(query),
             ])
             .catch(() => false)

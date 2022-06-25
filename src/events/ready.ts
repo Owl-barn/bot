@@ -1,5 +1,5 @@
 import { ActivityType } from "discord.js";
-import VCService from "../lib/privateVC.service";
+import VCService from "../modules/privateVC.service";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 

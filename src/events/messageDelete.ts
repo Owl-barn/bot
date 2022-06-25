@@ -1,7 +1,8 @@
-import { GuildMember, Message, TextChannel } from "discord.js";
+import { GuildMember, Message } from "discord.js";
 import { failEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
+import logService from "../modules/logger.service";
 import RavenEvent from "../types/event";
 
 export default class InteractionCreate implements RavenEvent {
@@ -17,17 +18,18 @@ export default class InteractionCreate implements RavenEvent {
 
         const member = msg.member as GuildMember;
         const avatar = getAvatar(member);
-        const channel = msg.guild?.channels.cache.get(
-            config.log_channel,
-        ) as TextChannel;
+
         const embed = failEmbedTemplate();
 
         embed.setTitle("Message Deleted");
-        embed.setDescription(msg.content);
+        embed.setDescription(
+            `<#${msg.channelId}>\n` + `\`\`\`${msg.content}\`\`\``,
+        );
         embed.setFooter({
             text: `${member.user.tag} <@${member.id}>`,
-            iconURL: avatar || "",
+            iconURL: avatar,
         });
-        channel.send({ embeds: [embed] });
+
+        logService.logEvent(embed, msg.guildId);
     }
 }

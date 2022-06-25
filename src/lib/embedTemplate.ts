@@ -17,3 +17,9 @@ export function warningEmbedTemplate(): EmbedBuilder {
         process.env.EMBED_WARNING_COLOR as HexColorString,
     );
 }
+
+export function successEmbedTemplate(): EmbedBuilder {
+    return new EmbedBuilder().setColor(
+        process.env.EMBED_SUCCESS_COLOR as HexColorString,
+    );
+}

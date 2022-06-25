@@ -1,7 +1,7 @@
 import { VoiceState } from "discord.js";
 import bannedUsers from "../lib/banlist.service";
 import GuildConfig from "../lib/guildconfig.service";
-import VCService from "../lib/privateVC.service";
+import VCService from "../modules/privateVC.service";
 import RavenEvent from "../types/event";
 
 export default class ready implements RavenEvent {
