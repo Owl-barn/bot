@@ -11,7 +11,7 @@
     "url": "git+https://github.com/Owl-barn/owlet.git"
   },
   "author": "Owl-barn",
-  "license": "ISC",
+  "license": "AGPL-3.0",
   "bugs": {
     "url": "https://github.com/Owl-barn/owlet/issues"
   },
