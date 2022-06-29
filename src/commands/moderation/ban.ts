@@ -1,10 +1,5 @@
 import { moderation_type } from "@prisma/client";
-import {
-    GuildMember,
-    Util,
-    ApplicationCommandOptionType,
-    APIEmbedField,
-} from "discord.js";
+import { Util, ApplicationCommandOptionType, APIEmbedField } from "discord.js";
 import stringDurationToMs from "../../lib/durationconvert";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import { getAvatar } from "../../lib/functions";
@@ -64,7 +59,7 @@ module.exports = class extends Command {
         let reason = msg.options.getString("reason");
         const days = msg.options.getInteger("delete") ?? 0;
         const duration = msg.options.getString("duration");
-        const target = msg.options.getMember("user") as GuildMember | null;
+        const target = msg.options.getUser("user");
 
         const embed = embedTemplate();
         const failEmbed = failEmbedTemplate();
@@ -77,15 +72,24 @@ module.exports = class extends Command {
             return { embeds: [failEmbed.setDescription("No user provided")] };
 
         const guildInfo = GuildConfig.getGuild(msg.guild.id);
-        const isStaff =
-            guildInfo?.staff_role &&
-            target.roles.cache.get(guildInfo.staff_role);
 
-        if (!target.bannable || isStaff)
-            return {
-                ephemeral: true,
-                embeds: [failEmbed.setDescription("I cant ban that person")],
-            };
+        const member = await msg.guild.members
+            .fetch(target.id)
+            .catch(() => null);
+
+        if (member) {
+            const isStaff =
+                guildInfo?.staff_role &&
+                member.roles.cache.get(guildInfo.staff_role);
+
+            if (!member.bannable || isStaff)
+                return {
+                    ephemeral: true,
+                    embeds: [
+                        failEmbed.setDescription("I cant ban that person"),
+                    ],
+                };
+        }
 
         // Expiry
         let expiry: Date | undefined = undefined;
@@ -124,13 +128,13 @@ module.exports = class extends Command {
 
         const dm = await target.send({ embeds: [embed] }).catch(() => null);
 
-        await target.ban({
+        await msg.guild.bans.create(target.id, {
             reason: reason,
             deleteMessageDays: days,
         });
 
         embed.setTitle(
-            `${target.user.username}#${target.user.discriminator} has been banned.`,
+            `${target.username}#${target.discriminator} has been banned.`,
         );
         embed.addFields([
             {
@@ -140,7 +144,7 @@ module.exports = class extends Command {
             },
         ]);
         embed.setFooter({
-            text: `${target.user.tag} <@${target.id}>`,
+            text: `${target.tag} <@${target.id}>`,
             iconURL: getAvatar(target),
         });
 
