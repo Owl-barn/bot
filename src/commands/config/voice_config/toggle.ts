@@ -4,9 +4,9 @@ import {
     EmbedBuilder,
     HexColorString,
 } from "discord.js";
-import GuildConfig from "../../../../lib/guildconfig.service";
-import { returnMessage, SubCommand } from "../../../../types/Command";
-import RavenInteraction from "../../../../types/interaction";
+import GuildConfig from "../../../lib/guildconfig.service";
+import { returnMessage, SubCommand } from "../../../types/Command";
+import RavenInteraction from "../../../types/interaction";
 
 module.exports = class extends SubCommand {
     constructor() {

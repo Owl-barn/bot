@@ -29,7 +29,7 @@ module.exports = class extends SubCommand {
 
             throttling: {
                 duration: 60,
-                usages: 3,
+                usages: 10,
             },
         });
     }

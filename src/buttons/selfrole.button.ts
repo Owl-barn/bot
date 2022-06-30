@@ -30,12 +30,12 @@ export default class implements RavenButton {
         if (hasRole) {
             user.roles.remove(query.role_id);
             embed.setColor("Red");
-            embed.setDescription(`Role \`${query.name}\` removed!`);
+            embed.setDescription(`Role <@&${query.role_id}> removed!`);
             return { ephemeral: true, embeds: [embed] };
         } else {
             user.roles.add(query.role_id);
             embed.setColor("Green");
-            embed.setDescription(`Role \`${query.name}\` added!`);
+            embed.setDescription(`Role <@&${query.role_id}> added!`);
             return { ephemeral: true, embeds: [embed] };
         }
     }

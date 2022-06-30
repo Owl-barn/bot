@@ -17,8 +17,13 @@ export default async function eventInitializer(
         const event = new module.default(client) as RavenEvent;
 
         if (event.once)
-            client.once(event.name, (...args) => event.execute(...args));
-        else client.on(event.name, (...args) => event.execute(...args));
+            client.once(event.name, (...args) =>
+                event.execute(...args).catch(console.error),
+            );
+        else
+            client.on(event.name, (...args) =>
+                event.execute(...args).catch(console.error),
+            );
 
         console.log(` - Loaded Event: ${event.name.green.italic}`.cyan.italic);
     }

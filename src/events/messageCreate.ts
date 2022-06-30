@@ -1,13 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
-import { self_role_main } from "@prisma/client";
-import {
-    Guild,
-    HexColorString,
-    Message,
-    EmbedBuilder,
-    TextChannel,
-    ButtonStyle,
-} from "discord.js";
+import { Guild, Message, TextChannel } from "discord.js";
 import AFKService from "../lib/afk.service";
 import bannedUsers from "../lib/banlist.service";
 import prisma from "../lib/db.service";
@@ -207,49 +198,6 @@ export default class InteractionCreate implements RavenEvent {
             }
 
             await msg.reply(response);
-        }
-
-        if (
-            msg.content === "selfroles*" &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
-            const main = (await client.db.self_role_main.findFirst({
-                where: { guild_id: msg.guildId as string },
-            })) as self_role_main;
-            const roles = await client.db.self_role_roles.findMany({
-                where: { main_uuid: main.uuid },
-            });
-            const guild = await client.guilds.fetch(main?.guild_id);
-            const channel = guild.channels.cache.get(
-                main.channel_id,
-            ) as TextChannel;
-
-            if (!channel) throw "aa";
-            const embed = new EmbedBuilder()
-                .setTitle(main.title)
-                .setFooter({ text: main.uuid })
-                .setDescription(main.message)
-                .setColor(process.env.EMBED_COLOR as HexColorString);
-
-            const buttons: ButtonBuilder[] = [];
-
-            roles.forEach((x) => {
-                embed.addFields([
-                    { name: `${x.emote} ${x.name} `, value: x.description },
-                ]);
-                buttons.push(
-                    new ButtonBuilder()
-                        .setCustomId(`selfrole_${x.uuid} `)
-                        .setLabel(`${x.emote} ${x.name} `)
-                        .setStyle(ButtonStyle.Primary),
-                );
-            });
-
-            const component =
-                new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;
-            component.setComponents(buttons);
-
-            channel.send({ components: [component], embeds: [embed] });
         }
     }
 }

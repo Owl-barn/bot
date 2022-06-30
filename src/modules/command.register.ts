@@ -34,7 +34,12 @@ import GuildConfig, { GuildConfigs } from "../lib/guildconfig.service";
 import { groupBy } from "../lib/functions";
 import { CommandGroup } from "../types/commandGroup";
 
-const limitedGroups = [CommandGroup.moderation, CommandGroup.owner];
+const limitedGroups = [
+    CommandGroup.moderation,
+    CommandGroup.owner,
+    CommandGroup.management,
+    CommandGroup.config,
+];
 
 function convert(
     commands: Collection<string, CommandEnum>,

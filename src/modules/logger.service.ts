@@ -90,7 +90,8 @@ class logServiceClass {
 
         prisma.command_log
             .create({ data: query })
-            .then(() => console.info(logList.join(" | ")));
+            .then(() => console.info(logList.join(" | ")))
+            .catch(console.error);
 
         if (!interaction.guildId) return;
         const embed = embedTemplate();

@@ -125,7 +125,12 @@ export default class musicService {
                 },
             ]);
 
-            await channel.send({ embeds: [embed] });
+            await channel.send({ embeds: [embed] }).catch(() => {
+                console.log(
+                    `Failed to send song start embed in <#${channel.id}>.`.red
+                        .italic,
+                );
+            });
         });
 
         // If the bot disconnects remove it from the list.

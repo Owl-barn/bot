@@ -1,25 +1,31 @@
 import { EmbedBuilder, HexColorString } from "discord.js";
 
-export function embedTemplate(): EmbedBuilder {
-    return new EmbedBuilder().setColor(
-        process.env.EMBED_COLOR as HexColorString,
-    );
+export function embedTemplate(description: string | null = null): EmbedBuilder {
+    return new EmbedBuilder()
+        .setColor(process.env.EMBED_COLOR as HexColorString)
+        .setDescription(description);
 }
 
-export function failEmbedTemplate(): EmbedBuilder {
-    return new EmbedBuilder().setColor(
-        process.env.EMBED_FAIL_COLOR as HexColorString,
-    );
+export function failEmbedTemplate(
+    description: string | null = null,
+): EmbedBuilder {
+    return new EmbedBuilder()
+        .setColor(process.env.EMBED_FAIL_COLOR as HexColorString)
+        .setDescription(description);
 }
 
-export function warningEmbedTemplate(): EmbedBuilder {
-    return new EmbedBuilder().setColor(
-        process.env.EMBED_WARNING_COLOR as HexColorString,
-    );
+export function warningEmbedTemplate(
+    description: string | null = null,
+): EmbedBuilder {
+    return new EmbedBuilder()
+        .setColor(process.env.EMBED_WARNING_COLOR as HexColorString)
+        .setDescription(description);
 }
 
-export function successEmbedTemplate(): EmbedBuilder {
-    return new EmbedBuilder().setColor(
-        process.env.EMBED_SUCCESS_COLOR as HexColorString,
-    );
+export function successEmbedTemplate(
+    description: string | null = null,
+): EmbedBuilder {
+    return new EmbedBuilder()
+        .setColor(process.env.EMBED_SUCCESS_COLOR as HexColorString)
+        .setDescription(description);
 }

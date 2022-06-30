@@ -34,6 +34,7 @@ class GuildConfigClass {
 
             log_channel: guild.log_channel,
             staff_role: guild.staff_role,
+            unban_notice: guild.unban_notice,
 
             premium: guild.premium,
             dev: guild.dev,
@@ -68,6 +69,7 @@ export interface GuildConfigs {
     log_channel: string | null;
 
     staff_role: string | null;
+    unban_notice: string | null;
 
     premium: boolean;
     dev: boolean;

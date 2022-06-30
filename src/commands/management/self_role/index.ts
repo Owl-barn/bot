@@ -4,9 +4,9 @@ import { CommandGroup } from "../../../types/commandGroup";
 module.exports = class extends ParentCommand {
     constructor() {
         super({
-            name: "config",
-            description: "Configure the bot in this server!",
-            group: CommandGroup.moderation,
+            name: "selfrole",
+            description: "Manage the self-assignable roles",
+            group: CommandGroup.management,
         });
     }
 };

@@ -178,7 +178,7 @@ export default class InteractionCreate implements RavenEvent {
         const response = await func(interaction)
             .then((x) => {
                 if (!x) return null;
-                x.ephemeral = hidden;
+                x.ephemeral = x.ephemeral || hidden;
                 return x;
             })
             .catch((e: Error) => {

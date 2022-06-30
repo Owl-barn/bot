@@ -1,24 +1,23 @@
 import {
-    GuildBasedChannel,
     EmbedBuilder,
     HexColorString,
-    ClientUser,
     ApplicationCommandOptionType,
+    Role,
 } from "discord.js";
-import { returnMessage, SubCommand } from "../../../../types/Command";
-import RavenInteraction from "../../../../types/interaction";
+import { returnMessage, SubCommand } from "../../../types/Command";
+import RavenInteraction from "../../../types/interaction";
 
 module.exports = class extends SubCommand {
     constructor() {
         super({
-            name: "set_channel",
-            description: "Set the channel for the birthday announcements",
+            name: "set_role",
+            description: "Set the role for the birthday announcements",
 
             arguments: [
                 {
-                    type: ApplicationCommandOptionType.Channel,
-                    name: "birthday_channel",
-                    description: "Where to send happy birthday messages.",
+                    type: ApplicationCommandOptionType.Role,
+                    name: "birthday_role",
+                    description: "What role to set as birthday role.",
                     required: false,
                 },
             ],
@@ -33,27 +32,24 @@ module.exports = class extends SubCommand {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         if (!msg.guildId) throw "no guild??";
 
-        const channel = msg.options.getChannel("birthday_channel") as
-            | GuildBasedChannel
-            | undefined;
+        const role = msg.options.getRole("birthday_role") as Role | undefined;
 
         const failEmbed = new EmbedBuilder()
             .setDescription(`I cant assign this role.`)
             .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
 
-        if (channel && !channel.permissionsFor(msg.client.user as ClientUser))
-            return { embeds: [failEmbed] };
+        if (role && !role.editable) return { embeds: [failEmbed] };
 
         await msg.client.db.guilds.update({
             where: { guild_id: msg.guildId },
-            data: { birthday_channel: channel?.id || null },
+            data: { birthday_role: role?.id || null },
         });
 
         const embed = new EmbedBuilder()
             .setDescription(
-                channel
-                    ? `Successfully set ${channel} as the birthday message channel!`
-                    : "Birthday channel removed.",
+                role
+                    ? `Successfully set ${role} as the birthday auto role!`
+                    : "Birthday role removed.",
             )
             .setColor(process.env.EMBED_COLOR as HexColorString);
 

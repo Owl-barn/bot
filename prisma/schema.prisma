@@ -19,7 +19,8 @@ model guilds {
   birthday_role    String? @db.Char(18)
   birthday_channel String? @db.Char(18)
 
-  staff_role String? @db.Char(18)
+  staff_role   String? @db.Char(18)
+  unban_notice String? @db.VarChar(256)
 
   vc_category_id String? @db.Char(18)
   vc_channel_id  String? @db.Char(18)
@@ -128,12 +129,12 @@ model sessions {
 }
 
 model self_role_main {
-  uuid       String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  guild_id   String  @db.Char(18)
-  channel_id String  @db.Char(18)
-  message_id String? @db.Char(18)
-  title      String  @db.VarChar(64)
-  message    String  @db.VarChar(1024)
+  uuid        String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  guild_id    String  @db.Char(18)
+  channel_id  String  @db.Char(18)
+  message_id  String? @db.Char(18)
+  title       String  @db.VarChar(64)
+  description String  @db.VarChar(1024)
 
   guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict, map: "self_role_main_FK")
 
@@ -145,11 +146,13 @@ model self_role_roles {
   main_uuid String @db.Uuid
   role_id   String @db.Char(18)
 
-  name        String @db.VarChar(32)
-  emote       String @db.VarChar(16)
-  description String @db.VarChar(128)
+  title       String  @db.VarChar(32)
+  description String  @db.VarChar(128)
 
   self_role_main self_role_main @relation(fields: [main_uuid], references: [uuid], onDelete: Cascade, onUpdate: Restrict, map: "self_role_roles_FK")
+
+  @@unique([role_id, main_uuid])
+  @@unique([title, main_uuid])
 }
 
 // Logs

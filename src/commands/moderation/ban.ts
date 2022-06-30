@@ -108,12 +108,11 @@ module.exports = class extends Command {
                 moderation_type: moderation_type.ban,
             },
         });
-        const fields: APIEmbedField[] = [
-            {
-                name: "Reason",
-                value: `\`\`\`${reason}\`\`\``,
-            },
-        ];
+        const fields: APIEmbedField[] = [];
+        fields.push({
+            name: "Reason",
+            value: `\`\`\`${reason}\`\`\``,
+        });
 
         if (expiry) {
             fields.push({
@@ -124,9 +123,20 @@ module.exports = class extends Command {
         }
 
         embed.setTitle(`You have been banned from "${msg.guild.name}"`);
-        embed.setFields(fields);
+
+        if (guildInfo?.unban_notice) {
+            embed.setFields(fields);
+            embed.addFields([
+                {
+                    name: "Appeal notice",
+                    value: guildInfo.unban_notice,
+                },
+            ]);
+        }
 
         const dm = await target.send({ embeds: [embed] }).catch(() => null);
+
+        embed.setFields(fields);
 
         await msg.guild.bans.create(target.id, {
             reason: reason,

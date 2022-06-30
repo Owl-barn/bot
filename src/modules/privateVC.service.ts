@@ -47,12 +47,12 @@ class VCServiceClass {
                 continue;
             }
 
-            const mainRoom = (await guild.channels.fetch(
-                room.main_channel_id,
-            )) as VoiceChannel;
-            const waitRoom = (await guild.channels.fetch(
-                room.wait_channel_id,
-            )) as VoiceChannel;
+            const mainRoom = (await guild.channels
+                .fetch(room.main_channel_id)
+                .catch(() => null)) as VoiceChannel | null;
+            const waitRoom = (await guild.channels
+                .fetch(room.wait_channel_id)
+                .catch(() => null)) as VoiceChannel | null;
 
             if (!mainRoom && !waitRoom) {
                 await db.private_vc.delete({
