@@ -1,4 +1,5 @@
 import { Command, SubCommand } from "../types/Command";
+import env from "./env";
 
 class ThrottleService {
     private list: Record<string, Record<string, ThrottleCommandMap[]>> = {};
@@ -61,7 +62,6 @@ declare const global: NodeJS.Global & { throttleService: ThrottleService };
 
 const throttleService = global.throttleService || new ThrottleService();
 
-if (process.env.NODE_ENV === "development")
-    global.throttleService = throttleService;
+if (env.isDevelopment) global.throttleService = throttleService;
 
 export default throttleService;

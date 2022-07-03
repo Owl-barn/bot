@@ -3,6 +3,7 @@ import Queue from "../types/queue";
 import QueueEvent from "../types/queueevent";
 import Track from "../types/track";
 import wsRequest from "../types/wsRequest";
+import env from "./env";
 
 export default class Owlet {
     private id: string;
@@ -100,8 +101,7 @@ export default class Owlet {
      * @returns promise of the owlet's response.
      */
     public async send<T>(message: wsRequest): Promise<T> {
-        if (process.env.NODE_ENV === "development")
-            console.log("Sent".yellow.bold, message);
+        if (env.isDevelopment) console.log("Sent".yellow.bold, message);
 
         this.socket.send(JSON.stringify(message));
         const result = new Promise<T>((resolve, reject) => {

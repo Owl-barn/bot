@@ -16,6 +16,7 @@ import { private_vc } from "@prisma/client";
 import roomNames from "../roomNames.json";
 import logService from "./logger.service";
 import { embedTemplate } from "../lib/embedTemplate";
+import env from "./env";
 
 class VCServiceClass {
     private createRateLimit: Set<string> = new Set();
@@ -39,8 +40,12 @@ class VCServiceClass {
         }
 
         for (const room of rooms) {
-            const guild = await client.guilds.fetch(room.guild_id);
-            if (!guild) {
+            const guild = await client.guilds
+                .fetch(room.guild_id)
+                .catch(() => null);
+            console.log(` - ${room.guild_id} ${guild != null}`.blue.bold);
+
+            if (guild == null) {
                 await db.private_vc.deleteMany({
                     where: { guild_id: room.guild_id },
                 });
@@ -53,6 +58,20 @@ class VCServiceClass {
             const waitRoom = (await guild.channels
                 .fetch(room.wait_channel_id)
                 .catch(() => null)) as VoiceChannel | null;
+
+            console.log(
+                `  - main: ${room.main_channel_id} - ${mainRoom != null}`.cyan
+                    .italic,
+            );
+            if (mainRoom !== null)
+                console.log(
+                    `  - members: ${mainRoom.members.size}`.cyan.italic,
+                );
+
+            console.log(
+                `  - wait: ${room.wait_channel_id} - ${waitRoom != null}`.cyan
+                    .italic,
+            );
 
             if (!mainRoom && !waitRoom) {
                 await db.private_vc.delete({
@@ -371,6 +390,6 @@ class VCServiceClass {
 
 declare const global: NodeJS.Global & { VCService: VCServiceClass };
 const VCService: VCServiceClass = global.VCService || new VCServiceClass();
-if (process.env.NODE_ENV === "development") global.VCService = VCService;
+if (env.isDevelopment) global.VCService = VCService;
 
 export default VCService;

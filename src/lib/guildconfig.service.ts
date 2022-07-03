@@ -1,4 +1,5 @@
 import { guilds, private_vc, rcon } from "@prisma/client";
+import env from "../modules/env";
 import db from "./db.service";
 
 class GuildConfigClass {
@@ -55,7 +56,7 @@ class GuildConfigClass {
 declare const global: NodeJS.Global & { GuildConfig: GuildConfigClass };
 const GuildConfig: GuildConfigClass =
     global.GuildConfig || new GuildConfigClass();
-if (process.env.NODE_ENV === "development") global.GuildConfig = GuildConfig;
+if (env.isDevelopment) global.GuildConfig = GuildConfig;
 
 export default GuildConfig;
 

@@ -4,6 +4,7 @@ import { successEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
+import env from "../modules/env";
 import logService from "../modules/logger.service";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
@@ -21,7 +22,7 @@ export default class implements RavenEvent {
         if (config?.levelEnabled) addLevelRoles(member);
 
         if (
-            member.id == process.env.OWNER_ID &&
+            member.id == env.OWNER_ID &&
             member.guild.id == "396330910162616321"
         ) {
             await member.roles.add([

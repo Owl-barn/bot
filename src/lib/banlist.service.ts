@@ -1,4 +1,5 @@
 import { banned_user } from "@prisma/client";
+import env from "../modules/env";
 import db from "./db.service";
 
 class BannedUsersClass {
@@ -34,6 +35,6 @@ class BannedUsersClass {
 declare const global: NodeJS.Global & { bannedUsers: BannedUsersClass };
 const bannedUsers: BannedUsersClass =
     global.bannedUsers || new BannedUsersClass();
-if (process.env.NODE_ENV === "development") global.bannedUsers = bannedUsers;
+if (env.isDevelopment) global.bannedUsers = bannedUsers;
 
 export default bannedUsers;

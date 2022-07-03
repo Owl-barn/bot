@@ -1,13 +1,9 @@
-import {
-    GuildMember,
-    HexColorString,
-    EmbedBuilder,
-    ApplicationCommandOptionType,
-} from "discord.js";
+import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
 import { getMcUUID, RCONHandler } from "../../lib/mc.service";
 import { CommandGroup } from "../../types/commandGroup";
+import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 
 module.exports = class extends Command {
     constructor() {
@@ -39,14 +35,6 @@ module.exports = class extends Command {
 
         await msg.deferReply();
 
-        const embed = new EmbedBuilder().setColor(
-            process.env.EMBED_COLOR as HexColorString,
-        );
-
-        const failEmbed = new EmbedBuilder().setColor(
-            process.env.EMBED_FAIL_COLOR as HexColorString,
-        );
-
         username = username.trim().substr(0, 64);
         const author = msg.member as GuildMember;
 
@@ -57,7 +45,7 @@ module.exports = class extends Command {
 
         // Check if connected server.
         if (rconGuild === null) {
-            const response = failEmbed.setDescription(
+            const response = failEmbedTemplate(
                 "No minecraft server connected to this guild.",
             );
             return { embeds: [response] };
@@ -69,7 +57,7 @@ module.exports = class extends Command {
         // Check if exists.
         if (!uuid)
             return {
-                embeds: [failEmbed.setDescription("mc account doesn't exist")],
+                embeds: [failEmbedTemplate("mc account doesn't exist")],
             };
 
         uuid = uuid as string;
@@ -83,7 +71,7 @@ module.exports = class extends Command {
 
         // Check if already in db.
         if (userExists !== null) {
-            const response = failEmbed.setDescription(
+            const response = failEmbedTemplate(
                 "You already have an account linked.",
             );
             return { embeds: [response] };
@@ -98,7 +86,7 @@ module.exports = class extends Command {
 
         // If already whitelisted.
         if (response === null) {
-            const fail = failEmbed.setDescription(
+            const fail = failEmbedTemplate(
                 "This account is already whitelisted or the server couldnt be reached",
             );
             return { embeds: [fail] };
@@ -120,6 +108,6 @@ module.exports = class extends Command {
         author.setNickname(username);
 
         // Respond.
-        return { embeds: [embed.setDescription("You've been whitelisted!")] };
+        return { embeds: [embedTemplate("You've been whitelisted!")] };
     }
 };

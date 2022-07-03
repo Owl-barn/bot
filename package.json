@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.ts",
+  "author": "Owlive",
+  "license": "AGPL-3.0",
   "scripts": {
+    "init": "npm i && npx prisma db push && npx prisma generate",
     "compile": "tsc",
     "start": "node ./dist/app.js",
     "updatePrisma": "npm i --save-dev prisma@latest && npm i --save-dev @prisma/client@latest"
   },
-  "author": "Owlive",
-  "license": "ISC",
   "devDependencies": {
     "@prisma/client": "^4.0.0",
     "@types/cookie-parser": "^1.4.2",
@@ -37,6 +38,7 @@
     "discord-api-types": "^0.23.1",
     "discord.js": "^14.0.0-dev.1653480262-68d5169",
     "dotenv": "^10.0.0",
+    "envalid": "^7.3.1",
     "express": "^4.17.1",
     "got": "^11.8.2",
     "jsonwebtoken": "^8.5.1",

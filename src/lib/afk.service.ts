@@ -1,5 +1,6 @@
 import { afk } from "@prisma/client";
 import { Message } from "discord.js";
+import env from "../modules/env";
 import db from "./db.service";
 import { embedTemplate } from "./embedTemplate";
 
@@ -87,6 +88,6 @@ class AFKServiceClass {
 
 declare const global: NodeJS.Global & { AFKService: AFKServiceClass };
 const AFKService: AFKServiceClass = global.AFKService || new AFKServiceClass();
-if (process.env.NODE_ENV === "development") global.AFKService = AFKService;
+if (env.isDevelopment) global.AFKService = AFKService;
 
 export default AFKService;

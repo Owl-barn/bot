@@ -1,9 +1,6 @@
-import {
-    HexColorString,
-    EmbedBuilder,
-    ApplicationCommandOptionType,
-} from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
 import AFKService from "../../lib/afk.service";
+import { embedTemplate } from "../../lib/embedTemplate";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -69,10 +66,9 @@ module.exports = class extends Command {
         AFKService.setAFK(createQuery);
         const reasonString = reason ? ` message: \`\`${reason}\`\`` : "";
 
-        const embed = new EmbedBuilder()
+        const embed = embedTemplate()
             .setTitle(`AFK set`)
-            .setDescription(`Successfully set you as AFK${reasonString}.`)
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+            .setDescription(`Successfully set you as AFK${reasonString}.`);
 
         return { embeds: [embed] };
     }

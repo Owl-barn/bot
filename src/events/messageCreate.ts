@@ -7,6 +7,7 @@ import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import { massWhitelist } from "../lib/mc.service";
 import registerCommand from "../modules/command.register";
+import env from "../modules/env";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -31,17 +32,14 @@ export default class InteractionCreate implements RavenEvent {
 
         if (
             msg.content === "masswhitelist*" &&
-            msg.member?.id === process.env.OWNER_ID
+            msg.member?.id === env.OWNER_ID
         ) {
             await massWhitelist(msg.guild as Guild, client.db);
             msg.reply("Mass whitelisted!");
             return;
         }
 
-        if (
-            msg.content === "chaos*" &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
+        if (msg.content === "chaos*" && msg.member?.id === env.OWNER_ID) {
             await client.musicService.broadcast({
                 command: "Play",
                 mid: msg.id,
@@ -55,16 +53,13 @@ export default class InteractionCreate implements RavenEvent {
             });
         }
 
-        if (
-            msg.content === "reset*" &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
+        if (msg.content === "reset*" && msg.member?.id === env.OWNER_ID) {
             await msg.guild?.commands.set([]);
             await msg.client.application?.commands.set([]);
             return;
         }
 
-        if (msg.content === "vc*" && msg.member?.id === process.env.OWNER_ID) {
+        if (msg.content === "vc*" && msg.member?.id === env.OWNER_ID) {
             const vcs = await client.db.private_vc.findMany({
                 where: { guild_id: msg.guildId as string },
             });
@@ -80,18 +75,12 @@ export default class InteractionCreate implements RavenEvent {
             msg.reply("Deleted private roomsm.");
         }
 
-        if (
-            msg.content === "perms*" &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
+        if (msg.content === "perms*" && msg.member?.id === env.OWNER_ID) {
             console.log(msg.guild?.members.me?.permissions.toArray());
             return;
         }
 
-        if (
-            msg.content === "update*" &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
+        if (msg.content === "update*" && msg.member?.id === env.OWNER_ID) {
             const guilds = client.guilds.cache;
             const start = Date.now();
             const message = await msg.reply("updating...");
@@ -106,7 +95,7 @@ export default class InteractionCreate implements RavenEvent {
             return;
         }
 
-        if (msg.content === "fix*" && msg.member?.id === process.env.OWNER_ID) {
+        if (msg.content === "fix*" && msg.member?.id === env.OWNER_ID) {
             if (!msg.guild) return;
             await client.db.guilds.createMany({
                 data: { guild_id: msg.guild.id },
@@ -114,10 +103,7 @@ export default class InteractionCreate implements RavenEvent {
             });
         }
 
-        if (
-            msg.content === "innit*" &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
+        if (msg.content === "innit*" && msg.member?.id === env.OWNER_ID) {
             const start = Date.now();
             await registerCommand(client, msg.guild as Guild);
             msg.reply(
@@ -125,20 +111,14 @@ export default class InteractionCreate implements RavenEvent {
             );
         }
 
-        if (
-            msg.content.startsWith("say*") &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
+        if (msg.content.startsWith("say*") && msg.member?.id === env.OWNER_ID) {
             const channel = client.guilds.cache
                 .get("396330910162616321")
                 ?.channels.cache.get("504696026201063444") as TextChannel;
             await channel.send(msg.content.substring(5, msg.content.length));
         }
 
-        if (
-            msg.content.startsWith("age*") &&
-            msg.member?.id === process.env.OWNER_ID
-        ) {
+        if (msg.content.startsWith("age*") && msg.member?.id === env.OWNER_ID) {
             let birthdays = await prisma.birthdays.findMany({
                 where: { guild_id: msg.guildId as string },
             });
@@ -170,7 +150,7 @@ export default class InteractionCreate implements RavenEvent {
 
         if (
             msg.content === "levels*" &&
-            (msg.member?.id === process.env.OWNER_ID ||
+            (msg.member?.id === env.OWNER_ID ||
                 msg.member?.id === "174689636310974464")
         ) {
             const staff = msg.guild?.roles.cache

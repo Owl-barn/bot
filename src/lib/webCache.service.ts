@@ -1,4 +1,5 @@
 import Collection from "@discordjs/collection";
+import { env } from "process";
 import { GuildItem } from "../routes/guilds/guilds.controller";
 
 class WebCache {
@@ -21,6 +22,6 @@ declare const global: NodeJS.Global & { webCache?: WebCache };
 
 const webCache: WebCache = global.webCache || new WebCache();
 
-if (process.env.NODE_ENV === "development") global.webCache = webCache;
+if (env.isDevelopment) global.webCache = webCache;
 
 export default webCache;

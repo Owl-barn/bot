@@ -54,14 +54,18 @@ async function whitelistLeave(member: GuildMember, config: rcon) {
         .catch(() => null);
 
     console.log({ whitelist });
+
     if (!whitelist) return;
-    const mcName = getMcName(whitelist.mc_uuid).catch(() => null);
+    const mcName = await getMcName(whitelist.mc_uuid).catch(() => null);
+
     console.log({ mcName });
+
     if (!mcName) return;
     const result = await RCONHandler(
         [`whitelist remove ${mcName}`],
         config,
     ).catch(() => null);
+
     console.log({ result });
     if (!result) console.log(`Failed to remove ${member.id} from whitelist`);
     else console.log(`Removed ${member.id} from whitelist`);

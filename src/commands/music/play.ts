@@ -1,6 +1,5 @@
 import {
     GuildMember,
-    HexColorString,
     EmbedBuilder,
     Util,
     ApplicationCommandOptionType,
@@ -144,8 +143,7 @@ function makeEmbed(embed: EmbedBuilder, track: Track, queueInfo: QueueInfo) {
                 }*`,
                 inline: true,
             },
-        ])
-        .setColor(process.env.EMBED_COLOR as HexColorString);
+        ]);
 
     if (queueInfo.size !== 0) {
         const timeTillPlay = moment()

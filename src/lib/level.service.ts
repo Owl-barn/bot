@@ -1,4 +1,5 @@
 import { GuildTextBasedChannel, Message, RoleResolvable } from "discord.js";
+import env from "../modules/env";
 import prisma from "./db.service";
 import GuildConfig from "./guildconfig.service";
 
@@ -169,6 +170,6 @@ declare const global: NodeJS.Global & { levelService: LevelService };
 
 const levelService = global.levelService || new LevelService();
 
-if (process.env.NODE_ENV === "development") global.levelService = levelService;
+if (env.isDevelopment) global.levelService = levelService;
 
 export default levelService;

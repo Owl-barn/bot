@@ -1,6 +1,7 @@
-import { HexColorString, EmbedBuilder } from "discord.js";
 import bannedUsers from "../lib/banlist.service";
+import { failEmbedTemplate } from "../lib/embedTemplate";
 import GuildConfig from "../lib/guildconfig.service";
+import env from "../modules/env";
 import logService from "../modules/logger.service";
 import throttleService from "../modules/throttle.service";
 import {
@@ -18,11 +19,9 @@ export default class InteractionCreate implements RavenEvent {
     name = "interactionCreate";
     once = false;
     throttle = throttleService;
-    errorEmbed = new EmbedBuilder()
-        .setDescription(
-            `An error occurred, please make a report of this in [the Raven bot discord server](${process.env.SUPPORT_SERVER})`,
-        )
-        .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+    errorEmbed = failEmbedTemplate(
+        `An error occurred, please make a report of this in [the Raven bot discord server](${env.SUPPORT_SERVER})`,
+    );
 
     async execute(interaction: RavenInteraction): Promise<void> {
         const guildconfig = GuildConfig.getGuild(interaction.guildId || "");
@@ -91,10 +90,7 @@ export default class InteractionCreate implements RavenEvent {
             return;
         }
 
-        if (
-            group === CommandGroup.owner &&
-            msg.user.id !== process.env.OWNER_ID
-        )
+        if (group === CommandGroup.owner && msg.user.id !== env.OWNER_ID)
             // Chek if owner command.
             return await this.quickReply(
                 msg,

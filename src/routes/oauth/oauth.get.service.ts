@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { URLSearchParams } from "url";
 import fetch from "got";
 import { User } from "discord.js";
+import env from "../../modules/env";
 
 export default class OauthGetService {
     public async execute(req: Request, res: Response): Promise<void> {
@@ -14,8 +15,8 @@ export default class OauthGetService {
         if (!code) throw new HttpException(403, "bad request");
 
         const data = new URLSearchParams({
-            client_id: process.env.CLIENT_ID as string,
-            client_secret: process.env.CLIENT_SECRET as string,
+            client_id: env.CLIENT_ID,
+            client_secret: env.CLIENT_SECRET,
             code: code,
             grant_type: "authorization_code",
             redirect_uri: "https://api.xayania.com/oauth",
@@ -51,10 +52,7 @@ export default class OauthGetService {
             },
         });
 
-        const signedSesion = jwt.sign(
-            session,
-            process.env.JWT_SECRET as string,
-        );
+        const signedSesion = jwt.sign(session, env.JWT_SECRET);
 
         res.cookie("session", signedSesion, {
             signed: true,

@@ -1,10 +1,6 @@
-import {
-    GuildMember,
-    HexColorString,
-    EmbedBuilder,
-    ApplicationCommandOptionType,
-} from "discord.js";
+import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import moment from "moment";
+import { embedTemplate } from "../../lib/embedTemplate";
 import { getAvatar } from "../../lib/functions";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
@@ -127,15 +123,14 @@ module.exports = class extends Command {
 
         list = list.join("\n");
 
-        const embed = new EmbedBuilder()
+        const embed = embedTemplate()
             .setTitle(`${member.user.username}`)
             .setDescription(`${member.user.username}'s user info!`)
             .setThumbnail(getAvatar(member) || null)
             .addFields([
                 { name: "Base info", value: list },
                 { name: "Roles", value: roles.map((x) => `${x}`).join(" ") },
-            ])
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+            ]);
 
         return { embeds: [embed] };
     }

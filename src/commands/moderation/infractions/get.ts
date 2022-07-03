@@ -7,6 +7,7 @@ import {
 import { failEmbedTemplate } from "../../../lib/embedTemplate";
 import formatInfraction from "../../../lib/formatinfraction";
 import { getAvatar } from "../../../lib/functions";
+import env from "../../../modules/env";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -72,7 +73,7 @@ module.exports = class extends SubCommand {
 
         switch (logList.length) {
             case 0:
-                colour = process.env.EMBED_COLOR as HexColorString;
+                colour = env.EMBED_COLOR;
                 break;
             case 1:
                 colour = "#18ac15";

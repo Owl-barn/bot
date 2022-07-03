@@ -6,6 +6,7 @@ import { embedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import RavenInteraction from "../types/interaction";
+import env from "./env";
 
 class logServiceClass {
     private timeout: Map<string, NodeJS.Timeout>;
@@ -118,6 +119,6 @@ class logServiceClass {
 
 declare const global: NodeJS.Global & { logService: logServiceClass };
 const logService: logServiceClass = global.logService || new logServiceClass();
-if (process.env.NODE_ENV === "development") global.logService = logService;
+if (env.isDevelopment) global.logService = logService;
 
 export default logService;

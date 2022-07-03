@@ -6,9 +6,9 @@ import cookieParser from "cookie-parser";
 
 import errorMiddleware from "./middleware/error.middleware";
 import Controller from "./types/controller";
+import env from "./modules/env";
 
 colors.enable();
-const env = process.env;
 
 class WebServer {
     private app: Application;

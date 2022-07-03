@@ -1,9 +1,5 @@
-import {
-    OverwriteResolvable,
-    ChannelType,
-    EmbedBuilder,
-    HexColorString,
-} from "discord.js";
+import { OverwriteResolvable, ChannelType } from "discord.js";
+import { embedTemplate } from "../../../lib/embedTemplate";
 import GuildConfig from "../../../lib/guildconfig.service";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
@@ -107,9 +103,7 @@ module.exports = class extends SubCommand {
             ? `Enabled private vcs <#${channelID}>`
             : "Removed private vcs";
 
-        const embed = new EmbedBuilder()
-            .setDescription(`${response}`)
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        const embed = embedTemplate(response);
 
         return { embeds: [embed] };
     }

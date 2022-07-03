@@ -9,6 +9,7 @@ import { registerButtons } from "./modules/button.initializer";
 import AFKService from "./lib/afk.service";
 import GuildConfig from "./lib/guildconfig.service";
 import bannedUsers from "./lib/banlist.service";
+import env from "./modules/env";
 
 class Bot {
     private client: RavenClient;
@@ -61,12 +62,12 @@ class Bot {
     };
 
     public async listen(): Promise<void> {
-        await this.client.login(process.env.DISCORD_TOKEN);
+        await this.client.login(env.DISCORD_TOKEN);
     }
 }
 
 declare const global: NodeJS.Global & { bot?: Bot };
 const bot: Bot = global.bot || new Bot();
-if (process.env.NODE_ENV === "development") global.bot = bot;
+if (env.isDevelopment) global.bot = bot;
 
 export default bot;

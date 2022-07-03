@@ -1,9 +1,5 @@
-import {
-    EmbedBuilder,
-    HexColorString,
-    ApplicationCommandOptionType,
-    Role,
-} from "discord.js";
+import { ApplicationCommandOptionType, Role } from "discord.js";
+import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -34,9 +30,7 @@ module.exports = class extends SubCommand {
 
         const role = msg.options.getRole("birthday_role") as Role | undefined;
 
-        const failEmbed = new EmbedBuilder()
-            .setDescription(`I cant assign this role.`)
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+        const failEmbed = failEmbedTemplate("I cant assign this role.");
 
         if (role && !role.editable) return { embeds: [failEmbed] };
 
@@ -45,13 +39,11 @@ module.exports = class extends SubCommand {
             data: { birthday_role: role?.id || null },
         });
 
-        const embed = new EmbedBuilder()
-            .setDescription(
-                role
-                    ? `Successfully set ${role} as the birthday auto role!`
-                    : "Birthday role removed.",
-            )
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        const embed = embedTemplate(
+            role
+                ? `Successfully set ${role} as the birthday auto role!`
+                : "Birthday role removed.",
+        );
 
         return { embeds: [embed] };
     }

@@ -1,11 +1,12 @@
 import { ImageURLOptions } from "@discordjs/rest";
 import { APIInteractionGuildMember, GuildMember, User } from "discord.js";
+import env from "../modules/env";
 
 export function isDJ(member: GuildMember): boolean {
     return (
         member?.roles.cache.some((role) => role.name === "DJ") ||
         member.permissions.has("Administrator") ||
-        member.id == process.env.OWNER_ID
+        member.id == env.OWNER_ID
     );
 }
 

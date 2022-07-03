@@ -8,6 +8,7 @@ import QueueEvent from "../types/queueevent";
 import Bot from "../bot";
 import { embedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
+import env from "./env";
 
 export default class musicService {
     private bots: Map<string, Owlet> = new Map();
@@ -31,8 +32,7 @@ export default class musicService {
             return;
         }
 
-        if (process.env.NODE_ENV == "development")
-            console.log("Received:".yellow.bold, message);
+        if (env.isDevelopment) console.log("Received:".yellow.bold, message);
 
         switch (message.command) {
             case "Authenticate":
@@ -149,7 +149,7 @@ export default class musicService {
         const pass = message.data.password;
 
         // Check password.
-        if (pass != process.env.OWLET_PASSWORD) {
+        if (pass != env.OWLET_PASSWORD) {
             return ws.send(
                 JSON.stringify({
                     mid: message.mid,

@@ -33,6 +33,7 @@ import RavenClient from "../types/ravenClient";
 import GuildConfig, { GuildConfigs } from "../lib/guildconfig.service";
 import { groupBy } from "../lib/functions";
 import { CommandGroup } from "../types/commandGroup";
+import env from "./env";
 
 const limitedGroups = [
     CommandGroup.moderation,
@@ -333,9 +334,7 @@ export default async function registerCommand(
 
     const commandJson = commands.map((command) => command.toJSON());
 
-    const rest = new REST({ version: "10" }).setToken(
-        process.env.DISCORD_TOKEN as string,
-    );
+    const rest = new REST({ version: "10" }).setToken(env.DISCORD_TOKEN);
 
     await rest
         .put(

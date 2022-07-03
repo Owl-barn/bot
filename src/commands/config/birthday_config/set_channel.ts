@@ -1,10 +1,9 @@
 import {
     GuildBasedChannel,
-    EmbedBuilder,
-    HexColorString,
     ClientUser,
     ApplicationCommandOptionType,
 } from "discord.js";
+import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -37,9 +36,7 @@ module.exports = class extends SubCommand {
             | GuildBasedChannel
             | undefined;
 
-        const failEmbed = new EmbedBuilder()
-            .setDescription(`I cant assign this role.`)
-            .setColor(process.env.EMBED_FAIL_COLOR as HexColorString);
+        const failEmbed = failEmbedTemplate("I cant assign this role.");
 
         if (channel && !channel.permissionsFor(msg.client.user as ClientUser))
             return { embeds: [failEmbed] };
@@ -49,13 +46,11 @@ module.exports = class extends SubCommand {
             data: { birthday_channel: channel?.id || null },
         });
 
-        const embed = new EmbedBuilder()
-            .setDescription(
-                channel
-                    ? `Successfully set ${channel} as the birthday message channel!`
-                    : "Birthday channel removed.",
-            )
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        const embed = embedTemplate(
+            channel
+                ? `Successfully set ${channel} as the birthday message channel!`
+                : "Birthday channel removed.",
+        );
 
         return { embeds: [embed] };
     }

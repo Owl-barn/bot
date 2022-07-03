@@ -1,40 +1,13 @@
-# Raven
-#### epic Discord bot
+# Raven bot
 
-## Running
-- create a postgres database
+This is multi purpose modular discord bot. You are not allowed to use this bot for commercial purposes. or modify it in any way.
 
-- create a file called `.env` with the following content:
-```
-DATABASE_URL="postgresql://{db user}:{db user password}@localhost:5432/{db name}"
+## Getting started
 
-DISCORD_TOKEN="{your discord token}"
+-   Create a postgresql database
 
-OWNER_ID="{your discord id}"
-EMBED_COLOR="#5c00ff"
-EMBED_FAIL_COLOR="#ff0000"
+-   Create a file called `.env` in the root directory and populate it with the example.env content
 
-PORT=
-NODE_ENV=""
-
-CLIENT_ID=""
-CLIENT_SECRET=""
-URL=""
-JWT_SECRET=""
-COOKIETOKEN=""
-```
-
-- run the following command initially
-```
-npm i
-npx prisma db push
-npx prisma generate
-```
-then run
-```
-npx tsc --watch
-```
-and 
-```
-npm run start
-```
+-   Run `npm run init` to intiate the environment
+-   Run `npx tsc --watch` to compile the code in watch mode
+-   Run `npm run start` to start the bot

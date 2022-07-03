@@ -87,7 +87,7 @@ module.exports = class extends SubCommand {
             failEmbed.setDescription(
                 "You can only change your birthday once a year, contact an admin if there was a mistake",
             );
-            return { embeds: [embed] };
+            return { embeds: [failEmbed] };
         }
 
         const query = await client.db.birthdays.upsert({
@@ -112,7 +112,8 @@ module.exports = class extends SubCommand {
         const age = yearsAgo(birthdayMoment.toDate());
         const starSign = getStarSign(query.birthday as Date);
 
-        embed.setTitle("Birthday set!").addFields([
+        embed.setTitle("Birthday set!");
+        embed.addFields([
             {
                 name: `Birth Date`,
                 value: `**you were born on** ${birthdayMoment.format(

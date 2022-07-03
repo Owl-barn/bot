@@ -1,13 +1,9 @@
 import { ButtonBuilder } from "@discordjs/builders";
-import {
-    Guild,
-    HexColorString,
-    EmbedBuilder,
-    ActionRowBuilder,
-    ButtonStyle,
-} from "discord.js";
+import { Guild, ActionRowBuilder, ButtonStyle } from "discord.js";
+import { embedTemplate } from "../lib/embedTemplate";
 import GuildConfig from "../lib/guildconfig.service";
 import registerCommand from "../modules/command.register";
+import env from "../modules/env";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -36,7 +32,7 @@ export default class implements RavenEvent {
 
             if (!channel) return;
 
-            const embed = new EmbedBuilder()
+            const embed = embedTemplate()
                 .setTitle("Thank you!")
                 .setDescription(
                     "Thank you for inviting me! The server owner can configure the bot with /config",
@@ -44,15 +40,14 @@ export default class implements RavenEvent {
                 .addFields([
                     {
                         name: "How do i play music?",
-                        value: `Right now the only way is to get a subscription, for more info and questions please [join the discord!](${process.env.SUPPORT_SERVER})`,
+                        value: `Right now the only way is to get a subscription, for more info and questions please [join the discord!](${env.SUPPORT_SERVER})`,
                     },
                 ])
                 .setThumbnail(
                     guild.client.user?.avatarURL() ||
                         (guild.client.user?.defaultAvatarURL as string),
                 )
-                .setTimestamp()
-                .setColor(process.env.EMBED_COLOR as HexColorString);
+                .setTimestamp();
 
             const donateButton = new ButtonBuilder()
                 .setLabel("Donation🗿")
@@ -74,16 +69,13 @@ export default class implements RavenEvent {
                     console.log("Couldnt send message in new server."),
                 );
 
-            const notifEmbed = new EmbedBuilder()
-                .setColor(process.env.EMBED_COLOR as HexColorString)
-                .setTitle("New guild")
-                .setDescription(
-                    `Name: ${guild.name}\nID: ${guild.id}\nOwner: ${guild.ownerId}\nMembercount: ${guild.memberCount}`,
-                );
-
-            const owner = await guild.client.users.fetch(
-                process.env.OWNER_ID as string,
+            const notifEmbed = embedTemplate(
+                `Name: ${guild.name}\nID: ${guild.id}\nOwner: ${guild.ownerId}\nMembercount: ${guild.memberCount}`,
             );
+            embed.setTitle("New guild");
+
+            const owner = await guild.client.users.fetch(env.OWNER_ID);
+
             owner.send({ embeds: [notifEmbed] }).catch(() => null);
         } catch (e) {
             console.error(e);

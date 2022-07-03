@@ -1,10 +1,6 @@
 import { ImageURLOptions } from "@discordjs/rest";
-import {
-    GuildMember,
-    HexColorString,
-    EmbedBuilder,
-    ApplicationCommandOptionType,
-} from "discord.js";
+import { GuildMember, ApplicationCommandOptionType } from "discord.js";
+import { embedTemplate } from "../../lib/embedTemplate";
 import { Command, returnMessage } from "../../types/Command";
 import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
@@ -58,10 +54,9 @@ module.exports = class extends Command {
 
         if (!avatar) throw "no avatar??";
 
-        const embed = new EmbedBuilder()
+        const embed = embedTemplate()
             .setTitle(`${member.user.username}'s avatar`)
-            .setImage(avatar)
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+            .setImage(avatar);
 
         return { embeds: [embed] };
     }

@@ -1,6 +1,7 @@
 import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import GuildConfig from "../../../lib/guildconfig.service";
+import env from "../../../modules/env";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -38,7 +39,7 @@ module.exports = class extends SubCommand {
         const button = new ButtonBuilder()
             .setLabel("Leaderboard")
             .setStyle(ButtonStyle.Link)
-            .setURL(`${process.env.URL}/leaderboard/${msg.guildId}`);
+            .setURL(`${env.URL}/leaderboard/${msg.guildId}`);
 
         const component =
             new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;

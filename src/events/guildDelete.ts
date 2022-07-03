@@ -1,4 +1,6 @@
-import { Guild, HexColorString, EmbedBuilder } from "discord.js";
+import { Guild } from "discord.js";
+import { failEmbedTemplate } from "../lib/embedTemplate";
+import env from "../modules/env";
 import RavenEvent from "../types/event";
 
 export default class implements RavenEvent {
@@ -14,8 +16,7 @@ export default class implements RavenEvent {
                     .red.bold,
             );
 
-            const notifEmbed = new EmbedBuilder()
-                .setColor(process.env.EMBED_FAIL_COLOR as HexColorString)
+            const notifEmbed = failEmbedTemplate()
                 .setTitle("Guild deleted")
                 .setDescription(
                     `Name: ${guild.name}\n` +
@@ -24,9 +25,7 @@ export default class implements RavenEvent {
                         `Membercount: ${guild.memberCount}`,
                 );
 
-            await (
-                await guild.client.users.fetch(process.env.OWNER_ID as string)
-            )
+            await (await guild.client.users.fetch(env.OWNER_ID))
                 .send({ embeds: [notifEmbed] })
                 .catch(() => null);
         } catch (e) {

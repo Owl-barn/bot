@@ -1,8 +1,5 @@
-import {
-    ApplicationCommandOptionType,
-    EmbedBuilder,
-    HexColorString,
-} from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
+import { embedTemplate } from "../../../lib/embedTemplate";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -38,9 +35,9 @@ module.exports = class extends SubCommand {
             },
         });
 
-        const embed = new EmbedBuilder()
-            .setDescription(`Successfully reset <@${user.id}>'s birthday`)
-            .setColor(process.env.EMBED_COLOR as HexColorString);
+        const embed = embedTemplate(
+            `Successfully reset <@${user.id}>'s birthday`,
+        );
 
         return { embeds: [embed] };
     }
