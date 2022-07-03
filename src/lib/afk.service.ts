@@ -69,8 +69,7 @@ class AFKServiceClass {
                 Number(x.created) / 1000
             }:R>${x.reason ? ` with the reason: \`\`${x.reason}\`\`` : ""}`;
 
-        const embed = embedTemplate();
-        embed.setDescription(AFKString);
+        const embed = embedTemplate(AFKString);
         if (removeAFK) embed.setTitle("Removed your AFK!");
         await msg.reply({ embeds: [embed] });
     };
@@ -83,7 +82,9 @@ class AFKServiceClass {
 
         for (const x of afks) this.setAFK(x);
         console.log(
-            ` ✓ AFK service initialized, ${afks.length} users`.green.bold,
+            " ✓ AFK service initialized with ".green.bold +
+                afks.length.toString().cyan +
+                " users".green.bold,
         );
     };
 }

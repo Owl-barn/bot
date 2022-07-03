@@ -19,7 +19,7 @@ export default class OauthGetService {
             client_secret: env.CLIENT_SECRET,
             code: code,
             grant_type: "authorization_code",
-            redirect_uri: "https://api.xayania.com/oauth",
+            redirect_uri: env.API_URL + "/oauth",
             scope: "identify",
         });
 
@@ -59,6 +59,6 @@ export default class OauthGetService {
             domain: ".xayania.com",
             secure: true,
         });
-        res.redirect("https://raven.xayania.com/guilds");
+        res.redirect(env.URL + "/guilds");
     }
 }

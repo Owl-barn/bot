@@ -10,13 +10,19 @@ export default class ready implements RavenEvent {
     async execute(client: RavenClient): Promise<void> {
         if (!client.user) process.exit();
         console.log(
-            ` ✓ Client ready, logged in as ${client.user.username}#${client.user.discriminator} (${client.user.id})`
-                .green.bold,
+            " ✓ Client ready, logged in as ".green.bold +
+                client.user.username.cyan +
+                "#".green.bold +
+                client.user.discriminator.cyan +
+                " (".green.bold +
+                client.user.id.cyan.italic +
+                ")".green.bold,
         );
         const usercount = client.guilds.cache.reduce(
             (x: number, y) => x + y.memberCount,
             0,
         );
+
         client.user.setActivity(`for ${usercount} members`, {
             type: ActivityType.Streaming,
             url: "https://www.youtube.com/watch?v=VZrDxD0Za9I",

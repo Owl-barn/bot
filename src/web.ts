@@ -28,10 +28,7 @@ class WebServer {
         this.app.use(cookieParser(env.COOKIE_TOKEN));
         this.app.use((req, res, next) => {
             res.header("Access-Control-Allow-Credentials", "true");
-            res.header(
-                "Access-Control-Allow-Origin",
-                "https://raven.xayania.com",
-            );
+            res.header("Access-Control-Allow-Origin", env.URL);
             res.header(
                 "Access-Control-Allow-Headers",
                 "Origin, X-Requested-With, Content-Type, Accept, Authorization",
@@ -69,8 +66,8 @@ class WebServer {
     public listen(): void {
         this.app.listen(env.PORT, () => {
             console.log(
-                ` > Web server ready at port ${env.PORT} - ${env.NODE_ENV}`
-                    .green.bold,
+                " > Web server ready on port ".green.bold +
+                    env.PORT.toString().cyan,
             );
         });
     }

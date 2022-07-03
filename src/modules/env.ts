@@ -32,13 +32,15 @@ const env = cleanEnv(process.env, {
 
     // Owlet
     OWLET_PASSWORD: str(),
+    OWLET_PORT: num({ default: 3001 }),
 
     // Discord
     OWNER_ID: str(),
-    SUPPORT_SERVER: discordInvite(),
-    CLIENT_ID: discordId(),
+    DONATION_URL: url(),
     CLIENT_SECRET: str(),
     DISCORD_TOKEN: str(),
+    CLIENT_ID: discordId(),
+    SUPPORT_SERVER: discordInvite(),
 
     // Embed
     EMBED_COLOR: HexColor({ default: "#5c00ff" }),
@@ -48,6 +50,7 @@ const env = cleanEnv(process.env, {
 
     // Web
     URL: url(),
+    API_URL: url(),
     API_KEY: str(),
     JWT_SECRET: str(),
     COOKIE_TOKEN: str(),

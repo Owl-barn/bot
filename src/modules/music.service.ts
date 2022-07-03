@@ -22,7 +22,7 @@ export default class musicService {
     private owlets: owletCredentials[] = [];
 
     constructor() {
-        this.wss = new WS.Server({ port: 8080 });
+        this.wss = new WS.Server({ port: env.OWLET_PORT });
         this.wss.on("connection", this.onConnection);
 
         // Try to load the owlets from the file.
@@ -52,7 +52,8 @@ export default class musicService {
         console.log(
             " ✓ Owlet service initialized with ".green.bold +
                 this.owlets.length.toString().cyan +
-                " owlets.".green.bold,
+                " owlets on port ".green.bold +
+                env.OWLET_PORT.toString().cyan,
         );
     }
 
@@ -185,12 +186,12 @@ export default class musicService {
         // If the bot disconnects remove it from the list.
         ws.on("close", () => this.removeBot(id));
 
+        this.bots.set(id, owlet);
+
         console.log(
             `+ Owlet connected <@${id}>, ${this.bots.size} active.`.green
                 .italic,
         );
-
-        this.bots.set(id, owlet);
     }
     /**
      * Authenticates the owlet.

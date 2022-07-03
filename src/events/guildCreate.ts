@@ -52,11 +52,11 @@ export default class implements RavenEvent {
             const donateButton = new ButtonBuilder()
                 .setLabel("Donation🗿")
                 .setStyle(ButtonStyle.Link)
-                .setURL("https://ko-fi.com/owlive");
+                .setURL(env.DONATION_URL);
             const discordButton = new ButtonBuilder()
                 .setLabel("Discord")
                 .setStyle(ButtonStyle.Link)
-                .setURL("https://discord.gg/CD5xsWNbmU");
+                .setURL(env.SUPPORT_SERVER);
 
             const component = new ActionRowBuilder().setComponents([
                 donateButton,
