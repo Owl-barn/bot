@@ -11,12 +11,17 @@ import RavenClient from "../types/ravenClient";
 import db from "../lib/db.service";
 import { getAvatar, randomRange } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
-import owlets from "../owlets.json";
 import { private_vc } from "@prisma/client";
-import roomNames from "../roomNames.json";
 import logService from "./logger.service";
 import { embedTemplate } from "../lib/embedTemplate";
 import env from "./env";
+import path from "path";
+import fs from "fs";
+
+interface RoomNames {
+    adjectives: string[];
+    nouns: string[];
+}
 
 class VCServiceClass {
     private createRateLimit: Set<string> = new Set();
@@ -27,14 +32,30 @@ class VCServiceClass {
 
     public async initialize(client: RavenClient) {
         const rooms = await db.private_vc.findMany();
-        if (
-            roomNames &&
-            roomNames.adjectives.length > 0 &&
-            roomNames.nouns.length > 0
-        ) {
+
+        // Try to load the room names from the file.
+        try {
+            const buffer = fs.readFileSync(
+                path.join(__dirname, "..", "roomNames.json"),
+                "utf8",
+            );
+
+            const roomNames = JSON.parse(buffer.toString()) as
+                | RoomNames
+                | undefined;
+
+            if (!roomNames) throw " ✘ No roomNames found.";
+            if (roomNames.adjectives.length == 0)
+                throw " ✘ No adjectives found.";
+
+            if (roomNames.nouns.length == 0) throw " ✘ No nouns found.";
+
             this.adjectives = roomNames.adjectives;
             this.nouns = roomNames.nouns;
-        } else {
+        } catch (e) {
+            if (typeof e === "string") console.error(e.yellow.bold);
+            else console.error(" ✘ No roomNames.json found.".yellow.bold);
+            // Generic names
             this.adjectives = ["Private", "Secret", "Hidden", "Secret"];
             this.nouns = ["Room", "Basement", "Attic", "Chambers"];
         }
@@ -92,7 +113,13 @@ class VCServiceClass {
             }
         }
 
-        console.log("VC Service loaded");
+        console.log(
+            " ✓ VC Service loaded with ".green.bold +
+                this.adjectives.length.toString().cyan +
+                " adjectives and ".green.bold +
+                this.nouns.length.toString().cyan +
+                " nouns.".green.bold,
+        );
     }
 
     public async onChange(old: VoiceState, current: VoiceState) {
@@ -215,10 +242,11 @@ class VCServiceClass {
         }
 
         const owletsPerms: OverwriteResolvable[] = [];
+        const botIds = (vc.client as RavenClient).musicService.getBotIds();
 
-        for (const owlet of owlets) {
+        for (const owlet of botIds) {
             const botPerms: OverwriteResolvable = {
-                id: owlet.id,
+                id: owlet,
                 type: OverwriteType.Member,
                 allow:
                     PermissionFlagsBits.ManageChannels |

@@ -123,7 +123,7 @@ class LevelService {
             array.push({ total, xp, level: i });
             total += xp;
         }
-        console.log(`Made level array in ${Date.now() - now}ms.`);
+        console.log(` ✓ Made level array in ${Date.now() - now}ms.`.green.bold);
         return array;
     };
 

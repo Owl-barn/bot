@@ -25,7 +25,7 @@ class WebServer {
         this.app.use(express.json());
         this.app.set("trust proxy", true);
         this.app.use(logger("short"));
-        this.app.use(cookieParser(env.COOKIETOKEN));
+        this.app.use(cookieParser(env.COOKIE_TOKEN));
         this.app.use((req, res, next) => {
             res.header("Access-Control-Allow-Credentials", "true");
             res.header(

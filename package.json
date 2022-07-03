@@ -4,7 +4,6 @@
   "description": "",
   "main": "app.ts",
   "author": "Owlive",
-  "license": "AGPL-3.0",
   "scripts": {
     "init": "npm i && npx prisma db push && npx prisma generate",
     "compile": "tsc",

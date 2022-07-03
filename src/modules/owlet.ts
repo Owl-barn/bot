@@ -81,7 +81,7 @@ export default class Owlet {
     public getGuilds = (): Map<string, Guild> => this.guilds;
 
     public updateGuilds = (guilds: Guild[]): void => {
-        console.log(`Updating guilds for ${this.id}`.yellow.bold);
+        console.log(`~ Updating guilds for <@${this.id}>`.cyan.italic);
         for (const guild of guilds) {
             this.guilds.set(guild.id, guild);
         }

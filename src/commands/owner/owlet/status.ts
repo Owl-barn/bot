@@ -25,7 +25,7 @@ module.exports = class extends SubCommand {
         const client = msg.client;
 
         embed.setTitle("Music Bot List");
-        const bots = client.musicService.getBots();
+        const bots = client.musicService.getOwlets();
 
         for (const bot of bots.values()) {
             const botList = [];

@@ -2,21 +2,58 @@ import { Snowflake } from "discord.js";
 import Owlet from "./owlet";
 import wsResponse from "../types/wsResponse";
 import WS from "ws";
+import fs from "fs";
 import { IncomingMessage } from "http";
-import owlets from "../owlets.json";
 import QueueEvent from "../types/queueevent";
 import Bot from "../bot";
 import { embedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import env from "./env";
+import path from "path";
+
+interface owletCredentials {
+    id: string;
+    token: string;
+}
 
 export default class musicService {
     private bots: Map<string, Owlet> = new Map();
     private wss: WS.Server;
+    private owlets: owletCredentials[] = [];
 
     constructor() {
         this.wss = new WS.Server({ port: 8080 });
         this.wss.on("connection", this.onConnection);
+
+        // Try to load the owlets from the file.
+        try {
+            const buffer = fs.readFileSync(
+                path.join(__dirname, "..", "owlets.json"),
+                "utf8",
+            );
+
+            const owletJson = JSON.parse(buffer.toString()) as
+                | owletCredentials[]
+                | undefined;
+
+            if (!owletJson) throw "No owlets found.";
+            this.owlets = owletJson;
+        } catch (e) {
+            if (typeof e === "string") console.error(e.yellow.bold);
+            else console.error(" ✘ No owlets.json found.".yellow.bold);
+        }
+
+        // Add main bot to the owlet list.
+        this.owlets.unshift({
+            id: env.CLIENT_ID,
+            token: env.DISCORD_TOKEN,
+        });
+
+        console.log(
+            " ✓ Owlet service initialized with ".green.bold +
+                this.owlets.length.toString().cyan +
+                " owlets.".green.bold,
+        );
     }
 
     private onConnection = (socket: WS, _request: IncomingMessage): void => {
@@ -45,6 +82,14 @@ export default class musicService {
     };
 
     /**
+     * Returns all the registered owlet ids, connected or not
+     * @returns Array of owlet user ids.
+     */
+    public getBotIds(): Snowflake[] {
+        return this.owlets.map((owlet) => owlet.id);
+    }
+
+    /**
      * broadcasts a message to all owlets.
      * @param data message to send
      */
@@ -52,6 +97,10 @@ export default class musicService {
         this.wss.clients.forEach((ws) => ws.send(JSON.stringify(data)));
     }
 
+    /**
+     * Terminates all connected owlets.
+     * @returns Terminated owlet count.
+     */
     public terminate(): number {
         const request = {
             command: "Terminate",
@@ -71,7 +120,7 @@ export default class musicService {
      * @returns Owlet credentials.
      */
     private async getCredentials() {
-        const credentialList = owlets;
+        const credentialList = this.owlets;
         for (const credential of credentialList) {
             if (this.bots.has(credential.id)) continue;
             return credential;
@@ -86,7 +135,7 @@ export default class musicService {
     private removeBot(id: string) {
         this.bots.delete(id);
         console.log(
-            `Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold,
+            `- Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold,
         );
     }
 
@@ -137,7 +186,8 @@ export default class musicService {
         ws.on("close", () => this.removeBot(id));
 
         console.log(
-            `Owlet connected <@${id}>, ${this.bots.size} active.`.green.bold,
+            `+ Owlet connected <@${id}>, ${this.bots.size} active.`.green
+                .italic,
         );
 
         this.bots.set(id, owlet);
@@ -161,7 +211,7 @@ export default class musicService {
         // Check if bot is reconnecting.
         const botToken = message.data.token as string | undefined;
         if (botToken) {
-            const owletInfo = owlets.find((x) => x.token == botToken);
+            const owletInfo = this.owlets.find((x) => x.token == botToken);
 
             // Bot account not in list.
             if (!owletInfo) {
@@ -243,19 +293,23 @@ export default class musicService {
         bot.updateGuilds(data.guilds);
     }
 
-    public getBots = (): Map<string, Owlet> => this.bots;
+    /**
+     * Returns all owlets.
+     * @returns map of owlets
+     */
+    public getOwlets = (): Map<string, Owlet> => this.bots;
 
     /**
      * Returns the Owlet by the given id.
      */
-    public getBotById = (botId: string): Owlet | undefined =>
+    public getOwletById = (botId: string): Owlet | undefined =>
         this.bots.get(botId);
 
     /**
      * Returns the Owlet currently connected to that channel or an available one
      * otherwise undefined
      */
-    public getBot = (
+    public getOwlet = (
         channelId: Snowflake,
         guildId: Snowflake,
     ): Owlet | undefined => {

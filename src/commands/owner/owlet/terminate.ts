@@ -29,7 +29,7 @@ module.exports = class extends SubCommand {
 
         // If owlet is specified then terminate that owlet.
         if (owlet) {
-            const bot = msg.client.musicService.getBotById(owlet.id);
+            const bot = msg.client.musicService.getOwletById(owlet.id);
             if (!bot) return { content: "no bot found" };
             bot.terminate();
             return { content: `terminated <@${owlet.id}>` };

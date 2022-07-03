@@ -82,7 +82,9 @@ class AFKServiceClass {
         this.guilds = new Set();
 
         for (const x of afks) this.setAFK(x);
-        console.log(`AFK service initialized, ${afks.length} users`);
+        console.log(
+            ` ✓ AFK service initialized, ${afks.length} users`.green.bold,
+        );
     };
 }
 

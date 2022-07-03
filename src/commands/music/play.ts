@@ -81,8 +81,8 @@ module.exports = class extends Command {
 
         const musicBot =
             botId && dj
-                ? music.getBotById(botId)
-                : music.getBot(vc.id, vc.guildId);
+                ? music.getOwletById(botId)
+                : music.getOwlet(vc.id, vc.guildId);
 
         if (!musicBot) {
             const response = failEmbed.setDescription(
