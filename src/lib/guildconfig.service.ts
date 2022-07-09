@@ -11,6 +11,10 @@ class GuildConfigClass {
         console.log(" ✓ Loaded guild configs".green.bold);
     };
 
+    /**
+     * Update the guild config cache for a guild.
+     * @param guild `guildId` or `prisma.guilds`
+     * */
     public updateGuild = async (guild: guilds | string) => {
         if (typeof guild == "string") {
             guild = (await db.guilds.findUnique({
@@ -50,6 +54,11 @@ class GuildConfigClass {
         this.guilds.set(guild.guild_id, config);
     };
 
+    /**
+     * Get the guild config for a guild.
+     * @param id `guildId`
+     * @returns guildConfig
+     */
     public getGuild = (id: string) => this.guilds.get(id);
 }
 

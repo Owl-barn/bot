@@ -56,7 +56,7 @@ async function whitelistLeave(member: GuildMember, config: rcon) {
     console.log({ whitelist });
 
     if (!whitelist) return;
-    const mcName = await getMcName(whitelist.mc_uuid).catch(() => null);
+    const mcName = await getMcName(whitelist.mc_uuid);
 
     console.log({ mcName });
 

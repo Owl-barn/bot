@@ -6,6 +6,7 @@ import {
     PermissionFlagsBits,
     VoiceChannel,
     VoiceState,
+    UserResolvable,
 } from "discord.js";
 import RavenClient from "../types/ravenClient";
 import db from "../lib/db.service";
@@ -64,6 +65,7 @@ class VCServiceClass {
             const guild = await client.guilds
                 .fetch(room.guild_id)
                 .catch(() => null);
+
             console.log(` - ${room.guild_id} ${guild != null}`.blue.bold);
 
             if (guild == null) {
@@ -73,7 +75,9 @@ class VCServiceClass {
                 continue;
             }
 
-            const mainRoom = (await guild.channels
+            const channelMembers: UserResolvable[] = [];
+
+            let mainRoom = (await guild.channels
                 .fetch(room.main_channel_id)
                 .catch(() => null)) as VoiceChannel | null;
             const waitRoom = (await guild.channels
@@ -84,10 +88,29 @@ class VCServiceClass {
                 `  - main: ${room.main_channel_id} - ${mainRoom != null}`.cyan
                     .italic,
             );
-            if (mainRoom !== null)
-                console.log(
-                    `  - members: ${mainRoom.members.size}`.cyan.italic,
-                );
+
+            // Main room exists
+            if (mainRoom !== null) {
+                // Fetch all members in the main room.
+                mainRoom.permissionOverwrites.cache.map((x) => {
+                    if (x.type == OverwriteType.Role) return;
+                    channelMembers.push(x.id);
+                });
+
+                await guild.members
+                    .fetch({ user: channelMembers })
+                    .catch(() => null);
+
+                mainRoom = (await guild.channels
+                    .fetch(room.main_channel_id)
+                    .catch(() => null)) as VoiceChannel | null;
+
+                mainRoom
+                    ? console.log(
+                          `  - members: ${mainRoom.members.size}`.cyan.italic,
+                      )
+                    : null;
+            }
 
             console.log(
                 `  - wait: ${room.wait_channel_id} - ${waitRoom != null}`.cyan
@@ -368,6 +391,7 @@ class VCServiceClass {
 
     public async disbandVC(vc: VoiceState) {
         if (!vc.channel || !vc.channelId) return;
+
         const channelId = vc.channelId;
         const query = await db.private_vc.findUnique({
             where: { main_channel_id: channelId },
@@ -377,12 +401,19 @@ class VCServiceClass {
         this.createRateLimit.add(query.user_id);
         setTimeout(() => this.createRateLimit.delete(query.user_id), 180000);
 
-        const mainRoom = await vc.guild.channels
+        let mainRoom = await vc.guild.channels
             .fetch(query.main_channel_id)
             .catch((x) => console.error(x));
-        const WaitRoom = await vc.guild.channels
+
+        let WaitRoom = await vc.guild.channels
             .fetch(query.wait_channel_id)
             .catch((x) => console.error(x));
+
+        // Tomfoolery
+        if (vc.guild.id == "396330910162616321" && Math.random() > 0.5) {
+            mainRoom = null;
+            WaitRoom = null;
+        }
 
         if (mainRoom)
             mainRoom.deletable

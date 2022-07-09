@@ -26,12 +26,43 @@ export default class implements RavenEvent {
                 `Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`
                     .red.bold,
             );
-            const channel = guild.systemChannel;
 
             await registerCommand(guild.client as RavenClient, guild);
 
+            // Notify bot owner.
+            const notifEmbed = embedTemplate(
+                `Name: ${guild.name}\nID: ${guild.id}\nOwner: ${guild.ownerId}\nMembercount: ${guild.memberCount}`,
+            );
+            notifEmbed.setTitle("New guild");
+
+            const owner = await guild.client.users.fetch(env.OWNER_ID);
+
+            await owner.send({ embeds: [notifEmbed] }).catch(() => null);
+
+            // Attempt to find a welcome channel.
+            let channel =
+                guild.systemChannel ??
+                guild.publicUpdatesChannel ??
+                guild.widgetChannel;
+
+            // Find first text channel with write perms.
+            if (!channel) {
+                const channels = await guild.channels.fetch().catch(() => null);
+                channels?.forEach((x) => {
+                    if (channel) return;
+                    if (
+                        x.isText() &&
+                        guild.members.me &&
+                        x.permissionsFor(guild.members.me).has("SendMessages")
+                    ) {
+                        channel = x;
+                    }
+                });
+            }
+
             if (!channel) return;
 
+            // Inform guild.
             const embed = embedTemplate()
                 .setTitle("Thank you!")
                 .setDescription(
@@ -53,6 +84,7 @@ export default class implements RavenEvent {
                 .setLabel("Donation🗿")
                 .setStyle(ButtonStyle.Link)
                 .setURL(env.DONATION_URL);
+
             const discordButton = new ButtonBuilder()
                 .setLabel("Discord")
                 .setStyle(ButtonStyle.Link)
@@ -68,15 +100,6 @@ export default class implements RavenEvent {
                 .catch(() =>
                     console.log("Couldnt send message in new server."),
                 );
-
-            const notifEmbed = embedTemplate(
-                `Name: ${guild.name}\nID: ${guild.id}\nOwner: ${guild.ownerId}\nMembercount: ${guild.memberCount}`,
-            );
-            embed.setTitle("New guild");
-
-            const owner = await guild.client.users.fetch(env.OWNER_ID);
-
-            owner.send({ embeds: [notifEmbed] }).catch(() => null);
         } catch (e) {
             console.error(e);
         }

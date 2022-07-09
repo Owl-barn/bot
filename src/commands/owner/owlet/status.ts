@@ -35,7 +35,7 @@ module.exports = class extends SubCommand {
                 if (!guild.channelId) continue;
                 const request = {
                     command: "Queue",
-                    mid: msg.id,
+                    mid: bot.getId() + guild.id,
                     data: { guildId: msg.guild.id },
                 };
 
@@ -45,20 +45,21 @@ module.exports = class extends SubCommand {
                     queueInfo: QueueInfo;
                 }
 
-                const data = (await bot
+                const queue = (await bot
                     .send(request)
                     .catch((e) => console.log(e))) as Response;
-                if (!data || data.error) continue;
 
-                const queueLength = new Date(data.queueInfo.length)
+                if (!queue || queue.error) continue;
+
+                const queueLength = new Date(queue.queueInfo.length)
                     .toISOString()
                     .slice(11, 19);
 
                 const discordGuild = await client.guilds.fetch(guild.id);
                 const output = [
-                    data.queueInfo.paused ? "❌" : "✅",
+                    queue.queueInfo.paused ? "❌" : "✅",
                     queueLength,
-                    data.queue.length,
+                    queue.queue.length,
                     discordGuild.name,
                 ];
 

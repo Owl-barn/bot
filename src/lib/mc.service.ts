@@ -4,29 +4,48 @@ import { Guild } from "discord.js";
 import { Rcon } from "rcon-client/lib";
 import RavenInteraction from "../types/interaction";
 
-export async function getMcUUID(username: string): Promise<boolean | string> {
-    let code = false;
+/**
+ * Fetches the player's minecraft `UUID` from Mojang's API.
+ * @param username The username of the user to lookup.
+ * @returns Minecraft UUID (`string`).
+ */
+export async function getMcUUID(username: string): Promise<string | null> {
+    let code = null;
     await axios
         .get(`https://api.mojang.com/users/profiles/minecraft/${username}`)
         .then((response) => {
-            code = response.status === 200 ? response.data.id : false;
+            response.status == 200 ? (code = response.data.id) : null;
         });
     return code;
 }
 
-export const defaultErr = { type: "text", content: "an error occured" };
-
-export async function getMcName(uuid: string): Promise<string | false> {
-    let userName = false;
+/**
+ * Fetches the player's minecraft `username` from Mojang's API.
+ * @param uuid The minecraft uuid of the player
+ * @returns Minecraft username (`string`).
+ */
+export async function getMcName(uuid: string): Promise<string | null> {
+    let userName = null;
     const url =
         "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid;
+
     await axios.get(url).then((response) => {
-        userName = response.status === 200 ? response.data.name : false;
+        response.status === 200 ? (userName = response.data.name) : null;
     });
-    if (userName) return userName;
-    throw "Couldnt resolve uuid";
+
+    return userName;
 }
 
+/**
+ * Sends an array of commands to the rcon server.
+ * @param commands Array of commands to send
+ * @param login `{
+ * host: string,
+ * port: number,
+ * password: string
+ * }`
+ * @returns Responses from the rcon server
+ */
 export async function RCONHandler(
     commands: string[],
     login: RCONLogin,
@@ -49,7 +68,6 @@ export async function RCONHandler(
     // End connection.
     rcon.end();
 
-    // Return.
     return response;
 }
 

@@ -59,16 +59,21 @@ module.exports = class extends SubCommand {
         title = Util.escapeMarkdown(title);
         description = Util.escapeMarkdown(description);
 
-        const collection = await db.self_role_main.findFirst({
-            where: { uuid: collectionId, guild_id: msg.guildId },
-            include: { self_role_roles: true },
-        });
+        const collection = await db.self_role_main
+            .findFirst({
+                where: {
+                    OR: [{ uuid: collectionId }, { title: collectionId }],
+                    guild_id: msg.guildId,
+                },
+                include: { self_role_roles: true },
+            })
+            .catch(() => null);
 
         if (!collection)
             return {
                 embeds: [
                     failEmbedTemplate(
-                        `Collection ${collectionId} does not exist.`,
+                        `Collection \`${collectionId}\` does not exist.`,
                     ),
                 ],
             };
@@ -82,7 +87,10 @@ module.exports = class extends SubCommand {
                     main_uuid: collection.uuid,
                 },
             })
-            .catch(console.error);
+            .catch((e) => {
+                console.error(e);
+                return null;
+            });
 
         if (!CollectionEntry)
             return {

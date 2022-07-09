@@ -35,7 +35,7 @@ module.exports = class extends Command {
 
         await msg.deferReply();
 
-        username = username.trim().substr(0, 64);
+        username = username.trim().substring(0, 64);
         const author = msg.member as GuildMember;
 
         // Get guild.
