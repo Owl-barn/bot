@@ -323,7 +323,11 @@ export default class musicService {
             }
         }
 
-        // otherwise, search for available bot
+        // Check if raven is available.
+        const raven = this.bots.get(env.CLIENT_ID)?.getGuilds().get(guildId);
+        if (raven && !raven.channelId) return this.bots.get(env.CLIENT_ID);
+
+        // Otherwise search for an available owlet in that guild.
         for (const bot of this.bots.values()) {
             for (const guild of bot.getGuilds().values()) {
                 if (guild.id === guildId && !guild.channelId) {
