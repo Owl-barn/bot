@@ -90,10 +90,10 @@ export abstract class Command extends BaseCommand {
 
     public group!: CommandGroup;
 
-    public guildOnly = false;
-    public adminOnly = false;
-    public premium = false;
-    public disabled = false;
+    public guildOnly: boolean;
+    public adminOnly: boolean;
+    public premium: boolean;
+    public disabled: boolean;
 
     public arguments?: Argument<string | number>[];
 
@@ -133,10 +133,10 @@ export abstract class SubCommand extends BaseCommand {
 
     public type = CommandType.Subcommand;
 
-    public guildOnly = false;
-    public adminOnly = false;
-    public premium = false;
-    public disabled = false;
+    public guildOnly: boolean;
+    public adminOnly: boolean;
+    public premium: boolean;
+    public disabled: boolean;
 
     public arguments?: Argument<string | number>[];
 

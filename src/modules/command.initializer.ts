@@ -63,9 +63,7 @@ async function generateSimpleCommand(
     const cmdClass = (await import(commandPath)).default;
     const command = new cmdClass() as CommandEnum;
 
-    if (command == undefined) {
-        return;
-    }
+    if (command == undefined) return;
 
     preName ? (command.name = `${preName}-${command.name}`) : null;
 

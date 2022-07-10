@@ -97,11 +97,10 @@ export default class InteractionCreate implements RavenEvent {
                 "You are not allowed to do this command.",
             );
 
+        const isPremium = GuildConfig.getGuild(msg.guildId)?.premium;
+
         // Check if premium command.
-        if (
-            command.premium &&
-            (!msg.guildId || !GuildConfig.getGuild(msg.guildId)?.premium)
-        )
+        if (command.premium && !isPremium && !(msg.user.id === env.OWNER_ID))
             return await this.quickReply(msg, "This command is premium only.");
 
         // Check if the user is throttled.
