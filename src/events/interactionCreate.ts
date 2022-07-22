@@ -1,3 +1,4 @@
+import { InteractionType } from "discord.js";
 import bannedUsers from "../lib/banlist.service";
 import { failEmbedTemplate } from "../lib/embedTemplate";
 import GuildConfig from "../lib/guildconfig.service";
@@ -37,11 +38,11 @@ export default class InteractionCreate implements RavenEvent {
             return;
         }
         if (interaction.isButton()) {
-            return await this.buttonEvent(
-                interaction as RavenButtonInteraction,
-            ).catch((e) => console.error(e));
+            return await this.buttonEvent(interaction).catch((e) =>
+                console.error(e),
+            );
         }
-        if (interaction.isCommand()) {
+        if (interaction.type == InteractionType.ApplicationCommand) {
             return await this.commandEvent(interaction).catch((e) =>
                 console.error(e),
             );

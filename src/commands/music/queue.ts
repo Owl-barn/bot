@@ -1,10 +1,10 @@
 import { EmbedAuthorOptions, italic } from "@discordjs/builders";
 import {
-    EmbedFieldData,
     GuildMember,
     EmbedBuilder,
-    Util,
     ApplicationCommandOptionType,
+    escapeMarkdown,
+    APIEmbedField,
 } from "discord.js";
 import moment from "moment";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
@@ -119,12 +119,12 @@ function makeEmbed(
     const progress = progressBar(current.progressMs / current.durationMs, 20);
 
     const fieldContent = `
-    [${Util.escapeMarkdown(current.title.substring(0, 40))}](${current.url})
+    [${escapeMarkdown(current.title.substring(0, 40))}](${current.url})
     **${current.progress}** ${progress} **${current.duration}**
     ${italic(`Requested by: <@!${current.requestedBy}>`)}
     `;
 
-    const list: EmbedFieldData[] = [];
+    const list: APIEmbedField[] = [];
 
     list.push({ name: "Now playing:", value: fieldContent });
     let x = 0;

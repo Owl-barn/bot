@@ -3,8 +3,8 @@ import {
     ChannelType,
     Collection,
     TextChannel,
-    Attachment,
     ApplicationCommandOptionType,
+    AttachmentBuilder,
 } from "discord.js";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
@@ -83,10 +83,10 @@ module.exports = class extends SubCommand {
             `roles:\n${roleOutput}`,
         ];
 
-        const attachment = new Attachment(
+        const attachment = new AttachmentBuilder(
             Buffer.from(output.join("\n")),
-            "info.txt",
         );
+        attachment.setName("info.txt");
 
         return { files: [attachment] };
     }

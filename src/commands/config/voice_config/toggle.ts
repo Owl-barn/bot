@@ -68,23 +68,19 @@ module.exports = class extends SubCommand {
                 deny: ["Speak", "Stream"],
             };
 
-            const category = await msg.guild?.channels.create(
-                "🔒 Private Rooms",
-                {
-                    type: ChannelType.GuildCategory,
-                    permissionOverwrites: [botPermissions, basepermissions],
-                },
-            );
+            const category = await msg.guild?.channels.create({
+                name: "🔒 Private Rooms",
+                type: ChannelType.GuildCategory,
+                permissionOverwrites: [botPermissions, basepermissions],
+            });
 
             if (!category) throw "Couldnt make category channel.";
 
-            const channel = await msg.guild?.channels.create(
-                "Create private room",
-                {
-                    type: ChannelType.GuildVoice,
-                    parent: category.id,
-                },
-            );
+            const channel = await msg.guild?.channels.create({
+                name: "Create private room",
+                type: ChannelType.GuildVoice,
+                parent: category.id,
+            });
 
             if (!channel || !category) throw "Couldnt make vc";
 

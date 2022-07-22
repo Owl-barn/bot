@@ -1,5 +1,10 @@
 import { ButtonBuilder } from "@discordjs/builders";
-import { Guild, ActionRowBuilder, ButtonStyle } from "discord.js";
+import {
+    Guild,
+    ActionRowBuilder,
+    ButtonStyle,
+    NonThreadGuildBasedChannel,
+} from "discord.js";
 import { embedTemplate } from "../lib/embedTemplate";
 import GuildConfig from "../lib/guildconfig.service";
 import registerCommand from "../modules/command.register";
@@ -15,12 +20,6 @@ export default class implements RavenEvent {
         try {
             if (!guild) throw "failed to register guild";
             if (GuildConfig.getGuild(guild.id)?.banned) return;
-
-            const db = (guild.client as RavenClient).db;
-            await db.guilds.createMany({
-                data: { guild_id: guild.id },
-                skipDuplicates: true,
-            });
 
             console.log(
                 `Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`
@@ -40,7 +39,7 @@ export default class implements RavenEvent {
             await owner.send({ embeds: [notifEmbed] }).catch(() => null);
 
             // Attempt to find a welcome channel.
-            let channel =
+            let channel: NonThreadGuildBasedChannel | null =
                 guild.systemChannel ??
                 guild.publicUpdatesChannel ??
                 guild.widgetChannel;
@@ -48,15 +47,16 @@ export default class implements RavenEvent {
             // Find first text channel with write perms.
             if (!channel) {
                 const channels = await guild.channels.fetch().catch(() => null);
-                channels?.forEach((x) => {
-                    if (channel) return;
-                    if (
-                        x.isText() &&
-                        guild.members.me &&
-                        x.permissionsFor(guild.members.me).has("SendMessages")
-                    ) {
-                        channel = x;
-                    }
+                channels?.forEach((currentChannel) => {
+                    if (!channel) return;
+                    if (!channel.isTextBased()) return;
+                    if (!channel.guild.members.me) return;
+                    const hasPerms = currentChannel
+                        .permissionsFor(channel.guild.members.me)
+                        .has("SendMessages");
+                    if (!hasPerms) return;
+
+                    channel = currentChannel;
                 });
             }
 

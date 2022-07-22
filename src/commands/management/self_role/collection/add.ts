@@ -1,5 +1,6 @@
 import {
     ApplicationCommandOptionType,
+    ChannelType,
     ClientUser,
     GuildBasedChannel,
 } from "discord.js";
@@ -55,7 +56,7 @@ module.exports = class extends SubCommand {
             true,
         ) as GuildBasedChannel;
 
-        if (!channel.isText())
+        if (channel.type !== ChannelType.GuildText)
             return {
                 embeds: [failEmbedTemplate("Channel is not a text channel.")],
             };

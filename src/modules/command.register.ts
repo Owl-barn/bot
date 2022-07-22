@@ -322,10 +322,13 @@ export default async function registerCommand(
         where: { guild_id: guild.id },
     });
 
-    if (!dbGuild)
+    if (!dbGuild) {
         dbGuild = await client.db.guilds.create({
             data: { guild_id: guild.id },
         });
+
+        await GuildConfig.updateGuild(dbGuild);
+    }
 
     const guildconfig = GuildConfig.getGuild(guild.id);
     if (!guildconfig) return;

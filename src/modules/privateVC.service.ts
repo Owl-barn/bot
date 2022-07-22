@@ -1,5 +1,4 @@
 import {
-    GuildChannelCreateOptions,
     GuildMember,
     OverwriteResolvable,
     OverwriteType,
@@ -7,6 +6,7 @@ import {
     VoiceChannel,
     VoiceState,
     UserResolvable,
+    ChannelType,
 } from "discord.js";
 import RavenClient from "../types/ravenClient";
 import db from "../lib/db.service";
@@ -316,12 +316,6 @@ class VCServiceClass {
         const random2 = randomRange(0, this.nouns.length);
         const channelName = this.adjectives[random1] + this.nouns[random2];
 
-        // Room config.
-        const roomConfig: GuildChannelCreateOptions = {
-            type: 2,
-            parent: guildConfig.privateRoomCategory as string,
-        };
-
         const roomList = [ownerPerms, mainPerms].concat(owletsPerms);
         const waitList = [ownerPerms, waitingPerms].concat(owletsPerms);
 
@@ -331,15 +325,19 @@ class VCServiceClass {
         }
 
         // Create rooms.
-        const room = (await vc.guild.channels.create(`🔒 ${channelName} VC`, {
-            ...roomConfig,
+        const room = await vc.guild.channels.create({
+            type: ChannelType.GuildVoice,
+            name: `🔒 ${channelName} VC`,
             permissionOverwrites: roomList,
-        })) as unknown as VoiceChannel;
+            parent: guildConfig.privateRoomCategory as string,
+        });
 
-        const wait = (await vc.guild.channels.create(
-            `🕐 ${channelName} Waiting Room`,
-            { ...roomConfig, permissionOverwrites: waitList },
-        )) as unknown as VoiceChannel;
+        const wait = await vc.guild.channels.create({
+            type: ChannelType.GuildVoice,
+            permissionOverwrites: waitList,
+            name: `🕐 ${channelName} Waiting Room`,
+            parent: guildConfig.privateRoomCategory as string,
+        });
 
         await room.setBitrate(96_000).catch(() => null);
 
@@ -401,19 +399,13 @@ class VCServiceClass {
         this.createRateLimit.add(query.user_id);
         setTimeout(() => this.createRateLimit.delete(query.user_id), 180000);
 
-        let mainRoom = await vc.guild.channels
+        const mainRoom = await vc.guild.channels
             .fetch(query.main_channel_id)
             .catch((x) => console.error(x));
 
-        let WaitRoom = await vc.guild.channels
+        const WaitRoom = await vc.guild.channels
             .fetch(query.wait_channel_id)
             .catch((x) => console.error(x));
-
-        // Tomfoolery
-        if (vc.guild.id == "396330910162616321" && Math.random() > 0.5) {
-            mainRoom = null;
-            WaitRoom = null;
-        }
 
         if (mainRoom)
             mainRoom.deletable

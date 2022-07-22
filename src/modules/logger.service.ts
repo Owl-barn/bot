@@ -1,5 +1,6 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { Prisma } from "@prisma/client";
+import { ChannelType } from "discord.js";
 import bot from "../bot";
 import prisma from "../lib/db.service";
 import { embedTemplate } from "../lib/embedTemplate";
@@ -35,7 +36,9 @@ class logServiceClass {
         const client = bot.getClient();
         const channel = await client.channels.fetch(config.log_channel);
 
-        if (!channel || !(channel.isText() && channel?.guildId)) return;
+        const isGuildVoice = channel && channel.type == ChannelType.GuildText;
+
+        if (!isGuildVoice) return;
 
         // send the embeds
         await channel.send({ embeds: embeds }).catch(console.error);

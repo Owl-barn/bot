@@ -2,9 +2,9 @@ import { moderation_type } from "@prisma/client";
 import {
     HexColorString,
     EmbedBuilder,
-    Util,
     ApplicationCommandOptionType,
     APIEmbedField,
+    escapeMarkdown,
 } from "discord.js";
 import stringDurationToMs from "../../lib/durationconvert";
 import { failEmbedTemplate } from "../../lib/embedTemplate";
@@ -58,7 +58,7 @@ module.exports = class extends Command {
         const duration = msg.options.getString("duration");
         let reason = msg.options.getString("reason", true);
 
-        reason = Util.escapeMarkdown(reason).substring(0, 256);
+        reason = escapeMarkdown(reason).substring(0, 256);
 
         const failEmbed = failEmbedTemplate();
 

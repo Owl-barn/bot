@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, Util } from "discord.js";
+import { ApplicationCommandOptionType, escapeMarkdown } from "discord.js";
 import {
     embedTemplate,
     failEmbedTemplate,
@@ -56,8 +56,8 @@ module.exports = class extends SubCommand {
         let description = msg.options.getString("description", true);
         const collectionId = msg.options.getString("collection", true);
 
-        title = Util.escapeMarkdown(title);
-        description = Util.escapeMarkdown(description);
+        title = escapeMarkdown(title);
+        description = escapeMarkdown(description);
 
         const collection = await db.self_role_main
             .findFirst({

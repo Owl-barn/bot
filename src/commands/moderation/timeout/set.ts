@@ -1,5 +1,9 @@
 import { moderation_type } from "@prisma/client";
-import { ApplicationCommandOptionType, GuildMember, Util } from "discord.js";
+import {
+    ApplicationCommandOptionType,
+    escapeMarkdown,
+    GuildMember,
+} from "discord.js";
 import stringDurationToMs, { msToString } from "../../../lib/durationconvert";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { getAvatar } from "../../../lib/functions";
@@ -73,10 +77,10 @@ module.exports = class extends SubCommand {
         if (durationMs > timeoutLimit) durationMs = timeoutLimit;
 
         reason = reason
-            ? Util.escapeMarkdown(reason).substring(0, 127)
+            ? escapeMarkdown(reason).substring(0, 127)
             : "No reason provided.";
 
-        const member = await target.timeout(durationMs, reason);
+        const member = await target.timeout(durationMs, reason ?? undefined);
 
         if (!member.communicationDisabledUntilTimestamp) throw "??";
 

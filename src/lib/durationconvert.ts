@@ -1,4 +1,4 @@
-import { Util } from "discord.js";
+import { escapeMarkdown } from "discord.js";
 
 /**
  *  Converts a duration string to ms.
@@ -10,7 +10,7 @@ export default function stringDurationToMs(duration: string): number {
         /((?<days>[0-9]{1,4}) ?(?:d) ?)?((?<hours>[0-9]{1,4}) ?(?:h) ?)?((?<minutes>[0-9]{1,4}) ?(?:m))?/g,
     );
 
-    duration = Util.escapeMarkdown(duration).trim();
+    duration = escapeMarkdown(duration).trim();
     const match = Array.from(duration.matchAll(durationCheck));
 
     let { days, hours, minutes } = match[0].groups as unknown as TimeInput;

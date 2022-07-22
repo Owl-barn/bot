@@ -1,4 +1,4 @@
-import { Snowflake } from "discord.js";
+import { ChannelType, Snowflake } from "discord.js";
 import Owlet from "./owlet";
 import wsResponse from "../types/wsResponse";
 import WS from "ws";
@@ -140,7 +140,7 @@ export default class musicService {
         );
     }
 
-    private addBot(id: string, ws: WS, guilds: any): void {
+    private addBot(id: string, ws: WS, guilds: Guild[]): void {
         const owlet = new Owlet(id, ws, guilds);
 
         owlet.on(QueueEvent.SongStart, async (track, channelId, guildId) => {
@@ -152,7 +152,7 @@ export default class musicService {
             const bot = await guild?.members.fetch(id);
             if (!bot) return;
 
-            if (!channel?.isVoice()) return;
+            if (channel.type !== ChannelType.GuildVoice) return;
             const embed = embedTemplate();
 
             embed.setAuthor({
@@ -351,4 +351,9 @@ interface apiRequest {
     command: string;
     mid: string;
     data: any;
+}
+
+interface Guild {
+    id: string;
+    channelId: string;
 }

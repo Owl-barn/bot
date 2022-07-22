@@ -1,4 +1,4 @@
-import { Attachment } from "discord.js";
+import { AttachmentBuilder } from "discord.js";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -26,7 +26,8 @@ module.exports = class extends SubCommand {
             )
             .join("\n");
 
-        const attachment = new Attachment(Buffer.from(output), "info.txt");
+        const attachment = new AttachmentBuilder(Buffer.from(output));
+        attachment.setName("info.txt");
 
         return { files: [attachment] };
     }

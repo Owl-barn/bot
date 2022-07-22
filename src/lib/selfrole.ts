@@ -3,6 +3,7 @@ import {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
+    ChannelType,
     ClientUser,
     EmbedBuilder,
     GuildTextBasedChannel,
@@ -18,7 +19,8 @@ export async function isValidChannel(
     const channel = await client.channels.fetch(channel_id);
     if (!channel) throw "Channel not found";
 
-    if (!channel.isText()) throw "Channel is not a text channel";
+    if (channel.type !== ChannelType.GuildText)
+        throw "Channel is not a text channel";
 
     const canSend = channel
         .permissionsFor(client.user as ClientUser)

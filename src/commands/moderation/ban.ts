@@ -1,5 +1,9 @@
 import { moderation_type } from "@prisma/client";
-import { Util, ApplicationCommandOptionType, APIEmbedField } from "discord.js";
+import {
+    ApplicationCommandOptionType,
+    APIEmbedField,
+    escapeMarkdown,
+} from "discord.js";
 import stringDurationToMs from "../../lib/durationconvert";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import { getAvatar } from "../../lib/functions";
@@ -65,7 +69,7 @@ module.exports = class extends Command {
         const failEmbed = failEmbedTemplate();
 
         reason = reason
-            ? Util.escapeMarkdown(reason).substring(0, 256)
+            ? escapeMarkdown(reason).substring(0, 256)
             : "No reason provided";
 
         if (!target)
@@ -139,7 +143,7 @@ module.exports = class extends Command {
         embed.setFields(fields);
 
         await msg.guild.bans.create(target.id, {
-            reason: reason,
+            reason: reason ?? undefined,
             deleteMessageDays: days,
         });
 

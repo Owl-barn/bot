@@ -1,5 +1,9 @@
 import { moderation_type } from "@prisma/client";
-import { GuildMember, Util, ApplicationCommandOptionType } from "discord.js";
+import {
+    GuildMember,
+    ApplicationCommandOptionType,
+    escapeMarkdown,
+} from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import GuildConfig from "../../lib/guildconfig.service";
 import { Command, returnMessage } from "../../types/Command";
@@ -49,7 +53,7 @@ module.exports = class extends Command {
         const failEmbed = failEmbedTemplate();
 
         reason = reason
-            ? Util.escapeMarkdown(reason).substring(0, 256)
+            ? escapeMarkdown(reason).substring(0, 256)
             : "No reason provided";
 
         if (!target)
@@ -66,15 +70,13 @@ module.exports = class extends Command {
                 embeds: [failEmbed.setDescription("I cant kick that person")],
             };
 
-        await target.kick(reason.substring(0, 128));
+        await target.kick(reason?.substring(0, 128) ?? undefined);
 
         embed.setTitle(`User has been kicked`);
         embed.setDescription(
             `<@${
                 target.id
-            }> has been kicked with the reason: \`${Util.escapeMarkdown(
-                reason,
-            )}\``,
+            }> has been kicked with the reason: \`${escapeMarkdown(reason)}\``,
         );
 
         await msg.client.db.moderation_log.create({

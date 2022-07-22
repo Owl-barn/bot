@@ -1,4 +1,4 @@
-import { GuildMember, Message, Util } from "discord.js";
+import { GuildMember, Message, escapeMarkdown } from "discord.js";
 import { warningEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
@@ -21,11 +21,11 @@ export default class implements RavenEvent {
         const embed = warningEmbedTemplate();
 
         const oldMsg = old.content
-            ? `\`\`\`${Util.escapeMarkdown(old.content)}\`\`\`\n`
+            ? `\`\`\`${escapeMarkdown(old.content)}\`\`\`\n`
             : "*empty*\n";
 
         const newMsg = current.content
-            ? `\`\`\`${Util.escapeMarkdown(current.content)}\`\`\`\n`
+            ? `\`\`\`${escapeMarkdown(current.content)}\`\`\`\n`
             : "*empty*\n";
 
         embed.setTitle("Message updated");

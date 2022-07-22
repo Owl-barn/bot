@@ -1,9 +1,9 @@
 import {
     GuildMember,
     EmbedBuilder,
-    Util,
     ApplicationCommandOptionType,
     EmbedAuthorOptions,
+    escapeMarkdown,
 } from "discord.js";
 import { Command, returnMessage } from "../../types/Command";
 import RavenInteraction from "../../types/interaction";
@@ -126,7 +126,7 @@ module.exports = class extends Command {
 };
 
 function makeEmbed(embed: EmbedBuilder, track: Track, queueInfo: QueueInfo) {
-    let channelName = Util.escapeMarkdown(track.author);
+    let channelName = escapeMarkdown(track.author);
     channelName = channelName.replace(/[()[\]]/g, "");
 
     embed

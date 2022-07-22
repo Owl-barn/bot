@@ -1,4 +1,4 @@
-import { Util, ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, escapeMarkdown } from "discord.js";
 import { embedTemplate } from "../../../../lib/embedTemplate";
 import GuildConfig from "../../../../lib/guildconfig.service";
 import { returnMessage, SubCommand } from "../../../../types/Command";
@@ -31,7 +31,7 @@ module.exports = class extends SubCommand {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         if (!msg.guildId) throw "No guildID???";
         let unban_notice = msg.options.getString("unban_notice", true);
-        unban_notice = Util.escapeMarkdown(unban_notice).substring(0, 255);
+        unban_notice = escapeMarkdown(unban_notice).substring(0, 255);
 
         const guild = await msg.client.db.guilds.update({
             where: { guild_id: msg.guildId },
