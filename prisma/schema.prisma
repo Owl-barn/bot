@@ -9,25 +9,25 @@ datasource db {
 
 model guilds {
   created  DateTime @default(now()) @db.Timestamp(0)
-  guild_id String   @id @db.Char(18)
+  guild_id String   @id @db.VarChar()
   premium  Boolean  @default(false) @db.Boolean
   banned   Boolean  @default(false) @db.Boolean
   dev      Boolean  @default(false) @db.Boolean
 
-  log_channel String? @db.Char(18)
+  log_channel String? @db.VarChar()
 
-  birthday_role    String? @db.Char(18)
-  birthday_channel String? @db.Char(18)
+  birthday_role    String? @db.VarChar()
+  birthday_channel String? @db.VarChar()
 
-  staff_role   String? @db.Char(18)
+  staff_role   String? @db.VarChar()
   unban_notice String? @db.VarChar(256)
 
-  vc_category_id String? @db.Char(18)
-  vc_channel_id  String? @db.Char(18)
+  vc_category_id String? @db.VarChar()
+  vc_channel_id  String? @db.VarChar()
   vc_limit       Int     @default(4) @db.Integer()
 
   level_modifier Float   @default(1.0) @db.DoublePrecision()
-  level_channel  String? @db.Char(18)
+  level_channel  String? @db.VarChar()
   level_message  String? @default("You leveled up!, you're now {LEVEL}") @db.VarChar(256)
   level          Boolean @default(false) @db.Boolean()
 
@@ -46,7 +46,7 @@ model guilds {
 
 model banned_user {
   created DateTime @default(now()) @db.Timestamp(0)
-  user_id String   @db.VarChar(19)
+  user_id String   @db.VarChar()
   reason  String?  @db.VarChar(256)
 
   @@unique([user_id])
@@ -55,8 +55,8 @@ model banned_user {
 model level {
   created DateTime @default(now()) @db.Timestamp(0)
 
-  user_id  String @db.VarChar(19)
-  guild_id String @db.Char(18)
+  user_id  String @db.VarChar()
+  guild_id String @db.VarChar()
 
   experience Int @default(0) @db.Integer()
 
@@ -68,8 +68,8 @@ model level {
 model level_reward {
   created DateTime @default(now()) @db.Timestamp(0)
 
-  role_id  String @db.Char(18)
-  guild_id String @db.Char(18)
+  role_id  String @db.VarChar()
+  guild_id String @db.VarChar()
 
   level Int @db.Integer()
 
@@ -80,8 +80,8 @@ model level_reward {
 
 model afk {
   created  DateTime @default(now()) @db.Timestamp(0)
-  user_id  String   @db.Char(18)
-  guild_id String   @db.Char(18)
+  user_id  String   @db.VarChar()
+  guild_id String   @db.VarChar()
 
   reason String? @db.VarChar(256)
   global Boolean @db.Boolean
@@ -93,11 +93,11 @@ model afk {
 
 model private_vc {
   created  DateTime @default(now()) @db.Timestamp(0)
-  user_id  String   @db.Char(18)
-  guild_id String   @db.Char(18)
+  user_id  String   @db.VarChar()
+  guild_id String   @db.VarChar()
 
-  main_channel_id String @unique @db.Char(18)
-  wait_channel_id String @unique @db.Char(18)
+  main_channel_id String @unique @db.VarChar()
+  wait_channel_id String @unique @db.VarChar()
 
   guild guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 
@@ -108,8 +108,8 @@ model birthdays {
   created DateTime @default(now()) @db.Timestamp(0)
   updated DateTime @default(now()) @db.Timestamp(0)
 
-  user_id  String @db.Char(18)
-  guild_id String @db.Char(18)
+  user_id  String @db.VarChar()
+  guild_id String @db.VarChar()
 
   birthday DateTime? @db.Timestamp(0)
   has_role Boolean   @default(false) @db.Boolean
@@ -122,7 +122,7 @@ model birthdays {
 model sessions {
   session_id    String   @id(map: "sessions_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   created       DateTime @default(now()) @db.Timestamp(0)
-  user_id       String   @db.Char(18)
+  user_id       String   @db.VarChar()
   access_token  String   @db.Char(30)
   refresh_token String   @db.Char(30)
   expire        DateTime @db.Timestamp(6)
@@ -130,9 +130,9 @@ model sessions {
 
 model self_role_main {
   uuid        String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  guild_id    String  @db.Char(18)
-  channel_id  String  @db.Char(18)
-  message_id  String? @db.Char(18)
+  guild_id    String  @db.VarChar()
+  channel_id  String  @db.VarChar()
+  message_id  String? @db.VarChar()
   title       String  @db.VarChar(64)
   description String  @db.VarChar(1024)
 
@@ -144,7 +144,7 @@ model self_role_main {
 model self_role_roles {
   uuid      String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   main_uuid String @db.Uuid
-  role_id   String @db.Char(18)
+  role_id   String @db.VarChar()
 
   title       String  @db.VarChar(32)
   description String  @db.VarChar(128)
@@ -160,8 +160,8 @@ model songs_played {
   uuid    String   @id(map: "songsPlayed_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   created DateTime @default(now()) @db.Timestamp(0)
 
-  guild_id String @db.Char(18)
-  user_id  String @db.Char(18)
+  guild_id String @db.VarChar()
+  user_id  String @db.VarChar()
 
   song_duration Int  @db.Integer
   play_duration Int? @db.Integer
@@ -175,11 +175,11 @@ model command_log {
   uuid    String   @id(map: "command_log_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   created DateTime @default(now()) @db.Timestamp(0)
 
-  guild_id   String? @db.Char(18)
-  channel_id String? @db.Char(18)
+  guild_id   String? @db.VarChar()
+  channel_id String? @db.VarChar()
 
   command_name String  @db.VarChar(32)
-  user         String? @db.VarChar(19)
+  user         String? @db.VarChar()
 
   hidden Boolean @db.Boolean
 
@@ -192,9 +192,9 @@ model moderation_log {
   uuid    String   @id() @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   created DateTime @default(now()) @db.Timestamp(0)
 
-  user      String? @db.VarChar(19)
-  moderator String? @db.VarChar(19)
-  guild_id  String  @db.Char(18)
+  user      String? @db.VarChar()
+  moderator String? @db.VarChar()
+  guild_id  String  @db.VarChar()
 
   reason  String?   @db.VarChar(256)
   expiry  DateTime? @db.Timestamp(0)
@@ -209,20 +209,20 @@ model moderation_log {
 
 // Minecraft
 model rcon {
-  guild_id String  @id(map: "rcon_pk") @db.VarChar(18)
+  guild_id String  @id(map: "rcon_pk") @db.VarChar()
   host     String  @db.VarChar(32)
   port     Int
   password String  @db.VarChar(64)
-  role_id  String? @db.VarChar(18)
+  role_id  String? @db.VarChar()
 
   guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
 }
 
 model whitelist {
-  guild_id String   @db.Char(18)
+  guild_id String   @db.VarChar()
   created  DateTime @default(now()) @db.Timestamp(0)
   mc_uuid  String   @db.Char(32)
-  user_id  String   @db.Char(18)
+  user_id  String   @db.VarChar()
   uuid     String   @id(map: "whitelist_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
 
   guilds guilds @relation(fields: [guild_id], references: [guild_id])
