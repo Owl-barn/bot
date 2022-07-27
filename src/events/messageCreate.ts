@@ -90,7 +90,9 @@ export default class InteractionCreate implements RavenEvent {
             }
 
             await message.edit(
-                `Updated all server perms, took \`${Date.now() - start}ms\``,
+                `Updated all ${guilds.size} server perms, took \`${
+                    Date.now() - start
+                }ms\``,
             );
             return;
         }

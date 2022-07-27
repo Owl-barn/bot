@@ -44,7 +44,7 @@ module.exports = class extends Command {
                     type: ApplicationCommandOptionType.Integer,
                     name: "delete",
                     description:
-                        "Number of days to delete messages, default: 0",
+                        "Number of days to delete messages, default: 1",
                     required: false,
                 },
             ],
@@ -61,7 +61,7 @@ module.exports = class extends Command {
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         if (!msg.guild) throw "No guild on ban??";
         let reason = msg.options.getString("reason");
-        const days = msg.options.getInteger("delete") ?? 0;
+        const days = msg.options.getInteger("delete") ?? 1;
         const duration = msg.options.getString("duration");
         const target = msg.options.getUser("user");
 
