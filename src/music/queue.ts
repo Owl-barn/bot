@@ -269,7 +269,7 @@ export default class Queue {
 
         // Queue is empty
         if (this.queue.length === 0) {
-            this.setIdle(20000);
+            this.setIdle(120000);
             this.current = null;
             this.queueLock = false;
 
@@ -341,7 +341,11 @@ export default class Queue {
             ]);
         } catch (error) {
             // actual disconnect, dont recover.
-            this.voiceConnection.destroy();
+            if (
+                this.voiceConnection.state.status !==
+                VoiceConnectionStatus.Destroyed
+            )
+                this.voiceConnection.destroy();
         }
     };
 }

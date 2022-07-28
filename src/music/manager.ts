@@ -67,7 +67,11 @@ export default class MusicPlayer {
 
         // If spotify url
         if (play.sp_validate(query) == "track") {
-            const song = (await play.spotify(query)) as play.SpotifyTrack;
+            let song = await play.spotify(query).catch(() => null);
+            if (!song)
+                throw "Couldnt play this song, please try a youtube link";
+            if (song.type !== "track") throw "Please enter a song url";
+            song = song as play.SpotifyTrack;
             return this.fetchYoutubeVideo(
                 `${song.name} - ${song.artists[0].name}`,
                 user,

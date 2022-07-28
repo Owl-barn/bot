@@ -1,5 +1,5 @@
 import { AudioResource, createAudioResource } from "@discordjs/voice";
-import { Util } from "discord.js";
+import { escapeMarkdown } from "discord.js";
 import moment from "moment";
 import * as play from "play-dl";
 
@@ -13,12 +13,12 @@ export default class Track {
     public requestedBy: string;
 
     constructor(input: TrackInput, user: string) {
-        this.title = Util.escapeMarkdown(
+        this.title = escapeMarkdown(
             (input.title || "couldnt load title")
                 .substring(0, 48)
                 .replace(/[()[\]]/g, ""),
         );
-        this.author = input.author ? Util.escapeMarkdown(input.author) : "NaN";
+        this.author = input.author ? escapeMarkdown(input.author) : "NaN";
         this.url = input.url;
         this.thumbnail = input.thumbnail as string;
         this.duration = moment()
