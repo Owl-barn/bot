@@ -165,7 +165,7 @@ export default class musicService {
             embed.addFields([
                 {
                     name: "Title",
-                    value: track.title,
+                    value: `[${track.title}](${track.url})`,
                     inline: true,
                 },
                 {

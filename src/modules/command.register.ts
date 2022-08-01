@@ -93,9 +93,6 @@ function convert(
         if (limitedGroups.includes(top_level_command.group))
             permissions = false;
 
-        if (top_level_command.premium && !guildInfo.premium)
-            permissions = false;
-
         if (!permissions)
             (builder as SlashCommandBuilder).setDefaultMemberPermissions("0");
 

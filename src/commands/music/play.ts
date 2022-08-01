@@ -14,6 +14,7 @@ import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
 import Track from "../../types/track";
 import { QueueInfo } from "../../types/queueInfo";
 import wsResponse from "../../types/wsResponse";
+import GuildConfig from "../../lib/guildconfig.service";
 
 module.exports = class extends Command {
     constructor() {
@@ -65,14 +66,21 @@ module.exports = class extends Command {
         const vc = member.voice.channel;
         const music = msg.client.musicService;
 
-        const failEmbed = failEmbedTemplate();
-        let embed = embedTemplate();
-
         if (vc == null) {
-            const response = failEmbed.setDescription(
-                "Join a voice channel first.",
-            );
-            return { embeds: [response] };
+            return {
+                embeds: [failEmbedTemplate("Join a voice channel first.")],
+            };
+        }
+
+        const guildconfig = GuildConfig.getGuild(msg.guild.id);
+        if (guildconfig?.privateRooms.find((x) => x.wait_channel_id == vc.id)) {
+            return {
+                embeds: [
+                    failEmbedTemplate(
+                        "You can't play music in a waiting room.",
+                    ),
+                ],
+            };
         }
 
         if (!dj && force) force = false;
@@ -84,18 +92,17 @@ module.exports = class extends Command {
                 ? music.getOwletById(botId)
                 : music.getOwlet(vc.id, vc.guildId);
 
-        if (!musicBot) {
-            const response = failEmbed.setDescription(
-                "No available music bots.",
-            );
-            return { embeds: [response] };
-        }
+        if (!musicBot)
+            return { embeds: [failEmbedTemplate("No available music bots.")] };
 
         const bot = await msg.guild.members.fetch(musicBot.getId());
         const author: EmbedAuthorOptions = {
             name: "Play",
             iconURL: getAvatar(bot),
         };
+
+        const failEmbed = failEmbedTemplate();
+        let embed = embedTemplate();
 
         failEmbed.setAuthor(author);
 

@@ -19,11 +19,13 @@ module.exports = class extends SubCommand {
         const guilds = msg.client.guilds.cache.sort(
             (x, y) => y.memberCount - x.memberCount,
         );
+
+        const guildInfo = await msg.client.db.guilds.findMany();
         const output = guilds
-            .map(
-                (x) =>
-                    `id: ${x.id} owner: ${x.ownerId} membercount: ${x.memberCount} name: ${x.name}`,
-            )
+            .map((guild) => {
+                const db = guildInfo.find((y) => y.guild_id == guild.id);
+                return `id: ${guild.id} Premium: ${db?.premium} owner: ${guild.ownerId} membercount: ${guild.memberCount} name: ${guild.name}`;
+            })
             .join("\n");
 
         const attachment = new AttachmentBuilder(Buffer.from(output));
