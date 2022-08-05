@@ -2,12 +2,11 @@ import fs from "fs";
 import path from "path";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
+import env from "./env";
 
 export default async function eventInitializer(
     client: RavenClient,
 ): Promise<void> {
-    console.log(" > Loading events".green.bold);
-
     const dir = path.join(__dirname, "../");
     const files = fs.readdirSync(dir + "/events/");
 
@@ -25,8 +24,16 @@ export default async function eventInitializer(
                 event.execute(...args).catch(console.error),
             );
 
-        console.log(` - Loaded Event: ${event.name.green.italic}`.cyan.italic);
+        if (env.isDevelopment) {
+            console.log(
+                ` - Loaded Event: ${event.name.green.italic}`.cyan.italic,
+            );
+        }
     }
 
-    console.log(" ✓ All Events loaded".green.bold);
+    console.log(
+        " ✓ Loaded ".green.bold +
+            String(files.length).cyan +
+            " events".green.bold,
+    );
 }

@@ -137,7 +137,7 @@ class VCServiceClass {
         }
 
         console.log(
-            " ✓ VC Service loaded with ".green.bold +
+            " ✓ Loaded VC service with ".green.bold +
                 this.adjectives.length.toString().cyan +
                 " adjectives and ".green.bold +
                 this.nouns.length.toString().cyan +

@@ -35,19 +35,22 @@ class WebServer {
             );
             next();
         });
-
-        console.log(" ✓ Middleware initialized:".green.bold);
     }
 
     private initializeControllers(controllers: Controller[]) {
-        console.log(" > Loading controllers:".green.bold);
-
         controllers.forEach((controller) => {
             this.app.use("/", controller.router);
-            console.log(` - Loaded controller: ${controller.path}`.cyan.italic);
+            if (env.isDevelopment)
+                console.log(
+                    ` - Loaded controller: ${controller.path}`.cyan.italic,
+                );
         });
 
-        console.log(" ✓ all controllers loaded:".green.bold);
+        console.log(
+            " ✓ Loaded ".green.bold +
+                String(controllers.length).cyan +
+                " controllers".green.bold,
+        );
     }
 
     private initializeErrorHandling() {
@@ -55,8 +58,6 @@ class WebServer {
             next(new NotFoundException());
         });
         this.app.use(errorMiddleware);
-
-        console.log(" ✓ Web error handler initialized".green.bold);
     }
 
     public getServer(): Application {
@@ -66,7 +67,7 @@ class WebServer {
     public listen(): void {
         this.app.listen(env.PORT, () => {
             console.log(
-                " > Web server ready on port ".green.bold +
+                " ✓ Loaded Web server on port ".green.bold +
                     env.PORT.toString().cyan,
             );
         });

@@ -38,9 +38,12 @@ class Bot {
         GuildConfig.init();
         bannedUsers.init();
         birthdayCron.start();
-        await eventInitializer(this.client);
-        await this.initializeCommands();
-        await this.initializeButtons();
+
+        await Promise.all([
+            eventInitializer(this.client),
+            this.initializeCommands(),
+            this.initializeButtons(),
+        ]);
     };
 
     private async initializeCommands() {

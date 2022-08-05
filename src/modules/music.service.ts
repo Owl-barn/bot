@@ -50,7 +50,7 @@ export default class musicService {
         });
 
         console.log(
-            " ✓ Owlet service initialized with ".green.bold +
+            " ✓ Loaded Owlet service with ".green.bold +
                 this.owlets.length.toString().cyan +
                 " owlets on port ".green.bold +
                 env.OWLET_PORT.toString().cyan,

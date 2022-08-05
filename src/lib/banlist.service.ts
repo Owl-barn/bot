@@ -12,7 +12,11 @@ class BannedUsersClass {
             this.users.set(user.user_id, user);
         }
 
-        console.log(" ✓ Loaded banned users.".green.bold);
+        console.log(
+            " ✓ Loaded ".green.bold +
+                String(users.length).cyan +
+                " banned users.".green.bold,
+        );
     };
 
     public getBans = () => this.users;

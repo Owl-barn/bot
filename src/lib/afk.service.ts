@@ -82,9 +82,9 @@ class AFKServiceClass {
 
         for (const x of afks) this.setAFK(x);
         console.log(
-            " ✓ AFK service initialized with ".green.bold +
-                afks.length.toString().cyan +
-                " users".green.bold,
+            " ✓ Loaded ".green.bold +
+                String(afks.length).cyan +
+                " AFK users".green.bold,
         );
     };
 }

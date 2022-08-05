@@ -5,11 +5,11 @@ import { Collection } from "discord.js";
 import fs from "fs";
 import path from "path";
 import { CommandEnum, ParentCommand, SubCommandGroup } from "../types/Command";
+import env from "./env";
 
 export async function registerCommands(): Promise<
     Collection<string, CommandEnum>
 > {
-    console.log(" > Loading commands".green.bold);
     const commands = new Collection() as Collection<string, CommandEnum>;
 
     const folders = fs.readdirSync(path.join(__dirname, "../commands"));
@@ -42,11 +42,19 @@ export async function registerCommands(): Promise<
         }
     }
 
-    for (const command of commands.keys()) {
-        console.log(` - Loaded command: `.cyan.italic + command.green.italic);
+    if (env.isDevelopment) {
+        for (const command of commands.keys()) {
+            console.log(
+                ` - Loaded command: `.cyan.italic + command.green.italic,
+            );
+        }
     }
 
-    console.log(" ✓ All commands loaded".green.bold);
+    console.log(
+        " ✓ Loaded ".green.bold +
+            String(commands.size).cyan +
+            " commands".green.bold,
+    );
 
     return commands;
 }

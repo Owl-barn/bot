@@ -8,7 +8,11 @@ class GuildConfigClass {
     public init = async () => {
         const guildQuery = await db.guilds.findMany();
         for (const guild of guildQuery) this.updateGuild(guild);
-        console.log(" ✓ Loaded guild configs".green.bold);
+        console.log(
+            " ✓ Loaded ".green.bold +
+                String(guildQuery.length).cyan +
+                " guild configs".green.bold,
+        );
     };
 
     /**
