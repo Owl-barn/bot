@@ -7,6 +7,7 @@ import {
     VoiceState,
     UserResolvable,
     ChannelType,
+    VoiceBasedChannel,
 } from "discord.js";
 import RavenClient from "../types/ravenClient";
 import db from "../lib/db.service";
@@ -27,7 +28,7 @@ interface RoomNames {
 class VCServiceClass {
     private createRateLimit: Set<string> = new Set();
     private notifyRatelimit: Set<string> = new Set();
-    private delays: Map<string, NodeJS.Timeout> = new Map();
+    private deleteTimeout: Map<string, NodeJS.Timeout> = new Map();
     private adjectives: string[] = [];
     private nouns: string[] = [];
 
@@ -194,12 +195,6 @@ class VCServiceClass {
         }
     }
 
-    private async leaveHub(vc: VoiceState) {
-        const memberCount = this.getMemberCount(vc);
-        if (memberCount == 0) this.disbandVC(vc);
-        // else if (memberCount == 1) this.startDelete(vc, 180000);
-    }
-
     private async joinWaiting(vc: VoiceState, room: private_vc) {
         const member = vc.member as GuildMember;
         if (this.notifyRatelimit.has(member.id)) return;
@@ -220,16 +215,50 @@ class VCServiceClass {
         setTimeout(() => this.notifyRatelimit.delete(member.id), 180000);
     }
 
+    private startDelete(
+        vc: VoiceBasedChannel,
+        duration: number,
+        reason: string,
+    ) {
+        this.deleteTimeout.set(
+            vc.id,
+            setTimeout(() => this.disbandVC(vc, reason), duration * 1000),
+        );
+    }
+
+    private cancelDelete(vc: VoiceBasedChannel) {
+        const timeout = this.deleteTimeout.get(vc.id);
+        if (timeout) clearTimeout(timeout);
+        this.deleteTimeout.delete(vc.id);
+    }
+
+    private async leaveHub(vc: VoiceState) {
+        if (!vc.channel) return;
+        const memberCount = this.getMemberCount(vc);
+
+        // If the member count is 0 or 1, start the delete room timeout.
+        if (memberCount == 0)
+            this.startDelete(
+                vc.channel,
+                3 * 60,
+                "The room was abandoned for too long.",
+            );
+        else if (memberCount == 1) {
+            this.startDelete(
+                vc.channel,
+                5 * 60,
+                "User was alone in vc for too long.",
+            );
+        }
+    }
+
     private async joinHub(vc: VoiceState) {
         const member = vc.member as GuildMember;
         if (!vc.channel) return;
 
         // Remove timeout if exists.
-        const timeout = this.delays.get(vc.channelId as string);
-        if (timeout) {
-            clearTimeout(timeout);
-            this.delays.delete(vc.channelId as string);
-        }
+        const memberCount = this.getMemberCount(vc);
+        if (memberCount > 1) this.cancelDelete(vc.channel);
 
         // Add join perms if not already have.
         if (vc.channel.permissionOverwrites.cache.get(member.id)) return;
@@ -242,7 +271,8 @@ class VCServiceClass {
     private async createHub(vc: VoiceState) {
         const member = vc.member as GuildMember;
 
-        if (this.createRateLimit.has(member.id)) return;
+        if (this.createRateLimit.has(member.id) && member.id !== env.OWNER_ID)
+            return;
 
         const guildConfig = GuildConfig.getGuild(vc.guild.id);
         if (!guildConfig) return;
@@ -284,7 +314,7 @@ class VCServiceClass {
 
         // Channel perms.
         const ownerPerms: OverwriteResolvable = {
-            id: vc.member?.id as string,
+            id: member.id as string,
             allow:
                 PermissionFlagsBits.MoveMembers |
                 PermissionFlagsBits.Connect |
@@ -339,8 +369,6 @@ class VCServiceClass {
             parent: guildConfig.privateRoomCategory as string,
         });
 
-        await room.setBitrate(96_000).catch(() => null);
-
         // Put into db and update local config.
         await db.private_vc.create({
             data: {
@@ -354,7 +382,7 @@ class VCServiceClass {
         await GuildConfig.updateGuild(vc.guild.id);
 
         // Move user.
-        const moved = await vc.member?.voice
+        const moved = await member.voice
             .setChannel(room.id, "Created private room")
             .catch(() => null);
 
@@ -363,6 +391,8 @@ class VCServiceClass {
             await wait.delete().catch(() => null);
             return;
         }
+
+        this.startDelete(room, 60 * 5, `Nobody joined <@${member.id}>'s room.`);
 
         // Log event.
         const embed = embedTemplate();
@@ -387,12 +417,14 @@ class VCServiceClass {
         logService.logEvent(embed, vc.guild.id);
     }
 
-    public async disbandVC(vc: VoiceState) {
-        if (!vc.channel || !vc.channelId) return;
+    public async disbandVC(
+        vc: VoiceBasedChannel,
+        reason: string | null = null,
+    ) {
+        this.cancelDelete(vc);
 
-        const channelId = vc.channelId;
         const query = await db.private_vc.findUnique({
-            where: { main_channel_id: channelId },
+            where: { main_channel_id: vc.id },
         });
         if (!query) return;
 
@@ -420,7 +452,7 @@ class VCServiceClass {
                   )
                 : console.error(`Couldnt delete ${WaitRoom.id}`.red);
 
-        await db.private_vc.delete({ where: { main_channel_id: channelId } });
+        await db.private_vc.delete({ where: { main_channel_id: vc.id } });
 
         GuildConfig.updateGuild(vc.guild.id);
 
@@ -429,12 +461,22 @@ class VCServiceClass {
         embed.setTitle("Private Room Disbanded");
         embed.setDescription(mainRoom?.name || "Unknown name");
 
+        if (reason) {
+            embed.addFields([
+                {
+                    name: "Reason",
+                    value: reason,
+                    inline: true,
+                },
+            ]);
+        }
+
         logService.logEvent(embed, vc.guild.id);
     }
 
     private getMemberCount(vc: VoiceState) {
-        const channel = vc.channel as VoiceChannel;
-        const members = channel.members.filter((x) => !x.user.bot);
+        if (!vc.channel) return 0;
+        const members = vc.channel.members.filter((x) => !x.user.bot);
         return members.size;
     }
 }

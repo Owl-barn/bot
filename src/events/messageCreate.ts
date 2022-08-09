@@ -65,8 +65,12 @@ export default class InteractionCreate implements RavenEvent {
             });
 
             for (const vc of vcs) {
-                const main = msg.guild?.channels.cache.get(vc.main_channel_id);
-                const wait = msg.guild?.channels.cache.get(vc.wait_channel_id);
+                const main = await msg.guild?.channels.fetch(
+                    vc.main_channel_id,
+                );
+                const wait = await msg.guild?.channels.fetch(
+                    vc.wait_channel_id,
+                );
                 await main?.delete().catch((x) => console.log(x));
                 await wait?.delete().catch((x) => console.log(x));
                 return;
