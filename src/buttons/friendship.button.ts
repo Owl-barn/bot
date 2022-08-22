@@ -10,6 +10,31 @@ export default class implements RavenButton {
     async execute(msg: RavenButtonInteraction): Promise<returnMessage> {
         const [action, user, friend] = msg.customId.split("_");
 
+        if (msg.user.id !== friend) return {};
+
+        const dataExists = await msg.client.db.friendships.findUnique({
+            where: {
+                user_id_friend_id: {
+                    user_id: user,
+                    friend_id: friend,
+                },
+            },
+        });
+
+        // Check if the friend request exists.
+        if (!dataExists) {
+            const embed = failEmbedTemplate(
+                "Could not find this request in the database",
+            );
+            embed.setTitle("Invalid request");
+            await msg.update({
+                embeds: [embed],
+                components: [],
+            });
+            return {};
+        }
+
+        // Check if the user accepted the request.
         if (action == "accept") {
             await msg.client.db.friendships.update({
                 where: {
@@ -35,6 +60,7 @@ export default class implements RavenButton {
             return {};
         }
 
+        // Check if the user declined the request.
         if (action == "decline") {
             await msg.client.db.friendships.delete({
                 where: {

@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client";
 import {
     ActionRowBuilder,
     ApplicationCommandOptionType,
@@ -55,6 +56,14 @@ module.exports = class extends SubCommand {
                 ],
             };
         }
+
+        const isAllowed = await checkFriendLimit(
+            client.db,
+            friendUser.id,
+            msg.user.id,
+        );
+
+        if (isAllowed !== null) return isAllowed;
 
         // Check if the user is already in the list.
         const exists = await client.db.friendships.findUnique({
@@ -147,4 +156,36 @@ function makeRequestMsg(
     );
 
     return { embeds: [friendRequestEmbed], components: [component] };
+}
+
+async function checkFriendLimit(
+    db: PrismaClient,
+    friend_id: string,
+    user_id: string,
+) {
+    // Fetch user's friends.
+    const userFriendCount = await db.friendships.count({
+        where: { user_id },
+    });
+
+    // Check if user has too many friends.
+    if (userFriendCount >= 20) {
+        return {
+            embeds: [failEmbedTemplate("You can't have more than 10 friends!")],
+        };
+    }
+
+    // fetch friend's friends.
+    const friendFriendCount = await db.friendships.count({
+        where: { friend_id },
+    });
+
+    // Check if friend has too many friends.
+    if (friendFriendCount >= 12) {
+        return {
+            embeds: [failEmbedTemplate("That user has too many friends!")],
+        };
+    }
+
+    return null;
 }

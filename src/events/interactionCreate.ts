@@ -59,6 +59,8 @@ export default class InteractionCreate implements RavenEvent {
         let { commandName } = msg;
         if (!msg.guildId) return;
 
+        const timeStart = Date.now();
+
         const subCommandGroup = msg.options.getSubcommandGroup(false);
         const subCommand = msg.options.getSubcommand(false);
 
@@ -128,7 +130,7 @@ export default class InteractionCreate implements RavenEvent {
                 );
         }
 
-        this.respond(msg, command?.execute);
+        this.respond(msg, timeStart, command?.execute);
     }
 
     async buttonEvent(msg: RavenButtonInteraction): Promise<void> {
@@ -157,14 +159,13 @@ export default class InteractionCreate implements RavenEvent {
 
     async respond(
         interaction: RavenInteraction,
+        timeStart: number,
         func: (message: RavenInteraction) => Promise<returnMessage | void>,
     ): Promise<void> {
         const hidden =
             interaction.options.get("hidden") === null
                 ? false
                 : (interaction.options.get("hidden")?.value as boolean);
-
-        logService.logCommand(interaction, hidden);
 
         this.throttle.addToThrottle(
             interaction.guildId || "e",
@@ -186,6 +187,8 @@ export default class InteractionCreate implements RavenEvent {
                 } as returnMessage;
             });
 
+        const processingDuration = Date.now() - timeStart;
+
         if (!response) return;
         if (interaction.replied)
             await interaction.followUp(response).catch((e) => console.error(e));
@@ -195,8 +198,10 @@ export default class InteractionCreate implements RavenEvent {
                 .catch((e) => console.error(e));
         else await interaction.reply(response).catch((e) => console.error(e));
 
+        logService.logCommand(interaction, processingDuration, hidden);
+
         if (response.callback)
-            this.respond(interaction, response.callback).catch((e) =>
+            this.respond(interaction, 0, response.callback).catch((e) =>
                 console.error(e),
             );
     }

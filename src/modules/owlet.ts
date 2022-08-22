@@ -8,6 +8,7 @@ import env from "./env";
 export default class Owlet {
     private id: string;
     private guilds: Map<string, Guild> = new Map();
+    private shutdown = false;
     private socket: WebSocket;
     private promises: Map<
         string,
@@ -17,6 +18,8 @@ export default class Owlet {
         string,
         ((...args: any[]) => Promise<void> | void)[]
     > = new Map();
+
+    public isDisabled = (): boolean => this.shutdown;
 
     constructor(id: string, socket: WebSocket, guilds: Guild[]) {
         this.id = id;
@@ -38,6 +41,8 @@ export default class Owlet {
             return;
         }
 
+        if (message.command === QueueEvent.Shutdown) this.shutdown = true;
+
         const promise = this.promises.get(message.mid);
         if (promise) {
             promise.resolve(message.data);
@@ -54,6 +59,11 @@ export default class Owlet {
 
         Promise.all(callbacks).catch(console.error);
     };
+
+    public on(
+        event: QueueEvent.Shutdown,
+        callback: (guildId: string, channelId: string) => Promise<void> | void,
+    ): void;
 
     public on(
         event: QueueEvent.QueueEnd,
@@ -91,8 +101,8 @@ export default class Owlet {
         return this.guilds.get(id);
     }
 
-    public terminate(): void {
-        this.send({ command: "Terminate", mid: "terminate", data: {} });
+    public terminate(now: boolean): void {
+        this.send({ command: "Terminate", mid: "terminate", data: { now } });
     }
 
     /**

@@ -6,7 +6,7 @@ import fs from "fs";
 import { IncomingMessage } from "http";
 import QueueEvent from "../types/queueevent";
 import Bot from "../bot";
-import { embedTemplate } from "../lib/embedTemplate";
+import { embedTemplate, failEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import env from "./env";
 import path from "path";
@@ -102,11 +102,11 @@ export default class musicService {
      * Terminates all connected owlets.
      * @returns Terminated owlet count.
      */
-    public terminate(): number {
+    public terminate(now: boolean): number {
         const request = {
             command: "Terminate",
             mid: "massTerminate",
-            data: {},
+            data: { now },
         };
 
         const botCount = this.bots.size;
@@ -178,6 +178,35 @@ export default class musicService {
             await channel.send({ embeds: [embed] }).catch(() => {
                 console.log(
                     `Failed to send song start embed in <#${channel.id}>.`.red
+                        .italic,
+                );
+            });
+        });
+
+        owlet.on(QueueEvent.Shutdown, async (guildId, channelId) => {
+            const client = Bot.getClient();
+            const guild = client.guilds.cache.get(guildId);
+            if (!guild) return;
+            const channel = await client.channels.fetch(channelId);
+            if (!channel) return;
+            if (channel.type !== ChannelType.GuildVoice) return;
+            const bot = await guild?.members.fetch(id);
+            if (!bot) return;
+
+            const embed = failEmbedTemplate();
+
+            embed.setAuthor({
+                iconURL: getAvatar(bot),
+                name: "Maintenance",
+            });
+
+            embed.setDescription(
+                "There is currently bot maintenance going on, This music bot will restart after the song or after 10 minutes",
+            );
+
+            await channel.send({ embeds: [embed] }).catch(() => {
+                console.log(
+                    `Failed to send shutdown embed in <#${channel.id}>.`.red
                         .italic,
                 );
             });

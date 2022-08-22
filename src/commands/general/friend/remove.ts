@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType } from "discord.js";
-import { embedTemplate } from "../../../lib/embedTemplate";
+import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
 
@@ -30,14 +30,23 @@ module.exports = class extends SubCommand {
         const client = msg.client;
         const friendUser = msg.options.getUser("user", true);
 
-        client.db.friendships.delete({
-            where: {
-                user_id_friend_id: {
-                    user_id: msg.user.id,
-                    friend_id: friendUser.id,
+        const deleted = await client.db.friendships
+            .delete({
+                where: {
+                    user_id_friend_id: {
+                        user_id: msg.user.id,
+                        friend_id: friendUser.id,
+                    },
                 },
-            },
-        });
+            })
+            .catch(() => null);
+
+        if (!deleted)
+            return {
+                embeds: [
+                    failEmbedTemplate("That user is not on your friend list!"),
+                ],
+            };
 
         return {
             embeds: [

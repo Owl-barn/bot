@@ -106,6 +106,15 @@ module.exports = class extends Command {
 
         failEmbed.setAuthor(author);
 
+        if (musicBot.isDisabled()) {
+            failEmbed.setDescription(
+                "Maintenance in progress please try a different owlet or try again later (~10 minutes)",
+            );
+            return {
+                embeds: [failEmbed],
+            };
+        }
+
         const request = {
             command: "Play",
             mid: msg.id,

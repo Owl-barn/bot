@@ -4,6 +4,7 @@ const enum QueueEvent {
     SongStart = "songStart",
     QueueEnd = "queueEnd",
     SongError = "songError",
+    Shutdown = "shutdown",
 }
 
 export default QueueEvent;

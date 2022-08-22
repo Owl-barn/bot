@@ -67,6 +67,7 @@ class logServiceClass {
 
     public logCommand = (
         interaction: RavenInteraction,
+        processingDuration: number,
         hidden: boolean,
     ): void => {
         let { commandName } = interaction;
@@ -85,11 +86,17 @@ class logServiceClass {
             hidden,
         };
 
+        const guildName = interaction.guild ? interaction.guild.name : "DM";
+        const duration = Date.now() - interaction.createdTimestamp;
+
         const logList = [
-            interaction.guild?.name,
+            guildName,
+            `${processingDuration}ms`.yellow.bold +
+                " - " +
+                `${duration}ms`.yellow,
             interaction.user.username,
             commandName,
-            hidden,
+            hidden ? "True".green : "False".red,
         ];
 
         prisma.command_log

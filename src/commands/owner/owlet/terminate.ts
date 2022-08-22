@@ -15,6 +15,12 @@ module.exports = class extends SubCommand {
                     description: "the owlet to terminate",
                     required: false,
                 },
+                {
+                    type: ApplicationCommandOptionType.Boolean,
+                    name: "now",
+                    description: "Shutdown instantly?",
+                    required: false,
+                },
             ],
 
             throttling: {
@@ -26,18 +32,19 @@ module.exports = class extends SubCommand {
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
         const owlet = msg.options.getUser("owlet");
+        const now = msg.options.getBoolean("now") ?? false;
 
         // If owlet is specified then terminate that owlet.
         if (owlet) {
             const bot = msg.client.musicService.getOwletById(owlet.id);
             if (!bot) return { content: "no bot found" };
-            bot.terminate();
+            bot.terminate(now);
             return { content: `terminated <@${owlet.id}>` };
         }
 
         // If no owlet is specified, terminate all owlets.
 
-        const count = msg.client.musicService.terminate();
+        const count = msg.client.musicService.terminate(now);
 
         return { content: `Terminated all ${count} owlets` };
     }

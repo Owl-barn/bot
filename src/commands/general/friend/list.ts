@@ -52,6 +52,18 @@ module.exports = class extends SubCommand {
 
         const embed = embedTemplate();
         embed.setTitle("Friend List");
+
+        // Check if the user has no friends.
+        if (
+            pendingSent.length == 0 &&
+            pendingReceived.length == 0 &&
+            friendSelf.length == 0 &&
+            friendOther.length == 0
+        ) {
+            embed.setDescription("You currently have no friends :(");
+            return { embeds: [embed] };
+        }
+
         embed.setDescription(
             "Here you can see who gets notified when you join a voice channel and the the people you get notified of!",
         );
@@ -73,13 +85,6 @@ module.exports = class extends SubCommand {
                     .map((friend) => `<@${friend.user_id}>`)
                     .join("\n"),
                 inline: true,
-            });
-        }
-
-        if (pendingSent.length > 0 || pendingReceived.length > 0) {
-            embed.addFields({
-                name: "Pending",
-                value: "Pending requests:",
             });
         }
 

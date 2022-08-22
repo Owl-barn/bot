@@ -31,10 +31,7 @@ class VoiceNotify {
         // Check if timed out.
         const lastNotify = this.lastNotified.get(member.id);
         if (lastNotify) {
-            if (
-                lastNotify + env.VOICE_NOTIFY_TIMEOUT * 60 * 1000 >
-                Date.now()
-            ) {
+            if (lastNotify + env.VOICE_NOTIFY_DELAY * 60 * 1000 > Date.now()) {
                 return;
             } else {
                 this.lastNotified.delete(member.id);
@@ -80,7 +77,10 @@ class VoiceNotify {
         if (!member) return;
         if (!member.voice.channel) return;
         if (member.voice.channel.id !== channel.id) return;
-        this.notifyUsers(member, friends);
+        await this.notifyUsers(member, friends).catch((e) => {
+            console.error(e);
+            return;
+        });
     };
 
     private notifyUsers = async (
@@ -88,8 +88,9 @@ class VoiceNotify {
         friends: friendships[],
     ) => {
         const channel = member.voice.channel;
-        if (!channel) return;
-        const guildConfig = GuildConfig.getGuild(channel.guild.id);
+        const guild = await member.client.guilds.fetch(member.guild.id);
+        if (channel === null) return;
+        const guildConfig = GuildConfig.getGuild(guild.id);
 
         // Make embed.
         const embed = embedTemplate();
@@ -100,7 +101,8 @@ class VoiceNotify {
         const avatar = getAvatar(member);
         if (avatar) embed.setThumbnail(avatar);
 
-        const friendMembers = await channel.guild.members.fetch({
+        // Fetch member objects.
+        const friendMembers = await guild.members.fetch({
             user: friends.map((f) => f.user_id),
         });
 
