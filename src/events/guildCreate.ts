@@ -66,14 +66,8 @@ export default class implements RavenEvent {
             const embed = embedTemplate()
                 .setTitle("Thank you!")
                 .setDescription(
-                    "Thank you for inviting me! The server owner can configure the bot with /config",
+                    "Thank you for inviting me! For any questions the bot owner is happy to help you out in the support server or in dms!",
                 )
-                .addFields([
-                    {
-                        name: "How do i play music?",
-                        value: `Right now the only way is to get a subscription, for more info and questions please [join the discord!](${env.SUPPORT_SERVER})`,
-                    },
-                ])
                 .setThumbnail(
                     guild.client.user?.avatarURL() ||
                         (guild.client.user?.defaultAvatarURL as string),
@@ -81,7 +75,7 @@ export default class implements RavenEvent {
                 .setTimestamp();
 
             const donateButton = new ButtonBuilder()
-                .setLabel("Donation🗿")
+                .setLabel("Donation")
                 .setStyle(ButtonStyle.Link)
                 .setURL(env.DONATION_URL);
 

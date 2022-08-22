@@ -26,6 +26,7 @@ export default class GuildManager {
             .$transaction([
                 prisma.rcon.deleteMany(query),
                 prisma.whitelist.deleteMany(query),
+                prisma.self_role_main.deleteMany(query),
                 prisma.guilds.delete(query),
             ])
             .catch(() => false)

@@ -18,7 +18,7 @@ export default class implements RavenEvent {
         if (config?.banned) return;
         if (bannedUsers.isBanned(member.id)) return;
 
-        if (config?.log_channel) logJoin(member);
+        if (config?.log_join_leave) logJoin(member);
         if (config?.levelEnabled) addLevelRoles(member);
 
         if (

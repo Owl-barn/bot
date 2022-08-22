@@ -13,7 +13,7 @@ export default class implements RavenEvent {
         if (!current.guildId) return;
         if (old.member?.user.bot) return;
         const config = GuildConfig.getGuild(current.guildId);
-        if (!config || !config.log_channel || config.banned) return;
+        if (!config || !config.log_events || config.banned) return;
         if (old.content == current.content) return;
 
         const member = current.member as GuildMember;

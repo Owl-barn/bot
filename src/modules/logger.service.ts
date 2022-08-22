@@ -31,10 +31,10 @@ class logServiceClass {
         // get the channel
         const config = GuildConfig.getGuild(guild);
         if (!config) return;
-        if (!config.log_channel) return;
+        if (!config.log_events) return;
 
         const client = bot.getClient();
-        const channel = await client.channels.fetch(config.log_channel);
+        const channel = await client.channels.fetch(config.log_events);
 
         const isGuildVoice = channel && channel.type == ChannelType.GuildText;
 
@@ -100,6 +100,8 @@ class logServiceClass {
         if (!interaction.guildId) return;
         const embed = embedTemplate();
         embed.setTitle("Command Usage");
+        interaction.channel &&
+            embed.setDescription(`<#${interaction.channel.id}>`);
         embed.addFields([
             {
                 name: "Hidden",

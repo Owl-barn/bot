@@ -14,7 +14,9 @@ model guilds {
   banned   Boolean  @default(false) @db.Boolean
   dev      Boolean  @default(false) @db.Boolean
 
-  log_channel String? @db.VarChar()
+  log_join_leave String? @db.VarChar()
+  log_events     String? @db.VarChar()
+  log_bot        String? @db.VarChar()
 
   birthday_role    String? @db.VarChar()
   birthday_channel String? @db.VarChar()
@@ -42,6 +44,15 @@ model guilds {
   moderation_log moderation_log[]
   songs_played   songs_played[]
   command_log    command_log[]
+}
+
+model friendships {
+  created   DateTime @default(now()) @db.Timestamp(0)
+  user_id   String   @db.VarChar()
+  friend_id String   @db.VarChar()
+  pending   Boolean  @default(true) @db.Boolean
+
+  @@unique([user_id, friend_id])
 }
 
 model banned_user {
@@ -146,8 +157,8 @@ model self_role_roles {
   main_uuid String @db.Uuid
   role_id   String @db.VarChar()
 
-  title       String  @db.VarChar(32)
-  description String  @db.VarChar(128)
+  title       String @db.VarChar(32)
+  description String @db.VarChar(128)
 
   self_role_main self_role_main @relation(fields: [main_uuid], references: [uuid], onDelete: Cascade, onUpdate: Restrict, map: "self_role_roles_FK")
 
@@ -226,7 +237,6 @@ model whitelist {
   uuid     String   @id(map: "whitelist_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
 
   guilds guilds @relation(fields: [guild_id], references: [guild_id])
-
 
   @@unique([guild_id, user_id], name: "whitelist_guild_user_un")
   @@unique([guild_id, mc_uuid], name: "whitelist_guild_uuid_un")

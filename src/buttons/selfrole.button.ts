@@ -15,7 +15,7 @@ export default class implements RavenButton {
         const client = msg.client;
         const user = msg.member as GuildMember | undefined;
 
-        const buttonID = msg.customId.trim().split("_")[1];
+        const buttonID = msg.customId.trim();
 
         if (!user) return error;
 

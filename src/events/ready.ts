@@ -29,5 +29,21 @@ export default class ready implements RavenEvent {
         });
 
         VCService.initialize(client);
+
+        // const guilds = await client.guilds.fetch();
+        // const dbGuilds = await client.db.guilds.findMany();
+        // const guildsToRemove = dbGuilds.filter((x) => !guilds.has(x.guild_id));
+
+        // const count = await client.db.guilds.deleteMany({
+        //     where: {
+        //         guild_id: {
+        //             in: guildsToRemove.map((x) => x.guild_id),
+        //         },
+        //     },
+        // });
+
+        // console.log(
+        //     `Removed ${count.count} guilds from the database.`.yellow.italic,
+        // );
     }
 }

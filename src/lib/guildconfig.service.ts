@@ -41,7 +41,9 @@ class GuildConfigClass {
             privateRooms: rooms,
             rcon: rconQuery,
 
-            log_channel: guild.log_channel,
+            log_join_leave: guild.log_join_leave,
+            log_events: guild.log_events,
+            log_bot: guild.log_bot,
             staff_role: guild.staff_role,
             unban_notice: guild.unban_notice,
 
@@ -80,7 +82,9 @@ export interface GuildConfigs {
     privateRooms: private_vc[];
     rcon: rcon | null;
 
-    log_channel: string | null;
+    log_join_leave: string | null;
+    log_events: string | null;
+    log_bot: string | null;
 
     staff_role: string | null;
     unban_notice: string | null;

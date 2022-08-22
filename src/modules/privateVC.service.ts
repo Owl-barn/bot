@@ -19,6 +19,7 @@ import { embedTemplate } from "../lib/embedTemplate";
 import env from "./env";
 import path from "path";
 import fs from "fs";
+import moment from "moment";
 
 interface RoomNames {
     adjectives: string[];
@@ -240,13 +241,13 @@ class VCServiceClass {
         if (memberCount == 0)
             this.startDelete(
                 vc.channel,
-                3 * 60,
+                env.ABANDON_TIMEOUT * 60,
                 "The room was abandoned for too long.",
             );
         else if (memberCount == 1) {
             this.startDelete(
                 vc.channel,
-                5 * 60,
+                env.ALONE_TIMEOUT * 60,
                 "User was alone in vc for too long.",
             );
         }
@@ -392,7 +393,11 @@ class VCServiceClass {
             return;
         }
 
-        this.startDelete(room, 60 * 5, `Nobody joined <@${member.id}>'s room.`);
+        this.startDelete(
+            room,
+            env.ALONE_TIMEOUT * 60,
+            `Nobody joined <@${member.id}>'s room.`,
+        );
 
         // Log event.
         const embed = embedTemplate();
@@ -422,6 +427,7 @@ class VCServiceClass {
         reason: string | null = null,
     ) {
         this.cancelDelete(vc);
+        const client = vc.client as RavenClient;
 
         const query = await db.private_vc.findUnique({
             where: { main_channel_id: vc.id },
@@ -431,6 +437,7 @@ class VCServiceClass {
         this.createRateLimit.add(query.user_id);
         setTimeout(() => this.createRateLimit.delete(query.user_id), 180000);
 
+        // Fetch rooms.
         const mainRoom = await vc.guild.channels
             .fetch(query.main_channel_id)
             .catch((x) => console.error(x));
@@ -439,6 +446,7 @@ class VCServiceClass {
             .fetch(query.wait_channel_id)
             .catch((x) => console.error(x));
 
+        // Attempt to delete rooms.
         if (mainRoom)
             mainRoom.deletable
                 ? await mainRoom
@@ -452,6 +460,7 @@ class VCServiceClass {
                   )
                 : console.error(`Couldnt delete ${WaitRoom.id}`.red);
 
+        // Remove from db.
         await db.private_vc.delete({ where: { main_channel_id: vc.id } });
 
         GuildConfig.updateGuild(vc.guild.id);
@@ -459,18 +468,44 @@ class VCServiceClass {
         // Log event.
         const embed = embedTemplate();
         embed.setTitle("Private Room Disbanded");
-        embed.setDescription(mainRoom?.name || "Unknown name");
 
-        if (reason) {
-            embed.addFields([
-                {
-                    name: "Reason",
-                    value: reason,
-                    inline: true,
-                },
-            ]);
-        }
+        // How long the room was active for.
+        const lifespan = moment
+            .utc(moment(Date.now()).diff(mainRoom?.createdAt))
+            .format("HH:mm:ss");
 
+        // Users that joined the room.
+        const users = mainRoom?.permissionOverwrites.cache
+            .filter(
+                (x) =>
+                    !client.musicService.getBotIds().includes(x.id) &&
+                    x.type === OverwriteType.Member,
+            )
+            .map((x) => `<@${x.id}>`)
+            .join(", ");
+
+        embed.addFields([
+            {
+                name: "Name",
+                value: mainRoom?.name || "Unknown name",
+                inline: true,
+            },
+            {
+                name: "Duration",
+                value: lifespan,
+                inline: true,
+            },
+            {
+                name: "Reason",
+                value: reason || "No reason provided",
+                inline: true,
+            },
+            {
+                name: "Users",
+                value: users ?? "Error fetching users.",
+                inline: false,
+            },
+        ]);
         logService.logEvent(embed, vc.guild.id);
     }
 

@@ -44,7 +44,7 @@ export default class InteractionCreate implements RavenEvent {
                 command: "Play",
                 mid: msg.id,
                 data: {
-                    query: "me and michael",
+                    query: "funkytown",
                     guildId: msg.guild?.id,
                     channelId: msg.member?.voice.channelId,
                     userId: msg.member?.id,

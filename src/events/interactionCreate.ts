@@ -28,15 +28,13 @@ export default class InteractionCreate implements RavenEvent {
         const guildconfig = GuildConfig.getGuild(interaction.guildId || "");
         if (bannedUsers.isBanned(interaction.user.id)) return;
         if (guildconfig?.banned) {
-            await interaction
-                .reply({
-                    content:
-                        "This guild is banned from using Raven bot, If you believe this is an issue please contact the bot owner",
-                    ephemeral: true,
-                })
-                .catch((e) => console.error(e));
+            console.log(
+                `${interaction.guild?.name} - ${interaction.user.username}: attempted ${interaction.commandName}`
+                    .red,
+            );
             return;
         }
+
         if (interaction.isButton()) {
             return await this.buttonEvent(interaction).catch((e) =>
                 console.error(e),
@@ -136,7 +134,10 @@ export default class InteractionCreate implements RavenEvent {
     async buttonEvent(msg: RavenButtonInteraction): Promise<void> {
         const client = msg.client;
 
-        const commandName = msg.customId.split("_")[0];
+        const options = msg.customId.split("_");
+        const commandName = options[0];
+        options.shift();
+        msg.customId = options.join("_");
 
         const command = client.buttons.get(commandName);
 
@@ -150,7 +151,7 @@ export default class InteractionCreate implements RavenEvent {
             } as returnMessage;
         });
 
-        if (!response || response.content?.length === 0) return;
+        if (Object.keys(response).length === 0) return;
         await msg.reply(response).catch((e) => console.error(e));
     }
 

@@ -14,7 +14,7 @@ export default class InteractionCreate implements RavenEvent {
         if (msg.member?.user.bot) return;
         if (msg.content == "") return;
         const config = GuildConfig.getGuild(msg.guildId);
-        if (!config || !config.log_channel || config.banned) return;
+        if (!config || !config.log_events || config.banned) return;
 
         const embed = failEmbedTemplate();
 

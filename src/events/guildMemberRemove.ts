@@ -17,7 +17,7 @@ export default class implements RavenEvent {
         const config = GuildConfig.getGuild(member.guild.id);
 
         if (config?.banned) return;
-        if (config?.log_channel) logLeave(member);
+        if (config?.log_join_leave) logLeave(member);
         if (config?.rcon) await whitelistLeave(member, config.rcon);
     }
 }

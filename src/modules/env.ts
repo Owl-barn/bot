@@ -42,6 +42,13 @@ const env = cleanEnv(process.env, {
     CLIENT_ID: discordId(),
     SUPPORT_SERVER: discordInvite(),
 
+    VOICE_NOTIFY_DELAY: num({ default: 10 }),
+    VOICE_NOTIFY_TIMEOUT: num({ default: 1 }),
+
+    // Private room
+    ABANDON_TIMEOUT: num(),
+    ALONE_TIMEOUT: num(),
+
     // Embed
     EMBED_COLOR: HexColor({ default: "#5c00ff" }),
     EMBED_FAIL_COLOR: HexColor({ default: "#ff0000" }),

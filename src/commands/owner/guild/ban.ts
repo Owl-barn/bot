@@ -52,7 +52,7 @@ module.exports = class extends SubCommand {
             data: { banned: state },
         });
 
-        if (state) await msg.guild?.commands.set([]);
+        if (state) await guild.commands.set([]);
         else await registerCommand(client, guild);
         await GuildConfig.updateGuild(guild.id);
 
