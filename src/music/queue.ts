@@ -259,6 +259,11 @@ export default class Queue {
             this.playedMs = 0;
             this.lastpause = 0;
 
+            if (this.musicPlayer.isShutdown()) {
+                this.voiceConnection.disconnect();
+                this.musicPlayer.destroyQueue(this.guild);
+            }
+
             if (this.repeatMode === RepeatMode.Track)
                 this.queue.unshift(this.current);
             else if (this.repeatMode === RepeatMode.Queue)

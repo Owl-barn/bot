@@ -5,10 +5,10 @@ import play from "./commands/play";
 import stop from "./commands/stop";
 import getStatus from "./commands/status";
 import { RavenWS } from "./wsLib";
-import { exit } from "process";
 import repeat from "./commands/repeat";
 import skip from "./commands/skip";
 import voiceStateUpdate from "./events/voicestateupdate";
+import terminate from "./commands/terminate";
 
 export const bot = new Bot();
 export const ws = new RavenWS(
@@ -25,7 +25,7 @@ const main = async () => {
     ws.on("Stop", stop);
     ws.on("Skip", skip);
     ws.on("Pause", pause);
-    ws.on("Terminate", () => exit(0));
+    ws.on("Terminate", terminate);
     ws.on("ConnectionOpened", getStatus);
 
     const token = await ws.connect();

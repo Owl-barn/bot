@@ -13,10 +13,11 @@ export default class Track {
     public requestedBy: string;
 
     constructor(input: TrackInput, user: string) {
+        const title =
+            input.title !== undefined ? input.title : "couldnt load title";
+
         this.title = escapeMarkdown(
-            (input.title || "couldnt load title")
-                .substring(0, 48)
-                .replace(/[()[\]]/g, ""),
+            title.substring(0, 48).replace(/[()[\]]/g, ""),
         );
         this.author = input.author ? escapeMarkdown(input.author) : "NaN";
         this.url = input.url;

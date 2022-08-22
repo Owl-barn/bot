@@ -2,9 +2,12 @@ import Queue from "./queue";
 import Track from "./track";
 import * as play from "play-dl";
 import { VoiceChannel } from "discord.js";
+import { ws } from "../app";
+import QueueEvent from "../types/queueevent";
 
 export default class MusicPlayer {
     private queues: Map<string, Queue>;
+    private shutdown = false;
 
     constructor() {
         this.login();
@@ -26,13 +29,34 @@ export default class MusicPlayer {
 
     public getQueue = (guildId: string) => this.queues.get(guildId);
 
+    public getQueues = () => this.queues;
+
     public createQueue = (channel: VoiceChannel) => {
         const queue = new Queue(channel, this);
         this.queues.set(channel.guildId, queue);
         return queue;
     };
 
-    public destroyQueue = (guildId: string) => this.queues.delete(guildId);
+    public destroyQueue = (guildId: string) => {
+        this.queues.delete(guildId);
+
+        if (!this.shutdown) return;
+        if (this.queues.size === 0) return process.exit();
+    };
+
+    public softShutdown = () => {
+        this.shutdown = true;
+        this.queues.forEach(async (queue) => {
+            queue.voiceConnection.joinConfig;
+
+            await ws.send(QueueEvent.Shutdown, {
+                guildId: queue.voiceConnection.joinConfig.guildId,
+                channelId: queue.voiceConnection.joinConfig.channelId,
+            });
+        });
+    };
+
+    public isShutdown = () => this.shutdown;
 
     public async search(query: string, user: string): Promise<Track> {
         // If not Url search yt.
