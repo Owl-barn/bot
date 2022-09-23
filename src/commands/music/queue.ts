@@ -129,6 +129,10 @@ function makeEmbed(
     list.push({ name: "Now playing:", value: fieldContent });
     let x = 0;
 
+    if (queue.length >= 24) {
+        queue = queue.slice(0, 23);
+    }
+
     for (const song of queue) {
         x++;
         list.push({
