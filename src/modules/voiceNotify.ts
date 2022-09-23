@@ -26,7 +26,7 @@ class VoiceNotify {
         // Check if joined vc.
         if (!member) return;
         if (channelUnchanged) return;
-        if (!newState.channel) return;
+        if (newState.channel === null) return;
 
         // Check if timed out.
         const lastNotify = this.lastNotified.get(member.id);
@@ -52,6 +52,12 @@ class VoiceNotify {
 
         if (friends.length === 0) return;
 
+        // Clear timeout if present.
+        const hasTimeout = this.timeout.get(newState.member.id);
+        if (hasTimeout !== undefined) {
+            clearTimeout(hasTimeout);
+        }
+
         // Iniate the timeout.
         this.timeout.set(
             newState.member.id,
@@ -73,6 +79,7 @@ class VoiceNotify {
         friends: friendships[],
     ) => {
         this.timeout.delete(member_id);
+        if (!channel) return;
         const member = await channel.guild.members.fetch(member_id);
         if (!member) return;
         if (!member.voice.channel) return;
