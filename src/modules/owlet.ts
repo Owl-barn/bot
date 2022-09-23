@@ -102,7 +102,13 @@ export default class Owlet {
     }
 
     public terminate(now: boolean): void {
-        this.send({ command: "Terminate", mid: "terminate", data: { now } });
+        this.send({
+            command: "Terminate",
+            mid: "terminate",
+            data: { now },
+        }).catch(() => {
+            null;
+        });
     }
 
     /**
