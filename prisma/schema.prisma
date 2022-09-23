@@ -158,7 +158,7 @@ model self_role_roles {
   role_id   String @db.VarChar()
 
   title       String @db.VarChar(32)
-  description String @db.VarChar(128)
+  description String @db.VarChar()
 
   self_role_main self_role_main @relation(fields: [main_uuid], references: [uuid], onDelete: Cascade, onUpdate: Restrict, map: "self_role_roles_FK")
 
