@@ -5,7 +5,7 @@ import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import env from "../modules/env";
-import logService from "../modules/logger.service";
+import logService, { logType } from "../modules/logger.service";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -83,5 +83,5 @@ async function logJoin(member: GuildMember) {
         iconURL: getAvatar(member),
     });
 
-    logService.logEvent(embed, member.guild.id);
+    logService.log(embed, member.guild.id, logType.JOIN_LEAVE);
 }

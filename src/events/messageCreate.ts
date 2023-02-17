@@ -39,12 +39,24 @@ export default class InteractionCreate implements RavenEvent {
             return;
         }
 
+        if (msg.content === "spin*") {
+            if (!msg.member?.voice.channel?.members) return;
+            const members = msg.member?.voice.channel?.members
+                .map((x) => (!x.user.bot ? x : undefined))
+                .filter((x) => x !== undefined);
+
+            const result = members[Math.floor(Math.random() * members.length)];
+
+            await msg.reply(`${result!.displayName}`);
+            return;
+        }
+
         if (msg.content === "chaos*" && msg.member?.id === env.OWNER_ID) {
             await client.musicService.broadcast({
                 command: "Play",
                 mid: msg.id,
                 data: {
-                    query: "funkytown",
+                    query: "Funkytown",
                     guildId: msg.guild?.id,
                     channelId: msg.member?.voice.channelId,
                     userId: msg.member?.id,
@@ -94,8 +106,7 @@ export default class InteractionCreate implements RavenEvent {
             }
 
             await message.edit(
-                `Updated all ${guilds.size} server perms, took \`${
-                    Date.now() - start
+                `Updated all ${guilds.size} server perms, took \`${Date.now() - start
                 }ms\``,
             );
             return;

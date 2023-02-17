@@ -14,7 +14,7 @@ import db from "../lib/db.service";
 import { getAvatar, randomRange } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import { private_vc } from "@prisma/client";
-import logService from "./logger.service";
+import logService, { logType } from "./logger.service";
 import { embedTemplate } from "../lib/embedTemplate";
 import env from "./env";
 import path from "path";
@@ -419,7 +419,7 @@ class VCServiceClass {
             iconURL: getAvatar(member),
         });
 
-        logService.logEvent(embed, vc.guild.id);
+        logService.log(embed, vc.guild.id, logType.BOT);
     }
 
     public async disbandVC(
@@ -506,7 +506,7 @@ class VCServiceClass {
                 inline: false,
             },
         ]);
-        logService.logEvent(embed, vc.guild.id);
+        logService.log(embed, vc.guild.id, logType.BOT);
     }
 
     private getMemberCount(vc: VoiceState) {

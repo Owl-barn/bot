@@ -4,7 +4,7 @@ import { failEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import { getMcName, RCONHandler } from "../lib/mc.service";
-import logService from "../modules/logger.service";
+import logService, { logType } from "../modules/logger.service";
 import RavenEvent from "../types/event";
 import RavenClient from "../types/ravenClient";
 
@@ -38,7 +38,7 @@ async function logLeave(member: GuildMember) {
         iconURL: getAvatar(member),
     });
 
-    logService.logEvent(embed, member.guild.id);
+    logService.log(embed, member.guild.id, logType.JOIN_LEAVE);
 }
 
 async function whitelistLeave(member: GuildMember, config: rcon) {

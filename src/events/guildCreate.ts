@@ -66,7 +66,7 @@ export default class implements RavenEvent {
             const embed = embedTemplate()
                 .setTitle("Thank you!")
                 .setDescription(
-                    "Thank you for inviting me! For any questions the bot owner is happy to help you out in the support server or in dms!",
+                    "Thank you for inviting me! For any questions we are happy to help you out in our server!",
                 )
                 .setThumbnail(
                     guild.client.user?.avatarURL() ||

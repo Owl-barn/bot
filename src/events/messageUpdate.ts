@@ -2,7 +2,7 @@ import { GuildMember, Message, escapeMarkdown } from "discord.js";
 import { warningEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
-import logService from "../modules/logger.service";
+import logService, { logType } from "../modules/logger.service";
 import RavenEvent from "../types/event";
 
 export default class implements RavenEvent {
@@ -41,6 +41,6 @@ export default class implements RavenEvent {
             iconURL: getAvatar(member),
         });
 
-        logService.logEvent(embed, current.guildId);
+        logService.log(embed, current.guildId, logType.EVENT);
     }
 }

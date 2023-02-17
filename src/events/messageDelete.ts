@@ -2,7 +2,7 @@ import { Message } from "discord.js";
 import { failEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
-import logService from "../modules/logger.service";
+import logService, { logType } from "../modules/logger.service";
 import RavenEvent from "../types/event";
 
 export default class InteractionCreate implements RavenEvent {
@@ -33,6 +33,6 @@ export default class InteractionCreate implements RavenEvent {
             });
         }
 
-        logService.logEvent(embed, msg.guildId);
+        logService.log(embed, msg.guildId, logType.EVENT);
     }
 }
