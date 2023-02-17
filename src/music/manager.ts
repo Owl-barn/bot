@@ -70,7 +70,7 @@ export default class MusicPlayer {
         // If yt video.
         const ytValidate = play.yt_validate(query);
         if (ytValidate === "video") {
-            const result = await play.video_info(query).catch(() => null);
+            const result = await play.video_info(query).catch((e) => console.error(e));
             if (!result) throw "Couldnt play this song";
             const videoData = result.video_details;
             const trackInput = {
