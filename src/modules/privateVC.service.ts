@@ -200,7 +200,9 @@ class VCServiceClass {
         const member = vc.member as GuildMember;
         if (this.notifyRatelimit.has(member.id)) return;
 
-        const mainRoom = await vc.guild.channels.fetch(room.main_channel_id);
+        const mainRoom = (await vc.guild.channels.fetch(
+            room.main_channel_id,
+        )) as VoiceChannel;
         if (!mainRoom) return;
 
         if (mainRoom.permissionOverwrites.cache.get(member.id)) return;
@@ -438,13 +440,13 @@ class VCServiceClass {
         setTimeout(() => this.createRateLimit.delete(query.user_id), 180000);
 
         // Fetch rooms.
-        const mainRoom = await vc.guild.channels
+        const mainRoom = (await vc.guild.channels
             .fetch(query.main_channel_id)
-            .catch((x) => console.error(x));
+            .catch((x) => console.error(x))) as VoiceChannel;
 
-        const WaitRoom = await vc.guild.channels
+        const WaitRoom = (await vc.guild.channels
             .fetch(query.wait_channel_id)
-            .catch((x) => console.error(x));
+            .catch((x) => console.error(x))) as VoiceChannel;
 
         // Attempt to delete rooms.
         if (mainRoom)

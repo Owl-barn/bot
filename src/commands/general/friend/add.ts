@@ -4,7 +4,7 @@ import {
     ApplicationCommandOptionType,
     ButtonBuilder,
     ButtonStyle,
-    MessageOptions,
+    BaseMessageOptions,
     User,
 } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
@@ -130,7 +130,7 @@ module.exports = class extends SubCommand {
 function makeRequestMsg(
     msg: RavenInteraction,
     friendUser: User,
-): MessageOptions {
+): BaseMessageOptions {
     const friendRequestEmbed = embedTemplate();
     friendRequestEmbed.setTitle("Friend Request");
     friendRequestEmbed.setDescription(

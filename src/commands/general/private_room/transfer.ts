@@ -2,6 +2,7 @@ import {
     ApplicationCommandOptionType,
     GuildMember,
     PermissionOverwriteOptions,
+    VoiceChannel,
 } from "discord.js";
 import { embedTemplate } from "../../../lib/embedTemplate";
 import fetchRoom from "../../../lib/fetch_room";
@@ -45,9 +46,9 @@ module.exports = class extends SubCommand {
         if (!room || !dbRoom)
             return { content: "You don't have a private room" };
 
-        const waitRoom = await msg.guild?.channels.fetch(
+        const waitRoom = (await msg.guild?.channels.fetch(
             dbRoom.wait_channel_id,
-        );
+        )) as VoiceChannel | null;
 
         const roomOwnerPermissions: PermissionOverwriteOptions = {
             ViewChannel: true,

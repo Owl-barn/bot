@@ -48,6 +48,7 @@ export default class implements RavenEvent {
             if (!channel) {
                 const channels = await guild.channels.fetch().catch(() => null);
                 channels?.forEach((currentChannel) => {
+                    if (!currentChannel) return;
                     if (!channel) return;
                     if (!channel.isTextBased()) return;
                     if (!channel.guild.members.me) return;
@@ -60,7 +61,7 @@ export default class implements RavenEvent {
                 });
             }
 
-            if (!channel) return;
+            if (!channel || !channel.isTextBased()) return;
 
             // Inform guild.
             const embed = embedTemplate()

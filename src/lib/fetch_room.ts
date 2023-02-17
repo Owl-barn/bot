@@ -1,5 +1,5 @@
 import { private_vc } from "@prisma/client";
-import { NonThreadGuildBasedChannel } from "discord.js";
+import { NonThreadGuildBasedChannel, VoiceChannel } from "discord.js";
 import RavenInteraction from "../types/interaction";
 
 export default async function fetchRoom(
@@ -14,7 +14,10 @@ export default async function fetchRoom(
         },
     });
     if (!dbRoom) throw "noRoom";
-    const room = await msg.guild?.channels.fetch(dbRoom.main_channel_id);
+    const room = (await msg.guild?.channels.fetch(
+        dbRoom.main_channel_id,
+    )) as VoiceChannel;
+
     if (!room) {
         await msg.client.db.private_vc.delete({
             where: {

@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, VoiceChannel } from "discord.js";
 import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
 import { returnMessage, SubCommand } from "../../../types/Command";
 import RavenInteraction from "../../../types/interaction";
@@ -26,7 +26,7 @@ module.exports = class extends SubCommand {
     }
 
     async execute(msg: RavenInteraction): Promise<returnMessage> {
-        const room = msg.options.getChannel("room", true);
+        let room = msg.options.getChannel("room", true);
 
         const fail = failEmbedTemplate();
         const embed = embedTemplate();
@@ -47,6 +47,7 @@ module.exports = class extends SubCommand {
 
         const timeStamp = Math.round(Number(privateRoom.created) / 1000);
 
+        room = room as VoiceChannel;
         embed.setTitle(room.name.split(" ")[1]);
         embed.setDescription(`Private Room Info`);
         embed.addFields([
