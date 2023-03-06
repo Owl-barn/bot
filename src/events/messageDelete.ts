@@ -6,33 +6,33 @@ import logService, { logType } from "../modules/logger.service";
 import RavenEvent from "../types/event";
 
 export default class InteractionCreate implements RavenEvent {
-    name = "messageDelete";
-    once = false;
+  name = "messageDelete";
+  once = false;
 
-    async execute(msg: Message): Promise<void> {
-        if (!msg.guildId) return;
-        if (msg.member?.user.bot) return;
-        if (msg.content == "") return;
-        const config = GuildConfig.getGuild(msg.guildId);
-        if (!config || !config.log_events || config.banned) return;
+  async execute(msg: Message): Promise<void> {
+    if (!msg.guildId) return;
+    if (msg.member?.user.bot) return;
+    if (msg.content == "") return;
+    const config = GuildConfig.getGuild(msg.guildId);
+    if (!config || !config.log_events || config.banned) return;
 
-        const embed = failEmbedTemplate();
+    const embed = failEmbedTemplate();
 
-        embed.setTitle("Message Deleted");
-        embed.setDescription(
-            `<#${msg.channelId}>\n` + `\`\`\`${msg.content}\`\`\``,
-        );
+    embed.setTitle("Message Deleted");
+    embed.setDescription(
+      `<#${msg.channelId}>\n` + `\`\`\`${msg.content}\`\`\``,
+    );
 
-        const member = msg.member;
-        if (member) {
-            const avatar = getAvatar(member);
+    const member = msg.member;
+    if (member) {
+      const avatar = getAvatar(member);
 
-            embed.setFooter({
-                text: `${member.user.tag} <@${member.id}>`,
-                iconURL: avatar,
-            });
-        }
-
-        logService.log(embed, msg.guildId, logType.EVENT);
+      embed.setFooter({
+        text: `${member.user.tag} <@${member.id}>`,
+        iconURL: avatar,
+      });
     }
+
+    logService.log(embed, msg.guildId, logType.EVENT);
+  }
 }

@@ -74,7 +74,6 @@
         "max": 2
       }
     ],
-    "no-console": "warn",
     "no-floating-decimal": "error",
     "no-inline-comments": "off",
     "no-lonely-if": "error",

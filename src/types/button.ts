@@ -2,8 +2,8 @@ import { returnMessage } from "./Command";
 import { RavenButtonInteraction } from "./interaction";
 
 export default abstract class RavenButton {
-    name: string;
-    disabled = false;
+  name: string;
+  disabled = false;
 
-    abstract execute(msg: RavenButtonInteraction): Promise<returnMessage>;
+  abstract execute(msg: RavenButtonInteraction): Promise<returnMessage>;
 }

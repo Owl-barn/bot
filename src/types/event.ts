@@ -1,6 +1,6 @@
 export default abstract class RavenEvent {
-    name: string;
-    once: boolean;
+  name: string;
+  once: boolean;
 
-    abstract execute(...args: any[]): Promise<void>;
+  abstract execute(...args: any[]): Promise<void>;
 }

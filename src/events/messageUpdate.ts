@@ -6,41 +6,41 @@ import logService, { logType } from "../modules/logger.service";
 import RavenEvent from "../types/event";
 
 export default class implements RavenEvent {
-    name = "messageUpdate";
-    once = false;
+  name = "messageUpdate";
+  once = false;
 
-    async execute(old: Message, current: Message): Promise<void> {
-        if (!current.guildId) return;
-        if (old.member?.user.bot) return;
-        const config = GuildConfig.getGuild(current.guildId);
-        if (!config || !config.log_events || config.banned) return;
-        if (old.content == current.content) return;
+  async execute(old: Message, current: Message): Promise<void> {
+    if (!current.guildId) return;
+    if (old.member?.user.bot) return;
+    const config = GuildConfig.getGuild(current.guildId);
+    if (!config || !config.log_events || config.banned) return;
+    if (old.content == current.content) return;
 
-        const member = current.member as GuildMember;
+    const member = current.member as GuildMember;
 
-        const embed = warningEmbedTemplate();
+    const embed = warningEmbedTemplate();
 
-        const oldMsg = old.content
-            ? `\`\`\`${escapeMarkdown(old.content)}\`\`\`\n`
-            : "*empty*\n";
+    const oldMsg = old.content
+      ? `\`\`\`${escapeMarkdown(old.content)}\`\`\`\n`
+      : "*empty*\n";
 
-        const newMsg = current.content
-            ? `\`\`\`${escapeMarkdown(current.content)}\`\`\`\n`
-            : "*empty*\n";
+    const newMsg = current.content
+      ? `\`\`\`${escapeMarkdown(current.content)}\`\`\`\n`
+      : "*empty*\n";
 
-        embed.setTitle("Message updated");
-        embed.setDescription(
-            `<#${current.channelId}>\n` +
+    embed.setTitle("Message updated");
+    embed.setDescription(
+      `<#${current.channelId}>\n` +
                 "**old:**\n" +
                 oldMsg +
                 "**current:**\n" +
                 newMsg,
-        );
-        embed.setFooter({
-            text: `${member.user.tag} <@${member.id}>`,
-            iconURL: getAvatar(member),
-        });
+    );
+    embed.setFooter({
+      text: `${member.user.tag} <@${member.id}>`,
+      iconURL: getAvatar(member),
+    });
 
-        logService.log(embed, current.guildId, logType.EVENT);
-    }
+    logService.log(embed, current.guildId, logType.EVENT);
+  }
 }

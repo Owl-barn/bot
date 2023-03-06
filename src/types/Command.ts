@@ -1,7 +1,7 @@
 import {
-    InteractionReplyOptions,
-    LocalizationMap,
-    PermissionsString,
+  InteractionReplyOptions,
+  LocalizationMap,
+  PermissionsString,
 } from "discord.js";
 import { Argument } from "./argument";
 import { CommandGroup } from "./commandGroup";
@@ -17,30 +17,30 @@ export type CommandEnum =
  * @class Base Command.
  */
 export abstract class BaseCommand {
-    public constructor(info: BaseCommandInfo) {
-        Object.assign(this, info);
-    }
+  public constructor(info: BaseCommandInfo) {
+    Object.assign(this, info);
+  }
 
-    public name!: string;
-    public description!: string;
-    public type!: CommandType;
+  public name!: string;
+  public description!: string;
+  public type!: CommandType;
 
-    public nameLocalization?: LocalizationMap;
-    public descriptionLocalization?: LocalizationMap;
+  public nameLocalization?: LocalizationMap;
+  public descriptionLocalization?: LocalizationMap;
 
-    public path?: string;
+  public path?: string;
 }
 
 export interface BaseCommandInfo {
-    type?: CommandType;
+  type?: CommandType;
 
-    name: string;
-    description: string;
+  name: string;
+  description: string;
 
-    nameLocalization?: LocalizationMap;
-    descriptionLocalization?: LocalizationMap;
+  nameLocalization?: LocalizationMap;
+  descriptionLocalization?: LocalizationMap;
 
-    path?: string;
+  path?: string;
 }
 
 /**
@@ -48,139 +48,139 @@ export interface BaseCommandInfo {
  * @extends Base Command.
  */
 export abstract class ParentCommand extends BaseCommand {
-    public constructor(info: ParentCommandInfo) {
-        super(info);
-    }
-    public type = CommandType.Parent;
+  public constructor(info: ParentCommandInfo) {
+    super(info);
+  }
+  public type = CommandType.Parent;
 
-    public group!: CommandGroup;
-    public premium = false;
+  public group!: CommandGroup;
+  public premium = false;
 }
 
 export interface ParentCommandInfo extends BaseCommandInfo {
-    type?: CommandType.Parent;
+  type?: CommandType.Parent;
 
-    group: CommandGroup;
-    premium?: boolean;
+  group: CommandGroup;
+  premium?: boolean;
 }
 
 /**
  * @class SubCommandGroup class.
  */
 export abstract class SubCommandGroup extends BaseCommand {
-    public constructor(info: BaseCommandInfo) {
-        super(info);
-    }
-    public type = CommandType.SubcommandGroup;
+  public constructor(info: BaseCommandInfo) {
+    super(info);
+  }
+  public type = CommandType.SubcommandGroup;
 }
 
 export interface SubCommandGroupInfo extends BaseCommandInfo {
-    type?: CommandType.SubcommandGroup;
+  type?: CommandType.SubcommandGroup;
 }
 
 /**
  * @class Command class.
  */
 export abstract class Command extends BaseCommand {
-    public constructor(info: CommandInfo) {
-        super(info);
-    }
+  public constructor(info: CommandInfo) {
+    super(info);
+  }
 
-    public type = CommandType.Default;
+  public type = CommandType.Default;
 
-    public group!: CommandGroup;
+  public group!: CommandGroup;
 
-    public guildOnly: boolean;
-    public adminOnly: boolean;
-    public premium: boolean;
-    public disabled: boolean;
+  public guildOnly: boolean;
+  public adminOnly: boolean;
+  public premium: boolean;
+  public disabled: boolean;
 
-    public arguments?: Argument<string | number>[];
+  public arguments?: Argument<string | number>[];
 
-    public userPermissions?: PermissionsString[];
-    public botPermissions?: PermissionsString[];
+  public userPermissions?: PermissionsString[];
+  public botPermissions?: PermissionsString[];
 
-    public throttling!: Throttling;
+  public throttling!: Throttling;
 
-    abstract execute(interaction: RavenInteraction): Promise<returnMessage>;
+  abstract execute(interaction: RavenInteraction): Promise<returnMessage>;
 }
 
 export interface CommandInfo extends BaseCommandInfo {
-    type?: CommandType.Default;
+  type?: CommandType.Default;
 
-    group: CommandGroup;
+  group: CommandGroup;
 
-    guildOnly?: boolean;
-    adminOnly?: boolean;
-    premium?: boolean;
-    disabled?: boolean;
+  guildOnly?: boolean;
+  adminOnly?: boolean;
+  premium?: boolean;
+  disabled?: boolean;
 
-    arguments?: Argument<string | number>[];
+  arguments?: Argument<string | number>[];
 
-    userPermissions?: PermissionsString[];
-    botPermissions?: PermissionsString[];
+  userPermissions?: PermissionsString[];
+  botPermissions?: PermissionsString[];
 
-    throttling: Throttling;
+  throttling: Throttling;
 }
 
 /**
  * @class SubCommand class.
  */
 export abstract class SubCommand extends BaseCommand {
-    public constructor(info: SubCommandInfo) {
-        super(info);
-    }
+  public constructor(info: SubCommandInfo) {
+    super(info);
+  }
 
-    public type = CommandType.Subcommand;
+  public type = CommandType.Subcommand;
 
-    public guildOnly: boolean;
-    public adminOnly: boolean;
-    public premium: boolean;
-    public disabled: boolean;
+  public guildOnly: boolean;
+  public adminOnly: boolean;
+  public premium: boolean;
+  public disabled: boolean;
 
-    public arguments?: Argument<string | number>[];
+  public arguments?: Argument<string | number>[];
 
-    public userPermissions?: PermissionsString[];
-    public botPermissions?: PermissionsString[];
+  public userPermissions?: PermissionsString[];
+  public botPermissions?: PermissionsString[];
 
-    public throttling!: Throttling;
+  public throttling!: Throttling;
 
-    abstract execute(interaction: RavenInteraction): Promise<returnMessage>;
+  abstract execute(interaction: RavenInteraction): Promise<returnMessage>;
 }
 
 export interface SubCommandInfo extends BaseCommandInfo {
-    type?: CommandType.Subcommand;
+  type?: CommandType.Subcommand;
 
-    guildOnly?: boolean;
-    adminOnly?: boolean;
-    premium?: boolean;
-    disabled?: boolean;
+  guildOnly?: boolean;
+  adminOnly?: boolean;
+  premium?: boolean;
+  disabled?: boolean;
 
-    arguments?: Argument<string | number>[];
+  arguments?: Argument<string | number>[];
 
-    userPermissions?: PermissionsString[];
-    botPermissions?: PermissionsString[];
+  userPermissions?: PermissionsString[];
+  botPermissions?: PermissionsString[];
 
-    throttling: Throttling;
+  throttling: Throttling;
 }
 
 // eslint-disable-next-line no-shadow
 export enum CommandType {
-    Parent = "Parent",
-    SubcommandGroup = "SubcommandGroup",
-    Subcommand = "Subcommand",
-    Default = "Default",
+  Parent = "Parent",
+  SubcommandGroup = "SubcommandGroup",
+  Subcommand = "Subcommand",
+  Default = "Default",
 }
 
 export interface Throttling {
-    duration: number;
-    usages: number;
+  duration: number;
+  usages: number;
 }
 
 export interface Permissions {
-    test: string;
+  test: string;
 }
 
 export interface returnMessage extends InteractionReplyOptions {
-    callback?: (interaction: RavenInteraction) => Promise<returnMessage | void>;
+  callback?: (interaction: RavenInteraction) => Promise<returnMessage | void>;
 }

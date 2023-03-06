@@ -5,88 +5,88 @@ import db from "./db.service";
 import { embedTemplate } from "./embedTemplate";
 
 class AFKServiceClass {
-    private globals: Set<string> = new Set();
-    private guilds: Set<string> = new Set();
+  private globals: Set<string> = new Set();
+  private guilds: Set<string> = new Set();
 
-    constructor() {
-        this.initialize();
+  constructor() {
+    this.initialize();
+  }
+
+  public setAFK(input: afk): void {
+    if (input.global) this.globals.add(input.user_id);
+    else this.guilds.add(`${input.user_id}-${input.guild_id}`);
+  }
+
+  public onMessage = async (msg: Message): Promise<void> => {
+    let removeAFK = false;
+    const guildString = `${msg.author.id}-${msg.guildId}`;
+    // Is this user AFK?
+    if (this.globals.has(msg.author.id) || this.guilds.has(guildString)) {
+      await db.afk.deleteMany({
+        where: {
+          OR: [
+            {
+              user_id: msg.author.id,
+              guild_id: msg.guildId as string,
+            },
+            { user_id: msg.author.id, global: true },
+          ],
+        },
+      });
+
+      this.globals.delete(msg.author.id);
+      this.guilds.delete(guildString);
+
+      removeAFK = true;
     }
 
-    public setAFK(input: afk): void {
-        if (input.global) this.globals.add(input.user_id);
-        else this.guilds.add(`${input.user_id}-${input.guild_id}`);
+    // Check if pinged AFk user.
+    const mentions = msg.mentions.users;
+    const AFKPeople: Record<string, unknown>[] = [];
+    if (mentions.size == 0) {
+      if (removeAFK)
+        await msg.reply({ content: "Successfully removed your afk!" });
+      return;
     }
 
-    public onMessage = async (msg: Message): Promise<void> => {
-        let removeAFK = false;
-        const guildString = `${msg.author.id}-${msg.guildId}`;
-        // Is this user AFK?
-        if (this.globals.has(msg.author.id) || this.guilds.has(guildString)) {
-            await db.afk.deleteMany({
-                where: {
-                    OR: [
-                        {
-                            user_id: msg.author.id,
-                            guild_id: msg.guildId as string,
-                        },
-                        { user_id: msg.author.id, global: true },
-                    ],
-                },
-            });
+    let AFKString = "";
+    mentions.forEach((mention) => {
+      if (AFKPeople.length >= 3) return;
+      if (mention.id == msg.author.id) return;
+      if (this.guilds.has(`${mention.id}-${msg.guildId}`)) {
+        AFKPeople.push({ user_id: mention.id, guild_id: msg.guildId });
+        return;
+      }
+      if (this.globals.has(mention.id))
+        AFKPeople.push({ user_id: mention.id, global: true });
+    });
 
-            this.globals.delete(msg.author.id);
-            this.guilds.delete(guildString);
+    if (AFKPeople.length == 0) return;
 
-            removeAFK = true;
-        }
+    const afks = await db.afk.findMany({ where: { OR: AFKPeople } });
+    for (const x of afks)
+      AFKString += `\n<@${x.user_id}> went afk <t:${
+        Number(x.created) / 1000
+      }:R>${x.reason ? ` with the reason: \`\`${x.reason}\`\`` : ""}`;
 
-        // Check if pinged AFk user.
-        const mentions = msg.mentions.users;
-        const AFKPeople: Record<string, unknown>[] = [];
-        if (mentions.size == 0) {
-            if (removeAFK)
-                await msg.reply({ content: "Successfully removed your afk!" });
-            return;
-        }
+    const embed = embedTemplate(AFKString);
+    if (removeAFK) embed.setTitle("Removed your AFK!");
+    await msg.reply({ embeds: [embed] });
+  };
 
-        let AFKString = "";
-        mentions.forEach((mention) => {
-            if (AFKPeople.length >= 3) return;
-            if (mention.id == msg.author.id) return;
-            if (this.guilds.has(`${mention.id}-${msg.guildId}`)) {
-                AFKPeople.push({ user_id: mention.id, guild_id: msg.guildId });
-                return;
-            }
-            if (this.globals.has(mention.id))
-                AFKPeople.push({ user_id: mention.id, global: true });
-        });
+  public initialize = async (): Promise<void> => {
+    const afks = await db.afk.findMany();
 
-        if (AFKPeople.length == 0) return;
+    this.globals = new Set();
+    this.guilds = new Set();
 
-        const afks = await db.afk.findMany({ where: { OR: AFKPeople } });
-        for (const x of afks)
-            AFKString += `\n<@${x.user_id}> went afk <t:${
-                Number(x.created) / 1000
-            }:R>${x.reason ? ` with the reason: \`\`${x.reason}\`\`` : ""}`;
-
-        const embed = embedTemplate(AFKString);
-        if (removeAFK) embed.setTitle("Removed your AFK!");
-        await msg.reply({ embeds: [embed] });
-    };
-
-    public initialize = async (): Promise<void> => {
-        const afks = await db.afk.findMany();
-
-        this.globals = new Set();
-        this.guilds = new Set();
-
-        for (const x of afks) this.setAFK(x);
-        console.log(
-            " ✓ Loaded ".green.bold +
+    for (const x of afks) this.setAFK(x);
+    console.log(
+      " ✓ Loaded ".green.bold +
                 String(afks.length).cyan +
                 " AFK users".green.bold,
-        );
-    };
+    );
+  };
 }
 
 declare const global: NodeJS.Global & { AFKService: AFKServiceClass };

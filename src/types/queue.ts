@@ -6,8 +6,8 @@ import Track from "./track";
 /*  eslint semi: ["off", "always"]*/
 
 export default interface Queue {
-    queue: Track[];
-    current: currentSong;
-    queueInfo: QueueInfo;
-    loop: boolean;
+  queue: Track[];
+  current: currentSong;
+  queueInfo: QueueInfo;
+  loop: boolean;
 }

@@ -5,58 +5,58 @@ import { CommandGroup } from "../../types/commandGroup";
 import RavenInteraction from "../../types/interaction";
 
 module.exports = class extends Command {
-    constructor() {
-        super({
-            name: "nick",
-            description: "changes the nickname for a user",
-            group: CommandGroup.moderation,
+  constructor() {
+    super({
+      name: "nick",
+      description: "changes the nickname for a user",
+      group: CommandGroup.moderation,
 
-            guildOnly: true,
+      guildOnly: true,
 
-            arguments: [
-                {
-                    type: ApplicationCommandOptionType.String,
-                    name: "nickname",
-                    description: "Nickname to give the user",
-                    required: true,
-                },
-                {
-                    type: ApplicationCommandOptionType.User,
-                    name: "user",
-                    description: "User to change the nickname for",
-                    required: false,
-                },
-            ],
+      arguments: [
+        {
+          type: ApplicationCommandOptionType.String,
+          name: "nickname",
+          description: "Nickname to give the user",
+          required: true,
+        },
+        {
+          type: ApplicationCommandOptionType.User,
+          name: "user",
+          description: "User to change the nickname for",
+          required: false,
+        },
+      ],
 
-            botPermissions: ["ManageNicknames", "ChangeNickname"],
+      botPermissions: ["ManageNicknames", "ChangeNickname"],
 
-            throttling: {
-                duration: 30,
-                usages: 3,
-            },
-        });
+      throttling: {
+        duration: 30,
+        usages: 3,
+      },
+    });
+  }
+
+  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    const nickname = msg.options.getString("nickname", true);
+    let target = msg.options.getMember("user") as GuildMember | null;
+
+    if (!target) target = msg.member as GuildMember;
+    if (!target.moderatable) {
+      const embed = failEmbedTemplate();
+      embed.setDescription("I cant nickname that person");
+
+      return {
+        ephemeral: true,
+        embeds: [embed],
+      };
     }
 
-    async execute(msg: RavenInteraction): Promise<returnMessage> {
-        const nickname = msg.options.getString("nickname", true);
-        let target = msg.options.getMember("user") as GuildMember | null;
+    await target.setNickname(nickname);
 
-        if (!target) target = msg.member as GuildMember;
-        if (!target.moderatable) {
-            const embed = failEmbedTemplate();
-            embed.setDescription("I cant nickname that person");
+    const embed = embedTemplate();
+    embed.setDescription("Nickname changed");
 
-            return {
-                ephemeral: true,
-                embeds: [embed],
-            };
-        }
-
-        await target.setNickname(nickname);
-
-        const embed = embedTemplate();
-        embed.setDescription("Nickname changed");
-
-        return { embeds: [embed] };
-    }
+    return { embeds: [embed] };
+  }
 };
