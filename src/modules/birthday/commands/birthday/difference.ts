@@ -1,39 +1,39 @@
+import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { state } from "@src/app";
+import { SubCommand } from "@structs/command/subcommand";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
-import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "difference",
-      description:
-                "get the difference between your birthday and another user's",
+export default SubCommand(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "first_user",
-          description: "Who's birthday to compare",
-          required: true,
-        },
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "second_user",
-          description: "Who's birthday to compare",
-          required: false,
-        },
-      ],
+  // Info
+  {
+    name: "difference",
+    description:
+      "get the difference between your birthday and another user's",
 
-      throttling: {
-        duration: 60,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "first_user",
+        description: "Who's birthday to compare",
+        required: true,
       },
-    });
-  }
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "second_user",
+        description: "Who's birthday to compare",
+        required: false,
+      },
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
-    const client = msg.client;
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     if (!msg.guildId) throw "No guildID???";
 
     const first_user = msg.options.getMember(
@@ -42,15 +42,15 @@ module.exports = class extends SubCommand {
 
     if (first_user === null) throw "No first user?";
     let second_user = msg.options.getMember("second_user") as
-            | GuildMember
-            | undefined;
+      | GuildMember
+      | undefined;
 
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
     if (!second_user) second_user = msg.member as GuildMember;
 
-    const users = await client.db.birthdays.findMany({
+    const users = await state.db.birthdays.findMany({
       where: {
         OR: [{ user_id: first_user.id }, { user_id: second_user.id }],
         guild_id: msg.guildId,
@@ -70,13 +70,13 @@ module.exports = class extends SubCommand {
     const user1_age = Number(new Date()) - Number(users[1].birthday);
 
     const percent_difference =
-            (Math.abs(user0_age - user1_age) /
-                Math.max(user0_age + user1_age, 0.0001)) *
-            2;
+      (Math.abs(user0_age - user1_age) /
+        Math.max(user0_age + user1_age, 0.0001)) *
+      2;
 
     const difference = Math.abs(
       (Number(users[0].birthday) - Number(users[1].birthday)) /
-                (1000 * 60 * 60 * 24),
+      (1000 * 60 * 60 * 24),
     );
 
     const years = Math.floor(difference / 365);
@@ -89,20 +89,18 @@ module.exports = class extends SubCommand {
       : dayString;
 
     const oldest =
-            users[0].user_id === second_user.id ? second_user : first_user;
+      users[0].user_id === second_user.id ? second_user : first_user;
 
     const youngest =
-            users[1].user_id === second_user.id ? second_user : first_user;
+      users[1].user_id === second_user.id ? second_user : first_user;
 
     embed.addFields([
       {
         name: `Who is older?`,
-        value: `${oldest} is older than ${youngest} by ${differenceString} ${
-          percent_difference > 0.15 ? `(sussy)` : ""
-        }`,
+        value: `${oldest} is older than ${youngest} by ${differenceString} ${percent_difference > 0.15 ? `(sussy)` : ""}`,
       },
     ]);
 
     return { embeds: [embed] };
   }
-};
+);

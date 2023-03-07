@@ -1,36 +1,36 @@
+import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { getStarSign } from "@lib/functions";
+import { nextDate, yearsAgo } from "@lib/time";
+import { state } from "@src/app";
+import { SubCommand } from "@structs/command/subcommand";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import moment from "moment";
-import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
-import { nextDate, yearsAgo, getStarSign } from "../../../lib/functions";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "get",
-      description: "See when it is your friends birthday!",
+export default SubCommand(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "user",
-          description: "Who's birthday to get.",
-          required: false,
-        },
-      ],
+  // Info
+  {
+    name: "get",
+    description: "See when it is your friends birthday!",
 
-      throttling: {
-        duration: 60,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "user",
+        description: "Who's birthday to get.",
+        required: false,
       },
-    });
-  }
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     if (!msg.guildId) throw "No guildID???";
-
-    const client = msg.client;
     let user = msg.options.getMember("user") as GuildMember | undefined;
 
     if (!user) user = msg.member as GuildMember;
@@ -38,7 +38,7 @@ module.exports = class extends SubCommand {
     // Fetch the birthday.
     let query: { birthday: Date | null } | null;
     if (!user.user.bot) {
-      query = await client.db.birthdays.findUnique({
+      query = await state.db.birthdays.findUnique({
         where: {
           user_id_guild_id: {
             user_id: user.id,
@@ -68,7 +68,7 @@ module.exports = class extends SubCommand {
     const starSign = getStarSign(query.birthday);
 
     const userString =
-            user.id === msg.user.id ? `you were` : `<@!${user.id}> was`;
+      user.id === msg.user.id ? `you were` : `<@!${user.id}> was`;
 
     const birthdayString = moment(query.birthday).format("DD-MM-YYYY");
 
@@ -81,10 +81,10 @@ module.exports = class extends SubCommand {
       {
         name: "Info",
         value:
-                    `**Age:** ${age} years\n` +
-                    `**Next birthday:** <t:${Math.round(
-                      Number(nextBirthday) / 1000,
-                    )}:R>`,
+          `**Age:** ${age} years\n` +
+          `**Next birthday:** <t:${Math.round(
+            Number(nextBirthday) / 1000,
+          )}:R>`,
         inline: true,
       },
       {
@@ -100,4 +100,4 @@ module.exports = class extends SubCommand {
 
     return { embeds: [embed] };
   }
-};
+);

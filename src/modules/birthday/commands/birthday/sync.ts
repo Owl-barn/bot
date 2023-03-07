@@ -1,28 +1,28 @@
-import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
+import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { state } from "@src/app";
+import { SubCommand } from "@structs/command/subcommand";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "sync",
-      description: "Fetch birthday from other server.",
+export default SubCommand(
 
-      throttling: {
-        duration: 60,
-        usages: 3,
-      },
-    });
-  }
+  // Info
+  {
+    name: "sync",
+    description: "Fetch birthday from other server.",
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     if (!msg.guildId) throw "No guildID???";
 
-    const client = msg.client;
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const query = await client.db.birthdays.findFirst({
+    const query = await state.db.birthdays.findFirst({
       where: {
         user_id: msg.user.id,
         NOT: { birthday: null },
@@ -36,7 +36,7 @@ module.exports = class extends SubCommand {
       return { embeds: [response] };
     }
 
-    const result = await client.db.birthdays
+    const result = await state.db.birthdays
       .create({
         data: {
           user_id: query.user_id,
@@ -57,4 +57,5 @@ module.exports = class extends SubCommand {
       embeds: [embed.setDescription("birthday has been transferred!")],
     };
   }
-};
+
+);

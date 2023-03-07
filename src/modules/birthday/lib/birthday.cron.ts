@@ -1,10 +1,11 @@
 import { birthdays, guilds } from "@prisma/client";
+import { state } from "@src/app";
 import cron from "cron";
 import { ActivityType, TextBasedChannel } from "discord.js";
-import bot from "../bot";
-import RavenClient from "../types/ravenClient";
-import bannedUsers from "./banlist.service";
-import levelService from "./level.service";
+
+const client = state.client;
+const db = state.db;
+
 
 const birthdayCron = new cron.CronJob(
   "0 0 * * *",
@@ -17,9 +18,6 @@ const birthdayCron = new cron.CronJob(
 );
 
 export async function birthdayLoop(): Promise<void> {
-  const client = bot.getClient();
-
-  levelService.clearThrottle();
 
   console.log("running loop");
 
@@ -33,13 +31,13 @@ export async function birthdayLoop(): Promise<void> {
     url: "https://www.youtube.com/watch?v=VZrDxD0Za9I",
   });
 
-  const users = (await client.db.$queryRaw`
+  const users = (await db.$queryRaw`
     select * from birthdays
     where extract(month from birthday) = extract(month from current_timestamp)
     and extract(day from birthday) = extract(day from current_timestamp)
     `) as birthdays[];
 
-  const guildsDB = await client.db.guilds.findMany({
+  const guildsDB = await db.guilds.findMany({
     where: {
       OR: [
         { NOT: { birthday_role: null } },
@@ -48,16 +46,16 @@ export async function birthdayLoop(): Promise<void> {
     },
   });
 
-  const removeRoleUsers = await client.db.birthdays.findMany({
+  const removeRoleUsers = await db.birthdays.findMany({
     where: { has_role: true },
   });
 
   for (const user of removeRoleUsers) {
-    const data = await getData(user, guildsDB, client);
+    const data = await getData(user, guildsDB);
     if (!data) continue;
     const { guild, role, member } = data;
 
-    await client.db.birthdays
+    await db.birthdays
       .update({
         where: {
           user_id_guild_id: {
@@ -78,7 +76,7 @@ export async function birthdayLoop(): Promise<void> {
   }
 
   for (const user of users) {
-    const data = await getData(user, guildsDB, client);
+    const data = await getData(user, guildsDB);
     if (!data) continue;
     if (bannedUsers.isBanned(user.user_id)) continue;
     const { guild, role, channel, member } = data;
@@ -86,7 +84,7 @@ export async function birthdayLoop(): Promise<void> {
     if (role) {
       const addRole = await member.roles.add(role).catch(() => null);
       if (addRole) {
-        await client.db.birthdays
+        await db.birthdays
           .update({
             where: {
               user_id_guild_id: {
@@ -113,7 +111,6 @@ export async function birthdayLoop(): Promise<void> {
 async function getData(
   user: birthdays,
   guildsDB: guilds[],
-  client: RavenClient,
 ) {
   const guildDB = guildsDB.find((x) => x.guild_id === user.guild_id);
   if (!guildDB) return;
@@ -129,7 +126,7 @@ async function getData(
   if (guildDB.birthday_role) {
     role = await guild.roles.fetch(guildDB.birthday_role).catch(() => null);
     if (!role) {
-      await client.db.guilds
+      await db.guilds
         .update({
           where: { guild_id: guildDB.guild_id },
           data: { birthday_role: null },
@@ -145,7 +142,7 @@ async function getData(
       guildDB.birthday_channel,
     ) as TextBasedChannel;
     if (!channel) {
-      await client.db.guilds
+      await db.guilds
         .update({
           where: { guild_id: guildDB.guild_id },
           data: { birthday_channel: null },

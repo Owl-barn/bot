@@ -1,37 +1,38 @@
+import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { getStarSign } from "@lib/functions";
+import { nextDate, yearsAgo } from "@lib/time";
+import { state } from "@src/app";
+import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
 import moment from "moment";
-import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
-import { nextDate, yearsAgo, getStarSign } from "../../../lib/functions";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "set",
-      description: "Add your birthday to the bot!",
+export default SubCommand(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "birthday",
-          description:
-                        "your birthday date formatted like: dd/mm/yyyy",
-          required: true,
-        },
-      ],
+  // Info
+  {
+    name: "set",
+    description: "Add your birthday to the bot!",
 
-      throttling: {
-        duration: 60,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "birthday",
+        description:
+          "your birthday date formatted like: dd/mm/yyyy",
+        required: true,
       },
-    });
-  }
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     if (!msg.guildId) throw "No guildID???";
 
-    const client = msg.client;
     const birthday = msg.options.getString("birthday", true);
     const birthdayCheck = new RegExp(
       /(?<day>[0-9]{1,2})[/:-](?<month>[0-9]{1,2})[/:-](?<year>[0-9]{4})/g,
@@ -74,7 +75,7 @@ module.exports = class extends SubCommand {
       return { embeds: [failEmbed], ephemeral: true };
     }
 
-    const hasBirthday = await client.db.birthdays.findUnique({
+    const hasBirthday = await state.db.birthdays.findUnique({
       where: {
         user_id_guild_id: {
           user_id: msg.user.id,
@@ -90,7 +91,7 @@ module.exports = class extends SubCommand {
       return { embeds: [failEmbed] };
     }
 
-    const query = await client.db.birthdays.upsert({
+    const query = await state.db.birthdays.upsert({
       where: {
         user_id_guild_id: {
           user_id: msg.user.id,
@@ -123,8 +124,8 @@ module.exports = class extends SubCommand {
       {
         name: `Info`,
         value:
-                    `**Age:** ${age} years \n` +
-                    `**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`,
+          `**Age:** ${age} years \n` +
+          `**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`,
         inline: true,
       },
       {
@@ -140,7 +141,8 @@ module.exports = class extends SubCommand {
 
     return { embeds: [embed] };
   }
-};
+
+);
 
 interface dateInput {
   day: string | number;
