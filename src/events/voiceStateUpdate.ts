@@ -1,15 +1,14 @@
 import { Event } from "@src/structs/event";
-import { VoiceState } from "discord.js";
 import bannedUsers from "../lib/banlist.service";
 import GuildConfig from "../lib/guildconfig.service";
 import VCService from "../modules/privateVC.service";
 import voiceNotify from "../modules/voiceNotify";
 
-export default {
+export default Event({
   name: "voiceStateUpdate",
   once: false,
 
-  async execute(oldState: VoiceState, newState: VoiceState): Promise<void> {
+  async execute(oldState, newState) {
     if (GuildConfig.getGuild(newState.guild.id)?.banned) return;
     if (!newState.member || bannedUsers.isBanned(newState.member.id))
       return;
@@ -23,4 +22,4 @@ export default {
       .catch(console.error);
   },
 
-} as Event;
+});

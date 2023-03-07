@@ -1,12 +1,11 @@
 import { Event } from "@structs/event";
-import { GuildChannel } from "discord.js";
 
-export default {
+export default Event({
   name: "channelCreate",
   once: false,
 
-  async execute(channel: GuildChannel): Promise<void> {
+  async execute(channel) {
     channel && console.log(`new channel: ${channel.name}: ${channel.guild.name}`.yellow);
   },
 
-} as Event;
+});

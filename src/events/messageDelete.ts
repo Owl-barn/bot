@@ -1,15 +1,14 @@
 import { Event } from "@src/structs/event";
-import { Message } from "discord.js";
 import { failEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import logService, { logType } from "../modules/logger.service";
 
-export default {
+export default Event({
   name: "messageDelete",
   once: false,
 
-  async execute(msg: Message): Promise<void> {
+  async execute(msg) {
     if (!msg.guildId) return;
     if (msg.member?.user.bot) return;
     if (msg.content == "") return;
@@ -34,4 +33,4 @@ export default {
     logService.log(embed, msg.guildId, logType.EVENT);
   },
 
-} as Event;
+});

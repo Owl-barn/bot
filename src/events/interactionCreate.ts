@@ -18,11 +18,11 @@ const errorEmbed = failEmbedTemplate(
   `An error occurred, please make a report of this in [the Raven bot discord server](${state.env.SUPPORT_SERVER})`,
 );
 
-export default {
+export default Event({
   name: "interactionCreate",
   once: false,
 
-  async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+  async execute(interaction) {
     const guildconfig = GuildConfig.getGuild(interaction.guildId || "");
     if (bannedUsers.isBanned(interaction.user.id)) return;
     if (guildconfig?.banned) {
@@ -44,7 +44,7 @@ export default {
       );
     }
   },
-} as Event;
+});
 
 const quickReply = async (msg: ChatInputCommandInteraction, content: string): Promise<void> => {
   await msg

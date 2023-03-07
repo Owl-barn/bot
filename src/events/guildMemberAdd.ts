@@ -8,11 +8,11 @@ import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import logService, { logType } from "../modules/logger.service";
 
-export default {
+export default Event({
   name: "guildMemberAdd",
   once: false,
 
-  async execute(member: GuildMember): Promise<void> {
+  async execute(member) {
     const config = GuildConfig.getGuild(member.guild.id);
     if (config?.banned) return;
     if (bannedUsers.isBanned(member.id)) return;
@@ -32,7 +32,7 @@ export default {
     }
   },
 
-} as Event;
+});
 
 async function addLevelRoles(member: GuildMember) {
   const userLevel = await state.db.level.findUnique({

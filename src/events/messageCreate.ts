@@ -1,5 +1,6 @@
 import { state } from "@src/app";
-import { Guild, Message } from "discord.js";
+import { Event } from "@src/structs/event";
+import { Guild } from "discord.js";
 import AFKService from "../lib/afk.service";
 import bannedUsers from "../lib/banlist.service";
 import { yearsAgo } from "../lib/functions";
@@ -8,11 +9,11 @@ import levelService from "../lib/level.service";
 import { massWhitelist } from "../lib/mc.service";
 import registerCommand from "../modules/command.register";
 
-export default {
+export default Event({
   name: "messageCreate",
   once: false,
 
-  async execute(msg: Message): Promise<void> {
+  async execute(msg) {
     if (!msg) return;
     if (msg.author.bot) return;
     if (msg.guildId && GuildConfig.getGuild(msg.guildId)?.banned) return;
@@ -151,4 +152,4 @@ export default {
     }
 
   },
-};
+});

@@ -8,11 +8,11 @@ import GuildConfig from "../lib/guildconfig.service";
 import { getMcName, RCONHandler } from "../lib/mc.service";
 import logService, { logType } from "../modules/logger.service";
 
-export default {
+export default Event({
   name: "guildMemberRemove",
   once: false,
 
-  async execute(member: GuildMember): Promise<void> {
+  async execute(member) {
     if (!member.guild.id) return;
     const config = GuildConfig.getGuild(member.guild.id);
 
@@ -21,7 +21,7 @@ export default {
     if (config?.rcon) await whitelistLeave(member, config.rcon);
   },
 
-} as Event;
+});
 
 async function logLeave(member: GuildMember) {
   const embed = failEmbedTemplate();

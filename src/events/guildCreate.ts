@@ -1,7 +1,6 @@
 import { ButtonBuilder } from "@discordjs/builders";
 import { Event } from "@structs/event";
 import {
-  Guild,
   ActionRowBuilder,
   ButtonStyle,
   NonThreadGuildBasedChannel,
@@ -12,11 +11,11 @@ import registerCommand from "../modules/command.register";
 import { state } from "@src/app";
 
 
-export default {
+export default Event({
   name: "guildCreate",
   once: false,
 
-  async execute(guild: Guild): Promise<void> {
+  async execute(guild) {
     try {
       if (!guild) throw "failed to register guild";
       if (GuildConfig.getGuild(guild.id)?.banned) return;
@@ -96,4 +95,4 @@ export default {
       console.error(e);
     }
   },
-} as Event;
+});

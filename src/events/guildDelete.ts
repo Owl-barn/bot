@@ -1,13 +1,12 @@
 import { Event } from "@src/structs/event";
-import { Guild } from "discord.js";
 import { failEmbedTemplate } from "../lib/embedTemplate";
 import { state } from "@src/app";
 
-export default {
+export default Event({
   name: "guildDelete",
   once: false,
 
-  async execute(guild: Guild): Promise<void> {
+  async execute(guild) {
     try {
       if (!guild) throw "failed to log deleted guild";
 
@@ -30,4 +29,4 @@ export default {
       console.error(e);
     }
   },
-} as Event;
+});

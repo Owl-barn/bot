@@ -1,15 +1,15 @@
 import { Event } from "@src/structs/event";
-import { GuildMember, Message, escapeMarkdown } from "discord.js";
+import { GuildMember, escapeMarkdown } from "discord.js";
 import { warningEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import logService, { logType } from "../modules/logger.service";
 
-export default {
+export default Event({
   name: "messageUpdate",
   once: false,
 
-  async execute(old: Message, current: Message): Promise<void> {
+  async execute(old, current) {
     if (!current.guildId) return;
     if (old.member?.user.bot) return;
 
@@ -45,4 +45,4 @@ export default {
 
     logService.log(embed, current.guildId, logType.EVENT);
   },
-} as Event;
+});
