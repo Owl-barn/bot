@@ -1,51 +1,52 @@
+import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { formatInfraction } from "@modules/moderation/lib/formatinfraction";
 import { moderation_type } from "@prisma/client";
+import { state } from "@src/app";
+import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
-import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
-import formatInfraction from "../../../lib/formatinfraction";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "search",
-      description: "Search for specific moderation logs.",
+export default SubCommand(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "query",
-          description: "Search all logs with a query",
-          required: false,
-        },
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "event_type",
-          description: "What type of moderation log to search for",
-          required: false,
-          choices: [
-            { name: "ban", value: "ban" },
-            { name: "kick", value: "kick" },
-            { name: "warn", value: "ban" },
-            { name: "timeout", value: "timeout" },
-          ],
-        },
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "user",
-          description: "User to view logs for",
-          required: false,
-        },
-      ],
+  // Info
+  {
+    name: "search",
+    description: "Search for specific moderation logs.",
 
-      throttling: {
-        duration: 60,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "query",
+        description: "Search all logs with a query",
+        required: false,
       },
-    });
-  }
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "event_type",
+        description: "What type of moderation log to search for",
+        required: false,
+        choices: [
+          { name: "ban", value: "ban" },
+          { name: "kick", value: "kick" },
+          { name: "warn", value: "ban" },
+          { name: "timeout", value: "timeout" },
+        ],
+      },
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "user",
+        description: "User to view logs for",
+        required: false,
+      },
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     const user = msg.options.getUser("user");
     const query = msg.options.getString("query");
     const type = msg.options.getString("event_type");
@@ -60,7 +61,7 @@ module.exports = class extends SubCommand {
       return { embeds: [response] };
     }
 
-    const logs = await msg.client.db.moderation_log.findMany({
+    const logs = await state.db.moderation_log.findMany({
       where: {
         guild_id: msg.guildId as string,
         AND: [
@@ -109,4 +110,4 @@ module.exports = class extends SubCommand {
 
     return { embeds: [embed] };
   }
-};
+);

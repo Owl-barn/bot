@@ -1,4 +1,9 @@
+import { failEmbedTemplate } from "@lib/embedTemplate";
+import stringDurationToMs from "@lib/time";
 import { moderation_type } from "@prisma/client";
+import { state } from "@src/app";
+import { CommandGroup } from "@structs/command";
+import { Command } from "@structs/command/command";
 import {
   HexColorString,
   EmbedBuilder,
@@ -6,53 +11,50 @@ import {
   APIEmbedField,
   escapeMarkdown,
 } from "discord.js";
-import stringDurationToMs from "../../lib/durationconvert";
-import { failEmbedTemplate } from "../../lib/embedTemplate";
-import { Command, returnMessage } from "../../types/Command";
-import { CommandGroup } from "../../types/commandGroup";
-import RavenInteraction from "../../types/interaction";
 
-module.exports = class extends Command {
-  constructor() {
-    super({
-      name: "warn",
-      description: "warns a user",
-      group: CommandGroup.moderation,
+const db = state.db;
 
-      guildOnly: true,
+export default Command(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "user",
-          description: "User to warn",
-          required: true,
-        },
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "reason",
-          description: "Reason why the user is getting warned",
-          required: true,
-        },
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "duration",
-          description:
-                        "How long to keep the warn `0d0h`, default: forever",
-          required: false,
-        },
-      ],
+  // Info
+  {
+    name: "warn",
+    description: "warns a user",
+    group: CommandGroup.moderation,
 
-      throttling: {
-        duration: 30,
-        usages: 3,
+    guildOnly: true,
+
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "user",
+        description: "User to warn",
+        required: true,
       },
-    });
-  }
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "reason",
+        description: "Reason why the user is getting warned",
+        required: true,
+      },
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "duration",
+        description:
+          "How long to keep the warn `0d0h`, default: forever",
+        required: false,
+      },
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 30,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     if (!msg.guild) throw "No guild on warn command";
-    const db = msg.client.db;
 
     const target = msg.options.getUser("user", true);
     const duration = msg.options.getString("duration");
@@ -150,4 +152,4 @@ module.exports = class extends Command {
 
     return { embeds: [embed] };
   }
-};
+);

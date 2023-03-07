@@ -1,7 +1,7 @@
 import { moderation_log, moderation_type } from "@prisma/client";
-import { msToString } from "./durationconvert";
+import { msToString } from "@lib/time";
 
-export default function formatInfraction(
+export function formatInfraction(
   infraction: moderation_log,
   includeUser = false,
 ): string {
@@ -23,11 +23,11 @@ export default function formatInfraction(
 
   return (
     `**ID:** \`${infraction.uuid}\`\n` +
-        `**type:** \`${infraction.moderation_type}\`\n` +
-        user +
-        `**mod:** <@!${infraction.moderator}>\n` +
-        `**reason:** *${infraction.reason}*\n` +
-        expiryString +
-        `**Date:** <t:${Number(infraction.created) / 1000}:R>`
+    `**type:** \`${infraction.moderation_type}\`\n` +
+    user +
+    `**mod:** <@!${infraction.moderator}>\n` +
+    `**reason:** *${infraction.reason}*\n` +
+    expiryString +
+    `**Date:** <t:${Number(infraction.created) / 1000}:R>`
   );
 }

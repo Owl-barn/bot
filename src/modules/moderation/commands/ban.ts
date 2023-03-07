@@ -1,64 +1,64 @@
+import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { getAvatar } from "@lib/functions";
+import stringDurationToMs from "@lib/time";
 import { moderation_type } from "@prisma/client";
+import { state } from "@src/app";
+import { CommandGroup } from "@structs/command";
+import { Command } from "@structs/command/command";
 import {
   ApplicationCommandOptionType,
   APIEmbedField,
   escapeMarkdown,
 } from "discord.js";
-import stringDurationToMs from "../../lib/durationconvert";
-import { embedTemplate, failEmbedTemplate } from "../../lib/embedTemplate";
-import { getAvatar } from "../../lib/functions";
-import GuildConfig from "../../lib/guildconfig.service";
-import { Command, returnMessage } from "../../types/Command";
-import { CommandGroup } from "../../types/commandGroup";
-import RavenInteraction from "../../types/interaction";
 
-module.exports = class extends Command {
-  constructor() {
-    super({
-      name: "ban",
-      description: "bans a user",
-      group: CommandGroup.moderation,
+export default Command(
 
-      guildOnly: true,
+  // Info
+  {
+    name: "ban",
+    description: "bans a user",
+    group: CommandGroup.moderation,
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "user",
-          description: "User to ban",
-          required: true,
-        },
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "reason",
-          description: "Reason why the user is getting banned",
-          required: true,
-        },
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "duration",
-          description: "Duration of the ban `0d0h`",
-          required: false,
-        },
-        {
-          type: ApplicationCommandOptionType.Integer,
-          name: "delete",
-          description:
-                        "Number of days to delete messages, default: 1",
-          required: false,
-        },
-      ],
+    guildOnly: true,
 
-      botPermissions: ["BanMembers"],
-
-      throttling: {
-        duration: 30,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "user",
+        description: "User to ban",
+        required: true,
       },
-    });
-  }
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "reason",
+        description: "Reason why the user is getting banned",
+        required: true,
+      },
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "duration",
+        description: "Duration of the ban `0d0h`",
+        required: false,
+      },
+      {
+        type: ApplicationCommandOptionType.Integer,
+        name: "delete",
+        description:
+          "Number of days to delete messages, default: 1",
+        required: false,
+      },
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    botPermissions: ["BanMembers"],
+
+    throttling: {
+      duration: 30,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     if (!msg.guild) throw "No guild on ban??";
     let reason = msg.options.getString("reason");
     const days = msg.options.getInteger("delete") ?? 1;
@@ -75,7 +75,7 @@ module.exports = class extends Command {
     if (!target)
       return { embeds: [failEmbed.setDescription("No user provided")] };
 
-    const guildInfo = GuildConfig.getGuild(msg.guild.id);
+    const guild = await state.db.guilds.findUnique({ where: { guild_id: msg.guild.id } });
 
     const member = await msg.guild.members
       .fetch(target.id)
@@ -83,8 +83,8 @@ module.exports = class extends Command {
 
     if (member) {
       const isStaff =
-                guildInfo?.staff_role &&
-                member.roles.cache.get(guildInfo.staff_role);
+        guild?.staff_role &&
+        member.roles.cache.get(guild.staff_role);
 
       if (!member.bannable || isStaff)
         return {
@@ -102,7 +102,7 @@ module.exports = class extends Command {
       expiry = new Date(Date.now() + durationMs);
     }
 
-    await msg.client.db.moderation_log.create({
+    await state.db.moderation_log.create({
       data: {
         expiry,
         reason: reason,
@@ -128,12 +128,12 @@ module.exports = class extends Command {
 
     embed.setTitle(`You have been banned from "${msg.guild.name}"`);
 
-    if (guildInfo?.unban_notice) {
+    if (guild?.unban_notice) {
       embed.setFields(fields);
       embed.addFields([
         {
           name: "Appeal notice",
-          value: guildInfo.unban_notice,
+          value: guild.unban_notice,
         },
       ]);
     }
@@ -164,4 +164,5 @@ module.exports = class extends Command {
 
     return { embeds: [embed] };
   }
-};
+
+);

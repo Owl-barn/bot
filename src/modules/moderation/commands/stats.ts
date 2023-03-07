@@ -1,40 +1,40 @@
-import {
-  InteractionReplyOptions,
-  ApplicationCommandOptionType,
-} from "discord.js";
+import { embedTemplate } from "@lib/embedTemplate";
+import { state } from "@src/app";
+import { CommandGroup } from "@structs/command";
+import { Command } from "@structs/command/command";
+import { ApplicationCommandOptionType } from "discord.js";
 import moment from "moment";
-import { embedTemplate } from "../../lib/embedTemplate";
-import { Command } from "../../types/Command";
-import { CommandGroup } from "../../types/commandGroup";
-import RavenInteraction from "../../types/interaction";
 
-module.exports = class statsCommand extends Command {
-  constructor() {
-    super({
-      name: "stats",
-      description: "shows bot stats",
-      group: CommandGroup.moderation,
+const db = state.db;
 
-      guildOnly: false,
-      premium: false,
+export default Command(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.Boolean,
-          name: "global",
-          description: "display global stats",
-          required: false,
-        },
-      ],
+  // Info
+  {
+    name: "stats",
+    description: "shows bot stats",
+    group: CommandGroup.moderation,
 
-      throttling: {
-        duration: 10,
-        usages: 2,
+    guildOnly: false,
+    premium: 0,
+
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.Boolean,
+        name: "global",
+        description: "display global stats",
+        required: false,
       },
-    });
-  }
+    ],
 
-  async execute(msg: RavenInteraction): Promise<InteractionReplyOptions> {
+    throttling: {
+      duration: 10,
+      usages: 2,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     const client = msg.client;
     const global = msg.options.getBoolean("global");
 
@@ -43,7 +43,7 @@ module.exports = class statsCommand extends Command {
       0,
     );
 
-    const commandUsage = await client.db.command_log.groupBy({
+    const commandUsage = await db.command_log.groupBy({
       by: ["command_name"],
       _count: true,
       orderBy: { _count: { command_name: "desc" } },
@@ -51,14 +51,14 @@ module.exports = class statsCommand extends Command {
       where: global ? {} : { guild_id: msg.guildId as string },
     });
 
-    const musicPlayed = await client.db.songs_played.aggregate({
+    const musicPlayed = await db.songs_played.aggregate({
       _count: { uuid: true },
       _avg: { play_duration: true, song_duration: true },
       _sum: { play_duration: true, song_duration: true },
       where: global ? {} : { guild_id: msg.guildId as string },
     });
 
-    const birthdays = await client.db.birthdays.count({
+    const birthdays = await db.birthdays.count({
       where: global ? {} : { guild_id: msg.guildId as string },
     });
 
@@ -78,8 +78,8 @@ module.exports = class statsCommand extends Command {
         name: "Memory usage",
         value: `${(
           process.memoryUsage().heapUsed /
-                    1024 /
-                    1024
+          1024 /
+          1024
         ).toFixed(2)}MB`,
         inline: true,
       },
@@ -92,7 +92,7 @@ module.exports = class statsCommand extends Command {
       },
       {
         name: "Commands",
-        value: `${client.commands.size} loaded modules`,
+        value: `${state.commands.size} loaded modules`,
         inline: true,
       },
       {
@@ -123,11 +123,10 @@ module.exports = class statsCommand extends Command {
         )}/${Math.round(
           (musicPlayed._avg.song_duration || 0) / 60,
         )}\` minutes
-                **sum:** \`${Math.round(
-    (musicPlayed._sum.play_duration || 0) / 60,
-  )}/${Math.round(
-  (musicPlayed._sum.song_duration || 0) / 60,
-)}\` minutes
+                **sum:** \`
+                ${Math.round((musicPlayed._sum.play_duration || 0) / 60,)}/
+                ${Math.round((musicPlayed._sum.song_duration || 0) / 60,)}
+                \` minutes
                 **amount:** \`${musicPlayed._count.uuid}\` songs played
             `,
       });
@@ -137,4 +136,4 @@ module.exports = class statsCommand extends Command {
 
     return { embeds: [embed] };
   }
-};
+);

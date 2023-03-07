@@ -1,53 +1,53 @@
+import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { getAvatar } from "@lib/functions";
+import stringDurationToMs, { msToString } from "@lib/time";
 import { moderation_type } from "@prisma/client";
+import { state } from "@src/app";
+import { SubCommand } from "@structs/command/subcommand";
 import {
   ApplicationCommandOptionType,
   escapeMarkdown,
   GuildMember,
 } from "discord.js";
-import stringDurationToMs, { msToString } from "../../../lib/durationconvert";
-import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
-import { getAvatar } from "../../../lib/functions";
-import GuildConfig from "../../../lib/guildconfig.service";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "set",
-      description: "Set a timeout for a user",
+export default SubCommand(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "user",
-          description: "User to put on timeout",
-          required: true,
-        },
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "duration",
-          description: "for how long",
-          required: true,
-        },
-        {
-          type: ApplicationCommandOptionType.String,
-          name: "reason",
-          description: "why?",
-          required: false,
-        },
-      ],
+  // Info
+  {
+    name: "set",
+    description: "Set a timeout for a user",
 
-      botPermissions: ["ModerateMembers"],
-
-      throttling: {
-        duration: 60,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "user",
+        description: "User to put on timeout",
+        required: true,
       },
-    });
-  }
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "duration",
+        description: "for how long",
+        required: true,
+      },
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "reason",
+        description: "why?",
+        required: false,
+      },
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    botPermissions: ["ModerateMembers"],
+
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     if (!msg.guild) throw "No guild on timeout command";
     const timeoutLimit = 2419200000;
 
@@ -60,10 +60,10 @@ module.exports = class extends SubCommand {
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const guildInfo = GuildConfig.getGuild(msg.guild.id);
+    const guild = await state.db.guilds.findUnique({ where: { guild_id: msg.guild.id } });
     const isStaff =
-            guildInfo?.staff_role &&
-            target.roles.cache.get(guildInfo.staff_role);
+      guild?.staff_role &&
+      target.roles.cache.get(guild.staff_role);
 
     if (!target.moderatable || isStaff)
       return {
@@ -123,7 +123,7 @@ module.exports = class extends SubCommand {
       },
     ]);
 
-    await msg.client.db.moderation_log.create({
+    await state.db.moderation_log.create({
       data: {
         expiry: new Date(Date.now() + durationMs),
         reason,
@@ -136,4 +136,4 @@ module.exports = class extends SubCommand {
 
     return { embeds: [embed] };
   }
-};
+);

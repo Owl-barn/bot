@@ -1,39 +1,40 @@
+import { failEmbedTemplate } from "@lib/embedTemplate";
+import { env } from "@lib/env";
+import { getAvatar } from "@lib/functions";
+import { formatInfraction } from "@modules/moderation/lib/formatinfraction";
 import { moderation_type } from "@prisma/client";
+import { state } from "@src/app";
+import { SubCommand } from "@structs/command/subcommand";
 import {
   ApplicationCommandOptionType,
   EmbedBuilder,
   HexColorString,
 } from "discord.js";
-import { failEmbedTemplate } from "../../../lib/embedTemplate";
-import formatInfraction from "../../../lib/formatinfraction";
-import { getAvatar } from "../../../lib/functions";
-import env from "../../../modules/env";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "get",
-      description: "View the infractions a user has had.",
+export default SubCommand(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "user",
-          description: "User to view infractions for",
-          required: false,
-        },
-      ],
+  // Info
+  {
+    name: "get",
+    description: "View the infractions a user has had.",
 
-      throttling: {
-        duration: 60,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "user",
+        description: "User to view infractions for",
+        required: false,
       },
-    });
-  }
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     let target = msg.options.getUser("user");
     target = target ?? msg.user;
 
@@ -42,7 +43,7 @@ module.exports = class extends SubCommand {
     if (!target)
       return { embeds: [failEmbed.setDescription("No user provided")] };
 
-    const logs = await msg.client.db.moderation_log.findMany({
+    const logs = await state.db.moderation_log.findMany({
       where: {
         user: target.id,
         guild_id: msg.guildId as string,
@@ -99,4 +100,4 @@ module.exports = class extends SubCommand {
 
     return { embeds: [embed] };
   }
-};
+);
