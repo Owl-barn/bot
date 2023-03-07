@@ -1,37 +1,38 @@
+import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
+import { state } from "@src/app";
+import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType, VoiceChannel } from "discord.js";
-import { embedTemplate, failEmbedTemplate } from "../../../lib/embedTemplate";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "info",
-      description: "Get information about a private room.",
+export default SubCommand(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.Channel,
-          name: "room",
-          description: "private room to get information about",
-          required: true,
-        },
-      ],
+  // Info
+  {
+    name: "info",
+    description: "Get information about a private room.",
 
-      throttling: {
-        duration: 60,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.Channel,
+        name: "room",
+        description: "private room to get information about",
+        required: true,
       },
-    });
-  }
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     let room = msg.options.getChannel("room", true);
 
     const fail = failEmbedTemplate();
     const embed = embedTemplate();
 
-    const privateRoom = await msg.client.db.private_vc.findFirst({
+    const privateRoom = await state.db.private_vc.findFirst({
       where: {
         OR: [
           { main_channel_id: room.id },
@@ -61,4 +62,4 @@ module.exports = class extends SubCommand {
 
     return { embeds: [embed] };
   }
-};
+);

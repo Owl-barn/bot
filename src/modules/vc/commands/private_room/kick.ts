@@ -1,32 +1,32 @@
+import { embedTemplate } from "@lib/embedTemplate";
+import { fetchRoom } from "@modules/vc/lib/fetch_room";
+import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType, GuildMember } from "discord.js";
-import { embedTemplate } from "../../../lib/embedTemplate";
-import fetchRoom from "../../../lib/fetch_room";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "kick",
-      description: "kick a user from your private room.",
+export default SubCommand(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "user",
-          description: "user to kick from the room",
-          required: true,
-        },
-      ],
+  // Info
+  {
+    name: "kick",
+    description: "kick a user from your private room.",
 
-      throttling: {
-        duration: 60,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "user",
+        description: "user to kick from the room",
+        required: true,
       },
-    });
-  }
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     const member = msg.options.getMember("user") as GuildMember | null;
     if (member == null) return { content: "Member not found" };
     if (member.id == msg.user.id)
@@ -51,4 +51,4 @@ module.exports = class extends SubCommand {
     );
     return { embeds: [responseEmbed], ephemeral: true };
   }
-};
+);

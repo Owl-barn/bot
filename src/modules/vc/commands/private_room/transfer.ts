@@ -1,38 +1,38 @@
+import { embedTemplate } from "@lib/embedTemplate";
+import { fetchRoom } from "@modules/vc/lib/fetch_room";
+import { state } from "@src/app";
+import { SubCommand } from "@structs/command/subcommand";
 import {
   ApplicationCommandOptionType,
   GuildMember,
   PermissionOverwriteOptions,
   VoiceChannel,
 } from "discord.js";
-import { embedTemplate } from "../../../lib/embedTemplate";
-import fetchRoom from "../../../lib/fetch_room";
-import GuildConfig from "../../../lib/guildconfig.service";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "transfer",
-      description: "transfer room to another user",
+export default SubCommand(
 
-      arguments: [
-        {
-          type: ApplicationCommandOptionType.User,
-          name: "user",
-          description: "user to transfer room to",
-          required: true,
-        },
-      ],
+  // Info
+  {
+    name: "transfer",
+    description: "transfer room to another user",
 
-      throttling: {
-        duration: 60,
-        usages: 3,
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.User,
+        name: "user",
+        description: "user to transfer room to",
+        required: true,
       },
-    });
-  }
+    ],
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     const member = msg.options.getMember("user") as GuildMember | null;
     if (member == null) return { content: "User not found" };
     if (member.user.bot)
@@ -75,7 +75,7 @@ module.exports = class extends SubCommand {
       );
     }
 
-    const updated = await msg.client.db.private_vc.update({
+    const updated = await state.db.private_vc.update({
       where: {
         user_id_guild_id: {
           user_id: msg.user.id,
@@ -93,4 +93,4 @@ module.exports = class extends SubCommand {
 
     return { embeds: [responseEmbed] };
   }
-};
+);

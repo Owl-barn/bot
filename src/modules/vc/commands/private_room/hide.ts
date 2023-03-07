@@ -1,22 +1,22 @@
-import { embedTemplate } from "../../../lib/embedTemplate";
-import fetchRoom from "../../../lib/fetch_room";
-import { returnMessage, SubCommand } from "../../../types/Command";
-import RavenInteraction from "../../../types/interaction";
+import { embedTemplate } from "@lib/embedTemplate";
+import { fetchRoom } from "@modules/vc/lib/fetch_room";
+import { SubCommand } from "@structs/command/subcommand";
 
-module.exports = class extends SubCommand {
-  constructor() {
-    super({
-      name: "hide",
-      description: "hide/show room",
+export default SubCommand(
 
-      throttling: {
-        duration: 60,
-        usages: 3,
-      },
-    });
-  }
+  // Info
+  {
+    name: "hide",
+    description: "hide/show room",
 
-  async execute(msg: RavenInteraction): Promise<returnMessage> {
+    throttling: {
+      duration: 60,
+      usages: 3,
+    },
+  },
+
+  // Execute
+  async (msg) => {
     const { room } = await fetchRoom(msg).catch((x) =>
       x == "noRoom" ? { room: null, dbRoom: null } : Promise.reject(x),
     );
@@ -41,4 +41,5 @@ module.exports = class extends SubCommand {
 
     return { embeds: [responseEmbed] };
   }
-};
+
+);
