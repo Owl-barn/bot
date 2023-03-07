@@ -1,25 +1,22 @@
 import { ChannelType, Snowflake } from "discord.js";
 import Owlet from "./owlet";
-import wsResponse from "../types/wsResponse";
 import WS from "ws";
 import fs from "fs";
 import { IncomingMessage } from "http";
-import QueueEvent from "../types/queueevent";
-import Bot from "../bot";
-import { embedTemplate, failEmbedTemplate } from "../lib/embedTemplate";
-import { getAvatar } from "../lib/functions";
-import env from "./env";
 import path from "path";
+import { embedTemplate, failEmbedTemplate } from "@src/lib/embedTemplate";
+import { getAvatar } from "@src/lib/functions";
+import { QueueEvent } from "../structs/queue";
+import { Credentials, wsResponse } from "../structs/websocket";
+import { state } from "@src/app";
 
-interface owletCredentials {
-  id: string;
-  token: string;
-}
+const env = state.env;
+const client = state.client;
 
-export default class musicService {
+export default class Controller {
   private bots: Map<string, Owlet> = new Map();
   private wss: WS.Server;
-  private owlets: owletCredentials[] = [];
+  private owlets: Credentials[] = [];
 
   constructor() {
     this.wss = new WS.Server({ port: env.OWLET_PORT });
@@ -33,8 +30,8 @@ export default class musicService {
       );
 
       const owletJson = JSON.parse(buffer.toString()) as
-                | owletCredentials[]
-                | undefined;
+        | Credentials[]
+        | undefined;
 
       if (!owletJson) throw "No owlets found.";
       this.owlets = owletJson;
@@ -51,9 +48,9 @@ export default class musicService {
 
     console.log(
       " ✓ Loaded Owlet service with ".green.bold +
-                this.owlets.length.toString().cyan +
-                " owlets on port ".green.bold +
-                env.OWLET_PORT.toString().cyan,
+      this.owlets.length.toString().cyan +
+      " owlets on port ".green.bold +
+      env.OWLET_PORT.toString().cyan,
     );
   }
 
@@ -144,7 +141,6 @@ export default class musicService {
     const owlet = new Owlet(id, ws, guilds);
 
     owlet.on(QueueEvent.SongStart, async (track, channelId, guildId) => {
-      const client = Bot.getClient();
       const guild = client.guilds.cache.get(guildId);
       if (!guild) return;
       const channel = await client.channels.fetch(channelId);
@@ -184,7 +180,6 @@ export default class musicService {
     });
 
     owlet.on(QueueEvent.Shutdown, async (guildId, channelId) => {
-      const client = Bot.getClient();
       const guild = client.guilds.cache.get(guildId);
       if (!guild) return;
       const channel = await client.channels.fetch(channelId);

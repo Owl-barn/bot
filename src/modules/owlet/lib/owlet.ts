@@ -1,23 +1,16 @@
+import { state } from "@src/app";
 import WebSocket from "ws";
-import Queue from "../types/queue";
-import QueueEvent from "../types/queueevent";
-import Track from "../types/track";
-import wsRequest from "../types/wsRequest";
-import env from "./env";
+import { QueueEvent, Queue } from "../structs/queue";
+import { Track } from "../structs/track";
+import { wsRequest } from "../structs/websocket";
 
 export default class Owlet {
   private id: string;
   private guilds: Map<string, Guild> = new Map();
   private shutdown = false;
   private socket: WebSocket;
-  private promises: Map<
-  string,
-  Record<"resolve" | "reject", (x: any) => void>
-  > = new Map();
-  private callbacks: Map<
-  string,
-  ((...args: any[]) => Promise<void> | void)[]
-  > = new Map();
+  private promises: Map<string, Record<"resolve" | "reject", (x: any) => void>> = new Map();
+  private callbacks: Map<string, ((...args: any[]) => Promise<void> | void)[]> = new Map();
 
   public isDisabled = (): boolean => this.shutdown;
 
@@ -117,7 +110,7 @@ export default class Owlet {
      * @returns promise of the owlet's response.
      */
   public async send<T>(message: wsRequest): Promise<T> {
-    if (env.isDevelopment) console.log("Sent".yellow.bold, message);
+    if (state.env.isDevelopment) console.log("Sent".yellow.bold, message);
 
     this.socket.send(JSON.stringify(message));
     const result = new Promise<T>((resolve, reject) => {
