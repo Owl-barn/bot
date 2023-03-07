@@ -1,13 +1,13 @@
+import { Event } from "@src/structs/event";
 import { Message } from "discord.js";
 import { failEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import logService, { logType } from "../modules/logger.service";
-import RavenEvent from "../types/event";
 
-export default class InteractionCreate implements RavenEvent {
-  name = "messageDelete";
-  once = false;
+export default {
+  name: "messageDelete",
+  once: false,
 
   async execute(msg: Message): Promise<void> {
     if (!msg.guildId) return;
@@ -19,9 +19,7 @@ export default class InteractionCreate implements RavenEvent {
     const embed = failEmbedTemplate();
 
     embed.setTitle("Message Deleted");
-    embed.setDescription(
-      `<#${msg.channelId}>\n` + `\`\`\`${msg.content}\`\`\``,
-    );
+    embed.setDescription(`<#${msg.channelId}>\n` + `\`\`\`${msg.content}\`\`\``);
 
     const member = msg.member;
     if (member) {
@@ -34,5 +32,6 @@ export default class InteractionCreate implements RavenEvent {
     }
 
     logService.log(embed, msg.guildId, logType.EVENT);
-  }
-}
+  },
+
+} as Event;

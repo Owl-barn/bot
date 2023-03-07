@@ -1,16 +1,16 @@
 import { rcon } from "@prisma/client";
+import { state } from "@src/app";
+import { Event } from "@src/structs/event";
 import { GuildMember } from "discord.js";
 import { failEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import { getMcName, RCONHandler } from "../lib/mc.service";
 import logService, { logType } from "../modules/logger.service";
-import RavenEvent from "../types/event";
-import RavenClient from "../types/ravenClient";
 
-export default class implements RavenEvent {
-  name = "guildMemberRemove";
-  once = false;
+export default {
+  name: "guildMemberRemove",
+  once: false,
 
   async execute(member: GuildMember): Promise<void> {
     if (!member.guild.id) return;
@@ -19,8 +19,9 @@ export default class implements RavenEvent {
     if (config?.banned) return;
     if (config?.log_join_leave) logLeave(member);
     if (config?.rcon) await whitelistLeave(member, config.rcon);
-  }
-}
+  },
+
+} as Event;
 
 async function logLeave(member: GuildMember) {
   const embed = failEmbedTemplate();
@@ -30,8 +31,8 @@ async function logLeave(member: GuildMember) {
   embed.setTitle("Member Left");
   embed.setDescription(
     `**User:** <@${member.id}>\n` +
-            `**Account creation:** <t:${createdAt}:R>\n` +
-            isBot,
+    `**Account creation:** <t:${createdAt}:R>\n` +
+    isBot,
   );
   embed.setFooter({
     text: `${member.user.tag} <@${member.id}>`,
@@ -42,7 +43,7 @@ async function logLeave(member: GuildMember) {
 }
 
 async function whitelistLeave(member: GuildMember, config: rcon) {
-  const whitelist = await (member.client as RavenClient).db.whitelist
+  const whitelist = await state.db.whitelist
     .delete({
       where: {
         whitelist_guild_user_un: {

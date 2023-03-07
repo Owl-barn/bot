@@ -1,4 +1,5 @@
 import { ButtonBuilder } from "@discordjs/builders";
+import { Event } from "@structs/event";
 import {
   Guild,
   ActionRowBuilder,
@@ -8,25 +9,21 @@ import {
 import { embedTemplate } from "../lib/embedTemplate";
 import GuildConfig from "../lib/guildconfig.service";
 import registerCommand from "../modules/command.register";
-import env from "../modules/env";
-import RavenEvent from "../types/event";
-import RavenClient from "../types/ravenClient";
+import { state } from "@src/app";
 
-export default class implements RavenEvent {
-  name = "guildCreate";
-  once = false;
+
+export default {
+  name: "guildCreate",
+  once: false,
 
   async execute(guild: Guild): Promise<void> {
     try {
       if (!guild) throw "failed to register guild";
       if (GuildConfig.getGuild(guild.id)?.banned) return;
 
-      console.log(
-        `Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`
-          .red.bold,
-      );
+      console.log(`Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.red.bold);
 
-      await registerCommand(guild.client as RavenClient, guild);
+      await registerCommand(guild.client, guild);
 
       // Notify bot owner.
       const notifEmbed = embedTemplate(
@@ -34,15 +31,15 @@ export default class implements RavenEvent {
       );
       notifEmbed.setTitle("New guild");
 
-      const owner = await guild.client.users.fetch(env.OWNER_ID);
+      const owner = await guild.client.users.fetch(state.env.OWNER_ID);
 
       await owner.send({ embeds: [notifEmbed] }).catch(() => null);
 
       // Attempt to find a welcome channel.
       let channel: NonThreadGuildBasedChannel | null =
-                guild.systemChannel ??
-                guild.publicUpdatesChannel ??
-                guild.widgetChannel;
+        guild.systemChannel ??
+        guild.publicUpdatesChannel ??
+        guild.widgetChannel;
 
       // Find first text channel with write perms.
       if (!channel) {
@@ -71,19 +68,19 @@ export default class implements RavenEvent {
         )
         .setThumbnail(
           guild.client.user?.avatarURL() ||
-                        (guild.client.user?.defaultAvatarURL as string),
+          (guild.client.user?.defaultAvatarURL as string),
         )
         .setTimestamp();
 
       const donateButton = new ButtonBuilder()
         .setLabel("Donation")
         .setStyle(ButtonStyle.Link)
-        .setURL(env.DONATION_URL);
+        .setURL(state.env.DONATION_URL);
 
       const discordButton = new ButtonBuilder()
         .setLabel("Discord")
         .setStyle(ButtonStyle.Link)
-        .setURL(env.SUPPORT_SERVER);
+        .setURL(state.env.SUPPORT_SERVER);
 
       const component = new ActionRowBuilder().setComponents([
         donateButton,
@@ -98,5 +95,5 @@ export default class implements RavenEvent {
     } catch (e) {
       console.error(e);
     }
-  }
-}
+  },
+} as Event;

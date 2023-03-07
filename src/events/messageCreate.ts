@@ -1,19 +1,16 @@
-import { Guild, Message, TextChannel } from "discord.js";
+import { state } from "@src/app";
+import { Guild, Message } from "discord.js";
 import AFKService from "../lib/afk.service";
 import bannedUsers from "../lib/banlist.service";
-import prisma from "../lib/db.service";
 import { yearsAgo } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
 import { massWhitelist } from "../lib/mc.service";
 import registerCommand from "../modules/command.register";
-import env from "../modules/env";
-import RavenEvent from "../types/event";
-import RavenClient from "../types/ravenClient";
 
-export default class InteractionCreate implements RavenEvent {
-  name = "messageCreate";
-  once = false;
+export default {
+  name: "messageCreate",
+  once: false,
 
   async execute(msg: Message): Promise<void> {
     if (!msg) return;
@@ -21,181 +18,137 @@ export default class InteractionCreate implements RavenEvent {
     if (msg.guildId && GuildConfig.getGuild(msg.guildId)?.banned) return;
     if (bannedUsers.isBanned(msg.author.id)) return;
 
-    levelService.message(msg).catch((x) => console.error(x));
-    AFKService.onMessage(msg).catch((x) => console.error(x));
-    const client = msg.client as RavenClient;
+    const client = msg.client;
 
-    if (msg.content === "-cookie" && msg.guildId === "396330910162616321") {
-      msg.reply("$suppressErrors").catch((x) => console.log(x));
-      return;
-    }
+    levelService.message(msg).catch(console.error);
+    AFKService.onMessage(msg).catch(console.error);
 
-    if (
-      msg.content === "masswhitelist*" &&
-            msg.member?.id === env.OWNER_ID
-    ) {
-      await massWhitelist(msg.guild as Guild, client.db);
-      msg.reply("Mass whitelisted!");
-      return;
-    }
+    if (msg.member?.id !== state.env.OWNER_ID) return;
 
-    if (msg.content === "spin*") {
-      if (!msg.member?.voice.channel?.members) return;
-      const members = msg.member?.voice.channel?.members
-        .map((x) => (!x.user.bot ? x : undefined))
-        .filter((x) => x !== undefined);
+    switch (msg.content) {
 
-      const result = members[Math.floor(Math.random() * members.length)];
-
-      await msg.reply(`${result!.displayName}`);
-      return;
-    }
-
-    if (msg.content === "chaos*" && msg.member?.id === env.OWNER_ID) {
-      await client.musicService.broadcast({
-        command: "Play",
-        mid: msg.id,
-        data: {
-          query: "Funkytown",
-          guildId: msg.guild?.id,
-          channelId: msg.member?.voice.channelId,
-          userId: msg.member?.id,
-          force: true,
-        },
-      });
-    }
-
-    if (msg.content === "reset*" && msg.member?.id === env.OWNER_ID) {
-      await msg.guild?.commands.set([]);
-      await msg.client.application?.commands.set([]);
-      return;
-    }
-
-    if (msg.content === "vc*" && msg.member?.id === env.OWNER_ID) {
-      const vcs = await client.db.private_vc.findMany({
-        where: { guild_id: msg.guildId as string },
-      });
-
-      for (const vc of vcs) {
-        const main = await msg.guild?.channels.fetch(
-          vc.main_channel_id,
-        );
-        const wait = await msg.guild?.channels.fetch(
-          vc.wait_channel_id,
-        );
-        await main?.delete().catch((x) => console.log(x));
-        await wait?.delete().catch((x) => console.log(x));
+      case "masswhitelist*": {
+        await massWhitelist(msg.guild as Guild, state.db);
+        msg.reply("Mass whitelisted!");
         return;
       }
 
-      msg.reply("Deleted private roomsm.");
-    }
+      case "spin*": {
+        if (!msg.member?.voice.channel?.members) return;
+        const members = msg.member?.voice.channel?.members
+          .map((x) => (!x.user.bot ? x : undefined))
+          .filter((x) => x !== undefined);
 
-    if (msg.content === "perms*" && msg.member?.id === env.OWNER_ID) {
-      console.log(msg.guild?.members.me?.permissions.toArray());
-      return;
-    }
+        const result = members[Math.floor(Math.random() * members.length)];
 
-    if (msg.content === "update*" && msg.member?.id === env.OWNER_ID) {
-      const guilds = client.guilds.cache;
-      const start = Date.now();
-      const message = await msg.reply("updating...");
-
-      for (const guild of guilds.values()) {
-        await registerCommand(client, guild);
+        await msg.reply(`${result!.displayName}`);
+        return;
       }
 
-      await message.edit(
-        `Updated all ${guilds.size} server perms, took \`${
-          Date.now() - start
-        }ms\``,
-      );
-      return;
-    }
+      case "chaos*": {
+        await state.musicService.broadcast({
+          command: "Play",
+          mid: msg.id,
+          data: {
+            query: "Funkytown",
+            guildId: msg.guild?.id,
+            channelId: msg.member?.voice.channelId,
+            userId: msg.member?.id,
+            force: true,
+          },
+        });
 
-    if (msg.content === "fix*" && msg.member?.id === env.OWNER_ID) {
-      if (!msg.guild) return;
-      await client.db.guilds.createMany({
-        data: { guild_id: msg.guild.id },
-        skipDuplicates: true,
-      });
-    }
-
-    if (msg.content === "innit*" && msg.member?.id === env.OWNER_ID) {
-      const start = Date.now();
-      await registerCommand(client, msg.guild as Guild);
-      msg.reply(
-        `Updated this server's perms, took \`${Date.now() - start}ms\``,
-      );
-    }
-
-    if (msg.content.startsWith("say*") && msg.member?.id === env.OWNER_ID) {
-      const channel = client.guilds.cache
-        .get("396330910162616321")
-        ?.channels.cache.get("504696026201063444") as TextChannel;
-      await channel.send(msg.content.substring(5, msg.content.length));
-    }
-
-    if (msg.content.startsWith("age*") && msg.member?.id === env.OWNER_ID) {
-      let birthdays = await prisma.birthdays.findMany({
-        where: { guild_id: msg.guildId as string },
-      });
-      let combined = 0;
-      const currentYear = new Date().getFullYear();
-      birthdays = birthdays.filter(
-        (x) =>
-          x.birthday && x.birthday.getFullYear() > currentYear - 40,
-      );
-      birthdays = birthdays.sort(
-        (x, y) => Number(y.birthday) - Number(x.birthday),
-      );
-      birthdays.forEach(
-        (x) => (combined += yearsAgo(x.birthday as Date)),
-      );
-      const average = Math.round(combined / birthdays.length);
-      msg.reply(
-        `Average: ${average}\nMedian: ${yearsAgo(
-          birthdays[Math.round(birthdays.length / 2)]
-            .birthday as Date,
-        )}\nRange: ${yearsAgo(
-          birthdays[0].birthday as Date,
-        )} - ${yearsAgo(
-          birthdays[birthdays.length - 1].birthday as Date,
-        )}`,
-      );
-      return;
-    }
-
-    if (
-      msg.content === "levels*" &&
-            (msg.member?.id === env.OWNER_ID ||
-                msg.member?.id === "174689636310974464")
-    ) {
-      const staff = msg.guild?.roles.cache
-        .get("399435813580046356")
-        ?.members.map((x) => x.id);
-      if (!staff) return;
-      const staffLevels = await client.db.level.findMany({
-        where: {
-          user_id: { in: staff },
-          guild_id: "396330910162616321",
-        },
-        orderBy: { experience: "desc" },
-      });
-
-      let response = "levels: \n";
-
-      for (const x of staffLevels) {
-        const member = await msg.guild?.members.fetch(x.user_id);
-        if (!member) continue;
-        const level = levelService.calculateLevel(x.experience);
-        response += `${member?.user.username} - ${level.level} - ${(
-          (level.currentXP / level.levelXP) *
-                    100
-        ).toFixed(2)}%\n`;
+        return;
       }
 
-      await msg.reply(response);
+      case "reset*": {
+        await msg.guild?.commands.set([]);
+        await client.application?.commands.set([]);
+        return;
+      }
+
+      case "vc*": {
+        const vcs = await state.db.private_vc.findMany({
+          where: { guild_id: msg.guildId as string },
+        });
+
+        for (const vc of vcs) {
+          const main = await msg.guild?.channels.fetch(
+            vc.main_channel_id,
+          );
+          const wait = await msg.guild?.channels.fetch(
+            vc.wait_channel_id,
+          );
+          await main?.delete().catch((x) => console.log(x));
+          await wait?.delete().catch((x) => console.log(x));
+          continue;
+        }
+
+        msg.reply("Deleted private roomsm.");
+        return;
+      }
+
+      case "update*": {
+        const guilds = client.guilds.cache;
+        const start = Date.now();
+        const message = await msg.reply("updating...");
+
+        for (const guild of guilds.values()) {
+          await registerCommand(client, guild);
+        }
+
+        await message.edit(
+          `Updated all ${guilds.size} server perms, took \`${Date.now() - start
+          }ms\``,
+        );
+        return;
+      }
+
+      case "fix*": {
+        const data = msg.client.guilds.cache.map(guild => ({ guild_id: guild.id }));
+
+        const result = await state.db.guilds.createMany({
+          data,
+          skipDuplicates: true,
+        });
+
+        msg.reply(`Fixed ${result.count} guilds.`);
+        return;
+      }
+
+      case "innit*": {
+        const start = Date.now();
+        await registerCommand(client, msg.guild as Guild);
+        msg.reply(
+          `Updated this server's perms, took \`${Date.now() - start}ms\``,
+        );
+        return;
+      }
+
+      case "age*": {
+        let birthdays = await state.db.birthdays.findMany({
+          where: { guild_id: msg.guildId as string },
+        });
+        let combined = 0;
+        const currentYear = new Date().getFullYear();
+
+        birthdays = birthdays.filter(x => x.birthday && x.birthday.getFullYear() > currentYear - 40);
+
+        birthdays = birthdays.sort((x, y) => Number(y.birthday) - Number(x.birthday));
+
+        birthdays.forEach((x) => (combined += yearsAgo(x.birthday as Date)));
+
+        const average = Math.round(combined / birthdays.length);
+
+        msg.reply(
+          `Average: ${average}`
+          + `Median: ${yearsAgo(birthdays[Math.round(birthdays.length / 2)].birthday as Date)}`
+          + `Range: ${yearsAgo(birthdays[0].birthday as Date)} - ${yearsAgo(birthdays[birthdays.length - 1].birthday as Date,)}`,
+        );
+
+        return;
+      }
     }
-  }
-}
+
+  },
+};

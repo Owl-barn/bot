@@ -1,17 +1,16 @@
+import { state } from "@src/app";
+import { Event } from "@src/structs/event";
 import { GuildMember, RoleResolvable } from "discord.js";
 import bannedUsers from "../lib/banlist.service";
 import { successEmbedTemplate } from "../lib/embedTemplate";
 import { getAvatar } from "../lib/functions";
 import GuildConfig from "../lib/guildconfig.service";
 import levelService from "../lib/level.service";
-import env from "../modules/env";
 import logService, { logType } from "../modules/logger.service";
-import RavenEvent from "../types/event";
-import RavenClient from "../types/ravenClient";
 
-export default class implements RavenEvent {
-  name = "guildMemberAdd";
-  once = false;
+export default {
+  name: "guildMemberAdd",
+  once: false,
 
   async execute(member: GuildMember): Promise<void> {
     const config = GuildConfig.getGuild(member.guild.id);
@@ -22,8 +21,8 @@ export default class implements RavenEvent {
     if (config?.levelEnabled) addLevelRoles(member);
 
     if (
-      member.id == env.OWNER_ID &&
-            member.guild.id == "396330910162616321"
+      member.id == state.env.OWNER_ID &&
+      member.guild.id == "396330910162616321"
     ) {
       await member.roles.add([
         "439014722998763530",
@@ -31,13 +30,12 @@ export default class implements RavenEvent {
         "908142029698134048",
       ]);
     }
-  }
-}
+  },
+
+} as Event;
 
 async function addLevelRoles(member: GuildMember) {
-  const client = member.client as RavenClient;
-
-  const userLevel = await client.db.level.findUnique({
+  const userLevel = await state.db.level.findUnique({
     where: {
       user_id_guild_id: {
         user_id: member.id,
@@ -49,7 +47,7 @@ async function addLevelRoles(member: GuildMember) {
   if (!userLevel) return;
 
   const level = levelService.calculateLevel(userLevel.experience);
-  const rewards = await client.db.level_reward.findMany({
+  const rewards = await state.db.level_reward.findMany({
     where: { level: { lte: level.level }, guild_id: member.guild.id },
   });
 
@@ -74,8 +72,8 @@ async function logJoin(member: GuildMember) {
   embed.setTitle("Member Joined");
   embed.setDescription(
     `**User:** <@${member.id}>\n` +
-            `**Account creation:** <t:${createdAt}:R>\n` +
-            isBot,
+    `**Account creation:** <t:${createdAt}:R>\n` +
+    isBot,
   );
 
   embed.setFooter({

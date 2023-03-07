@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Client } from "discord.js";
-import RavenButton from "src/types/button";
-import { CommandEnum } from "src/types/Command";
+import { Button } from "./button";
+import { CommandEnum } from "./command";
 
 export interface State {
   db: PrismaClient;
@@ -9,8 +9,5 @@ export interface State {
   client: Client;
 
   commands: Map<string, CommandEnum>;
-  buttons: Map<string, RavenButton>;
-
-  // Services.
-  owlet: any;
+  buttons: Map<string, Button>;
 }
