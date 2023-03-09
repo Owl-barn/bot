@@ -1,4 +1,3 @@
-import { env } from "@lib/env";
 import { state } from "@src/app";
 import { CommandEnum } from "@structs/command";
 import { ParentCommandStruct } from "@structs/command/parent";
@@ -32,7 +31,7 @@ export async function loadCommands(path: string) {
     }
   }
 
-  if (env.isDevelopment) {
+  if (state.env.isDevelopment) {
     for (const command of state.commands.keys()) {
       console.log(
         ` - Loaded command: `.cyan.italic + command.green.italic,

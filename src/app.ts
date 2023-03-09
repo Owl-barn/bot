@@ -8,13 +8,13 @@ import { Module } from "@structs/module";
 import colors from "colors";
 import { Client } from "discord.js";
 import { loadClient } from "./bot";
-import { env } from "./lib/env";
+import { loadEnvironment } from "./lib/loaders/loadEnvironment ";
 
 colors.enable();
 
 export interface State {
   db: PrismaClient;
-  env: typeof import("./lib/env").env;
+  env: typeof import("./lib/loaders/loadEnvironment ").loadEnvironment;
   client: Client;
 
   commands: Map<string, CommandEnum>;
@@ -31,7 +31,7 @@ export interface State {
 
 
 const state = {
-  env,
+  env: loadEnvironment,
   db: new PrismaClient(),
 
   modules: new Map(),
