@@ -1,7 +1,8 @@
 import { BaseCommandInfo, CommandType } from ".";
 
+export type SubCommandGroupInfo = BaseCommandInfo;
 export interface SubCommandGroupStruct {
-  info: BaseCommandInfo;
+  info: SubCommandGroupInfo;
 }
 
 export function SubCommandGroup(info: SubCommandGroupStruct["info"]): SubCommandGroupStruct {

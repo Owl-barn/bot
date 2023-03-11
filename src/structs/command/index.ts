@@ -1,9 +1,9 @@
 import { ReturnMessage } from "@structs/returnmessage";
 import { ChatInputCommandInteraction, LocalizationMap } from "discord.js";
-import { CommandStruct } from "./command";
-import { ParentCommandStruct } from "./parent";
-import { SubCommandStruct } from "./subcommand";
-import { SubCommandGroupStruct } from "./subcommandgroup";
+import { CommandInfo, CommandStruct } from "./command";
+import { ParentCommandInfo, ParentCommandStruct } from "./parent";
+import { SubCommandInfo, SubCommandStruct } from "./subcommand";
+import { SubCommandGroupInfo, SubCommandGroupStruct } from "./subcommandgroup";
 
 export enum CommandType {
   Parent = "Parent",
@@ -34,6 +34,7 @@ export interface BaseCommandInfo {
   descriptionLocalization?: LocalizationMap;
 }
 
+export type Premium = number;
 export interface Throttling {
   duration: number;
   usages: number;
@@ -44,3 +45,9 @@ export type CommandEnum =
   | SubCommandGroupStruct
   | SubCommandStruct
   | CommandStruct;
+
+export type CommandInfoEnum =
+  | ParentCommandInfo
+  | SubCommandGroupInfo
+  | SubCommandInfo
+  | CommandInfo;

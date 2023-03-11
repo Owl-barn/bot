@@ -1,11 +1,11 @@
 import { PermissionsString } from "discord.js";
-import { BaseCommandInfo, CommandType, RunFunction, Throttling } from ".";
+import { BaseCommandInfo, CommandType, Premium, RunFunction, Throttling } from ".";
 import { Argument } from "./argument";
 
 export interface SubCommandInfo extends BaseCommandInfo {
   guildOnly?: boolean;
   adminOnly?: boolean;
-  premium?: boolean;
+  premium?: Premium;
   disabled?: boolean;
 
   arguments?: Argument<string | number>[];
@@ -23,7 +23,10 @@ export interface SubCommandStruct {
 
 export function SubCommand(info: SubCommandStruct["info"], run: SubCommandStruct["run"]): SubCommandStruct {
   return {
-    info: { ...info, type: CommandType.Subcommand },
+    info: {
+      ...info,
+      type: CommandType.Subcommand,
+    },
     run,
   };
 }
