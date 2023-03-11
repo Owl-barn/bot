@@ -1,4 +1,4 @@
-import { state } from "@src/app";
+import { state } from "@app";
 import { Button } from "@structs/button";
 import fs from "fs";
 

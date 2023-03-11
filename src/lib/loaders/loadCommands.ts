@@ -1,4 +1,4 @@
-import { state } from "@src/app";
+import { state } from "@app";
 import { CommandEnum } from "@structs/command";
 import { ParentCommandStruct } from "@structs/command/parent";
 import { SubCommandGroupStruct } from "@structs/command/subcommandgroup";

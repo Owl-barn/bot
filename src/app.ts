@@ -1,14 +1,14 @@
 import { loadModules } from "@lib/loaders/loadModules";
-import { LogService } from "@lib/logService";
-import { ThrottleService } from "@lib/throttleService";
-import { PrismaClient } from "@prisma/client";
+import { LogService } from "@lib/services/logService";
+import { ThrottleService } from "@lib/services/throttleService";
+import { guilds, PrismaClient } from "@prisma/client";
 import { Button } from "@structs/button";
 import { CommandEnum } from "@structs/command";
 import { Module } from "@structs/module";
 import colors from "colors";
 import { Client } from "discord.js";
-import { loadClient } from "./bot";
-import { loadEnvironment } from "./lib/loaders/loadEnvironment ";
+import { loadClient } from "./lib/loaders/loadClient";
+import { loadEnvironment } from "@lib/loaders/loadEnvironment ";
 
 colors.enable();
 
@@ -23,7 +23,7 @@ export interface State {
   modules: Map<string, Module>;
 
   bannedUsers: Map<string, string>;
-  guilds: Map<string, string>;
+  guilds: Map<string, guilds>;
 
   log: LogService;
   throttle: ThrottleService;
@@ -36,7 +36,7 @@ const state = {
 
   modules: new Map(),
 
-  LogService: new LogService(),
+  log: new LogService(),
   throttle: new ThrottleService(),
 } as unknown as State;
 

@@ -1,32 +1,8 @@
 import { ImageURLOptions } from "@discordjs/rest";
-import { APIInteractionGuildMember, GuildMember, User } from "discord.js";
-import env from "../modules/env";
-
-export function isDJ(member: GuildMember): boolean {
-  return (
-    member?.roles.cache.some((role) => role.name === "DJ") ||
-        member.permissions.has("Administrator") ||
-        member.id == env.OWNER_ID
-  );
-}
+import { APIInteractionGuildMember, GuildMember, PartialGuildMember, User } from "discord.js";
 
 export function randomRange(begin: number, end: number): number {
   return Math.floor(Math.random() * (end - begin)) + begin;
-}
-
-export function nextDate(pastDate: Date, currentDate = new Date()): Date {
-  const year = currentDate.getUTCFullYear();
-  const nextBirthday = pastDate;
-  nextBirthday.setUTCFullYear(year);
-  if (Number(nextBirthday) < Number(currentDate))
-    nextBirthday.setUTCFullYear(year + 1);
-
-  return nextBirthday;
-}
-
-export function yearsAgo(pastDate: Date, presentDate = new Date()): number {
-  const difference = Number(presentDate) - Number(pastDate);
-  return Math.floor(difference / (1000 * 60 * 60 * 24 * 365.25));
 }
 
 interface starSign {
@@ -35,21 +11,21 @@ interface starSign {
 }
 
 export function getAvatar(
-  member: GuildMember | User | undefined | APIInteractionGuildMember,
+  member: GuildMember | User | undefined | APIInteractionGuildMember | PartialGuildMember,
 ): string | undefined {
   let avatar = undefined;
   if (!member) return avatar;
-  const settings: ImageURLOptions = { dynamic: true, size: 4096 };
+  const settings: ImageURLOptions = { size: 4096 };
 
   if (member instanceof GuildMember) {
     avatar =
-            member.avatarURL(settings) ||
-            member.user.avatarURL(settings) ||
-            member.user.defaultAvatarURL ||
-            undefined;
+      member.avatarURL(settings) ||
+      member.user.avatarURL(settings) ||
+      member.user.defaultAvatarURL ||
+      undefined;
   } else if (member instanceof User) {
     avatar =
-            member.avatarURL(settings) || member.defaultAvatarURL || undefined;
+      member.avatarURL(settings) || member.defaultAvatarURL || undefined;
   }
 
   return avatar;

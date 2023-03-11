@@ -1,5 +1,5 @@
 import fs from "fs";
-import { state } from "@src/app";
+import { state } from "@app";
 import { Module } from "@structs/module";
 import { loadEvents } from "@lib/loaders/loadEvents";
 import { loadCommands } from "@lib/loaders/loadCommands";
