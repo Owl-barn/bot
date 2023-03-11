@@ -1,0 +1,92 @@
+import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
+import { state } from "@app";
+import { SubCommand } from "@structs/command/subcommand";
+import {
+  ApplicationCommandOptionType,
+  ChannelType,
+  ClientUser,
+  GuildBasedChannel,
+} from "discord.js";
+
+export default SubCommand(
+
+  // Info
+  {
+    name: "add",
+    description: "Add a self role collection",
+
+    arguments: [
+      {
+        type: ApplicationCommandOptionType.Channel,
+        name: "channel",
+        description: "What channel to add the collection to.",
+        required: true,
+      },
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "title",
+        description: "What name to give the collection.",
+        required: true,
+      },
+      {
+        type: ApplicationCommandOptionType.String,
+        name: "description",
+        description: "What description to give the collection.",
+        required: true,
+      },
+    ],
+
+    throttling: {
+      duration: 60,
+      usages: 1,
+    },
+  },
+
+  // Execute
+  async (msg) => {
+    if (!msg.guildId) throw "no guild??";
+
+    const description = msg.options.getString("description", true);
+    const title = msg.options.getString("title", true);
+    const channel = msg.options.getChannel(
+      "channel",
+      true,
+    ) as GuildBasedChannel;
+
+    if (channel.type !== ChannelType.GuildText)
+      return {
+        embeds: [failEmbedTemplate("Channel is not a text channel.")],
+      };
+
+    const canSend = channel
+      .permissionsFor(msg.client.user as ClientUser)
+      ?.has("SendMessages");
+
+    if (!canSend)
+      return {
+        embeds: [
+          failEmbedTemplate(
+            "I do not have permission to send messages in this channel.",
+          ),
+        ],
+      };
+
+    const collection = await state.db.self_role_main.create({
+      data: {
+        guild_id: msg.guildId,
+        channel_id: channel.id,
+        title,
+        description,
+      },
+    });
+
+    const embed = embedTemplate();
+    embed.setTitle("Collection added");
+    embed.setDescription(
+      `Collection \`${title}\` has been added.\n` +
+      `**Collection ID:** ${collection.uuid}`,
+    );
+
+    return { embeds: [embed] };
+  }
+);
