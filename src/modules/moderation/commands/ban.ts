@@ -2,7 +2,7 @@ import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import stringDurationToMs from "@lib/time";
 import { moderation_type } from "@prisma/client";
-import { state } from "@src/app";
+import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import {

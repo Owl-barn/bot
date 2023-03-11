@@ -1,15 +1,14 @@
 import { failEmbedTemplate } from "@lib/embedTemplate";
-import { env } from "@lib/env";
 import { getAvatar } from "@lib/functions";
-import { formatInfraction } from "@modules/moderation/lib/formatinfraction";
 import { moderation_type } from "@prisma/client";
-import { state } from "@src/app";
+import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import {
   ApplicationCommandOptionType,
   EmbedBuilder,
   HexColorString,
 } from "discord.js";
+import { formatInfraction } from "../../lib/formatinfraction";
 
 export default SubCommand(
 
@@ -74,7 +73,7 @@ export default SubCommand(
 
     switch (logList.length) {
       case 0:
-        colour = env.EMBED_COLOR;
+        colour = state.env.EMBED_COLOR;
         break;
       case 1:
         colour = "#18ac15";

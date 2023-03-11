@@ -1,5 +1,5 @@
 import { embedTemplate } from "@lib/embedTemplate";
-import { state } from "@src/app";
+import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { ApplicationCommandOptionType } from "discord.js";

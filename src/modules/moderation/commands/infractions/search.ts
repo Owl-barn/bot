@@ -1,9 +1,9 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { formatInfraction } from "@modules/moderation/lib/formatinfraction";
 import { moderation_type } from "@prisma/client";
-import { state } from "@src/app";
+import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
+import { formatInfraction } from "../../lib/formatinfraction";
 
 export default SubCommand(
 
