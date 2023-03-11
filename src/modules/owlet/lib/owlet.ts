@@ -1,4 +1,4 @@
-import { state } from "@src/app";
+import { state } from "@app";
 import WebSocket from "ws";
 import { QueueEvent, Queue } from "../structs/queue";
 import { Track } from "../structs/track";

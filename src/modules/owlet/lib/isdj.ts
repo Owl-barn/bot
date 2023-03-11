@@ -1,4 +1,4 @@
-import { state } from "@src/app";
+import { state } from "@app";
 import { GuildMember } from "discord.js";
 
 export function isDJ(member: GuildMember): boolean {

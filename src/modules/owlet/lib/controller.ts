@@ -4,11 +4,11 @@ import WS from "ws";
 import fs from "fs";
 import { IncomingMessage } from "http";
 import path from "path";
-import { embedTemplate, failEmbedTemplate } from "@src/lib/embedTemplate";
-import { getAvatar } from "@src/lib/functions";
+import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { getAvatar } from "@lib/functions";
 import { QueueEvent } from "../structs/queue";
 import { Credentials, wsResponse } from "../structs/websocket";
-import { state } from "@src/app";
+import { state } from "@app";
 
 const env = state.env;
 const client = state.client;

@@ -1,17 +1,18 @@
-import { getAvatar } from "@src/lib/functions";
+import { getAvatar } from "@lib/functions";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { ApplicationCommandOptionType, GuildMember, EmbedAuthorOptions, EmbedBuilder, escapeMarkdown } from "discord.js";
 import moment from "moment";
 import { failEmbedTemplate, embedTemplate } from "src/lib/embedTemplate";
-import GuildConfig from "src/lib/guildconfig.service";
 import { localState } from "..";
+import { localState as VCState } from "src/modules/private-room";
 import { isDJ } from "../lib/isdj";
 import { QueueInfo } from "../structs/queue";
 import { Track } from "../structs/track";
 import { wsResponse } from "../structs/websocket";
 
 export default Command(
+
   // Info
   {
     name: "play",
@@ -67,13 +68,11 @@ export default Command(
       };
     }
 
-    const guildconfig = GuildConfig.getGuild(msg.guild.id);
-    if (guildconfig?.privateRooms.find((x) => x.wait_channel_id == vc.id)) {
+    // Check if the user is in a waiting room
+    if (VCState.controller.getRooms().find((x) => x.wait_channel_id == vc.id)) {
       return {
         embeds: [
-          failEmbedTemplate(
-            "You can't play music in a waiting room.",
-          ),
+          failEmbedTemplate("You can't play music in a waiting room."),
         ],
       };
     }

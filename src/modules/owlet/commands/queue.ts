@@ -1,8 +1,8 @@
 import { EmbedAuthorOptions, italic } from "@discordjs/builders";
-import { failEmbedTemplate, embedTemplate } from "@src/lib/embedTemplate";
-import { getAvatar } from "@src/lib/functions";
-import { CommandGroup } from "@src/structs/command";
-import { Command } from "@src/structs/command/command";
+import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
+import { getAvatar } from "@lib/functions";
+import { CommandGroup } from "@structs/command";
+import { Command } from "@structs/command/command";
 import {
   GuildMember,
   EmbedBuilder,
