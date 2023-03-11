@@ -1,5 +1,5 @@
 import { birthdays, guilds } from "@prisma/client";
-import { state } from "@src/app";
+import { state } from "@app";
 import cron from "cron";
 import { ActivityType, TextBasedChannel } from "discord.js";
 
@@ -78,7 +78,7 @@ export async function birthdayLoop(): Promise<void> {
   for (const user of users) {
     const data = await getData(user, guildsDB);
     if (!data) continue;
-    if (bannedUsers.isBanned(user.user_id)) continue;
+    if (state.bannedUsers.has(user.user_id)) continue;
     const { guild, role, channel, member } = data;
 
     if (role) {

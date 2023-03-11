@@ -1,7 +1,7 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { getStarSign } from "@lib/functions";
 import { nextDate, yearsAgo } from "@lib/time";
-import { state } from "@src/app";
+import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import moment from "moment";

@@ -1,5 +1,5 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { state } from "@src/app";
+import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 
 
