@@ -1,6 +1,8 @@
-import { SubCommandGroup } from "@structs/command/subcommandgroup";
+import { CommandGroup } from "@structs/command";
+import { ParentCommand } from "@structs/command/parent";
 
-export default SubCommandGroup({
+export default ParentCommand({
   name: "log_config",
   description: "Configure event logging.",
+  group: CommandGroup.config,
 });

@@ -28,6 +28,6 @@ export function formatInfraction(
     `**mod:** <@!${infraction.moderatorId}>\n` +
     `**reason:** *${infraction.reason}*\n` +
     expiresOnString +
-    `**Date:** <t:${Number(infraction.createdAt) / 1000}:R>`
+    `**Date:** <t:${Math.round(Number(infraction.createdAt) / 1000)}:R>`
   );
 }
