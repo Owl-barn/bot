@@ -45,7 +45,7 @@ export class Controller {
   private config: Map<string, guildConfig> = new Map();
   public rooms: private_vc[] = [];
 
-  public async initialize(client: Client) {
+  public initialize = async (client: Client) => {
     const rooms = await db.private_vc.findMany();
     const guilds = await db.guilds.findMany();
 
@@ -154,7 +154,7 @@ export class Controller {
     }
 
     // Load all the configs.
-    for (const guild of guilds) this.updateConfig(guild);
+    guilds.forEach(this.updateConfig);
 
     // Load all the rooms.
     const loadedRooms = await db.private_vc.findMany();
@@ -169,7 +169,7 @@ export class Controller {
     );
   }
 
-  public updateConfig(guild: Guilds) {
+  public updateConfig = (guild: Guilds) => {
     this.config.set(guild.guild_id,
       {
         vc_limit: guild.vc_limit,
@@ -180,21 +180,21 @@ export class Controller {
     );
   }
 
-  public upsertRoom(room: private_vc) {
+  public upsertRoom = (room: private_vc) => {
     const index = this.rooms.findIndex((x) => x.main_channel_id == room.main_channel_id);
     if (index == -1) this.rooms.push(room);
     else this.rooms[index] = room;
   }
 
-  public deleteRoom(room: private_vc) {
+  public deleteRoom = (room: private_vc) => {
     this.rooms = this.rooms.filter((x) => x.main_channel_id != room.main_channel_id);
   }
 
-  public getRooms() {
+  public getRooms = () => {
     return [...this.rooms];
   }
 
-  public async onChange(old: VoiceState, current: VoiceState) {
+  public onChange = async (old: VoiceState, current: VoiceState) => {
     const member = current.member;
     const me = current.guild.members.me;
     if (!me) return;
@@ -243,7 +243,7 @@ export class Controller {
     }
   }
 
-  private async joinWaiting(vc: VoiceState, room: private_vc) {
+  private joinWaiting = async (vc: VoiceState, room: private_vc) => {
     const member = vc.member as GuildMember;
     if (this.notifyRatelimit.has(member.id)) return;
 
@@ -265,28 +265,28 @@ export class Controller {
     setTimeout(() => this.notifyRatelimit.delete(member.id), 180000);
   }
 
-  private getGuildRooms(guildId: string) {
+  private getGuildRooms = (guildId: string) => {
     return this.rooms.filter((x) => x.guild_id == guildId);
   }
 
-  private startDelete(
+  private startDelete = (
     vc: VoiceBasedChannel,
     duration: number,
     reason: string,
-  ) {
+  ) => {
     this.deleteTimeout.set(
       vc.id,
       setTimeout(() => this.disbandVC(vc, reason), duration * 1000),
     );
   }
 
-  private cancelDelete(vc: VoiceBasedChannel) {
+  private cancelDelete = (vc: VoiceBasedChannel) => {
     const timeout = this.deleteTimeout.get(vc.id);
     if (timeout) clearTimeout(timeout);
     this.deleteTimeout.delete(vc.id);
   }
 
-  private async leaveHub(vc: VoiceState) {
+  private leaveHub = async (vc: VoiceState) => {
     if (!vc.channel) return;
     const memberCount = this.getMemberCount(vc);
 
@@ -306,7 +306,7 @@ export class Controller {
     }
   }
 
-  private async joinHub(vc: VoiceState) {
+  private joinHub = async (vc: VoiceState) => {
     const member = vc.member as GuildMember;
     if (!vc.channel) return;
 
@@ -322,7 +322,7 @@ export class Controller {
     });
   }
 
-  private async createHub(vc: VoiceState) {
+  private createHub = async (vc: VoiceState) => {
     const member = vc.member as GuildMember;
 
     if (this.createRateLimit.has(member.id) && member.id !== state.env.OWNER_ID)
@@ -475,10 +475,10 @@ export class Controller {
     state.log.push(embed, vc.guild.id, logType.BOT);
   }
 
-  public async disbandVC(
+  public disbandVC = async (
     vc: VoiceBasedChannel,
     reason: string | null = null,
-  ) {
+  ) => {
     this.cancelDelete(vc);
 
     const query = await db.private_vc.findUnique({
@@ -561,7 +561,7 @@ export class Controller {
     state.log.push(embed, vc.guild.id, logType.BOT);
   }
 
-  private getMemberCount(vc: VoiceState) {
+  private getMemberCount = (vc: VoiceState) => {
     if (!vc.channel) return 0;
     const members = vc.channel.members.filter((x) => !x.user.bot);
     return members.size;
