@@ -50,10 +50,7 @@ export default SubCommand(
           deleted: true,
         },
       })
-      .catch((e) => {
-        console.log(e);
-        return null;
-      });
+      .catch(console.error);
 
     if (!infraction) {
       const response = failEmbed.setDescription(

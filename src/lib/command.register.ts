@@ -318,8 +318,6 @@ export default async function registerCommand(guild: Guild) {
   const commands = convert(commandInfo, dbGuild);
 
   const commandJson = commands.map((command) => command.toJSON());
-  console.log(commandJson);
-
 
   const rest = new REST({ version: "10" }).setToken(state.env.DISCORD_TOKEN);
 
@@ -334,5 +332,5 @@ export default async function registerCommand(guild: Guild) {
       const guildString = `${guild.id} - ${guild.name}`;
       console.log(`Successfully registered application commands. guild: ${guildString}`.green);
     })
-    .catch((x) => console.error(x));
+    .catch(console.error);
 }

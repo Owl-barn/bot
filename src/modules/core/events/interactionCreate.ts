@@ -34,7 +34,7 @@ export default Event({
 const quickReply = async (msg: ChatInputCommandInteraction, content: string): Promise<void> => {
   await msg
     .reply({ ephemeral: true, content })
-    .catch((e) => console.error(e));
+    .catch(console.error);
 };
 
 const commandEvent = async (msg: ChatInputCommandInteraction): Promise<void> => {
@@ -134,7 +134,7 @@ const buttonEvent = async (msg: ButtonInteraction): Promise<void> => {
   });
 
   if (Object.keys(response).length === 0) return;
-  await msg.reply(response).catch((e) => console.error(e));
+  await msg.reply(response).catch(console.error);
 };
 
 const respond = async (
@@ -171,17 +171,15 @@ const respond = async (
 
   if (!response) return;
   if (interaction.replied)
-    await interaction.followUp(response).catch((e) => console.error(e));
+    await interaction.followUp(response).catch(console.error);
   else if (interaction.deferred)
     await interaction
       .editReply(response)
-      .catch((e) => console.error(e));
-  else await interaction.reply(response).catch((e) => console.error(e));
+      .catch(console.error);
+  else await interaction.reply(response).catch(console.error);
 
   state.log.logCommand(interaction, processingDuration, hidden);
 
   if (response.callback)
-    respond(interaction, 0, response.callback).catch((e) =>
-      console.error(e),
-    );
+    respond(interaction, 0, response.callback).catch(console.error);
 };

@@ -218,18 +218,18 @@ export class Controller {
       old.channelId &&
       rooms?.find((x) => x.main_channel_id == old.channelId)
     ) {
-      this.leaveHub(old).catch((e) => console.error(e));
+      this.leaveHub(old).catch(console.error);
     }
 
     if (current.channelId) {
       // User joined the main room.
       if (guildConfig?.vc_channel_id == current.channelId) {
-        this.createHub(current).catch((e) => console.error(e));
+        this.createHub(current).catch(console.error);
       }
 
       // User joined a private room.
       if (rooms?.find((x) => x.main_channel_id == current.channelId)) {
-        this.joinHub(current).catch((e) => console.error(e));
+        this.joinHub(current).catch(console.error);
       }
       // User joined waiting room.
       const waitJoin = rooms?.find(
@@ -259,7 +259,7 @@ export class Controller {
       .send(
         `Hey <@${room.user_id}>, ${member.displayName} has joined the waiting room.`,
       )
-      .catch((e) => console.error(e));
+      .catch(console.error);
 
     this.notifyRatelimit.add(member.id);
     setTimeout(() => this.notifyRatelimit.delete(member.id), 180000);
@@ -492,24 +492,22 @@ export class Controller {
     // Fetch rooms.
     const mainRoom = (await vc.guild.channels
       .fetch(query.main_channel_id)
-      .catch((x) => console.error(x))) as VoiceChannel;
+      .catch(console.error)) as VoiceChannel;
 
     const WaitRoom = (await vc.guild.channels
       .fetch(query.wait_channel_id)
-      .catch((x) => console.error(x))) as VoiceChannel;
+      .catch(console.error)) as VoiceChannel;
 
     // Attempt to delete rooms.
     if (mainRoom)
       mainRoom.deletable
         ? await mainRoom
           .delete("Session expired")
-          .catch((x) => console.error(x))
+          .catch(console.error)
         : console.error(`Couldnt delete ${mainRoom.id}`.red);
     if (WaitRoom)
       WaitRoom.deletable
-        ? await WaitRoom.delete("Session expired").catch((x) =>
-          console.error(x),
-        )
+        ? await WaitRoom.delete("Session expired").catch(console.error)
         : console.error(`Couldnt delete ${WaitRoom.id}`.red);
 
     // Remove from db.

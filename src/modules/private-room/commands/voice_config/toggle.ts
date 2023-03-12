@@ -36,9 +36,9 @@ export default SubCommand(
         config.vc_category_id as string,
       );
 
-      if (channel) await channel.delete().catch((x) => console.error(x));
+      if (channel) await channel.delete().catch(console.error);
       if (category)
-        await category.delete().catch((x) => console.error(x));
+        await category.delete().catch(console.error);
 
       const vcs = await state.db.private_vc.findMany({
         where: { guild_id: msg.guildId as string },

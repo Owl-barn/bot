@@ -80,10 +80,7 @@ export class Controller {
     if (!member) return;
     if (!member.voice.channel) return;
     if (member.voice.channel.id !== channel.id) return;
-    await this.notifyUsers(member, friends).catch((e) => {
-      console.error(e);
-      return;
-    });
+    await this.notifyUsers(member, friends).catch(console.error);
   };
 
   private notifyUsers = async (

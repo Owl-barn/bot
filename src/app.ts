@@ -48,8 +48,6 @@ const state = {
   const guilds = await state.db.guilds.findMany();
   guilds.forEach((guild) => state.guilds.set(guild.guild_id, guild));
 
-  console.log(state.commands);
-
   state.log = new LogService();
   state.throttle = new ThrottleService();
 }
