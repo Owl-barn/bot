@@ -4,31 +4,30 @@ import { ParentCommandStruct } from "@structs/command/parent";
 import { SubCommandGroupStruct } from "@structs/command/subcommandgroup";
 import fs from "fs";
 
-
 export async function loadCommands(path: string) {
-  const folders = fs.readdirSync(path);
+  const commandFiles = fs.readdirSync(path, { withFileTypes: true });
 
-  for (const folder of folders) {
-    const commandFiles = fs.readdirSync(path + folder);
+  // Loop through top level files/folders
 
-    for (const file of commandFiles) {
-      const folderPath = path + folder + "/" + file;
+  for (const file of commandFiles) {
+    const folderPath = path + file.name;
 
-      if (file.endsWith(".js")) {
-        const command = await generateSimpleCommand(folderPath);
-        if (!command) continue;
-        state.commands.set(command.name, command.command);
-        continue;
-      }
-
-      const command = await generateSubCommand(folderPath);
-
+    if (file.name.endsWith(".js")) {
+      const command = await generateSimpleCommand(folderPath);
       if (!command) continue;
-
-      for (const subCommand of command) {
-        state.commands.set(subCommand.name, subCommand.command);
-      }
+      state.commands.set(command.name, command.command);
+      continue;
     }
+
+    if (!file.isDirectory()) continue;
+
+    const command = await generateSubCommand(folderPath);
+    if (!command) continue;
+
+    for (const subCommand of command) {
+      state.commands.set(subCommand.name, subCommand.command);
+    }
+
   }
 
   if (state.env.isDevelopment) {
@@ -40,9 +39,9 @@ export async function loadCommands(path: string) {
   }
 
   console.log(
-    " ✓ Loaded ".green.bold +
+    " 🔵 Loaded ".green +
     String(state.commands.size).cyan +
-    " commands".green.bold,
+    " commands".green,
   );
 }
 
@@ -55,10 +54,10 @@ async function generateSimpleCommand(
   commandPath: string,
   preName?: string,
 ): Promise<returnType | undefined> {
-  const cmdClass = (await import(commandPath)).default;
-  const command = new cmdClass() as CommandEnum;
-  const commandInfo = command.info;
+  const command = (await import(commandPath)).default as CommandEnum | undefined;
+  if (!command) throw "No default export found for " + commandPath;
 
+  const commandInfo = command.info;
   if (commandInfo == undefined) return;
 
   preName ? (commandInfo.name = `${preName}-${commandInfo.name}`) : null;
@@ -66,18 +65,15 @@ async function generateSimpleCommand(
   return { name: commandInfo.name, command };
 }
 
-async function generateSubCommand(
-  folderPath: string,
-): Promise<returnType[] | undefined> {
-  const commandFiles = fs.readdirSync(folderPath) as string[];
+async function generateSubCommand(folderPath: string): Promise<returnType[] | undefined> {
+  const commandFiles = fs.readdirSync(folderPath, { withFileTypes: true });
 
-  if (commandFiles.indexOf("index.js") == -1) {
+  if (commandFiles.findIndex(file => file.name === "index.js") == -1) {
     console.warn("No index.js found in " + folderPath);
     return;
   }
 
-  const mainCommand = (await import(`${folderPath}/index.js`))
-    .default() as
+  const mainCommand = (await import(`${folderPath}/index.js`)).default as
     | ParentCommandStruct
     | SubCommandGroupStruct;
 
@@ -90,9 +86,9 @@ async function generateSubCommand(
 
   // Loop through all sub commands
   for (const file of commandFiles) {
-    if (file == "index.js") continue;
-    if (file.endsWith(".js")) {
-      const command = await generateSimpleCommand(`${folderPath}/${file}`);
+    if (file.name === "index.js") continue;
+    if (file.name.endsWith(".js")) {
+      const command = await generateSimpleCommand(`${folderPath}/${file.name}`);
 
       if (!command) continue;
 
@@ -104,7 +100,9 @@ async function generateSubCommand(
       continue;
     }
 
-    const subCommands = await generateSubCommand(`${folderPath}/${file}`);
+    if (!file.isDirectory()) continue;
+
+    const subCommands = await generateSubCommand(`${folderPath}/${file.name}`);
     if (!subCommands) continue;
 
     for (const subCommand of subCommands) {

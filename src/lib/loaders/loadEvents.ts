@@ -1,5 +1,5 @@
 import fs from "fs";
-import { state } from "src/app";
+import { state } from "app";
 import { ClientEvents } from "discord.js";
 import { EventStruct } from "@structs/event";
 
@@ -10,7 +10,7 @@ export async function loadEvents(path: string) {
   for (const file of files) {
     if (!file.endsWith(".js")) continue;
     const module = await import(`${path}/${file}`);
-    const event = new module.default(state.client) as EventStruct<keyof ClientEvents>;
+    const event = module.default as EventStruct<keyof ClientEvents>;
 
     if (event.once)
       state.client.once(event.name, (...args) =>
@@ -27,5 +27,5 @@ export async function loadEvents(path: string) {
     }
   }
 
-  console.log(" ✓ Loaded ".green.bold + String(files.length).cyan + " events".green.bold);
+  console.log(" 🔵 Loaded ".green + String(files.length).cyan + " events".green);
 }

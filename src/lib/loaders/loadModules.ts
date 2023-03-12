@@ -4,15 +4,21 @@ import { Module } from "@structs/module";
 import { loadEvents } from "@lib/loaders/loadEvents";
 import { loadCommands } from "@lib/loaders/loadCommands";
 import { loadButtons } from "@lib/loaders/loadButons";
+import path from "path";
 
 export async function loadModules() {
 
-  for (const folder of fs.readdirSync("./modules", { withFileTypes: true })) {
-    if (!folder.isDirectory()) continue;
-    const moduleFiles = fs.readdirSync(`./modules/${folder.name}`);
+  const modulePath = path.join(__dirname, "../../modules");
 
-    const module = (await import(`./modules/${folder}/index.js`)).default as Module;
-    module.path = `./modules/${folder}/`;
+  for (const folder of fs.readdirSync(modulePath, { withFileTypes: true })) {
+    if (!folder.isDirectory()) continue;
+
+    const folderPath = `${modulePath}/${folder.name}`;
+    const moduleFiles = fs.readdirSync(folderPath);
+
+    const module = (await import(`${folderPath}/index.js`)).default as Module;
+    module.path = `${folderPath}/`;
+    console.log(`⌛ Loading module: ${module.name.green.bold}`.cyan.bold);
 
     // Initialize the module's async state objects.
     if (module.initialize)
@@ -22,13 +28,13 @@ export async function loadModules() {
         });
 
     // Load the module's events, commands, and buttons.
-    moduleFiles.includes("events") && await loadEvents(module.path + "events");
-    moduleFiles.includes("commands") && await loadCommands(module.path + "commands");
-    moduleFiles.includes("buttons") && await loadButtons(module.path + "buttons");
+    moduleFiles.includes("events") && await loadEvents(module.path + "events/");
+    moduleFiles.includes("commands") && await loadCommands(module.path + "commands/");
+    moduleFiles.includes("buttons") && await loadButtons(module.path + "buttons/");
 
 
     // Add the module to the state object.
     state.modules.set(module.name, module);
-    console.log(` ✓ Loaded module: ${module.name.green.italic}`.cyan.italic);
+    console.log(`✅ Loaded module: ${module.name.green.bold}`.cyan.bold);
   }
 }

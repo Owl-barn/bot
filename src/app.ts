@@ -1,14 +1,16 @@
-import { loadModules } from "@lib/loaders/loadModules";
+import { loadClient } from "@lib/loaders/loadClient";
 import { LogService } from "@lib/services/logService";
+import { loadModules } from "@lib/loaders/loadModules";
+import { loadEnvironment } from "@lib/loaders/loadEnvironment ";
 import { ThrottleService } from "@lib/services/throttleService";
-import { guilds, PrismaClient } from "@prisma/client";
-import { Button } from "@structs/button";
-import { CommandEnum } from "@structs/command";
-import { Module } from "@structs/module";
+
 import colors from "colors";
 import { Client } from "discord.js";
-import { loadClient } from "./lib/loaders/loadClient";
-import { loadEnvironment } from "@lib/loaders/loadEnvironment ";
+import { guilds as Guild, PrismaClient } from "@prisma/client";
+
+import { Button } from "@structs/button";
+import { Module } from "@structs/module";
+import { CommandEnum } from "@structs/command";
 
 colors.enable();
 
@@ -23,26 +25,33 @@ export interface State {
   modules: Map<string, Module>;
 
   bannedUsers: Map<string, string>;
-  guilds: Map<string, guilds>;
+  guilds: Map<string, Guild>;
 
   log: LogService;
   throttle: ThrottleService;
 }
 
-
 const state = {
   env: loadEnvironment,
   db: new PrismaClient(),
 
+  commands: new Map(),
+  buttons: new Map(),
   modules: new Map(),
+  guilds: new Map(),
 
-  log: new LogService(),
-  throttle: new ThrottleService(),
 } as unknown as State;
 
 (async () => {
   await loadClient();
   await loadModules();
+  const guilds = await state.db.guilds.findMany();
+  guilds.forEach((guild) => state.guilds.set(guild.guild_id, guild));
+
+  console.log(state.commands);
+
+  state.log = new LogService();
+  state.throttle = new ThrottleService();
 }
 )();
 

@@ -4,11 +4,11 @@ import fs from "fs";
 
 export async function loadButtons(path: string) {
 
-  const files = fs.readdirSync(path);
+  const files = fs.readdirSync(path, { withFileTypes: true });
 
   for (const file of files) {
-    const buttonClass = (await import(`../buttons/${file}`)).default;
-    const button = new buttonClass() as Button;
+    if (!file.name.endsWith(".js")) continue;
+    const button = (await import(path + file.name)).default as Button;
 
     if (button == undefined) {
       continue;
@@ -32,9 +32,9 @@ export async function loadButtons(path: string) {
   }
 
   console.log(
-    " ✓ Loaded ".green.bold +
+    " 🔵 Loaded ".green +
     String(state.buttons.size).cyan +
-    " buttons".green.bold,
+    " buttons".green,
   );
 
 }
