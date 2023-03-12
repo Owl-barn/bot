@@ -37,9 +37,9 @@ export default SubCommand(
 
     const collectionId = msg.options.getString("collection", true);
 
-    const collection = await state.db.self_role_main.findFirst({
-      where: { uuid: collectionId, guild_id: msg.guildId },
-      include: { self_role_roles: true },
+    const collection = await state.db.selfroleCollection.findFirst({
+      where: { id: collectionId, guildId: msg.guildId },
+      include: { roles: true },
     });
 
     if (!collection)
@@ -59,10 +59,10 @@ export default SubCommand(
     const buttons: ButtonBuilder[] = [];
 
     // Generate buttons.
-    for (const role of collection.self_role_roles) {
+    for (const role of collection.roles) {
       buttons.push(
         new ButtonBuilder()
-          .setCustomId(`selfroleRemove_${role.uuid}`)
+          .setCustomId(`selfroleRemove_${role.id}`)
           .setLabel(role.title)
           .setStyle(ButtonStyle.Danger),
       );

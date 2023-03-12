@@ -16,7 +16,7 @@ export default Event({
 
     const config = state.guilds.get(current.guildId);
 
-    if (!config || !config.log_events || config.banned) return;
+    if (!config || !config.logEvents || config.isBanned) return;
     if (old.content == current.content) return;
 
     const member = current.member as GuildMember;

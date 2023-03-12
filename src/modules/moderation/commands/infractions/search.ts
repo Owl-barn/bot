@@ -1,5 +1,5 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { moderation_type } from "@prisma/client";
+import { ModerationType } from "@prisma/client";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
@@ -61,26 +61,26 @@ export default SubCommand(
       return { embeds: [response] };
     }
 
-    const logs = await state.db.moderation_log.findMany({
+    const logs = await state.db.infraction.findMany({
       where: {
-        guild_id: msg.guildId as string,
+        guildId: msg.guildId as string,
         AND: [
           { reason: { contains: query ?? undefined } },
           {
-            moderation_type: type
-              ? (type as moderation_type)
+            moderationType: type
+              ? (type as ModerationType)
               : undefined,
           },
           {
             OR: [
-              { user: user ? user.id : undefined },
-              { moderator: user ? user.id : undefined },
+              { userId: user ? user.id : undefined },
+              { moderatorId: user ? user.id : undefined },
             ],
           },
         ],
       },
       orderBy: {
-        created: "asc",
+        createdAt: "asc",
       },
       take: 20,
     });

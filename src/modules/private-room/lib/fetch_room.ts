@@ -1,28 +1,28 @@
-import { private_vc } from "@prisma/client";
 import { state } from "@app";
+import { PrivateRoom } from "@prisma/client";
 import { ChatInputCommandInteraction, NonThreadGuildBasedChannel, VoiceChannel } from "discord.js";
 
-export async function fetchRoom(msg: ChatInputCommandInteraction): Promise<{ room: NonThreadGuildBasedChannel; dbRoom: private_vc }> {
+export async function fetchRoom(msg: ChatInputCommandInteraction): Promise<{ room: NonThreadGuildBasedChannel; dbRoom: PrivateRoom }> {
 
-  const dbRoom = await state.db.private_vc.findUnique({
+  const dbRoom = await state.db.privateRoom.findUnique({
     where: {
-      user_id_guild_id: {
-        user_id: msg.user.id,
-        guild_id: msg.guildId as string,
+      userId_guildId: {
+        userId: msg.user.id,
+        guildId: msg.guildId as string,
       },
     },
   });
 
   if (!dbRoom) throw "noRoom";
 
-  const room = (await msg.guild?.channels.fetch(dbRoom.main_channel_id)) as VoiceChannel;
+  const room = (await msg.guild?.channels.fetch(dbRoom.mainRoomId)) as VoiceChannel;
 
   if (!room) {
-    await state.db.private_vc.delete({
+    await state.db.privateRoom.delete({
       where: {
-        user_id_guild_id: {
-          user_id: msg.user.id,
-          guild_id: msg.guildId as string,
+        userId_guildId: {
+          userId: msg.user.id,
+          guildId: msg.guildId as string,
         },
       },
     });

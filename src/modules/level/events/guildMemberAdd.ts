@@ -15,9 +15,9 @@ export default Event({
 
     const userLevel = await state.db.level.findUnique({
       where: {
-        user_id_guild_id: {
-          user_id: member.id,
-          guild_id: member.guild.id,
+        userId_guildId: {
+          userId: member.id,
+          guildId: member.guild.id,
         },
       },
     });
@@ -25,15 +25,15 @@ export default Event({
     if (!userLevel) return;
 
     const level = calculateLevelFromXP(userLevel.experience);
-    const rewards = await state.db.level_reward.findMany({
-      where: { level: { lte: level.level }, guild_id: member.guild.id },
+    const rewards = await state.db.levelReward.findMany({
+      where: { level: { lte: level.level }, guildId: member.guild.id },
     });
 
     if (rewards.length === 0) return;
 
     const roles: RoleResolvable[] = [];
     for (const x of rewards) {
-      const role = member.guild.roles.resolveId(x.role_id);
+      const role = member.guild.roles.resolveId(x.roleId);
       if (!role) continue;
       roles.push(role);
     }

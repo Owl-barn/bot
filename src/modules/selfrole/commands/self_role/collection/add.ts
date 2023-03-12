@@ -71,10 +71,10 @@ export default SubCommand(
         ],
       };
 
-    const collection = await state.db.self_role_main.create({
+    const collection = await state.db.selfroleCollection.create({
       data: {
-        guild_id: msg.guildId,
-        channel_id: channel.id,
+        guildId: msg.guildId,
+        channelId: channel.id,
         title,
         description,
       },
@@ -84,7 +84,7 @@ export default SubCommand(
     embed.setTitle("Collection added");
     embed.setDescription(
       `Collection \`${title}\` has been added.\n` +
-      `**Collection ID:** ${collection.uuid}`,
+      `**Collection ID:** ${collection.id}`,
     );
 
     return { embeds: [embed] };

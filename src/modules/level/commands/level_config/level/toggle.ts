@@ -28,15 +28,15 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild??";
+    if (!msg.guild) throw "no guild??";
     const level = msg.options.getBoolean("state", true);
 
-    const guild = await state.db.guilds.update({
-      where: { guild_id: msg.guildId },
+    const guild = await state.db.guild.update({
+      where: { id: msg.guild.id },
       data: { level },
     });
 
-    localState.guilds.set(guild.guild_id, guild);
+    localState.guilds.set(guild.id, guild);
 
     const embed = embedTemplate();
     embed.setDescription(

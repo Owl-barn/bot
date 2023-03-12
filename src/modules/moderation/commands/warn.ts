@@ -1,6 +1,5 @@
 import { failEmbedTemplate } from "@lib/embedTemplate";
 import stringDurationToMs from "@lib/time";
-import { moderation_type } from "@prisma/client";
 import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
@@ -11,6 +10,7 @@ import {
   APIEmbedField,
   escapeMarkdown,
 } from "discord.js";
+import { ModerationType } from "@prisma/client";
 
 const db = state.db;
 
@@ -67,22 +67,22 @@ export default Command(
       return { embeds: [response] };
     }
 
-    // Expiry
-    let expiry: Date | undefined = undefined;
+    // expiresOn
+    let expiresOn: Date | undefined = undefined;
     const durationMs = duration ? stringDurationToMs(duration) : 0;
     if (durationMs !== 0) {
-      expiry = new Date(Date.now() + durationMs);
+      expiresOn = new Date(Date.now() + durationMs);
     }
 
-    await db.moderation_log
+    await db.infraction
       .create({
         data: {
-          expiry,
+          expiresOn,
           reason: reason,
-          user: target.id,
-          moderator: msg.user.id,
-          guild_id: msg.guildId as string,
-          moderation_type: moderation_type.warn,
+          userId: target.id,
+          moderatorId: msg.user.id,
+          guildId: msg.guild.id,
+          moderationType: ModerationType.warn,
         },
       })
       .catch((e: Error) => {
@@ -90,15 +90,15 @@ export default Command(
         throw "couldnt create warn??";
       });
 
-    const warnCount = await db.moderation_log.count({
+    const warnCount = await db.infraction.count({
       where: {
-        user: target.id,
-        guild_id: msg.guildId as string,
-        moderation_type: moderation_type.warn,
-        deleted: false,
+        userId: target.id,
+        guildId: msg.guild.id,
+        moderationType: ModerationType.warn,
+        deletedOn: null,
         OR: [
-          { expiry: { equals: null } },
-          { expiry: { gt: new Date() } },
+          { expiresOn: { equals: null } },
+          { expiresOn: { gt: new Date() } },
         ],
       },
     });
@@ -123,10 +123,10 @@ export default Command(
         value: `\`\`\`${reason}\`\`\``,
       },
     ];
-    if (expiry)
+    if (expiresOn)
       fields.push({
         name: "Expires",
-        value: `<t:${Math.round(Number(expiry) / 1000)}:D>`,
+        value: `<t:${Math.round(Number(expiresOn) / 1000)}:D>`,
         inline: true,
       });
 

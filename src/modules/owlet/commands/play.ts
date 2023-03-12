@@ -68,7 +68,7 @@ export default Command(
     }
 
     // Check if the user is in a waiting room
-    if (VCState.controller.getRooms().find((x) => x.wait_channel_id == vc.id)) {
+    if (VCState.controller.getRooms().find((x) => x.waitingRoomId == vc.id)) {
       return {
         embeds: [
           failEmbedTemplate("You can't play music in a waiting room."),

@@ -12,7 +12,7 @@ import {
   SlashCommandSubcommandsOnlyBuilder,
   SlashCommandUserOption,
 } from "@discordjs/builders";
-import { guilds } from "@prisma/client";
+import { Guild as DBGuild } from "@prisma/client";
 import { state } from "@app";
 import { CommandGroup, CommandType, CommandInfoEnum } from "@structs/command";
 import { Argument } from "@structs/command/argument";
@@ -36,7 +36,7 @@ const limitedGroups = [
   CommandGroup.config,
 ];
 
-function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: guilds): (
+function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGuild): (
   | SlashCommandBuilder
   | SlashCommandSubcommandsOnlyBuilder
   | SlashCommandSubcommandGroupBuilder
@@ -75,7 +75,7 @@ function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: guild
       .setName(top_level_command_name)
       .setDescription(top_level_command_array[0][1].description);
 
-    if (top_level_command.group == CommandGroup.owner && !guildInfo.dev)
+    if (top_level_command.group == CommandGroup.owner && !guildInfo.isDev)
       continue;
 
     if (limitedGroups.includes(top_level_command.group))
@@ -300,13 +300,13 @@ function argumentHandler<T extends builderType>(
 }
 
 export default async function registerCommand(guild: Guild) {
-  let dbGuild = await state.db.guilds.findUnique({
-    where: { guild_id: guild.id },
+  let dbGuild = await state.db.guild.findUnique({
+    where: { id: guild.id },
   });
 
   if (!dbGuild) {
-    dbGuild = await state.db.guilds.create({
-      data: { guild_id: guild.id },
+    dbGuild = await state.db.guild.create({
+      data: { id: guild.id },
     });
 
     state.guilds.set(guild.id, dbGuild);

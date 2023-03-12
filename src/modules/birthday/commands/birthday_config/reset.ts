@@ -30,9 +30,9 @@ export default SubCommand(
     if (!msg.guildId) throw "no guild??";
     const user = msg.options.getUser("user", true);
 
-    await state.db.birthdays.delete({
+    await state.db.birthday.delete({
       where: {
-        user_id_guild_id: { guild_id: msg.guildId, user_id: user.id },
+        userId_guildId: { guildId: msg.guildId, userId: user.id },
       },
     });
 

@@ -56,9 +56,9 @@ export default SubCommand(
 
     let level = await db.level.findUnique({
       where: {
-        user_id_guild_id: {
-          guild_id: msg.guildId,
-          user_id: member.id,
+        userId_guildId: {
+          guildId: msg.guildId,
+          userId: member.id,
         },
       },
     });
@@ -66,26 +66,26 @@ export default SubCommand(
     if (!level) {
       level = await db.level.create({
         data: {
-          user_id: member.id,
-          guild_id: msg.guildId,
+          userId: member.id,
+          guildId: msg.guildId,
         },
       });
     }
 
     const rank = await db.level.aggregate({
-      _count: { user_id: true },
+      _count: { userId: true },
       where: {
         experience: { gt: level.experience },
-        guild_id: msg.guildId,
+        guildId: msg.guildId,
       },
     });
 
-    rank._count.user_id += 1;
+    rank._count.userId += 1;
     const stats = calculateLevelFromXP(level.experience);
 
-    const NextReward = await db.level_reward.findFirst({
+    const NextReward = await db.levelReward.findFirst({
       where: {
-        guild_id: msg.guildId,
+        guildId: msg.guildId,
         level: { gt: stats.level },
       },
       orderBy: { level: "asc" },
@@ -112,7 +112,7 @@ export default SubCommand(
 
     embed.setDescription(
       `**Level:** ${stats.level}\n` +
-      `**Rank:** #${rank._count.user_id}\n` +
+      `**Rank:** #${rank._count.userId}\n` +
       `**Total XP:** ${formatNumber(stats.totalXP)}\n` +
       `\`\`\`${stats.level}${progress}${stats.level + 1}\`\`\``,
     );
@@ -139,7 +139,7 @@ export default SubCommand(
           name: "Next reward",
           value:
             `**Level:** ${NextReward.level}\n` +
-            `**Role:** <@&${NextReward.role_id}>`,
+            `**Role:** <@&${NextReward.roleId}>`,
           inline: true,
         },
       ]);

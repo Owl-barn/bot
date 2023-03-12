@@ -1,5 +1,5 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { moderation_type } from "@prisma/client";
+import { ModerationType } from "@prisma/client";
 import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
@@ -57,10 +57,10 @@ export default Command(
     if (!target)
       return { embeds: [failEmbed.setDescription("No user provided")] };
 
-    const guild = await state.db.guilds.findUnique({ where: { guild_id: msg.guild.id } });
+    const guild = await state.db.guild.findUnique({ where: { id: msg.guild.id } });
     const isStaff =
-      guild?.staff_role &&
-      target.roles.cache.get(guild.staff_role);
+      guild?.staffRoleId &&
+      target.roles.cache.get(guild.staffRoleId);
 
     if (!target.kickable || isStaff)
       return {
@@ -76,13 +76,13 @@ export default Command(
       }> has been kicked with the reason: \`${escapeMarkdown(reason)}\``,
     );
 
-    await state.db.moderation_log.create({
+    await state.db.infraction.create({
       data: {
-        user: target.id,
+        userId: target.id,
         reason: reason,
-        guild_id: msg.guildId as string,
-        moderator: msg.user.id,
-        moderation_type: moderation_type.kick,
+        guildId: msg.guild.id,
+        moderatorId: msg.user.id,
+        moderationType: ModerationType.kick,
       },
     });
 

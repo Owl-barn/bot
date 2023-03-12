@@ -14,8 +14,6 @@ export default Command(
     name: "stats",
     description: "shows bot stats",
     group: CommandGroup.moderation,
-
-    guildOnly: false,
     premium: 0,
 
     arguments: [
@@ -43,23 +41,23 @@ export default Command(
       0,
     );
 
-    const commandUsage = await db.command_log.groupBy({
-      by: ["command_name"],
+    const commandUsage = await db.commandLog.groupBy({
+      by: ["commandName"],
       _count: true,
-      orderBy: { _count: { command_name: "desc" } },
+      orderBy: { _count: { commandName: "desc" } },
       take: 5,
-      where: global ? {} : { guild_id: msg.guildId as string },
+      where: global ? {} : { guildId: msg.guildId as string },
     });
 
-    const musicPlayed = await db.songs_played.aggregate({
-      _count: { uuid: true },
-      _avg: { play_duration: true, song_duration: true },
-      _sum: { play_duration: true, song_duration: true },
-      where: global ? {} : { guild_id: msg.guildId as string },
+    const musicPlayed = await db.mediaLog.aggregate({
+      _count: { id: true },
+      _avg: { playDuration: true, duration: true },
+      _sum: { playDuration: true, duration: true },
+      where: global ? {} : { guildId: msg.guildId as string },
     });
 
-    const birthdays = await db.birthdays.count({
-      where: global ? {} : { guild_id: msg.guildId as string },
+    const birthdays = await db.birthday.count({
+      where: global ? {} : { guildId: msg.guildId as string },
     });
 
     const fields = [
@@ -110,7 +108,7 @@ export default Command(
       fields.push({
         name: "Command Usage",
         value: commandUsage
-          .map((x) => `**${x.command_name}:** ${x._count}`)
+          .map((x) => `**${x.commandName}:** ${x._count}`)
           .join("\n"),
       });
     }
@@ -119,15 +117,15 @@ export default Command(
       fields.push({
         name: "Music Usage",
         value: `**Average:** \`${Math.round(
-          (musicPlayed._avg.play_duration || 0) / 60,
+          (musicPlayed._avg.playDuration || 0) / 60,
         )}/${Math.round(
-          (musicPlayed._avg.song_duration || 0) / 60,
+          (musicPlayed._avg.duration || 0) / 60,
         )}\` minutes
                 **sum:** \`
-                ${Math.round((musicPlayed._sum.play_duration || 0) / 60,)}/
-                ${Math.round((musicPlayed._sum.song_duration || 0) / 60,)}
+                ${Math.round((musicPlayed._sum.playDuration || 0) / 60,)}/
+                ${Math.round((musicPlayed._sum.duration || 0) / 60,)}
                 \` minutes
-                **amount:** \`${musicPlayed._count.uuid}\` songs played
+                **amount:** \`${musicPlayed._count.id}\` songs played
             `,
       });
     }

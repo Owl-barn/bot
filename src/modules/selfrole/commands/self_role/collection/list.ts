@@ -20,9 +20,9 @@ export default SubCommand(
   async (msg) => {
     if (!msg.guildId) throw "no guild in self_role_collection_list";
 
-    const collections = await state.db.self_role_main.findMany({
-      where: { guild_id: msg.guildId },
-      include: { self_role_roles: true },
+    const collections = await state.db.selfroleCollection.findMany({
+      where: { guildId: msg.guildId },
+      include: { roles: true },
     });
 
     if (collections.length == 0)
@@ -34,10 +34,10 @@ export default SubCommand(
     embed.setTitle("Self Role Collections:");
 
     for (const collection of collections) {
-      let roles = `**uuid:** ${collection.uuid}\n`;
+      let roles = `**id** ${collection.id}\n`;
 
-      if (collection.self_role_roles.length !== 0) {
-        const roleList = collection.self_role_roles
+      if (collection.roles.length !== 0) {
+        const roleList = collection.roles
           .map((role) => `- ${role.title}`)
           .join("\n");
         roles += `Roles:\n\`\`\`${roleList}\`\`\``;

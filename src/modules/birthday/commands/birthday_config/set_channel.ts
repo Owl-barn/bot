@@ -33,7 +33,7 @@ export default SubCommand(
   async (msg) => {
     if (!msg.guildId) throw "no guild??";
 
-    const channel = msg.options.getChannel("birthday_channel") as
+    const channel = msg.options.getChannel("birthdayChannelId") as
       | GuildBasedChannel
       | undefined;
 
@@ -42,9 +42,9 @@ export default SubCommand(
     if (channel && !channel.permissionsFor(msg.client.user as ClientUser))
       return { embeds: [failEmbed] };
 
-    await state.db.guilds.update({
-      where: { guild_id: msg.guildId },
-      data: { birthday_channel: channel?.id || null },
+    await state.db.guild.update({
+      where: { id: msg.guildId },
+      data: { birthdayChannelId: channel?.id || null },
     });
 
     const embed = embedTemplate(

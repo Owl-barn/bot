@@ -63,17 +63,17 @@ export default SubCommand(
     if (isAllowed !== null) return isAllowed;
 
     // Check if the user is already in the list.
-    const exists = await state.db.friendships.findUnique({
+    const exists = await state.db.friendship.findUnique({
       where: {
-        user_id_friend_id: {
-          user_id: msg.user.id,
-          friend_id: friendUser.id,
+        userId_friendId: {
+          userId: msg.user.id,
+          friendId: friendUser.id,
         },
       },
     });
 
     if (exists) {
-      const response = exists.pending
+      const response = exists.isPending
         ? failEmbedTemplate(
           "You already have a pending friend request to this user!",
         )
@@ -108,11 +108,11 @@ export default SubCommand(
     }
 
     // Create the request in the database.
-    await state.db.friendships.create({
+    await state.db.friendship.create({
       data: {
-        user_id: msg.user.id,
-        friend_id: friendUser.id,
-        pending: true,
+        userId: msg.user.id,
+        friendId: friendUser.id,
+        isPending: true,
       },
     });
 

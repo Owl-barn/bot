@@ -40,7 +40,7 @@ export default Command(
 
     // Get guild.
     const rconGuild = await state.db.rcon.findFirst({
-      where: { guild_id: author.guild.id },
+      where: { guildId: author.guild.id },
     });
 
     // Check if connected server.
@@ -65,7 +65,7 @@ export default Command(
     // Check if already registered.
     const userExists = await state.db.whitelist.findFirst({
       where: {
-        OR: [{ user_id: author.id }, { mc_uuid: uuid }],
+        OR: [{ userId: author.id }, { minecraftId: uuid }],
       },
     });
 
@@ -95,14 +95,14 @@ export default Command(
     // Add to db.
     await state.db.whitelist.create({
       data: {
-        user_id: author.id,
-        mc_uuid: uuid,
-        guild_id: author.guild.id,
+        userId: author.id,
+        minecraftId: uuid,
+        guildId: author.guild.id,
       },
     });
 
     // Give role.
-    if (rconGuild.role_id) author.roles.add(rconGuild.role_id);
+    if (rconGuild.roleId) author.roles.add(rconGuild.roleId);
 
     // Set Nickname.
     author.setNickname(username).catch(() => null);

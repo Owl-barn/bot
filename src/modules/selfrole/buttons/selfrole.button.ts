@@ -16,23 +16,23 @@ export default {
 
     if (!user) return error;
 
-    const query = await state.db.self_role_roles.findFirst({
-      where: { uuid: buttonID },
+    const query = await state.db.selfrole.findFirst({
+      where: { id: buttonID },
     });
 
     if (!query) return error;
 
-    const hasRole = user.roles.cache.get(query.role_id);
+    const hasRole = user.roles.cache.get(query.roleId);
 
     if (hasRole) {
-      user.roles.remove(query.role_id);
+      user.roles.remove(query.roleId);
       const embed = failEmbedTemplate(
-        `Role <@&${query.role_id}> removed!`,
+        `Role <@&${query.roleId}> removed!`,
       );
       return { ephemeral: true, embeds: [embed] };
     } else {
-      user.roles.add(query.role_id);
-      const embed = embedTemplate(`Role <@&${query.role_id}> added!`);
+      user.roles.add(query.roleId);
+      const embed = embedTemplate(`Role <@&${query.roleId}> added!`);
       return { ephemeral: true, embeds: [embed] };
     }
   },

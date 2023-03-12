@@ -1,5 +1,4 @@
 import { embedTemplate } from "@lib/embedTemplate";
-import { self_role_main, self_role_roles } from "@prisma/client";
 import { state } from "@app";
 import {
   ActionRowBuilder,
@@ -10,9 +9,10 @@ import {
   EmbedBuilder,
   Message,
 } from "discord.js";
+import prisma, { Selfrole } from "@prisma/client";
 
-export async function isValidChannel(channel_id: string) {
-  const channel = await state.client.channels.fetch(channel_id);
+export async function isValidChannel(channelId: string) {
+  const channel = await state.client.channels.fetch(channelId);
   if (!channel) throw "Channel not found";
 
   if (channel.type !== ChannelType.GuildText)
@@ -29,7 +29,7 @@ export async function isValidChannel(channel_id: string) {
 }
 
 export async function updateCollection(collection: selfRoleCollection): Promise<void> {
-  const channel = await isValidChannel(collection.channel_id);
+  const channel = await isValidChannel(collection.channelId);
 
   let message: Message;
 
@@ -42,14 +42,14 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
         ButtonStyle.Primary,
       ),
     });
-    await state.db.self_role_main.update({
-      where: { uuid: collection.uuid },
-      data: { message_id: message.id },
+    await state.db.selfroleCollection.update({
+      where: { id: collection.id },
+      data: { messageId: message.id },
     });
   }
 
-  if (collection.message_id) {
-    message = await channel.messages.fetch(collection.message_id);
+  if (collection.messageId) {
+    message = await channel.messages.fetch(collection.messageId);
     if (!message) {
       await sendMessage();
       return;
@@ -71,9 +71,9 @@ export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
   const embed = embedTemplate()
     .setTitle(collection.title)
     .setDescription(collection.description)
-    .setFooter({ text: collection.uuid });
+    .setFooter({ text: collection.id });
 
-  for (const role of collection.self_role_roles) {
+  for (const role of collection.roles) {
     embed.addFields([{ name: role.title, value: role.description }]);
   }
 
@@ -85,13 +85,13 @@ export function generateButtons(
   prefix: string,
   style: ButtonStyle,
 ): ActionRowBuilder<ButtonBuilder>[] {
-  if (collection.self_role_roles.length == 0) return [];
+  if (collection.roles.length == 0) return [];
 
   const buttons: ButtonBuilder[] = [];
-  for (const role of collection.self_role_roles) {
+  for (const role of collection.roles) {
     buttons.push(
       new ButtonBuilder()
-        .setCustomId(`${prefix}_${role.uuid}`)
+        .setCustomId(`${prefix}_${role.id}`)
         .setLabel(role.title)
         .setStyle(style),
     );
@@ -103,6 +103,6 @@ export function generateButtons(
   return [component];
 }
 
-export interface selfRoleCollection extends self_role_main {
-  self_role_roles: self_role_roles[];
+export interface selfRoleCollection extends prisma.SelfroleCollection {
+  roles: Selfrole[];
 }

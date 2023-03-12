@@ -29,15 +29,15 @@ export default SubCommand(
   async (msg) => {
     if (!msg.guildId) throw "no guild??";
 
-    const role = msg.options.getRole("birthday_role") as Role | undefined;
+    const role = msg.options.getRole("birthdayRoleId") as Role | undefined;
 
     const failEmbed = failEmbedTemplate("I cant assign this role.");
 
     if (role && !role.editable) return { embeds: [failEmbed] };
 
-    await state.db.guilds.update({
-      where: { guild_id: msg.guildId },
-      data: { birthday_role: role?.id || null },
+    await state.db.guild.update({
+      where: { id: msg.guildId },
+      data: { birthdayRoleId: role?.id || null },
     });
 
     const embed = embedTemplate(

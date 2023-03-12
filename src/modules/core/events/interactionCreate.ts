@@ -18,7 +18,7 @@ export default Event({
 
   async execute(interaction) {
     const guildconfig = interaction.guild && state.guilds.get(interaction.guild.id);
-    if (guildconfig?.banned) return;
+    if (guildconfig?.isBanned) return;
 
     if (interaction.isButton()) {
       return await buttonEvent(interaction)
@@ -80,7 +80,7 @@ const commandEvent = async (msg: ChatInputCommandInteraction): Promise<void> => 
       "You are not allowed to do this command.",
     );
 
-  const isPremium = state.guilds.get(msg.guildId)?.premium;
+  const isPremium = state.guilds.get(msg.guildId)?.subscriptionTier ?? 0 > 0;
 
   // Check if premium command.
   if (command.info.premium && !isPremium && !(msg.user.id === state.env.OWNER_ID))

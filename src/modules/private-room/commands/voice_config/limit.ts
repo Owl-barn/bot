@@ -29,17 +29,17 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "No guildID???";
+    if (!msg.guild) throw "No guildID???";
     const limit = msg.options.getInteger("limit", true);
 
-    const guild = await state.db.guilds.update({
-      where: { guild_id: msg.guildId },
-      data: { vc_limit: limit },
+    const guild = await state.db.guild.update({
+      where: { id: msg.guild.id },
+      data: { privateRoomLimit: limit },
     });
 
     const embed = embedTemplate();
     embed.setDescription(
-      `Successfully set the private voice channel limit to ${guild.vc_limit}`,
+      `Successfully set the private voice channel limit to ${guild.privateRoomLimit}`,
     );
 
     return { embeds: [embed] };

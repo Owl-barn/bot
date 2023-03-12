@@ -41,12 +41,12 @@ export default SubCommand(
         "successfully disabled the level up channel",
       );
 
-    const guild = await state.db.guilds.update({
-      where: { guild_id: msg.guildId },
-      data: { level_channel: channel?.id },
+    const guild = await state.db.guild.update({
+      where: { id: msg.guildId },
+      data: { levelChannelId: channel?.id },
     });
 
-    localState.guilds.set(guild.guild_id, guild);
+    localState.guilds.set(guild.id, guild);
 
     return { embeds: [embed] };
   }

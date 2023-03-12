@@ -14,7 +14,7 @@ export default Event({
     if (msg.member?.user.bot) return;
     if (msg.content == "") return;
     const config = state.guilds.get(msg.guildId);
-    if (!config || !config.log_events || config.banned) return;
+    if (!config || !config.logEvents || config.isBanned) return;
 
     const embed = failEmbedTemplate();
 

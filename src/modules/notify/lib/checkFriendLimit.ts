@@ -2,12 +2,12 @@ import { failEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 
 export async function checkFriendLimit(
-  friend_id: string,
-  user_id: string,
+  friendId: string,
+  userId: string,
 ) {
   // Fetch user's friends.
-  const userFriendCount = await state.db.friendships.count({
-    where: { user_id },
+  const userFriendCount = await state.db.friendship.count({
+    where: { userId },
   });
 
   // Check if user has too many friends.
@@ -18,8 +18,8 @@ export async function checkFriendLimit(
   }
 
   // fetch friend's friends.
-  const friendFriendCount = await state.db.friendships.count({
-    where: { friend_id },
+  const friendFriendCount = await state.db.friendship.count({
+    where: { friendId },
   });
 
   // Check if friend has too many friends.

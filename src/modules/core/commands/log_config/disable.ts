@@ -35,23 +35,23 @@ export default SubCommand(
     if (!msg.guildId) throw "No guildID???";
     const type = msg.options.getNumber("type", false);
 
-    const guild = await state.db.guilds.update({
-      where: { guild_id: msg.guildId },
+    const guild = await state.db.guild.update({
+      where: { id: msg.guildId },
       data:
         type === null
           ? {
-            log_events: null,
-            log_bot: null,
-            log_join_leave: null,
+            logEvents: null,
+            logBot: null,
+            logJoinLeave: null,
           }
           : {
-            log_events: type === 0 ? null : undefined,
-            log_bot: type === 1 ? null : undefined,
-            log_join_leave: type === 2 ? null : undefined,
+            logEvents: type === 0 ? null : undefined,
+            logBot: type === 1 ? null : undefined,
+            logJoinLeave: type === 2 ? null : undefined,
           },
     });
 
-    state.guilds.set(guild.guild_id, guild);
+    state.guilds.set(guild.id, guild);
 
     const embed = embedTemplate();
     embed.setDescription(`The bot will no longer send logs.`);

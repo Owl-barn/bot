@@ -39,31 +39,31 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    const guildID = msg.options.getString("guild_id", true);
-    const banned = msg.options.getBoolean("state", true);
+    const guildID = msg.options.getString("guildId", true);
+    const isBanned = msg.options.getBoolean("state", true);
     const leave = msg.options.getBoolean("leave", false);
 
     const client = msg.client;
     const guild = client.guilds.cache.get(guildID);
     if (!guild) return { content: "Guild not found" };
 
-    const guildData = await state.db.guilds.update({
-      where: { guild_id: guild.id },
-      data: { banned },
+    const guildData = await state.db.guild.update({
+      where: { id: guild.id },
+      data: { isBanned },
     });
 
-    if (banned) await guild.commands.set([]);
+    if (isBanned) await guild.commands.set([]);
     else await registerCommand(guild);
-    state.guilds.set(guildData.guild_id, guildData);
+    state.guilds.set(guildData.id, guildData);
 
     let left = false;
-    if (leave && banned) {
+    if (leave && isBanned) {
       const leaveGuild = await guild.leave();
       if (leaveGuild) left = true;
     }
 
     return {
-      content: `ban state: \`${banned ? "true" : "false"}\`\nLeft: \`${left ? "true" : "false"}\`\nName: \`${guild.name}\``,
+      content: `ban state: \`${isBanned ? "true" : "false"}\`\nLeft: \`${left ? "true" : "false"}\`\nName: \`${guild.name}\``,
     };
   }
 

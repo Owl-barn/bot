@@ -30,12 +30,12 @@ export default SubCommand(
   async (msg) => {
     const friendUser = msg.options.getUser("user", true);
 
-    const deleted = await state.db.friendships
+    const deleted = await state.db.friendship
       .delete({
         where: {
-          user_id_friend_id: {
-            user_id: msg.user.id,
-            friend_id: friendUser.id,
+          userId_friendId: {
+            userId: msg.user.id,
+            friendId: friendUser.id,
           },
         },
       })

@@ -22,7 +22,7 @@ export default SubCommand(
     if (!msg.guildId) throw "no guild??";
 
     const deleted = await state.db.level.deleteMany({
-      where: { guild_id: msg.guildId },
+      where: { guildId: msg.guildId },
     });
 
     const embed = embedTemplate();

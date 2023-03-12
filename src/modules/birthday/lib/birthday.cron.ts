@@ -1,4 +1,4 @@
-import { birthdays, guilds } from "@prisma/client";
+import { Birthday, Guild } from "@prisma/client";
 import { state } from "@app";
 import cron from "cron";
 import { ActivityType, TextBasedChannel } from "discord.js";
@@ -35,19 +35,19 @@ export async function birthdayLoop(): Promise<void> {
     select * from birthdays
     where extract(month from birthday) = extract(month from current_timestamp)
     and extract(day from birthday) = extract(day from current_timestamp)
-    `) as birthdays[];
+    `) as Birthday[];
 
-  const guildsDB = await db.guilds.findMany({
+  const guildsDB = await db.guild.findMany({
     where: {
       OR: [
-        { NOT: { birthday_role: null } },
-        { NOT: { birthday_channel: null } },
+        { NOT: { birthdayRoleId: null } },
+        { NOT: { birthdayChannelId: null } },
       ],
     },
   });
 
-  const removeRoleUsers = await db.birthdays.findMany({
-    where: { has_role: true },
+  const removeRoleUsers = await db.birthday.findMany({
+    where: { hasRole: true },
   });
 
   for (const user of removeRoleUsers) {
@@ -55,15 +55,15 @@ export async function birthdayLoop(): Promise<void> {
     if (!data) continue;
     const { guild, role, member } = data;
 
-    await db.birthdays
+    await db.birthday
       .update({
         where: {
-          user_id_guild_id: {
-            user_id: user.user_id,
-            guild_id: guild.id,
+          userId_guildId: {
+            userId: user.userId,
+            guildId: guild.id,
           },
         },
-        data: { has_role: false },
+        data: { hasRole: false },
       })
       .catch(() => null);
 
@@ -72,31 +72,31 @@ export async function birthdayLoop(): Promise<void> {
     const addRole = await member.roles.remove(role).catch(() => null);
     if (!addRole) continue;
 
-    console.info(`removed birthday role from ${user.user_id}`.yellow);
+    console.info(`removed birthday role from ${user.userId}`.yellow);
   }
 
   for (const user of users) {
     const data = await getData(user, guildsDB);
     if (!data) continue;
-    if (state.bannedUsers.has(user.user_id)) continue;
+    if (state.bannedUsers.has(user.userId)) continue;
     const { guild, role, channel, member } = data;
 
     if (role) {
       const addRole = await member.roles.add(role).catch(() => null);
       if (addRole) {
-        await db.birthdays
+        await db.birthday
           .update({
             where: {
-              user_id_guild_id: {
-                user_id: user.user_id,
-                guild_id: guild.id,
+              userId_guildId: {
+                userId: user.userId,
+                guildId: guild.id,
               },
             },
-            data: { has_role: true },
+            data: { hasRole: true },
           })
           .catch(() => null);
 
-        console.info(`given birthday role to ${user.user_id}`.yellow);
+        console.info(`given birthday role to ${user.userId}`.yellow);
       }
     }
 
@@ -109,27 +109,27 @@ export async function birthdayLoop(): Promise<void> {
 }
 
 async function getData(
-  user: birthdays,
-  guildsDB: guilds[],
+  user: Birthday,
+  guildsDB: Guild[],
 ) {
-  const guildDB = guildsDB.find((x) => x.guild_id === user.guild_id);
+  const guildDB = guildsDB.find((x) => x.id === user.guildId);
   if (!guildDB) return;
-  if (guildDB.birthday_role === null) return;
+  if (guildDB.birthdayRoleId === null) return;
 
-  const guild = client.guilds.cache.get(guildDB.guild_id);
+  const guild = client.guilds.cache.get(guildDB.id);
   if (!guild) return;
 
-  const member = await guild?.members.fetch(user.user_id).catch(() => null);
+  const member = await guild?.members.fetch(user.userId).catch(() => null);
   if (!member) return;
 
   let role;
-  if (guildDB.birthday_role) {
-    role = await guild.roles.fetch(guildDB.birthday_role).catch(() => null);
+  if (guildDB.birthdayRoleId) {
+    role = await guild.roles.fetch(guildDB.birthdayRoleId).catch(() => null);
     if (!role) {
-      await db.guilds
+      await db.guild
         .update({
-          where: { guild_id: guildDB.guild_id },
-          data: { birthday_role: null },
+          where: { id: guildDB.id },
+          data: { birthdayRoleId: null },
         })
         .catch(() => null);
       return;
@@ -137,15 +137,15 @@ async function getData(
   }
 
   let channel;
-  if (guildDB.birthday_channel) {
+  if (guildDB.birthdayChannelId) {
     channel = guild.channels.cache.get(
-      guildDB.birthday_channel,
+      guildDB.birthdayChannelId,
     ) as TextBasedChannel;
     if (!channel) {
-      await db.guilds
+      await db.guild
         .update({
-          where: { guild_id: guildDB.guild_id },
-          data: { birthday_channel: null },
+          where: { id: guildDB.id },
+          data: { birthdayChannelId: null },
         })
         .catch(() => null);
       return;

@@ -32,11 +32,11 @@ export default SubCommand(
     const fail = failEmbedTemplate();
     const embed = embedTemplate();
 
-    const privateRoom = await state.db.private_vc.findFirst({
+    const privateRoom = await state.db.privateRoom.findFirst({
       where: {
         OR: [
-          { main_channel_id: room.id },
-          { wait_channel_id: room.id },
+          { mainRoomId: room.id },
+          { waitingRoomId: room.id },
         ],
       },
     });
@@ -46,13 +46,13 @@ export default SubCommand(
         embeds: [fail.setDescription("Channel is not a private room")],
       };
 
-    const timeStamp = Math.round(Number(privateRoom.created) / 1000);
+    const timeStamp = Math.round(Number(privateRoom.createdAt) / 1000);
 
     room = room as VoiceChannel;
     embed.setTitle(room.name.split(" ")[1]);
     embed.setDescription(`Private Room Info`);
     embed.addFields([
-      { name: "Owner", value: `<@${privateRoom.user_id}>`, inline: true },
+      { name: "Owner", value: `<@${privateRoom.userId}>`, inline: true },
       {
         name: "Active since",
         value: `<t:${timeStamp}:R>`,

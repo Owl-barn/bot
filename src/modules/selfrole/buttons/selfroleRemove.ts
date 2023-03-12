@@ -17,9 +17,9 @@ export default {
 
     if (!user) return error;
 
-    const query = await state.db.self_role_roles
+    const query = await state.db.selfrole
       .delete({
-        where: { uuid: buttonID },
+        where: { id: buttonID },
       })
       .catch(() => null);
 
@@ -29,9 +29,9 @@ export default {
         ephemeral: true,
       };
 
-    const collection = await state.db.self_role_main.findUnique({
-      where: { uuid: query.main_uuid },
-      include: { self_role_roles: true },
+    const collection = await state.db.selfroleCollection.findUnique({
+      where: { id: query.collectionId },
+      include: { roles: true },
     });
 
     if (!collection) return error;

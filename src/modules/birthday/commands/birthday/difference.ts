@@ -50,13 +50,13 @@ export default SubCommand(
 
     if (!second_user) second_user = msg.member as GuildMember;
 
-    const users = await state.db.birthdays.findMany({
+    const users = await state.db.birthday.findMany({
       where: {
-        OR: [{ user_id: first_user.id }, { user_id: second_user.id }],
-        guild_id: msg.guildId,
-        NOT: { birthday: null },
+        OR: [{ userId: first_user.id }, { userId: second_user.id }],
+        guildId: msg.guildId,
+        NOT: { date: null },
       },
-      orderBy: { birthday: "asc" },
+      orderBy: { date: "asc" },
     });
 
     if (users.length !== 2) {
@@ -66,8 +66,8 @@ export default SubCommand(
       return { embeds: [response] };
     }
 
-    const user0_age = Number(new Date()) - Number(users[0].birthday);
-    const user1_age = Number(new Date()) - Number(users[1].birthday);
+    const user0_age = Number(new Date()) - Number(users[0].date);
+    const user1_age = Number(new Date()) - Number(users[1].date);
 
     const percent_difference =
       (Math.abs(user0_age - user1_age) /
@@ -75,7 +75,7 @@ export default SubCommand(
       2;
 
     const difference = Math.abs(
-      (Number(users[0].birthday) - Number(users[1].birthday)) /
+      (Number(users[0].date) - Number(users[1].date)) /
       (1000 * 60 * 60 * 24),
     );
 
@@ -89,10 +89,10 @@ export default SubCommand(
       : dayString;
 
     const oldest =
-      users[0].user_id === second_user.id ? second_user : first_user;
+      users[0].userId === second_user.id ? second_user : first_user;
 
     const youngest =
-      users[1].user_id === second_user.id ? second_user : first_user;
+      users[1].userId === second_user.id ? second_user : first_user;
 
     embed.addFields([
       {

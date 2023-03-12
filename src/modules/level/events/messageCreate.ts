@@ -25,40 +25,40 @@ export default Event({
 
     let query = await state.db.level.findUnique({
       where: {
-        user_id_guild_id: { guild_id: guild, user_id: user },
+        userId_guildId: { guildId: guild, userId: user },
       },
     });
 
     if (!query)
       query = await state.db.level.create({
-        data: { user_id: user, guild_id: guild },
+        data: { userId: user, guildId: guild },
       });
 
     const current = calculateLevelFromXP(query.experience);
 
-    const toAdd = getRandomXP(guildConfig.level_modifier);
+    const toAdd = getRandomXP(guildConfig.levelModifier);
     current.currentXP += toAdd;
 
     if (current.currentXP >= localState.levelArray[current.level].xp) {
       current.level += 1;
 
       // Assign level roles.
-      const roleRewards = await state.db.level_reward.findMany({
-        where: { guild_id: guild, level: { lte: current.level } },
+      const roleRewards = await state.db.levelReward.findMany({
+        where: { guildId: guild, level: { lte: current.level } },
       });
 
       const currentRoles = msg.member?.roles.cache.map((x) => x.id);
 
       const rolesToAdd = currentRoles
         ? roleRewards.filter(
-          (x) => currentRoles?.indexOf(x.role_id) === -1,
+          (x) => currentRoles?.indexOf(x.roleId) === -1,
         )
         : roleRewards;
 
       if (rolesToAdd.length > 0) {
         const roles: RoleResolvable[] = [];
         for (const x of rolesToAdd) {
-          const role = msg.guild?.roles.resolveId(x.role_id);
+          const role = msg.guild?.roles.resolveId(x.roleId);
           if (!role) continue;
           roles.push(role);
         }
@@ -66,7 +66,7 @@ export default Event({
       }
 
       // Notify user.
-      let message = guildConfig.level_message;
+      let message = guildConfig.levelMessage;
       if (message) {
         message = message.replace("{LEVEL}", String(current.level));
         message = message.replace("{USER}", `<@${user}>`);
@@ -75,13 +75,13 @@ export default Event({
           String(rolesToAdd.length),
         );
 
-        if (guildConfig.level_channel) {
-          const channel = msg.guild?.channels.cache.get(guildConfig.level_channel);
+        if (guildConfig.levelChannelId) {
+          const channel = msg.guild?.channels.cache.get(guildConfig.levelChannelId);
 
           if (!channel || !channel.isTextBased()) {
-            await state.db.guilds.update({
-              where: { guild_id: guild },
-              data: { level_channel: null },
+            await state.db.guild.update({
+              where: { id: guild },
+              data: { levelChannelId: null },
             });
 
             await msg.reply(message);
@@ -96,7 +96,7 @@ export default Event({
     }
 
     await state.db.level.update({
-      where: { user_id_guild_id: { guild_id: guild, user_id: user } },
+      where: { userId_guildId: { guildId: guild, userId: user } },
       data: { experience: current.totalXP + toAdd },
     });
 

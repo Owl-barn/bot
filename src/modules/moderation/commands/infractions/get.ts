@@ -1,6 +1,6 @@
 import { failEmbedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
-import { moderation_type } from "@prisma/client";
+import { ModerationType } from "@prisma/client";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import {
@@ -42,24 +42,24 @@ export default SubCommand(
     if (!target)
       return { embeds: [failEmbed.setDescription("No user provided")] };
 
-    const logs = await state.db.moderation_log.findMany({
+    const logs = await state.db.infraction.findMany({
       where: {
-        user: target.id,
-        guild_id: msg.guildId as string,
-        deleted: false,
+        userId: target.id,
+        guildId: msg.guildId as string,
+        deletedOn: null,
         OR: [
-          { moderation_type: { not: moderation_type.warn } },
+          { moderationType: { not: ModerationType.warn } },
           {
-            moderation_type: moderation_type.warn,
+            moderationType: ModerationType.warn,
             OR: [
-              { expiry: { equals: null } },
-              { expiry: { gt: new Date() } },
+              { expiresOn: { equals: null } },
+              { expiresOn: { gt: new Date() } },
             ],
           },
         ],
       },
       orderBy: {
-        created: "asc",
+        createdAt: "asc",
       },
     });
 

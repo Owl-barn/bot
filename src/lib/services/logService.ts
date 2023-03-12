@@ -41,16 +41,16 @@ export class LogService {
     // get the channel
     const config = state.guilds.get(guild);
     if (!config) return;
-    if (!config.log_bot && type === logType.BOT) return;
-    if (!config.log_events && type === logType.EVENT) return;
-    if (!config.log_join_leave && type === logType.JOIN_LEAVE) return;
+    if (!config.logBot && type === logType.BOT) return;
+    if (!config.logEvents && type === logType.EVENT) return;
+    if (!config.logJoinLeave && type === logType.JOIN_LEAVE) return;
     let channelId;
 
-    if (type === logType.BOT) channelId = config.log_bot as string;
+    if (type === logType.BOT) channelId = config.logBot as string;
     else if (type === logType.JOIN_LEAVE)
-      channelId = config.log_join_leave as string;
+      channelId = config.logJoinLeave as string;
     else if (type === logType.EVENT)
-      channelId = config.log_events as string;
+      channelId = config.logEvents as string;
     else return;
 
     const channel = await state.client.channels.fetch(channelId);
@@ -81,17 +81,17 @@ export class LogService {
 
   public push = (
     embed: EmbedBuilder,
-    guild_id: string,
+    guildId: string,
     type: logType,
   ): void => {
     embed.setTimestamp();
-    this.addToQueue(embed, guild_id, type);
+    this.addToQueue(embed, guildId, type);
   };
 
   public logCommand = (
     interaction: ChatInputCommandInteraction,
     processingDuration: number,
-    hidden: boolean,
+    isHidden: boolean,
   ): void => {
     let { commandName } = interaction;
 
@@ -101,12 +101,12 @@ export class LogService {
     subCommandGroup ? (commandName += `_${subCommandGroup}`) : null;
     subCommand ? (commandName += `_${subCommand}`) : null;
 
-    const query: Prisma.command_logUncheckedCreateInput = {
-      user: interaction.user.id,
-      command_name: commandName,
-      guild_id: interaction.guildId,
-      channel_id: interaction.channelId,
-      hidden,
+    const query: Prisma.CommandLogUncheckedCreateInput = {
+      userId: interaction.user.id,
+      commandName: commandName,
+      guildId: interaction.guildId,
+      channelId: interaction.channelId,
+      isHidden,
     };
 
     const guildName = interaction.guild ? interaction.guild.name : "DM";
@@ -119,10 +119,10 @@ export class LogService {
       `${duration}ms`.yellow,
       interaction.user.username,
       commandName,
-      hidden ? "True".green : "False".red,
+      isHidden ? "True".green : "False".red,
     ];
 
-    state.db.command_log
+    state.db.commandLog
       .create({ data: query })
       .then(() => console.info(logList.join(" | ")))
       .catch(console.error);
@@ -135,7 +135,7 @@ export class LogService {
     embed.addFields([
       {
         name: "Hidden",
-        value: hidden ? "👻" : "🦉",
+        value: isHidden ? "👻" : "🦉",
         inline: true,
       },
       {

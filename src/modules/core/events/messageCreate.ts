@@ -36,16 +36,16 @@ export default Event({
       }
 
       case "vc*": {
-        const vcs = await state.db.private_vc.findMany({
-          where: { guild_id: msg.guildId as string },
+        const vcs = await state.db.privateRoom.findMany({
+          where: { guildId: msg.guildId as string },
         });
 
         for (const vc of vcs) {
           const main = await msg.guild?.channels.fetch(
-            vc.main_channel_id,
+            vc.mainRoomId,
           );
           const wait = await msg.guild?.channels.fetch(
-            vc.wait_channel_id,
+            vc.waitingRoomId,
           );
           await main?.delete().catch(console.error);
           await wait?.delete().catch(console.error);
@@ -73,12 +73,9 @@ export default Event({
       }
 
       case "fix*": {
-        const data = msg.client.guilds.cache.map(guild => ({ guild_id: guild.id }));
+        const data = msg.client.guilds.cache.map(guild => ({ id: guild.id }));
 
-        const result = await state.db.guilds.createMany({
-          data,
-          skipDuplicates: true,
-        });
+        const result = await state.db.guild.createMany({ data, skipDuplicates: true });
 
         msg.reply(`Fixed ${result.count} guilds.`);
         return;
@@ -95,24 +92,24 @@ export default Event({
       }
 
       case "age*": {
-        let birthdays = await state.db.birthdays.findMany({
-          where: { guild_id: msg.guildId as string },
+        let birthdays = await state.db.birthday.findMany({
+          where: { guildId: msg.guildId as string },
         });
         let combined = 0;
         const currentYear = new Date().getFullYear();
 
-        birthdays = birthdays.filter(x => x.birthday && x.birthday.getFullYear() > currentYear - 40);
+        birthdays = birthdays.filter(x => x.date && x.date.getFullYear() > currentYear - 40);
 
-        birthdays = birthdays.sort((x, y) => Number(y.birthday) - Number(x.birthday));
+        birthdays = birthdays.sort((x, y) => Number(y.date) - Number(x.date));
 
-        birthdays.forEach((x) => (combined += yearsAgo(x.birthday as Date)));
+        birthdays.forEach((x) => (combined += yearsAgo(x.date as Date)));
 
         const average = Math.round(combined / birthdays.length);
 
         msg.reply(
           `Average: ${average}`
-          + `Median: ${yearsAgo(birthdays[Math.round(birthdays.length / 2)].birthday as Date)}`
-          + `Range: ${yearsAgo(birthdays[0].birthday as Date)} - ${yearsAgo(birthdays[birthdays.length - 1].birthday as Date,)}`,
+          + `Median: ${yearsAgo(birthdays[Math.round(birthdays.length / 2)].date as Date)}`
+          + `Range: ${yearsAgo(birthdays[0].date as Date)} - ${yearsAgo(birthdays[birthdays.length - 1].date as Date,)}`,
         );
 
         return;

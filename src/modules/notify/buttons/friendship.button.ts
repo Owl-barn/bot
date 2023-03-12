@@ -10,11 +10,11 @@ export default {
 
     if (msg.user.id !== friend) return {};
 
-    const dataExists = await state.db.friendships.findUnique({
+    const dataExists = await state.db.friendship.findUnique({
       where: {
-        user_id_friend_id: {
-          user_id: user,
-          friend_id: friend,
+        userId_friendId: {
+          userId: user,
+          friendId: friend,
         },
       },
     });
@@ -34,15 +34,15 @@ export default {
 
     // Check if the user accepted the request.
     if (action == "accept") {
-      await state.db.friendships.update({
+      await state.db.friendship.update({
         where: {
-          user_id_friend_id: {
-            user_id: user,
-            friend_id: friend,
+          userId_friendId: {
+            userId: user,
+            friendId: friend,
           },
         },
         data: {
-          pending: false,
+          isPending: false,
         },
       });
 
@@ -60,11 +60,11 @@ export default {
 
     // Check if the user declined the request.
     if (action == "decline") {
-      await state.db.friendships.delete({
+      await state.db.friendship.delete({
         where: {
-          user_id_friend_id: {
-            user_id: user,
-            friend_id: friend,
+          userId_friendId: {
+            userId: user,
+            friendId: friend,
           },
         },
       });

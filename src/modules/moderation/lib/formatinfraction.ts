@@ -1,33 +1,33 @@
-import { moderation_log, moderation_type } from "@prisma/client";
+import { Infraction, ModerationType } from "@prisma/client";
 import { msToString } from "@lib/time";
 
 export function formatInfraction(
-  infraction: moderation_log,
+  infraction: Infraction,
   includeUser = false,
 ): string {
-  let expiryString = "";
+  let expiresOnString = "";
 
-  if (infraction.expiry) {
-    const dateMs = Number(infraction.expiry);
+  if (infraction.expiresOn) {
+    const dateMs = Number(infraction.expiresOn);
     const seconds = dateMs / 1000;
-    if (infraction.moderation_type == moderation_type.timeout) {
-      expiryString = `**Duration:** ${msToString(
-        dateMs - Number(infraction.created),
+    if (infraction.moderationType == ModerationType.timeout) {
+      expiresOnString = `**Duration:** ${msToString(
+        dateMs - Number(infraction.createdAt),
       )}\n`;
     } else {
-      expiryString = `**Expiry:** <t:${seconds}:D>\n`;
+      expiresOnString = `**expiresOn:** <t:${seconds}:D>\n`;
     }
   }
 
-  const user = includeUser ? `**user:** <@!${infraction.user}>\n` : "";
+  const user = includeUser ? `**user:** <@!${infraction.userId}>\n` : "";
 
   return (
-    `**ID:** \`${infraction.uuid}\`\n` +
-    `**type:** \`${infraction.moderation_type}\`\n` +
+    `**ID:** \`${infraction.id}\`\n` +
+    `**type:** \`${infraction.moderationType}\`\n` +
     user +
-    `**mod:** <@!${infraction.moderator}>\n` +
+    `**mod:** <@!${infraction.moderatorId}>\n` +
     `**reason:** *${infraction.reason}*\n` +
-    expiryString +
-    `**Date:** <t:${Number(infraction.created) / 1000}:R>`
+    expiresOnString +
+    `**Date:** <t:${Number(infraction.createdAt) / 1000}:R>`
   );
 }

@@ -28,7 +28,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild??";
+    if (!msg.guild) throw "no guild??";
     let message = msg.options.getString("message");
 
     const embed = embedTemplate();
@@ -42,12 +42,12 @@ export default SubCommand(
       embed.setDescription("successfully disabled the level up message");
     }
 
-    const guild = await state.db.guilds.update({
-      where: { guild_id: msg.guildId },
-      data: { level_message: message },
+    const guild = await state.db.guild.update({
+      where: { id: msg.guild.id },
+      data: { levelMessage: message },
     });
 
-    localState.guilds.set(guild.guild_id, guild);
+    localState.guilds.set(guild.id, guild);
 
     return { embeds: [embed] };
   }

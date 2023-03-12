@@ -44,8 +44,8 @@ export default SubCommand(
         embeds: [failEmbed.setDescription("I cant assign that role")],
       };
 
-    await state.db.level_reward.create({
-      data: { guild_id: msg.guildId, role_id: role.id, level },
+    await state.db.levelReward.create({
+      data: { guildId: msg.guildId, roleId: role.id, level },
     });
 
     const embed = embedTemplate();

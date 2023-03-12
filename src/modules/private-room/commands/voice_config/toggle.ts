@@ -21,32 +21,30 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "No guildID???";
+    if (!msg.guild) throw "No guild???";
 
     let channelID = null;
     let categoryID = null;
-    const config = await state.db.guilds.findUnique({
-      where: { guild_id: msg.guildId as string },
+    const config = await state.db.guild.findUnique({
+      where: { id: msg.guild.id },
     });
     if (!config) throw "No guild??";
 
-    if (config.vc_channel_id) {
-      const channel = msg.guild?.channels.cache.get(config.vc_channel_id);
-      const category = msg.guild?.channels.cache.get(
-        config.vc_category_id as string,
-      );
+    if (config.privateRoomChannelId) {
+      const channel = msg.guild?.channels.cache.get(config.privateRoomChannelId);
+      const category = config.privateRoomCategoryId && msg.guild?.channels.cache.get(config.privateRoomCategoryId);
 
       if (channel) await channel.delete().catch(console.error);
       if (category)
         await category.delete().catch(console.error);
 
-      const vcs = await state.db.private_vc.findMany({
-        where: { guild_id: msg.guildId as string },
+      const vcs = await state.db.privateRoom.findMany({
+        where: { guildId: msg.guildId as string },
       });
 
       for (const vc of vcs) {
-        const main = msg.guild?.channels.cache.get(vc.main_channel_id);
-        const wait = msg.guild?.channels.cache.get(vc.wait_channel_id);
+        const main = msg.guild?.channels.cache.get(vc.mainRoomId);
+        const wait = msg.guild?.channels.cache.get(vc.waitingRoomId);
         await main?.delete().catch(console.error);
         await wait?.delete().catch(console.error);
       }
@@ -64,7 +62,7 @@ export default SubCommand(
       };
 
       const basepermissions: OverwriteResolvable = {
-        id: msg.guildId,
+        id: msg.guild.id,
         allow: ["Connect"],
         deny: ["Speak", "Stream"],
       };
@@ -89,9 +87,9 @@ export default SubCommand(
       categoryID = category.id;
     }
 
-    const query = await state.db.guilds.update({
-      where: { guild_id: msg.guildId as string },
-      data: { vc_channel_id: channelID, vc_category_id: categoryID },
+    const query = await state.db.guild.update({
+      where: { id: config.id },
+      data: { privateRoomChannelId: channelID, privateRoomCategoryId: categoryID },
     });
 
     localState.controller.updateConfig(query);

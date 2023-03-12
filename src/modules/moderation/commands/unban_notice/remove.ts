@@ -22,9 +22,9 @@ export default SubCommand(
   async (msg) => {
     if (!msg.guildId) throw "No guildID???";
 
-    state.db.guilds.update({
-      where: { guild_id: msg.guildId },
-      data: { unban_notice: null },
+    state.db.guild.update({
+      where: { id: msg.guildId },
+      data: { unbanNotice: null },
     });
 
 

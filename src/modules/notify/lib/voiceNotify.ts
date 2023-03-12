@@ -1,6 +1,5 @@
 import { embedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
-import { friendships } from "@prisma/client";
 import { state } from "@app";
 import { PermissionFlagsBits } from "discord-api-types/payloads/v9";
 import {
@@ -12,6 +11,7 @@ import {
   VoiceState,
 } from "discord.js";
 import { localState as VCState } from "modules/private-room";
+import { Friendship } from "@prisma/client";
 
 export class Controller {
   private timeout: Map<string, NodeJS.Timeout> = new Map();
@@ -37,13 +37,13 @@ export class Controller {
     // Check if channel is a waiting room.
     const isWaitingRoom = VCState.controller
       .getRooms()
-      .find(r => r.wait_channel_id === newState.channel?.id);
+      .find(r => r.waitingRoomId === newState.channel?.id);
 
     if (isWaitingRoom) return;
 
     // Check if has friends.
-    const friends = await db.friendships.findMany({
-      where: { friend_id: newState.member.id },
+    const friends = await db.friendship.findMany({
+      where: { friendId: newState.member.id },
     });
 
     if (friends.length === 0) return;
@@ -72,7 +72,7 @@ export class Controller {
   private checkIfNotify = async (
     member_id: string,
     channel: VoiceBasedChannel,
-    friends: friendships[],
+    friends: Friendship[],
   ) => {
     this.timeout.delete(member_id);
     if (!channel) return;
@@ -85,7 +85,7 @@ export class Controller {
 
   private notifyUsers = async (
     member: GuildMember,
-    friends: friendships[],
+    friends: Friendship[],
   ) => {
     const channel = member.voice.channel;
     const guild = await member.client.guilds.fetch(member.guild.id);
@@ -102,7 +102,7 @@ export class Controller {
 
     // Fetch member objects.
     const friendMembers = await guild.members.fetch({
-      user: friends.map((f) => f.user_id),
+      user: friends.map((f) => f.userId),
     });
 
     // Loop through friends.
@@ -117,7 +117,7 @@ export class Controller {
           PermissionFlagsBits.Connect,
         );
 
-      const isPrivateRoom = VCState.controller.getRooms().find((r) => r.main_channel_id === channel.id);
+      const isPrivateRoom = VCState.controller.getRooms().find((r) => r.mainRoomId === channel.id);
 
       if (!canJoin && !isPrivateRoom) return;
 

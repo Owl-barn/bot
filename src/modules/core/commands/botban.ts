@@ -12,8 +12,6 @@ export default Command(
     description: "bans a user from using the bot",
     group: CommandGroup.owner,
 
-    guildOnly: false,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.String,
@@ -37,23 +35,29 @@ export default Command(
 
   async (msg) => {
     const target = msg.options.getString("target", true);
-    const banned = msg.options.getBoolean("state", true);
+    const isBanned = msg.options.getBoolean("state", true);
 
     if (!target.match(/[0-9]{17,19}/))
       return { content: "Invalid user ID" };
 
-    if (banned) {
-      await state.db.banned_user.create({ data: { user_id: target } });
-      state.bannedUsers.set(target, "");
-    } else {
-      await state.db.banned_user.delete({ where: { user_id: target } });
-      state.bannedUsers.delete(target);
-    }
+    await state.db.user.upsert({
+      where: { id: target },
+      create: {
+        id: target,
+        isBanned,
+      },
+      update: {
+        isBanned,
+      },
+    });
+
+    if (isBanned) state.bannedUsers.set(target, "");
+    else state.bannedUsers.delete(target);
 
 
     const response = embedTemplate();
     response.setDescription(
-      `Successfully ${banned ? "banned" : "unbanned"} <@${target}>`,
+      `Successfully ${isBanned ? "banned" : "unbanned"} <@${target}>`,
     );
 
     return { embeds: [response] };

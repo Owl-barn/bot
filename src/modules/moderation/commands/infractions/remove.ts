@@ -27,27 +27,31 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    const uuid = msg.options.getString("infraction_id", true);
+    const id = msg.options.getString("infraction_id", true);
+    if (!msg.guild?.id) throw "No guild??";
 
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
     const RegExp =
       /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gm;
-    if (!RegExp.test(uuid)) {
+    if (!RegExp.test(id)) {
       const response = failEmbed.setDescription(
         "Invalid infraction ID provided",
       );
       return { embeds: [response] };
     }
 
-    const infraction = await state.db.moderation_log
+    const infraction = await state.db.infraction
       .update({
         where: {
-          guild_id_uuid: { uuid, guild_id: msg.guildId as string },
+          guildId_id: {
+            guildId: msg.guild.id,
+            id,
+          },
         },
         data: {
-          deleted: true,
+          deletedOn: new Date(),
         },
       })
       .catch(console.error);
@@ -61,12 +65,12 @@ export default SubCommand(
 
     embed.setTitle("Infraction Removed");
     embed.setDescription(
-      `**ID:** \`${infraction.uuid}\`\n` +
-      `**type:** \`${infraction.moderation_type}\`\n` +
-      `**user:** <@!${infraction.user}>\n` +
-      `**mod:** <@!${infraction.moderator}>\n` +
+      `**ID:** \`${infraction.id}\`\n` +
+      `**type:** \`${infraction.moderationType}\`\n` +
+      `**user:** <@!${infraction.userId}>\n` +
+      `**mod:** <@!${infraction.moderatorId}>\n` +
       `**reason:** *${infraction.reason}*\n` +
-      `**Date:** <t:${Number(infraction.created) / 1000}:R>`,
+      `**Date:** <t:${Number(infraction.createdAt) / 1000}:R>`,
     );
     return { embeds: [embed] };
   }

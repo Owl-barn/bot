@@ -21,11 +21,11 @@ export default SubCommand(
       (x, y) => y.memberCount - x.memberCount,
     );
 
-    const guildInfo = await state.db.guilds.findMany();
+    const guildInfo = await state.db.guild.findMany();
     const output = guilds
       .map((guild) => {
-        const db = guildInfo.find((y) => y.guild_id == guild.id);
-        return `id: ${guild.id} Premium: ${db?.premium} owner: ${guild.ownerId} membercount: ${guild.memberCount} name: ${guild.name}`;
+        const db = guildInfo.find((y) => y.id == guild.id);
+        return `id: ${guild.id} Premium: ${db?.subscriptionTier} owner: ${guild.ownerId} membercount: ${guild.memberCount} name: ${guild.name}`;
       })
       .join("\n");
 

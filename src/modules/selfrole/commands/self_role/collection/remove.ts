@@ -33,11 +33,11 @@ export default SubCommand(
     const collectionId = msg.options.getString("collection", true);
 
     const [roles, collection] = await state.db.$transaction([
-      state.db.self_role_roles.deleteMany({
-        where: { main_uuid: collectionId },
+      state.db.selfrole.deleteMany({
+        where: { collection: { id: collectionId } },
       }),
-      state.db.self_role_main.delete({
-        where: { uuid: collectionId },
+      state.db.selfroleCollection.delete({
+        where: { id: collectionId },
       }),
     ]);
 
@@ -50,12 +50,12 @@ export default SubCommand(
         ],
       };
 
-    if (collection.message_id) {
-      const channel = await isValidChannel(collection.channel_id)
+    if (collection.messageId) {
+      const channel = await isValidChannel(collection.channelId)
         .catch(() => null);
 
       const message = await channel?.messages
-        .fetch(collection.message_id)
+        .fetch(collection.messageId)
         .catch(() => null);
 
       message?.deletable ? await message?.delete() : null;

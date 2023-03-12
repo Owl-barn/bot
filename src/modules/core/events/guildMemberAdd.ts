@@ -13,7 +13,7 @@ export default Event({
   async execute(member) {
     const config = state.guilds.get(member.guild.id);
 
-    if (config?.log_join_leave) logJoin(member);
+    if (config?.logJoinLeave) logJoin(member);
   },
 
 });

@@ -30,18 +30,18 @@ export default SubCommand(
   // Execute
   async (msg) => {
     if (!msg.guildId) throw "No guildID???";
-    let unban_notice = msg.options.getString("unban_notice", true);
-    unban_notice = escapeMarkdown(unban_notice).substring(0, 255);
+    let unbanNotice = msg.options.getString("unbanNotice", true);
+    unbanNotice = escapeMarkdown(unbanNotice).substring(0, 255);
 
-    await state.db.guilds.update({
-      where: { guild_id: msg.guildId },
-      data: { unban_notice },
+    await state.db.guild.update({
+      where: { id: msg.guildId },
+      data: { unbanNotice },
     });
 
     const embed = embedTemplate()
       .setTitle("Unban Notice Set")
       .setDescription(
-        `The unban notice is now:\n\`\`\`${unban_notice}\`\`\``,
+        `The unban notice is now:\n\`\`\`${unbanNotice}\`\`\``,
       );
 
     return { embeds: [embed] };

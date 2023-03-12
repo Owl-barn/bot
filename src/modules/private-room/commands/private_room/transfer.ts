@@ -48,7 +48,7 @@ export default SubCommand(
       return { content: "You don't have a private room" };
 
     const waitRoom = (await msg.guild?.channels.fetch(
-      dbRoom.wait_channel_id,
+      dbRoom.waitingRoomId,
     )) as VoiceChannel | null;
 
     const roomOwnerPermissions: PermissionOverwriteOptions = {
@@ -76,14 +76,14 @@ export default SubCommand(
       );
     }
 
-    const updated = await state.db.private_vc.update({
+    const updated = await state.db.privateRoom.update({
       where: {
-        user_id_guild_id: {
-          user_id: msg.user.id,
-          guild_id: msg.guildId as string,
+        userId_guildId: {
+          userId: msg.user.id,
+          guildId: msg.guildId as string,
         },
       },
-      data: { user_id: member.id },
+      data: { userId: member.id },
     });
 
     localState.controller.upsertRoom(updated);

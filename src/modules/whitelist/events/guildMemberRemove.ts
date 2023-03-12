@@ -9,8 +9,8 @@ export default Event({
   async execute(member) {
     if (!member.guild.id) return;
 
-    const guild = await state.db.guilds.findUnique({
-      where: { guild_id: member.guild.id },
+    const guild = await state.db.guild.findUnique({
+      where: { id: member.guild.id },
       select: { rcon: true },
     });
 
@@ -21,8 +21,8 @@ export default Event({
         .delete({
           where: {
             whitelist_guild_user_un: {
-              guild_id: member.guild.id,
-              user_id: member.id,
+              guildId: member.guild.id,
+              userId: member.id,
             },
           },
         })
@@ -31,7 +31,7 @@ export default Event({
       console.log({ whitelist });
 
       if (!whitelist) return;
-      const mcName = await getMcName(whitelist.mc_uuid);
+      const mcName = await getMcName(whitelist.minecraftId);
 
       console.log({ mcName });
 

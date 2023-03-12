@@ -1,7 +1,7 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import stringDurationToMs, { msToString } from "@lib/time";
-import { moderation_type } from "@prisma/client";
+import { ModerationType } from "@prisma/client";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import {
@@ -60,10 +60,10 @@ export default SubCommand(
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const guild = await state.db.guilds.findUnique({ where: { guild_id: msg.guild.id } });
+    const guild = await state.db.guild.findUnique({ where: { id: msg.guild.id } });
     const isStaff =
-      guild?.staff_role &&
-      target.roles.cache.get(guild.staff_role);
+      guild?.staffRoleId &&
+      target.roles.cache.get(guild.staffRoleId);
 
     if (!target.moderatable || isStaff)
       return {
@@ -123,14 +123,14 @@ export default SubCommand(
       },
     ]);
 
-    await state.db.moderation_log.create({
+    await state.db.infraction.create({
       data: {
-        expiry: new Date(Date.now() + durationMs),
+        expiresOn: new Date(Date.now() + durationMs),
         reason,
-        user: target.id,
-        moderator: msg.user.id,
-        guild_id: msg.guildId as string,
-        moderation_type: moderation_type.timeout,
+        userId: target.id,
+        moderatorId: msg.user.id,
+        guildId: msg.guildId as string,
+        moderationType: ModerationType.timeout,
       },
     });
 

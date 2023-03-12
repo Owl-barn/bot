@@ -13,8 +13,8 @@ export default Event({
     if (!member.guild.id) return;
     const config = state.guilds.get(member.guild.id);
 
-    if (config?.banned) return;
-    if (config?.log_join_leave) logLeave(member);
+    if (config?.isBanned) return;
+    if (config?.logJoinLeave) logLeave(member);
   },
 
 });

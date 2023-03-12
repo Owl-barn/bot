@@ -75,43 +75,44 @@ export default SubCommand(
       return { embeds: [failEmbed], ephemeral: true };
     }
 
-    const hasBirthday = await state.db.birthdays.findUnique({
+    const hasBirthday = await state.db.birthday.findUnique({
       where: {
-        user_id_guild_id: {
-          user_id: msg.user.id,
-          guild_id: msg.guildId,
+        userId_guildId: {
+          userId: msg.user.id,
+          guildId: msg.guildId,
         },
       },
     });
 
-    if (hasBirthday && Date.now() - Number(hasBirthday.updated) > 600000) {
+    if (hasBirthday && Date.now() - Number(hasBirthday.updatedAt) > 600000) {
       failEmbed.setDescription(
         "You can only change your birthday once a year, contact an admin if there was a mistake",
       );
       return { embeds: [failEmbed] };
     }
 
-    const query = await state.db.birthdays.upsert({
+    const query = await state.db.birthday.upsert({
       where: {
-        user_id_guild_id: {
-          user_id: msg.user.id,
-          guild_id: msg.guildId,
+        userId_guildId: {
+          userId: msg.user.id,
+          guildId: msg.guildId,
         },
       },
       create: {
-        birthday: birthdayMoment.toDate(),
-        user_id: msg.user.id,
-        guild_id: msg.guildId,
+        date: birthdayMoment.toDate(),
+        userId: msg.user.id,
+        guildId: msg.guildId,
       },
       update: {
-        birthday: birthdayMoment.toDate(),
-        updated: undefined,
+        date: birthdayMoment.toDate(),
+        updatedAt: undefined,
       },
     });
+    if (!query.date) throw new Error("No date???");
 
-    const nextBirthday = nextDate(query.birthday as Date);
+    const nextBirthday = nextDate(query.date);
     const age = yearsAgo(birthdayMoment.toDate());
-    const starSign = getStarSign(query.birthday as Date);
+    const starSign = getStarSign(query.date);
 
     embed.setTitle("Birthday set!");
     embed.addFields([

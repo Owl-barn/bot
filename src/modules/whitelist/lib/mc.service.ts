@@ -24,10 +24,10 @@ export async function getMcUUID(username: string): Promise<string | null> {
  * @param uuid The minecraft uuid of the player
  * @returns Minecraft username (`string`).
  */
-export async function getMcName(uuid: string): Promise<string | null> {
+export async function getMcName(id: string): Promise<string | null> {
   let userName = null;
   const url =
-        "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid;
+    "https://sessionserver.mojang.com/session/minecraft/profile/" + id;
 
   await axios.get(url).then((response) => {
     response.status === 200 ? (userName = response.data.name) : null;
@@ -76,8 +76,8 @@ export async function massRename(msg: ChatInputCommandInteraction): Promise<void
 
   for (const user of users) {
     try {
-      const dcUser = await msg.guild?.members.fetch(user.user_id);
-      const mcName = await getMcName(user.mc_uuid);
+      const dcUser = await msg.guild?.members.fetch(user.userId);
+      const mcName = await getMcName(user.minecraftId);
 
       if (!mcName || !dcUser) throw "missing";
 
@@ -85,10 +85,10 @@ export async function massRename(msg: ChatInputCommandInteraction): Promise<void
 
       await dcUser.setNickname(mcName);
 
-      console.log(`mass rename success: ${user.user_id}`.green);
+      console.log(`mass rename success: ${user.userId}`.green);
     } catch (e) {
       console.error(e);
-      console.log(`mass rename entry failed: ${user.user_id}`.red);
+      console.log(`mass rename entry failed: ${user.userId}`.red);
     }
   }
 }
@@ -99,7 +99,7 @@ export async function massWhitelist(
 ): Promise<void> {
   const users = await db.whitelist.findMany();
   const rconInfo = await db.rcon.findUnique({
-    where: { guild_id: guild.id },
+    where: { guildId: guild.id },
   });
 
   if (!rconInfo) throw "No rcon info";
@@ -109,19 +109,19 @@ export async function massWhitelist(
 
   for (const user of users) {
     try {
-      const mcName = await getMcName(user.mc_uuid);
+      const mcName = await getMcName(user.minecraftId);
       const dcUser = await guild.members
-        .fetch(user.user_id)
+        .fetch(user.userId)
         .catch(() => null);
 
       if (!mcName) {
-        console.log(`Couldnt find mc name: ${user.user_id}`.red);
+        console.log(`Couldnt find mc name: ${user.userId}`.red);
         continue;
       }
 
       if (!dcUser) {
-        left.push(user.user_id);
-        console.log(`User left: ${user.user_id}`.red);
+        left.push(user.userId);
+        console.log(`User left: ${user.userId}`.red);
         continue;
       }
 
@@ -137,22 +137,22 @@ export async function massWhitelist(
           );
       }
 
-      if (rconInfo.role_id && !dcUser.roles.cache.has(rconInfo.role_id)) {
-        await dcUser.roles.add(rconInfo.role_id);
-        console.log(`Added role to ${user.user_id}`.green);
+      if (rconInfo.roleId && !dcUser.roles.cache.has(rconInfo.roleId)) {
+        await dcUser.roles.add(rconInfo.roleId);
+        console.log(`Added role to ${user.userId}`.green);
       }
 
       commands.push(`whitelist add ${mcName}`);
     } catch (e) {
       console.error(e);
-      console.log(`whitelist entry failed: ${user.user_id}`.red);
+      console.log(`whitelist entry failed: ${user.userId}`.red);
     }
   }
   const whitelisted = await RCONHandler(commands, rconInfo);
   console.log(whitelisted);
 
   db.whitelist.deleteMany({
-    where: { OR: [{ user_id: { in: left } }] },
+    where: { OR: [{ userId: { in: left } }] },
   });
 }
 

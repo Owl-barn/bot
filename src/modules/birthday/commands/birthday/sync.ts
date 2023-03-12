@@ -22,10 +22,10 @@ export default SubCommand(
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const query = await state.db.birthdays.findFirst({
+    const query = await state.db.birthday.findFirst({
       where: {
-        user_id: msg.user.id,
-        NOT: { birthday: null },
+        userId: msg.user.id,
+        NOT: { date: null },
       },
     });
 
@@ -36,12 +36,12 @@ export default SubCommand(
       return { embeds: [response] };
     }
 
-    const result = await state.db.birthdays
+    const result = await state.db.birthday
       .create({
         data: {
-          user_id: query.user_id,
-          guild_id: msg.guildId,
-          birthday: query.birthday,
+          userId: query.userId,
+          guildId: msg.guildId,
+          date: query.date,
         },
       })
       .catch(() => null);

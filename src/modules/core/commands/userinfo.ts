@@ -38,21 +38,21 @@ export default Command(
       (x, y) => y.position - x.position,
     );
 
-    const birthdayQuery = await state.db.birthdays.findUnique({
+    const birthdayQuery = await state.db.birthday.findUnique({
       where: {
-        user_id_guild_id: {
-          user_id: member.id,
-          guild_id: msg.guildId as string,
+        userId_guildId: {
+          userId: member.id,
+          guildId: msg.guildId as string,
         },
       },
     });
 
-    const moderationLogQuery = await state.db.moderation_log.groupBy({
-      by: ["moderation_type"],
+    const moderationLogQuery = await state.db.infraction.groupBy({
+      by: ["moderationType"],
       _count: true,
       where: {
-        guild_id: msg.guildId as string,
-        user: member.id,
+        guildId: msg.guildId as string,
+        userId: member.id,
       },
     });
 
@@ -64,13 +64,13 @@ export default Command(
     };
 
     for (const modLog of moderationLogQuery) {
-      if (modLog.moderation_type == "warn")
+      if (modLog.moderationType == "warn")
         moderationCounts.warns = modLog._count;
-      else if (modLog.moderation_type == "ban")
+      else if (modLog.moderationType == "ban")
         moderationCounts.bans = modLog._count;
-      else if (modLog.moderation_type == "kick")
+      else if (modLog.moderationType == "kick")
         moderationCounts.kicks = modLog._count;
-      else if (modLog.moderation_type == "timeout")
+      else if (modLog.moderationType == "timeout")
         moderationCounts.timeouts = modLog._count;
     }
 
@@ -80,7 +80,7 @@ export default Command(
     const created = `**Created:** <t:${createdTime}>`;
     const joinedTime = Math.floor((member.joinedTimestamp || 0) / 1000);
     const joined = `**Joined:** <t:${joinedTime}>`;
-    const birthdayTime = moment(birthdayQuery?.birthday).format(
+    const birthdayTime = moment(birthdayQuery?.date).format(
       "DD-MM-YYYY",
     );
     const birthday = birthdayQuery ? `**Birthday:** ${birthdayTime}` : "";

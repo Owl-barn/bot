@@ -33,7 +33,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    const guildID = msg.options.getString("guild_id");
+    const guildID = msg.options.getString("guildId");
     const client = msg.client;
 
     let guild = msg.guild as Guild;
@@ -42,8 +42,8 @@ export default SubCommand(
       guild = client.guilds.cache.get(guildID) || guild;
     }
 
-    const query = await state.db.guilds.findUnique({
-      where: { guild_id: guild.id },
+    const query = await state.db.guild.findUnique({
+      where: { id: guild.id },
     });
 
     const owner = await client.users.fetch(guild.ownerId);
@@ -71,13 +71,13 @@ export default SubCommand(
       guild.name,
       ownerString,
       "\n",
-      `premium: ${query?.premium}`,
+      `premium: ${query?.subscriptionTier}`,
       `level: ${query?.level}`,
-      `Banned: ${query?.banned}`,
-      `Dev: ${query?.dev}`,
+      `Banned: ${query?.isBanned}`,
+      `Dev: ${query?.isDev}`,
       "\n",
-      `Joined: ${query?.created}`,
-      `Staff: ${query?.staff_role}`,
+      `Joined: ${query?.createdAt}`,
+      `Staff: ${query?.staffRoleId}`,
       "\n",
       `channels:\n${channelOutput}`,
       "\n",

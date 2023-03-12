@@ -23,13 +23,13 @@ export default SubCommand(
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const query = await state.db.birthdays.updateMany({
+    const query = await state.db.birthday.updateMany({
       where: {
-        user_id: msg.user.id,
-        guild_id: msg.guildId,
-        NOT: { birthday: null },
+        userId: msg.user.id,
+        guildId: msg.guildId,
+        NOT: { date: null },
       },
-      data: { birthday: null },
+      data: { date: null },
     });
 
     if (!query || query.count === 0)

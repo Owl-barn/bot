@@ -9,8 +9,6 @@ export default Command(
     description: "deletes webhook",
     group: CommandGroup.owner,
 
-    guildOnly: false,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.String,

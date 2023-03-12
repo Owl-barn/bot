@@ -42,23 +42,23 @@ export default SubCommand(
     const channel = msg.options.getChannel("channel", true);
     const type = msg.options.getNumber("type", false);
 
-    const guild = await state.db.guilds.update({
-      where: { guild_id: msg.guildId },
+    const guild = await state.db.guild.update({
+      where: { id: msg.guildId },
       data:
         type === null
           ? {
-            log_events: channel.id,
-            log_bot: channel.id,
-            log_join_leave: channel.id,
+            logEvents: channel.id,
+            logBot: channel.id,
+            logJoinLeave: channel.id,
           }
           : {
-            log_events: type === 0 ? channel.id : undefined,
-            log_bot: type === 1 ? channel.id : undefined,
-            log_join_leave: type === 2 ? channel.id : undefined,
+            logEvents: type === 0 ? channel.id : undefined,
+            logBot: type === 1 ? channel.id : undefined,
+            logJoinLeave: type === 2 ? channel.id : undefined,
           },
     });
 
-    state.guilds.set(guild.guild_id, guild);
+    state.guilds.set(guild.id, guild);
 
     const embed = embedTemplate();
     embed.setDescription(

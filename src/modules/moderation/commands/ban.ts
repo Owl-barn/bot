@@ -1,7 +1,7 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import stringDurationToMs from "@lib/time";
-import { moderation_type } from "@prisma/client";
+import { ModerationType } from "@prisma/client";
 import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
@@ -73,7 +73,7 @@ export default Command(
     if (!target)
       return { embeds: [failEmbed.setDescription("No user provided")] };
 
-    const guild = await state.db.guilds.findUnique({ where: { guild_id: msg.guild.id } });
+    const guild = await state.db.guild.findUnique({ where: { id: msg.guild.id } });
 
     const member = await msg.guild.members
       .fetch(target.id)
@@ -81,8 +81,8 @@ export default Command(
 
     if (member) {
       const isStaff =
-        guild?.staff_role &&
-        member.roles.cache.get(guild.staff_role);
+        guild?.staffRoleId &&
+        member.roles.cache.get(guild.staffRoleId);
 
       if (!member.bannable || isStaff)
         return {
@@ -93,21 +93,21 @@ export default Command(
         };
     }
 
-    // Expiry
-    let expiry: Date | undefined = undefined;
+    // expiresOn
+    let expiresOn: Date | undefined = undefined;
     const durationMs = duration ? stringDurationToMs(duration) : 0;
     if (durationMs >= 3600000) {
-      expiry = new Date(Date.now() + durationMs);
+      expiresOn = new Date(Date.now() + durationMs);
     }
 
-    await state.db.moderation_log.create({
+    await state.db.infraction.create({
       data: {
-        expiry,
+        expiresOn,
         reason: reason,
-        user: target.id,
-        moderator: msg.user.id,
-        guild_id: msg.guildId as string,
-        moderation_type: moderation_type.ban,
+        userId: target.id,
+        moderatorId: msg.user.id,
+        guildId: msg.guildId as string,
+        moderationType: ModerationType.ban,
       },
     });
     const fields: APIEmbedField[] = [];
@@ -116,22 +116,22 @@ export default Command(
       value: `\`\`\`${reason}\`\`\``,
     });
 
-    if (expiry) {
+    if (expiresOn) {
       fields.push({
         name: "Expires",
-        value: `<t:${Math.round(Number(expiry) / 1000)}:t>`,
+        value: `<t:${Math.round(Number(expiresOn) / 1000)}:t>`,
         inline: true,
       });
     }
 
     embed.setTitle(`You have been banned from "${msg.guild.name}"`);
 
-    if (guild?.unban_notice) {
+    if (guild?.unbanNotice) {
       embed.setFields(fields);
       embed.addFields([
         {
           name: "Appeal notice",
-          value: guild.unban_notice,
+          value: guild.unbanNotice,
         },
       ]);
     }

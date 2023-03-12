@@ -36,19 +36,19 @@ export default SubCommand(
     if (!user) user = msg.member as GuildMember;
 
     // Fetch the birthday.
-    let query: { birthday: Date | null } | null;
+    let query: { date: Date | null } | null;
     if (!user.user.bot) {
-      query = await state.db.birthdays.findUnique({
+      query = await state.db.birthday.findUnique({
         where: {
-          user_id_guild_id: {
-            user_id: user.id,
-            guild_id: msg.guildId,
+          userId_guildId: {
+            userId: user.id,
+            guildId: msg.guildId,
           },
         },
       });
     } else {
       query = {
-        birthday: user.user.createdAt,
+        date: user.user.createdAt,
       };
     }
 
@@ -57,20 +57,20 @@ export default SubCommand(
 
     embed.setTitle(`${user.user.username}'s birthday`);
 
-    if (!query?.birthday) {
+    if (!query?.date) {
       failEmbed.setDescription("This user has no birthday registered");
       return { embeds: [failEmbed] };
     }
 
     // Transform data.
-    const nextBirthday = nextDate(new Date(query.birthday));
-    const age = yearsAgo(query.birthday);
-    const starSign = getStarSign(query.birthday);
+    const nextBirthday = nextDate(new Date(query.date));
+    const age = yearsAgo(query.date);
+    const starSign = getStarSign(query.date);
 
     const userString =
       user.id === msg.user.id ? `you were` : `<@!${user.id}> was`;
 
-    const birthdayString = moment(query.birthday).format("DD-MM-YYYY");
+    const birthdayString = moment(query.date).format("DD-MM-YYYY");
 
     // Format the response.
     embed.addFields([

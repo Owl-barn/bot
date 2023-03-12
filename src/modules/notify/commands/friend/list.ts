@@ -28,26 +28,26 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    const friends = await state.db.friendships.findMany({
+    const friends = await state.db.friendship.findMany({
       where: {
-        OR: [{ user_id: msg.user.id }, { friend_id: msg.user.id }],
+        OR: [{ userId: msg.user.id }, { friendId: msg.user.id }],
       },
     });
 
     const pendingSent = friends.filter(
-      (friend) => friend.user_id === msg.user.id && friend.pending,
+      (friend) => friend.userId === msg.user.id && friend.isPending,
     );
 
     const pendingReceived = friends.filter(
-      (friend) => friend.friend_id === msg.user.id && friend.pending,
+      (friend) => friend.friendId === msg.user.id && friend.isPending,
     );
 
     const friendSelf = friends.filter(
-      (friend) => friend.user_id === msg.user.id && !friend.pending,
+      (friend) => friend.userId === msg.user.id && !friend.isPending,
     );
 
     const friendOther = friends.filter(
-      (friend) => friend.friend_id === msg.user.id && !friend.pending,
+      (friend) => friend.friendId === msg.user.id && !friend.isPending,
     );
 
     const embed = embedTemplate();
@@ -72,7 +72,7 @@ export default SubCommand(
       embed.addFields({
         name: "My alerts",
         value: friendSelf
-          .map((friend) => `<@${friend.friend_id}>`)
+          .map((friend) => `<@${friend.friendId}>`)
           .join("\n"),
         inline: true,
       });
@@ -82,7 +82,7 @@ export default SubCommand(
       embed.addFields({
         name: "My friend alerts",
         value: friendOther
-          .map((friend) => `<@${friend.user_id}>`)
+          .map((friend) => `<@${friend.userId}>`)
           .join("\n"),
         inline: true,
       });
@@ -92,7 +92,7 @@ export default SubCommand(
       embed.addFields({
         name: "Sent pending requests",
         value: pendingSent
-          .map((friend) => `<@${friend.friend_id}>`)
+          .map((friend) => `<@${friend.friendId}>`)
           .join("\n"),
         inline: true,
       });
@@ -102,7 +102,7 @@ export default SubCommand(
       embed.addFields({
         name: "Received pending requests",
         value: pendingReceived
-          .map((friend) => `<@${friend.user_id}>`)
+          .map((friend) => `<@${friend.userId}>`)
           .join("\n"),
         inline: true,
       });

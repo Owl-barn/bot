@@ -56,13 +56,13 @@ export default SubCommand(
     title = escapeMarkdown(title);
     description = escapeMarkdown(description);
 
-    const collection = await state.db.self_role_main
+    const collection = await state.db.selfroleCollection
       .findFirst({
         where: {
-          OR: [{ uuid: collectionId }, { title: collectionId }],
-          guild_id: msg.guildId,
+          OR: [{ id: collectionId }, { title: collectionId }],
+          guildId: msg.guildId,
         },
-        include: { self_role_roles: true },
+        include: { roles: true },
       })
       .catch(() => null);
 
@@ -75,13 +75,13 @@ export default SubCommand(
         ],
       };
 
-    const CollectionEntry = await state.db.self_role_roles
+    const CollectionEntry = await state.db.selfrole
       .create({
         data: {
           title,
           description,
-          role_id: role.id,
-          main_uuid: collection.uuid,
+          roleId: role.id,
+          collectionId: collection.id,
         },
       })
       .catch((e) => {
@@ -98,12 +98,12 @@ export default SubCommand(
         ],
       };
 
-    collection.self_role_roles.push(CollectionEntry);
+    collection.roles.push(CollectionEntry);
 
     await updateCollection(collection);
 
     const embed = embedTemplate();
-    embed.setFooter({ text: collection.uuid });
+    embed.setFooter({ text: collection.id });
     embed.addFields([
       {
         name: "Collection",
@@ -111,8 +111,8 @@ export default SubCommand(
       },
       {
         name: "Roles",
-        value: collection.self_role_roles
-          .map((x) => `- ${x.title} - <@&${x.role_id}>`)
+        value: collection.roles
+          .map((x) => `- ${x.title} - <@&${x.roleId}>`)
           .join("\n"),
       },
     ]);

@@ -11,7 +11,6 @@ import {
   Client,
 } from "discord.js";
 import { getAvatar, randomRange } from "../../../lib/functions";
-import { guilds as Guilds, private_vc } from "@prisma/client";
 import { embedTemplate } from "../../../lib/embedTemplate";
 import path from "path";
 import fs from "fs";
@@ -19,19 +18,13 @@ import moment from "moment";
 import { state } from "@app";
 import { localState as owletState } from "../../owlet";
 import { logType } from "@lib/services/logService";
+import { Guild, PrivateRoom } from "@prisma/client";
 
 const db = state.db;
 
 interface RoomNames {
   adjectives: string[];
   nouns: string[];
-}
-
-interface guildConfig {
-  vc_limit: number;
-  vc_channel_id: string | null;
-  vc_category_id: string | null;
-  staff_role: string | null;
 }
 
 export class Controller {
@@ -42,12 +35,11 @@ export class Controller {
   private adjectives: string[] = [];
   private nouns: string[] = [];
 
-  private config: Map<string, guildConfig> = new Map();
-  public rooms: private_vc[] = [];
+  public rooms: PrivateRoom[] = [];
 
   public initialize = async (client: Client) => {
-    const rooms = await db.private_vc.findMany();
-    const guilds = await db.guilds.findMany();
+    const rooms = await db.privateRoom.findMany();
+    const guilds = await db.guild.findMany();
 
     // Try to load the room names from the file.
     try {
@@ -79,14 +71,14 @@ export class Controller {
     // Remove all empty rooms.
     for (const room of rooms) {
       const guild = await client.guilds
-        .fetch(room.guild_id)
+        .fetch(room.guildId)
         .catch(() => null);
 
-      console.log(` - ${room.guild_id} ${guild != null}`.blue.bold);
+      console.log(` - ${room.guildId} ${guild != null}`.blue.bold);
 
       if (guild === null) {
-        await db.private_vc.deleteMany({
-          where: { guild_id: room.guild_id },
+        await db.privateRoom.deleteMany({
+          where: { guildId: room.guildId },
         });
         continue;
       }
@@ -94,15 +86,15 @@ export class Controller {
       const channelMembers: UserResolvable[] = [];
 
       let mainRoom = (await guild.channels
-        .fetch(room.main_channel_id)
+        .fetch(room.mainRoomId)
         .catch(() => null)) as VoiceChannel | null;
 
       const waitRoom = (await guild.channels
-        .fetch(room.wait_channel_id)
+        .fetch(room.waitingRoomId)
         .catch(() => null)) as VoiceChannel | null;
 
       console.log(
-        `  - main: ${room.main_channel_id} - ${mainRoom != null}`.cyan
+        `  - main: ${room.mainRoomId} - ${mainRoom != null}`.cyan
           .italic,
       );
 
@@ -119,7 +111,7 @@ export class Controller {
           .catch(() => null);
 
         mainRoom = (await guild.channels
-          .fetch(room.main_channel_id)
+          .fetch(room.mainRoomId)
           .catch(() => null)) as VoiceChannel | null;
 
         mainRoom
@@ -130,20 +122,20 @@ export class Controller {
       }
 
       console.log(
-        `  - wait: ${room.wait_channel_id} - ${waitRoom != null}`.cyan
+        `  - wait: ${room.waitingRoomId} - ${waitRoom != null}`.cyan
           .italic,
       );
 
       if (!mainRoom && !waitRoom) {
-        await db.private_vc.delete({
-          where: { main_channel_id: room.main_channel_id },
+        await db.privateRoom.delete({
+          where: { mainRoomId: room.mainRoomId },
         });
         continue;
       }
 
       if (!mainRoom || mainRoom.members.size == 0) {
-        await db.private_vc.delete({
-          where: { main_channel_id: room.main_channel_id },
+        await db.privateRoom.delete({
+          where: { mainRoomId: room.mainRoomId },
         });
 
         mainRoom?.deletable ? await mainRoom.delete() : null;
@@ -157,7 +149,7 @@ export class Controller {
     guilds.forEach(this.updateConfig);
 
     // Load all the rooms.
-    const loadedRooms = await db.private_vc.findMany();
+    const loadedRooms = await db.privateRoom.findMany();
     for (const room of loadedRooms) this.upsertRoom(room);
 
     console.log(
@@ -169,25 +161,18 @@ export class Controller {
     );
   }
 
-  public updateConfig = (guild: Guilds) => {
-    this.config.set(guild.guild_id,
-      {
-        vc_limit: guild.vc_limit,
-        vc_channel_id: guild.vc_channel_id,
-        vc_category_id: guild.vc_category_id,
-        staff_role: guild.staff_role,
-      }
-    );
+  public updateConfig = (guild: Guild) => {
+    state.guilds.set(guild.id, guild);
   }
 
-  public upsertRoom = (room: private_vc) => {
-    const index = this.rooms.findIndex((x) => x.main_channel_id == room.main_channel_id);
+  public upsertRoom = (room: PrivateRoom) => {
+    const index = this.rooms.findIndex((x) => x.mainRoomId == room.mainRoomId);
     if (index == -1) this.rooms.push(room);
     else this.rooms[index] = room;
   }
 
-  public deleteRoom = (room: private_vc) => {
-    this.rooms = this.rooms.filter((x) => x.main_channel_id != room.main_channel_id);
+  public deleteRoom = (room: PrivateRoom) => {
+    this.rooms = this.rooms.filter((x) => x.mainRoomId != room.mainRoomId);
   }
 
   public getRooms = () => {
@@ -207,7 +192,7 @@ export class Controller {
     if (!member) return;
     if (member.user.bot) return;
 
-    const guildConfig = this.config.get(current.guild.id);
+    const guildConfig = state.guilds.get(current.guild.id);
     const rooms = this.getGuildRooms(current.guild.id);
 
     // Didnt join/leave.
@@ -216,24 +201,24 @@ export class Controller {
     // Left a private room.
     if (
       old.channelId &&
-      rooms?.find((x) => x.main_channel_id == old.channelId)
+      rooms?.find((x) => x.mainRoomId == old.channelId)
     ) {
       this.leaveHub(old).catch(console.error);
     }
 
     if (current.channelId) {
       // User joined the main room.
-      if (guildConfig?.vc_channel_id == current.channelId) {
+      if (guildConfig?.privateRoomChannelId == current.channelId) {
         this.createHub(current).catch(console.error);
       }
 
       // User joined a private room.
-      if (rooms?.find((x) => x.main_channel_id == current.channelId)) {
+      if (rooms?.find((x) => x.mainRoomId == current.channelId)) {
         this.joinHub(current).catch(console.error);
       }
       // User joined waiting room.
       const waitJoin = rooms?.find(
-        (x) => x.wait_channel_id == current.channelId,
+        (x) => x.waitingRoomId == current.channelId,
       );
       if (waitJoin) {
         this.joinWaiting(current, waitJoin).catch((e) =>
@@ -243,12 +228,12 @@ export class Controller {
     }
   }
 
-  private joinWaiting = async (vc: VoiceState, room: private_vc) => {
+  private joinWaiting = async (vc: VoiceState, room: PrivateRoom) => {
     const member = vc.member as GuildMember;
     if (this.notifyRatelimit.has(member.id)) return;
 
     const mainRoom = (await vc.guild.channels.fetch(
-      room.main_channel_id,
+      room.mainRoomId,
     )) as VoiceChannel;
     if (!mainRoom) return;
 
@@ -257,7 +242,7 @@ export class Controller {
 
     await mainRoom
       .send(
-        `Hey <@${room.user_id}>, ${member.displayName} has joined the waiting room.`,
+        `Hey <@${room.userId}>, ${member.displayName} has joined the waiting room.`,
       )
       .catch(console.error);
 
@@ -266,7 +251,7 @@ export class Controller {
   }
 
   private getGuildRooms = (guildId: string) => {
-    return this.rooms.filter((x) => x.guild_id == guildId);
+    return this.rooms.filter((x) => x.guildId == guildId);
   }
 
   private startDelete = (
@@ -328,16 +313,16 @@ export class Controller {
     if (this.createRateLimit.has(member.id) && member.id !== state.env.OWNER_ID)
       return;
 
-    const guildConfig = this.config.get(vc.guild.id);
+    const guildConfig = state.guilds.get(vc.guild.id);
     if (!guildConfig) return;
 
     const rooms = this.getGuildRooms(vc.guild.id);
 
     if (rooms.length > 0) {
       // Already has a vc.
-      if (rooms.find((x) => x.user_id == member.id)) return;
+      if (rooms.find((x) => x.userId == member.id)) return;
       // Limit reached.
-      if (rooms.length >= guildConfig.vc_limit) {
+      if (rooms.length >= guildConfig.privateRoomLimit) {
         const dm = await member.createDM();
         await dm
           .send(
@@ -391,7 +376,7 @@ export class Controller {
     };
 
     const staffPerms: OverwriteResolvable = {
-      id: guildConfig.staff_role || "",
+      id: guildConfig.staffRoleId || "",
       allow: PermissionFlagsBits.ViewChannel,
     };
 
@@ -403,7 +388,7 @@ export class Controller {
     const roomList = [ownerPerms, mainPerms].concat(owletsPerms);
     const waitList = [ownerPerms, waitingPerms].concat(owletsPerms);
 
-    if (guildConfig.staff_role) {
+    if (guildConfig.staffRoleId) {
       roomList.push(staffPerms);
       waitList.push(staffPerms);
     }
@@ -413,23 +398,23 @@ export class Controller {
       type: ChannelType.GuildVoice,
       name: `🔒 ${channelName} VC`,
       permissionOverwrites: roomList,
-      parent: guildConfig.vc_category_id as string,
+      parent: guildConfig.privateRoomCategoryId as string,
     });
 
     const wait = await vc.guild.channels.create({
       type: ChannelType.GuildVoice,
       permissionOverwrites: waitList,
       name: `🕐 ${channelName} Waiting Room`,
-      parent: guildConfig.vc_category_id as string,
+      parent: guildConfig.privateRoomCategoryId as string,
     });
 
     // Put into db and update local config.
-    const roomInfo = await db.private_vc.create({
+    const roomInfo = await db.privateRoom.create({
       data: {
-        user_id: member.id,
-        guild_id: vc.guild.id,
-        main_channel_id: room.id,
-        wait_channel_id: wait.id,
+        userId: member.id,
+        guildId: vc.guild.id,
+        mainRoomId: room.id,
+        waitingRoomId: wait.id,
       },
     });
 
@@ -481,21 +466,21 @@ export class Controller {
   ) => {
     this.cancelDelete(vc);
 
-    const query = await db.private_vc.findUnique({
-      where: { main_channel_id: vc.id },
+    const query = await db.privateRoom.findUnique({
+      where: { mainRoomId: vc.id },
     });
     if (!query) return;
 
-    this.createRateLimit.add(query.user_id);
-    setTimeout(() => this.createRateLimit.delete(query.user_id), 180000);
+    this.createRateLimit.add(query.userId);
+    setTimeout(() => this.createRateLimit.delete(query.userId), 180000);
 
     // Fetch rooms.
     const mainRoom = (await vc.guild.channels
-      .fetch(query.main_channel_id)
+      .fetch(query.mainRoomId)
       .catch(console.error)) as VoiceChannel;
 
     const WaitRoom = (await vc.guild.channels
-      .fetch(query.wait_channel_id)
+      .fetch(query.waitingRoomId)
       .catch(console.error)) as VoiceChannel;
 
     // Attempt to delete rooms.
@@ -511,7 +496,7 @@ export class Controller {
         : console.error(`Couldnt delete ${WaitRoom.id}`.red);
 
     // Remove from db.
-    const roomInfo = await db.private_vc.delete({ where: { main_channel_id: vc.id } });
+    const roomInfo = await db.privateRoom.delete({ where: { mainRoomId: vc.id } });
 
     this.deleteRoom(roomInfo);
 
