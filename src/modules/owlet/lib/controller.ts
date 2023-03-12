@@ -47,7 +47,7 @@ export default class Controller {
     });
 
     console.log(
-      " 🔵 Loaded Owlet service with ".green +
+      " - Loaded Owlet service with ".green +
       this.owlets.length.toString().cyan +
       " owlets on port ".green +
       env.OWLET_PORT.toString().cyan,

@@ -32,7 +32,7 @@ export async function loadButtons(path: string) {
   }
 
   console.log(
-    " 🔵 Loaded ".green +
+    " - Loaded ".green +
     String(state.buttons.size).cyan +
     " buttons".green,
   );

@@ -39,7 +39,7 @@ export async function loadCommands(path: string) {
   }
 
   console.log(
-    " 🔵 Loaded ".green +
+    " - Loaded ".green +
     String(state.commands.size).cyan +
     " commands".green,
   );

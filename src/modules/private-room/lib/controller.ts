@@ -153,7 +153,7 @@ export class Controller {
     for (const room of loadedRooms) this.upsertRoom(room);
 
     console.log(
-      " 🔵 Loaded VC service with ".green +
+      " - Loaded VC service with ".green +
       this.adjectives.length.toString().cyan +
       " adjectives and ".green +
       this.nouns.length.toString().cyan +

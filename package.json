@@ -23,15 +23,12 @@
     "axios": "^0.24.0",
     "colors": "^1.4.0",
     "cron": "^1.8.2",
-    "discord.js": "^14.7.1",
+    "discord.js": "^14.8.0",
     "dotenv": "^10.0.0",
     "envalid": "^7.3.1",
     "moment": "^2.29.4",
     "rcon-client": "^4.2.3",
     "tsconfig-paths": "^4.1.2",
     "ws": "^8.12.1"
-  },
-  "overrides": {
-    "discord-api-types": "0.37.20"
   }
 }

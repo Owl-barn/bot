@@ -27,5 +27,5 @@ export async function loadEvents(path: string) {
     }
   }
 
-  console.log(" 🔵 Loaded ".green + String(files.length).cyan + " events".green);
+  console.log(" - Loaded ".green + String(files.length).cyan + " events".green);
 }

@@ -70,7 +70,7 @@ const state = {
       guild && await registerCommand(guild);
     }
 
-    console.log(`🔵 Registered `.cyan.bold + guilds.length.toString().green + ` new guild${guilds.length > 1 ? "s" : ""}`.cyan.bold);
+    console.log(`- Registered `.cyan.bold + guilds.length.toString().green + ` new guild${guilds.length > 1 ? "s" : ""}`.cyan.bold);
   }
 
 
