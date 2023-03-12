@@ -1,11 +1,11 @@
 import { SubCommand } from "@structs/command/subcommand";
-import { embedTemplate } from "src/lib/embedTemplate";
+import { embedTemplate } from "lib/embedTemplate";
 import { localState } from "../..";
 import { QueueInfo } from "../../structs/queue";
 import { Track, CurrentTrack } from "../../structs/track";
 import { wsResponse } from "../../structs/websocket";
 
-SubCommand(
+export default SubCommand(
 
   // Info
   {

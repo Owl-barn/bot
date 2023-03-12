@@ -4,7 +4,7 @@ import { localState } from "../..";
 
 const controller = localState.controller;
 
-SubCommand(
+export default SubCommand(
 
   // Info
   {
