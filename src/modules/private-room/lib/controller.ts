@@ -185,8 +185,6 @@ export class Controller {
       this.leaveHub(old).catch(console.error);
     }
 
-    console.log("AAAAAAAAAAAAAAAAAAAAAA");
-
     if (current.channelId) {
       // User joined the main room.
       if (guildConfig?.privateRoomChannelId == current.channelId) {
@@ -195,8 +193,6 @@ export class Controller {
 
       // User joined a private room.
       if (rooms?.find((x) => x.mainRoomId == current.channelId)) {
-        console.log("BBBBBBBBBBBBBBBBBBBBBBB");
-
         this.joinHub(current).catch(console.error);
       }
       // User joined waiting room.
