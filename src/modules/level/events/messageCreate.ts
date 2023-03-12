@@ -11,7 +11,7 @@ export default Event({
 
   async execute(msg) {
     if (!msg.guildId) return;
-    const guildConfig = localState.guilds.get(msg.guildId);
+    const guildConfig = state.guilds.get(msg.guildId);
     if (!guildConfig) return;
     if (!guildConfig.level) return;
 

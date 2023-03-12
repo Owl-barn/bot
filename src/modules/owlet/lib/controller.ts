@@ -25,7 +25,7 @@ export default class Controller {
     // Try to load the owlets from the file.
     try {
       const buffer = fs.readFileSync(
-        path.join(__dirname, "..", "owlets.json"),
+        path.join(__dirname, "../data/owlets.json"),
         "utf8",
       );
 
@@ -47,9 +47,9 @@ export default class Controller {
     });
 
     console.log(
-      " ✓ Loaded Owlet service with ".green.bold +
+      " 🔵 Loaded Owlet service with ".green +
       this.owlets.length.toString().cyan +
-      " owlets on port ".green.bold +
+      " owlets on port ".green +
       env.OWLET_PORT.toString().cyan,
     );
   }

@@ -4,7 +4,6 @@ import { getAvatar } from "@lib/functions";
 import { formatNumber } from "@lib/number";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType, GuildMember } from "discord.js";
-import { localState } from "../..";
 import { calculateLevelFromXP } from "../../lib/calculateLevelFromXP";
 import { progressBar } from "modules/owlet/lib/progressbar";
 
@@ -46,7 +45,7 @@ export default SubCommand(
       return { embeds: [response] };
     }
 
-    const config = localState.guilds.get(msg.guildId);
+    const config = state.guilds.get(msg.guildId);
     if (!config || !config.level) {
       const response = failEmbed.setDescription(
         "Leveling is not enabled on this server.",

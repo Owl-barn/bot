@@ -14,7 +14,7 @@ export function generateLevelArray(maxLevel: number) {
   }
 
   console.log(
-    " ✓ Loaded level array in ".green.bold +
+    " 🔵 Loaded level array in ~".green +
     `${Date.now() - now}ms.`.cyan,
   );
   return array;

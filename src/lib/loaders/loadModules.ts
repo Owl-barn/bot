@@ -18,7 +18,8 @@ export async function loadModules() {
 
     const module = (await import(`${folderPath}/index.js`)).default as Module;
     module.path = `${folderPath}/`;
-    console.log(`⌛ Loading module: ${module.name.green.bold}`.cyan.bold);
+
+    console.log(`⌛ Loading module: ${module.name.cyan.italic}`.green.bold);
 
     // Initialize the module's async state objects.
     if (module.initialize)
@@ -35,6 +36,7 @@ export async function loadModules() {
 
     // Add the module to the state object.
     state.modules.set(module.name, module);
-    console.log(`✅ Loaded module: ${module.name.green.bold}`.cyan.bold);
+    console.log(`✅ Loaded module: ${module.name.cyan.italic}`.green.bold);
+    console.log(`----------------------------------------`.cyan.bold);
   }
 }

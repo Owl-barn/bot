@@ -1,7 +1,7 @@
+import { state } from "@app";
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { SubCommand } from "@structs/command/subcommand";
 import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
-import { localState } from "../..";
 
 export default SubCommand(
 
@@ -22,7 +22,7 @@ export default SubCommand(
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const config = localState.guilds.get(msg.guildId);
+    const config = state.guilds.get(msg.guildId);
     if (!config || !config.level) {
       const response = failEmbed.setDescription(
         "Leveling is not enabled on this server.",

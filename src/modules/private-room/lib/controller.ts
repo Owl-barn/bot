@@ -44,7 +44,7 @@ export class Controller {
     // Try to load the room names from the file.
     try {
       const buffer = fs.readFileSync(
-        path.join(__dirname, "..", "roomNames.json"),
+        path.join(__dirname, "../data/roomNames.json"),
         "utf8",
       );
 
@@ -153,11 +153,11 @@ export class Controller {
     for (const room of loadedRooms) this.upsertRoom(room);
 
     console.log(
-      " ✓ Loaded VC service with ".green.bold +
+      " 🔵 Loaded VC service with ".green +
       this.adjectives.length.toString().cyan +
-      " adjectives and ".green.bold +
+      " adjectives and ".green +
       this.nouns.length.toString().cyan +
-      " nouns.".green.bold,
+      " nouns.".green,
     );
   }
 

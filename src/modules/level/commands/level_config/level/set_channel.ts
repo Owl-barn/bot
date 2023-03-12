@@ -2,7 +2,6 @@ import { embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
-import { localState } from "../../../";
 
 export default SubCommand(
 
@@ -46,7 +45,7 @@ export default SubCommand(
       data: { levelChannelId: channel?.id },
     });
 
-    localState.guilds.set(guild.id, guild);
+    state.guilds.set(guild.id, guild);
 
     return { embeds: [embed] };
   }

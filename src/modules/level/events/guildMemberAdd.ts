@@ -1,7 +1,6 @@
 import { state } from "@app";
 import { Event } from "@structs/event";
 import { RoleResolvable } from "discord.js";
-import { localState } from "..";
 import { calculateLevelFromXP } from "../lib/calculateLevelFromXP";
 
 export default Event({
@@ -9,7 +8,7 @@ export default Event({
   once: false,
 
   async execute(member) {
-    const config = localState.guilds.get(member.guild.id);
+    const config = state.guilds.get(member.guild.id);
 
     if (!config?.level) return;
 
