@@ -19,7 +19,6 @@ export default Command(
     description: "Plays a song",
     group: CommandGroup.music,
 
-    guildOnly: true,
     premium: 1,
 
     arguments: [

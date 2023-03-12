@@ -22,7 +22,6 @@ export default Command(
     description: "skips a song",
     group: CommandGroup.music,
 
-    guildOnly: true,
     premium: 1,
 
     arguments: [

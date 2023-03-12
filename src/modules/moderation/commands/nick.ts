@@ -11,8 +11,6 @@ export default Command(
     description: "changes the nickname for a user",
     group: CommandGroup.moderation,
 
-    guildOnly: true,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.String,

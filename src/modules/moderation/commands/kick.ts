@@ -17,8 +17,6 @@ export default Command(
     description: "kicks a user",
     group: CommandGroup.moderation,
 
-    guildOnly: true,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.User,

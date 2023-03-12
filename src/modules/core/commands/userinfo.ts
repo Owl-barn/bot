@@ -14,8 +14,6 @@ export default Command(
     description: "view userinfo",
     group: CommandGroup.general,
 
-    guildOnly: true,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.User,

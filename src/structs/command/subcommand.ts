@@ -3,7 +3,7 @@ import { BaseCommandInfo, CommandType, Premium, RunFunction, Throttling } from "
 import { Argument } from "./argument";
 
 export interface SubCommandInfo extends BaseCommandInfo {
-  guildOnly?: boolean;
+  isGlobal?: boolean;
   adminOnly?: boolean;
   premium?: Premium;
   disabled?: boolean;

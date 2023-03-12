@@ -13,8 +13,6 @@ export default Command(
     description: "whitelist to mc server",
     group: CommandGroup.general,
 
-    guildOnly: true,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.String,

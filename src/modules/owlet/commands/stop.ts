@@ -18,7 +18,6 @@ export default Command(
     description: "stop the music and clear the queue",
     group: CommandGroup.music,
 
-    guildOnly: true,
     premium: 1,
 
     arguments: [

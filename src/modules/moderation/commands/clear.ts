@@ -14,8 +14,6 @@ export default Command(
     description: "clear chat",
     group: CommandGroup.moderation,
 
-    guildOnly: true,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.Integer,

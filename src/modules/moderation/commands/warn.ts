@@ -22,8 +22,6 @@ export default Command(
     description: "warns a user",
     group: CommandGroup.moderation,
 
-    guildOnly: true,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.User,

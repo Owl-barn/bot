@@ -27,7 +27,6 @@ export default Command(
       },
     ],
 
-    guildOnly: true,
     premium: 1,
 
     throttling: {

@@ -12,8 +12,6 @@ export default Command(
     description: "View avatar",
     group: CommandGroup.general,
 
-    guildOnly: true,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.User,

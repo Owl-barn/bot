@@ -19,8 +19,6 @@ export default Command(
     description: "bans a user",
     group: CommandGroup.moderation,
 
-    guildOnly: true,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.User,

@@ -11,8 +11,6 @@ export default Command(
     description: "unbans a user",
     group: CommandGroup.moderation,
 
-    guildOnly: true,
-
     arguments: [
       {
         type: ApplicationCommandOptionType.User,
