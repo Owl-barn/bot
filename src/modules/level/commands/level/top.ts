@@ -1,5 +1,4 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 import { localState } from "../..";
@@ -36,10 +35,11 @@ export default SubCommand(
       "Click the link below to view the server's leaderboard",
     );
 
+    // TODO - Add a leaderboard link
     const button = new ButtonBuilder()
       .setLabel("Leaderboard")
-      .setStyle(ButtonStyle.Link)
-      .setURL(`${state.env.URL}/leaderboard/${msg.guildId}`);
+      .setStyle(ButtonStyle.Link);
+    // .setURL(`${state.env.URL}/leaderboard/${msg.guildId}`);
 
     const component =
       new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;

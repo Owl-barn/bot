@@ -5,9 +5,6 @@ import { Prisma } from "@prisma/client";
 import { state } from "@app";
 import { ChannelType, ChatInputCommandInteraction } from "discord.js";
 
-const client = state.client;
-const db = state.db;
-
 export enum logType {
   JOIN_LEAVE,
   EVENT,
@@ -56,7 +53,7 @@ export class LogService {
       channelId = config.log_events as string;
     else return;
 
-    const channel = await client.channels.fetch(channelId);
+    const channel = await state.client.channels.fetch(channelId);
 
     const isGuildVoice = channel && channel.type == ChannelType.GuildText;
 
@@ -125,7 +122,7 @@ export class LogService {
       hidden ? "True".green : "False".red,
     ];
 
-    db.command_log
+    state.db.command_log
       .create({ data: query })
       .then(() => console.info(logList.join(" | ")))
       .catch(console.error);

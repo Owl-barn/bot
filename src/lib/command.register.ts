@@ -313,11 +313,13 @@ export default async function registerCommand(guild: Guild) {
   }
 
   const commandInfo = new Collection<string, CommandInfoEnum>();
-  for (const command of state.commands.values()) commandInfo.set(command.info.name, command.info);
+  for (const [name, command] of state.commands) commandInfo.set(name, command.info);
 
   const commands = convert(commandInfo, dbGuild);
 
   const commandJson = commands.map((command) => command.toJSON());
+  console.log(commandJson);
+
 
   const rest = new REST({ version: "10" }).setToken(state.env.DISCORD_TOKEN);
 

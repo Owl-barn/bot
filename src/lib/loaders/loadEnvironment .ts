@@ -1,5 +1,7 @@
 import { HexColorString } from "discord.js";
 import { cleanEnv, str, url, makeValidator, num } from "envalid";
+import { config } from "dotenv";
+config();
 
 const discordId = makeValidator((x) => {
   if (/^[0-9]{17,19}$/.test(x)) return x.toUpperCase();
@@ -53,14 +55,6 @@ const loadEnvironment = cleanEnv(process.env, {
   EMBED_FAIL_COLOR: HexColor({ default: "#ff0000" }),
   EMBED_WARNING_COLOR: HexColor({ default: "#ffa500" }),
   EMBED_SUCCESS_COLOR: HexColor({ default: "#00ff00" }),
-
-  // Web
-  URL: url(),
-  API_URL: url(),
-  API_KEY: str(),
-  JWT_SECRET: str(),
-  COOKIE_TOKEN: str(),
-  PORT: num({ default: 3000 }),
 });
 
 export { loadEnvironment };
