@@ -2,7 +2,7 @@ import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
-import { isValidChannel } from "src/modules/selfrole/lib/selfrole";
+import { isValidChannel } from "modules/selfrole/lib/selfrole";
 
 export default SubCommand(
 

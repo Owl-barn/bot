@@ -11,7 +11,7 @@ import {
   VoiceBasedChannel,
   VoiceState,
 } from "discord.js";
-import { localState as VCState } from "src/modules/private-room";
+import { localState as VCState } from "modules/private-room";
 
 export class Controller {
   private timeout: Map<string, NodeJS.Timeout> = new Map();

@@ -2,7 +2,7 @@ import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType, escapeMarkdown } from "discord.js";
-import { updateCollection } from "src/modules/selfrole/lib/selfrole";
+import { updateCollection } from "modules/selfrole/lib/selfrole";
 
 export default SubCommand(
 

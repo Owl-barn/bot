@@ -1,4 +1,4 @@
-import { LevelArray } from "../commands/structs/levelArray";
+import { LevelArray } from "../structs/levelArray";
 import { calculateXPForLevel } from "./calculateXPForLevel";
 
 export function generateLevelArray(maxLevel: number) {

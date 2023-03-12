@@ -6,7 +6,7 @@ import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import { localState } from "../..";
 import { calculateLevelFromXP } from "../../lib/calculateLevelFromXP";
-import { progressBar } from "src/modules/owlet/lib/progressbar";
+import { progressBar } from "modules/owlet/lib/progressbar";
 
 const db = state.db;
 
