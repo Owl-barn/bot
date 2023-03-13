@@ -10,16 +10,13 @@ import { QueueEvent } from "../structs/queue";
 import { Credentials, wsResponse } from "../structs/websocket";
 import { state } from "@app";
 
-const env = state.env;
-const client = state.client;
-
 export default class Controller {
   private bots: Map<string, Owlet> = new Map();
   private wss: WS.Server;
   private owlets: Credentials[] = [];
 
   constructor() {
-    this.wss = new WS.Server({ port: env.OWLET_PORT });
+    this.wss = new WS.Server({ port: state.env.OWLET_PORT });
     this.wss.on("connection", this.onConnection);
 
     // Try to load the owlets from the file.
@@ -40,17 +37,18 @@ export default class Controller {
       else console.error(" ✘ No owlets.json found.".yellow.bold);
     }
 
+    if (!state.client.user) throw "Client user is not defined.";
     // Add main bot to the owlet list.
     this.owlets.unshift({
-      id: env.CLIENT_ID,
-      token: env.DISCORD_TOKEN,
+      id: state.client.user.id,
+      token: state.env.DISCORD_TOKEN,
     });
 
     console.log(
       " - Loaded Owlet service with ".green +
       this.owlets.length.toString().cyan +
       " owlets on port ".green +
-      env.OWLET_PORT.toString().cyan,
+      state.env.OWLET_PORT.toString().cyan,
     );
   }
 
@@ -67,7 +65,7 @@ export default class Controller {
       return;
     }
 
-    if (env.isDevelopment) console.log("Received:".yellow.bold, message);
+    if (state.env.isDevelopment) console.log("Received:".yellow.bold, message);
 
     switch (message.command) {
       case "Authenticate":
@@ -83,7 +81,7 @@ export default class Controller {
      * Returns all the registered owlet ids, connected or not
      * @returns Array of owlet user ids.
      */
-  public getBotIds(): Snowflake[] {
+  public getBotIds = (): Snowflake[] => {
     return this.owlets.map((owlet) => owlet.id);
   }
 
@@ -91,7 +89,7 @@ export default class Controller {
      * broadcasts a message to all owlets.
      * @param data message to send
      */
-  public broadcast(data: apiRequest): void {
+  public broadcast = (data: apiRequest) => {
     this.wss.clients.forEach((ws) => ws.send(JSON.stringify(data)));
   }
 
@@ -99,7 +97,7 @@ export default class Controller {
      * Terminates all connected owlets.
      * @returns Terminated owlet count.
      */
-  public terminate(now: boolean): number {
+  public terminate = (now: boolean): number => {
     const request = {
       command: "Terminate",
       mid: "massTerminate",
@@ -117,7 +115,7 @@ export default class Controller {
      * Returns the first unused bot account.
      * @returns Owlet credentials.
      */
-  private async getCredentials() {
+  private getCredentials = () => {
     const credentialList = this.owlets;
     for (const credential of credentialList) {
       if (this.bots.has(credential.id)) continue;
@@ -130,20 +128,22 @@ export default class Controller {
      * Remove the bot from the list.
      * @param id bot id.
      */
-  private removeBot(id: string) {
+  private removeBot = (id: string) => {
+    console.log(`- Removing bot <@${id}> from the list.`.yellow.bold);
+
     this.bots.delete(id);
     console.log(
       `- Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold,
     );
   }
 
-  private addBot(id: string, ws: WS, guilds: Guild[]): void {
+  private addBot = (id: string, ws: WS, guilds: Guild[]) => {
     const owlet = new Owlet(id, ws, guilds);
 
     owlet.on(QueueEvent.SongStart, async (track, channelId, guildId) => {
-      const guild = client.guilds.cache.get(guildId);
+      const guild = state.client.guilds.cache.get(guildId);
       if (!guild) return;
-      const channel = await client.channels.fetch(channelId);
+      const channel = await state.client.channels.fetch(channelId);
       if (!channel) return;
       const bot = await guild?.members.fetch(id);
       if (!bot) return;
@@ -180,9 +180,9 @@ export default class Controller {
     });
 
     owlet.on(QueueEvent.Shutdown, async (guildId, channelId) => {
-      const guild = client.guilds.cache.get(guildId);
+      const guild = state.client.guilds.cache.get(guildId);
       if (!guild) return;
-      const channel = await client.channels.fetch(channelId);
+      const channel = await state.client.channels.fetch(channelId);
       if (!channel) return;
       if (channel.type !== ChannelType.GuildVoice) return;
       const bot = await guild?.members.fetch(id);
@@ -209,8 +209,8 @@ export default class Controller {
 
     // If the bot disconnects remove it from the list.
     ws.on("close", () => this.removeBot(id));
-
     this.bots.set(id, owlet);
+
 
     console.log(
       `+ Owlet connected <@${id}>, ${this.bots.size} active.`.green
@@ -220,11 +220,11 @@ export default class Controller {
   /**
      * Authenticates the owlet.
      */
-  private async authenticate(ws: WS, message: apiRequest): Promise<void> {
+  private authenticate = async (ws: WS, message: apiRequest) => {
     const pass = message.data.password;
 
     // Check password.
-    if (pass != env.OWLET_PASSWORD) {
+    if (pass != state.env.OWLET_PASSWORD) {
       return ws.send(
         JSON.stringify({
           mid: message.mid,
@@ -302,7 +302,7 @@ export default class Controller {
      * @param message message
      * @returns nothing
      */
-  private async status(ws: WS, message: wsResponse): Promise<void> {
+  private status = async (ws: WS, message: wsResponse) => {
     const data = message.data as unknown as status;
     const bot = this.bots.get(data.id);
 
@@ -347,9 +347,11 @@ export default class Controller {
       }
     }
 
-    // Check if raven is available.
-    const raven = this.bots.get(env.CLIENT_ID)?.getGuilds().get(guildId);
-    if (raven && !raven.channelId) return this.bots.get(env.CLIENT_ID);
+    // Check if main bot is available.
+    if (state.client.user) {
+      const main = this.bots.get(state.client.user.id)?.getGuilds().get(guildId);
+      if (main && !main.channelId) return this.bots.get(state.client.user.id);
+    }
 
     // Otherwise search for an available owlet in that guild.
     for (const bot of this.bots.values()) {

@@ -11,6 +11,7 @@ export default Event({
 
   async execute(msg) {
     if (!msg.guildId) return;
+    if (msg.author.bot) return;
     const guildConfig = state.guilds.get(msg.guildId);
     if (!guildConfig) return;
     if (!guildConfig.level) return;
@@ -70,10 +71,7 @@ export default Event({
       if (message) {
         message = message.replace("{LEVEL}", String(current.level));
         message = message.replace("{USER}", `<@${user}>`);
-        message = message.replace(
-          "{NEW_ROLES}",
-          String(rolesToAdd.length),
-        );
+        message = message.replace("{NEW_ROLES}", String(rolesToAdd.length));
 
         if (guildConfig.levelChannelId) {
           const channel = msg.guild?.channels.cache.get(guildConfig.levelChannelId);

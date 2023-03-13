@@ -3,11 +3,6 @@ import { cleanEnv, str, url, makeValidator, num } from "envalid";
 import { config } from "dotenv";
 config();
 
-const discordId = makeValidator((x) => {
-  if (/^[0-9]{17,19}$/.test(x)) return x.toUpperCase();
-  else throw new Error("Expected two letters");
-});
-
 const discordInvite = makeValidator((x) => {
   if (
     /(https?:\/\/)?(www.)?((discord.(gg|io|me|li))|(?:discordapp.com\/invite))\/[^\s/]+/.test(
@@ -40,7 +35,6 @@ const loadEnvironment = cleanEnv(process.env, {
   DONATION_URL: url(),
   CLIENT_SECRET: str(),
   DISCORD_TOKEN: str(),
-  CLIENT_ID: discordId(),
   SUPPORT_SERVER: discordInvite(),
 
   VOICE_NOTIFY_DELAY: num({ default: 90 }),

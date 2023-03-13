@@ -34,7 +34,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    const guildID = msg.options.getString("guildId", true);
+    const guildID = msg.options.getString("guild_id", true);
     const premium = msg.options.getBoolean("state", true);
     const client = msg.client;
 

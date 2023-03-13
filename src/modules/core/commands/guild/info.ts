@@ -33,7 +33,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    const guildID = msg.options.getString("guildId");
+    const guildID = msg.options.getString("guild_id");
     const client = msg.client;
 
     let guild = msg.guild as Guild;

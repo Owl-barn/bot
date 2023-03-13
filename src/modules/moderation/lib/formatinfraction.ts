@@ -15,7 +15,7 @@ export function formatInfraction(
         dateMs - Number(infraction.createdAt),
       )}\n`;
     } else {
-      expiresOnString = `**expiresOn:** <t:${seconds}:D>\n`;
+      expiresOnString = `**expiresOn:** <t:${Math.round(seconds)}:D>\n`;
     }
   }
 
