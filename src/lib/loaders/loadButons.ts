@@ -3,8 +3,8 @@ import { Button } from "@structs/button";
 import fs from "fs";
 
 export async function loadButtons(path: string) {
-
   const files = fs.readdirSync(path, { withFileTypes: true });
+  const oldButtonCount = state.buttons.size;
 
   for (const file of files) {
     if (!file.name.endsWith(".js")) continue;
@@ -33,7 +33,7 @@ export async function loadButtons(path: string) {
 
   console.log(
     " - Loaded ".green +
-    String(state.buttons.size).cyan +
+    String(state.buttons.size - oldButtonCount).cyan +
     " buttons".green,
   );
 

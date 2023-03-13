@@ -8,6 +8,7 @@ export async function loadCommands(path: string) {
   const commandFiles = fs.readdirSync(path, { withFileTypes: true });
 
   // Loop through top level files/folders
+  const oldCommandCount = state.commands.size;
 
   for (const file of commandFiles) {
     const folderPath = path + file.name;
@@ -40,7 +41,7 @@ export async function loadCommands(path: string) {
 
   console.log(
     " - Loaded ".green +
-    String(state.commands.size).cyan +
+    String(state.commands.size - oldCommandCount).cyan +
     " commands".green,
   );
 }

@@ -6,6 +6,7 @@ import { EventStruct } from "@structs/event";
 
 export async function loadEvents(path: string) {
   const files = fs.readdirSync(path);
+  let eventCount = 0;
 
   for (const file of files) {
     if (!file.endsWith(".js")) continue;
@@ -22,10 +23,12 @@ export async function loadEvents(path: string) {
         event.execute(...args).catch(console.error),
       );
 
+    eventCount++;
+
     if (state.env.isDevelopment) {
       console.log(` - Loaded Event: ${event.name.green.italic}`.cyan.italic);
     }
   }
 
-  console.log(" - Loaded ".green + String(files.length).cyan + " events".green);
+  console.log(" - Loaded ".green + String(eventCount).cyan + " events".green);
 }
