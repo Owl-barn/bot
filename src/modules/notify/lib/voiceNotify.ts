@@ -1,12 +1,12 @@
 import { embedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import { state } from "@app";
-import { PermissionFlagsBits } from "discord-api-types/payloads/v9";
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   GuildMember,
+  PermissionFlagsBits,
   VoiceBasedChannel,
   VoiceState,
 } from "discord.js";
@@ -22,16 +22,16 @@ export class Controller {
 
     const channelUnchanged = oldState.channel?.id === newState.channel?.id;
     const member = newState.member;
+
     // Check if joined vc.
     if (!member) return;
     if (channelUnchanged) return;
     if (newState.channel === null) return;
 
-    // Check if timed out.
-    const lastNotify = this.lastNotified.get(member.id);
-    if (lastNotify) {
-      if (lastNotify + state.env.VOICE_NOTIFY_DELAY * 60 * 1000 > Date.now()) return;
-      else this.lastNotified.delete(member.id);
+    // Check if afk channel.
+    if (newState.guild.afkChannelId === newState.channel?.id) {
+      this.lastNotified.set(member.id, Date.now());
+      return;
     }
 
     // Check if channel is a waiting room.
@@ -40,6 +40,13 @@ export class Controller {
       .find(r => r.waitingRoomId === newState.channel?.id);
 
     if (isWaitingRoom) return;
+
+    // Check if timed out.
+    const lastNotify = this.lastNotified.get(member.id);
+    if (lastNotify) {
+      if (lastNotify + state.env.VOICE_NOTIFY_DELAY * 60 * 1000 > Date.now()) return;
+      else this.lastNotified.delete(member.id);
+    }
 
     // Check if has friends.
     const friends = await db.friendship.findMany({
