@@ -14,7 +14,7 @@ import { wsResponse } from "../structs/websocket";
 export default Command(
   // Info
   {
-    name: "repeat",
+    name: "loop",
     description: "loops the queue",
     group: CommandGroup.music,
 
@@ -38,7 +38,10 @@ export default Command(
       },
     ],
 
-    premium: 1,
+    access: {
+      guildTier: 1,
+      individualTier: 1,
+    },
 
     throttling: {
       duration: 30,
