@@ -3,8 +3,10 @@ import { getAvatar } from "@lib/functions";
 import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
-import { GuildMember, ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, EmbedField } from "discord.js";
 import moment from "moment";
+import { calculateLevelFromXP } from "modules/level/lib/calculateLevelFromXP";
+import { ModerationType } from "@prisma/client";
 
 export default Command(
 
@@ -14,11 +16,19 @@ export default Command(
     description: "view userinfo",
     group: CommandGroup.general,
 
+    isGlobal: true,
+
     arguments: [
       {
         type: ApplicationCommandOptionType.User,
         name: "user",
         description: "Who's info to get",
+        required: false,
+      },
+      {
+        type: ApplicationCommandOptionType.Boolean,
+        name: "global",
+        description: "Get global info",
         required: false,
       },
     ],
@@ -31,105 +41,149 @@ export default Command(
 
   // Execute
   async (msg) => {
-    let member = msg.options.getMember("user") as GuildMember | null;
-    if (member === null) member = msg.member as GuildMember;
+    const user = msg.options.getUser("user") || msg.user;
+    const member = !msg.options.getBoolean("global") ? await msg.guild?.members.fetch(user.id) : undefined;
 
-    const roles = member.roles.cache.sort(
+    const userData = await state.db.user.findUnique({
+      where: { id: user.id },
+      select: {
+        birthdays: true,
+
+        infractions: true,
+        moderationActions: true,
+
+        friends: true,
+        friendships: true,
+
+        Level: true,
+      },
+    });
+
+
+    const roles = member?.roles.cache.sort(
       (x, y) => y.position - x.position,
     );
 
-    const birthdayQuery = await state.db.birthday.findUnique({
-      where: {
-        userId_guildId: {
-          userId: member.id,
-          guildId: msg.guildId as string,
-        },
-      },
+
+    const createdTime = Math.round(user.createdTimestamp / 1000);
+    const joinedTime = member && Math.floor((member.joinedTimestamp || 0) / 1000);
+
+    const muteTimeStamp = member?.communicationDisabledUntilTimestamp;
+    const muted = (muteTimeStamp && muteTimeStamp > Date.now()) ? Math.round(muteTimeStamp / 1000) : undefined;
+
+    const birthday = member ? userData?.birthdays.find((x) => x.guildId === member.guild.id) : userData?.birthdays[0];
+
+    const fields: EmbedField[] = [];
+
+    // Base Info.
+    const info = [
+      `**tag:** ${user}`,
+      `**ID:** \`${user.id}\``,
+      `**Created:** <t:${createdTime}>`,
+
+      joinedTime &&
+      `**Joined:** <t:${joinedTime}>`,
+
+      muted &&
+      `**Mute will be removed** <t:${muted})}:R>`,
+
+      birthday &&
+      `**Birthday:** ${moment(birthday.date).format("DD-MM-YYYY")}`,
+
+      `**bot:** ${user.bot ? "yes 🤖" : "no 🦉"}`,
+    ];
+
+    fields.push({
+      name: "Base Info",
+      value: info.filter((x) => x).join("\n"),
+      inline: false,
     });
 
-    const moderationLogQuery = await state.db.infraction.groupBy({
-      by: ["moderationType"],
-      _count: true,
-      where: {
-        guildId: msg.guildId as string,
-        userId: member.id,
-      },
-    });
+    // Friends.
+    if (userData?.friends.length || userData?.friendships.length) {
+      const friends = userData.friends.length;
+      const friendships = userData.friendships.length;
 
-    const moderationCounts = {
-      warns: 0,
-      bans: 0,
-      kicks: 0,
-      timeouts: 0,
-    };
-
-    for (const modLog of moderationLogQuery) {
-      if (modLog.moderationType == "warn")
-        moderationCounts.warns = modLog._count;
-      else if (modLog.moderationType == "ban")
-        moderationCounts.bans = modLog._count;
-      else if (modLog.moderationType == "kick")
-        moderationCounts.kicks = modLog._count;
-      else if (modLog.moderationType == "timeout")
-        moderationCounts.timeouts = modLog._count;
+      fields.push({
+        name: "Friends",
+        value: `** Friends:** ${friends}\n ** Friendships:** ${friendships}`,
+        inline: true,
+      });
     }
 
-    const tag = `**tag:** ${member}`;
-    const id = `**ID:** \`${member.id}\``;
-    const createdTime = Math.round(member.user.createdTimestamp / 1000);
-    const created = `**Created:** <t:${createdTime}>`;
-    const joinedTime = Math.floor((member.joinedTimestamp || 0) / 1000);
-    const joined = `**Joined:** <t:${joinedTime}>`;
-    const birthdayTime = moment(birthdayQuery?.date).format(
-      "DD-MM-YYYY",
-    );
-    const birthday = birthdayQuery ? `**Birthday:** ${birthdayTime}` : "";
+    // Level.
+    if (userData?.Level) {
+      if (!member) {
 
-    const warnings = moderationCounts.warns
-      ? `**Warnings:** ${moderationCounts.warns}`
-      : null;
+        let highestXP = 0;
+        userData.Level.forEach((x) => x.experience > highestXP && (highestXP = x.experience));
+        const highestLevel = calculateLevelFromXP(highestXP);
 
-    const bans = moderationCounts.bans
-      ? `**Bans:** ${moderationCounts.bans}`
-      : null;
+        fields.push({
+          name: "Level",
+          value: `** Highest level:** ${highestLevel.level}\n ** XP:** ${highestLevel.totalXP}`,
+          inline: true,
+        });
+      } else {
+        const level = calculateLevelFromXP(userData.Level.find(x => x.guildId === member.guild.id)?.experience || 0);
 
-    const kicks = moderationCounts.kicks
-      ? `**Kicks:** ${moderationCounts.kicks}`
-      : null;
+        fields.push({
+          name: "Level",
+          value: `** Level:** ${level.level}\n ** XP:** ${level.totalXP}`,
+          inline: true,
+        });
+      }
+    }
 
-    const timeouts = moderationCounts.timeouts
-      ? `**Timeouts:** ${moderationCounts.timeouts}`
-      : null;
+    // Moderation.
+    if (userData?.moderationActions.length || userData?.infractions.length) {
 
-    const muteTimeStamp = member.communicationDisabledUntilTimestamp;
-    const muted =
-      muteTimeStamp && muteTimeStamp > Date.now()
-        ? `**Mute will be removed** <t:${Math.round(
-          muteTimeStamp / 1000,
-        )}:R>`
-        : null;
+      interface ModerationCount { given: number, received: number }
+      const moderationCounts: { [x in ModerationType]: ModerationCount } = {
+        warn: { given: 0, received: 0 },
+        ban: { given: 0, received: 0 },
+        kick: { given: 0, received: 0 },
+        timeout: { given: 0, received: 0 },
+      };
 
-    const bot = `${member.user.bot ? "**Bot:** ✅" : ""}`;
+      const hasGiven = userData?.moderationActions.length > 0;
 
-    let list: string | string[] = [tag, id, created, joined];
-    if (birthday) list.push(birthday);
-    if (warnings) list.push(warnings);
-    if (bans) list.push(bans);
-    if (kicks) list.push(kicks);
-    if (timeouts) list.push(timeouts);
-    if (muted) list.push(muted);
-    if (bot) list.push(bot);
+      for (const modLog of userData?.moderationActions || [])
+        moderationCounts[modLog.moderationType].given++;
 
-    list = list.join("\n");
+      for (const modLog of userData?.infractions || [])
+        moderationCounts[modLog.moderationType].received++;
+
+      const formatItem = (key: ModerationType, item: ModerationCount) => {
+        return `** ${key}:** \`${item.received}\` received ${hasGiven ? `, \`${item.given}\` given` : ""}`;
+      };
+
+      const moderation = Object.entries(moderationCounts)
+        .filter(([, item]) => item.received > 0 || item.given > 0)
+        .map(([key, item]) => formatItem(key as ModerationType, item));
+
+      fields.push({
+        name: "Moderation",
+        value: moderation.join("\n"),
+        inline: false,
+      });
+    }
+
+    // Roles.
+    if (roles) {
+      fields.push({
+        name: "Roles",
+        value: roles.map((x) => `${x}`).slice(0, 10).join(" ") + "\n" + (roles.size > 10 ? `...and ${roles.size - 10} more` : ""),
+        inline: false,
+      });
+    }
+
 
     const embed = embedTemplate()
-      .setTitle(`${member.user.username}`)
-      .setDescription(`${member.user.username}'s user info!`)
-      .setThumbnail(getAvatar(member) || null)
-      .addFields([
-        { name: "Base info", value: list },
-        { name: "Roles", value: roles.map((x) => `${x}`).join(" ") },
-      ]);
+      .setTitle(`${user.username}`)
+      .setDescription(`${user.username}'s ${member ? "" : "global"} user info!`)
+      .setThumbnail(getAvatar(member ?? user) || null)
+      .addFields(fields);
 
     return { embeds: [embed] };
   }
