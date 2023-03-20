@@ -51,21 +51,18 @@ export default Command(
       select: {
         birthdays: true,
 
-        infractions: true,
+        infractions: { where: { NOT: { deletedOn: null } } },
         moderationActions: true,
 
-        friends: true,
-        friendships: true,
+        friends: { where: { isPending: false } },
+        friendships: { where: { isPending: false } },
 
         Level: true,
       },
     });
 
 
-    const roles = member?.roles.cache.sort(
-      (x, y) => y.position - x.position,
-    );
-
+    const roles = member?.roles.cache.sort((x, y) => y.position - x.position);
 
     const createdTime = Math.round(user.createdTimestamp / 1000);
     const joinedTime = member && Math.floor((member.joinedTimestamp || 0) / 1000);
@@ -140,6 +137,14 @@ export default Command(
     // Moderation.
     if (userData?.moderationActions.length || userData?.infractions.length) {
 
+      let moderationActions = userData?.moderationActions;
+      let infractions = userData?.infractions.filter((x) => !x.expiresOn || x.expiresOn < new Date());
+
+      if (member) {
+        moderationActions = moderationActions.filter((x) => x.guildId === member.guild.id);
+        infractions = infractions.filter((x) => x.guildId === member.guild.id);
+      }
+
       interface ModerationCount { given: number, received: number }
       const moderationCounts: { [x in ModerationType]: ModerationCount } = {
         warn: { given: 0, received: 0 },
@@ -148,12 +153,12 @@ export default Command(
         timeout: { given: 0, received: 0 },
       };
 
-      const hasGiven = userData?.moderationActions.length > 0;
+      const hasGiven = moderationActions.length > 0;
 
-      for (const modLog of userData?.moderationActions || [])
+      for (const modLog of moderationActions || [])
         moderationCounts[modLog.moderationType].given++;
 
-      for (const modLog of userData?.infractions || [])
+      for (const modLog of infractions || [])
         moderationCounts[modLog.moderationType].received++;
 
       const formatItem = (key: ModerationType, item: ModerationCount) => {
