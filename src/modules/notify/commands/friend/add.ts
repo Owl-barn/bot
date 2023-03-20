@@ -12,6 +12,7 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 import { checkFriendLimit } from "../../lib/checkFriendLimit";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
 export default SubCommand(
 
@@ -110,9 +111,9 @@ export default SubCommand(
     // Create the request in the database.
     await state.db.friendship.create({
       data: {
-        userId: msg.user.id,
-        friendId: friendUser.id,
         isPending: true,
+        user: connectOrCreate(msg.user.id),
+        friend: connectOrCreate(friendUser.id),
       },
     });
 

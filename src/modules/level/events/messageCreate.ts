@@ -1,4 +1,5 @@
 import { state } from "@app";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { Event } from "@structs/event";
 import { RoleResolvable } from "discord.js";
 import { localState } from "..";
@@ -32,7 +33,10 @@ export default Event({
 
     if (!query)
       query = await state.db.level.create({
-        data: { userId: user, guildId: guild },
+        data: {
+          user: connectOrCreate(user),
+          guild: connectOrCreate(guild),
+        },
       });
 
     const current = calculateLevelFromXP(query.experience);

@@ -18,6 +18,7 @@ import { state } from "@app";
 import { localState as owletState } from "../../owlet";
 import { logType } from "@lib/services/logService";
 import { Guild, PrivateRoom } from "@prisma/client";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 interface RoomNames {
   adjectives: string[];
   nouns: string[];
@@ -390,10 +391,10 @@ export class Controller {
     // Put into db and update local config.
     const roomInfo = await state.db.privateRoom.create({
       data: {
-        userId: member.id,
-        guildId: vc.guild.id,
         mainRoomId: room.id,
         waitingRoomId: wait.id,
+        user: connectOrCreate(member.id),
+        guild: connectOrCreate(vc.guild.id),
       },
     });
 

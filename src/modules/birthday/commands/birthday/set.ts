@@ -5,6 +5,7 @@ import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
 import moment from "moment";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
 export default SubCommand(
 
@@ -100,8 +101,10 @@ export default SubCommand(
       },
       create: {
         date: birthdayMoment.toDate(),
-        userId: msg.user.id,
-        guildId: msg.guildId,
+        user: connectOrCreate(msg.user.id),
+        guild: {
+          connect: { id: msg.guild?.id },
+        },
       },
       update: {
         date: birthdayMoment.toDate(),

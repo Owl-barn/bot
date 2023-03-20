@@ -6,6 +6,7 @@ import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType, GuildMember } from "discord.js";
 import { calculateLevelFromXP } from "../../lib/calculateLevelFromXP";
 import { progressBar } from "modules/owlet/lib/progressbar";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
 const db = state.db;
 
@@ -36,7 +37,7 @@ export default SubCommand(
     const member =
       (msg.options.getMember("user") as GuildMember | null) ||
       (msg.member as GuildMember);
-    if (!msg.guildId) throw "Level Command didnt get guildID";
+    if (!msg.guild) throw "Level Command didnt get guild??";
     const failEmbed = failEmbedTemplate();
     const embed = embedTemplate();
 
@@ -45,7 +46,7 @@ export default SubCommand(
       return { embeds: [response] };
     }
 
-    const config = state.guilds.get(msg.guildId);
+    const config = state.guilds.get(msg.guild.id);
     if (!config || !config.level) {
       const response = failEmbed.setDescription(
         "Leveling is not enabled on this server.",
@@ -56,7 +57,7 @@ export default SubCommand(
     let level = await db.level.findUnique({
       where: {
         userId_guildId: {
-          guildId: msg.guildId,
+          guildId: msg.guild.id,
           userId: member.id,
         },
       },
@@ -65,8 +66,8 @@ export default SubCommand(
     if (!level) {
       level = await db.level.create({
         data: {
-          userId: member.id,
-          guildId: msg.guildId,
+          user: connectOrCreate(member.id),
+          guild: connectOrCreate(msg.guild.id),
         },
       });
     }
@@ -75,7 +76,7 @@ export default SubCommand(
       _count: { userId: true },
       where: {
         experience: { gt: level.experience },
-        guildId: msg.guildId,
+        guildId: msg.guild.id,
       },
     });
 
@@ -84,7 +85,7 @@ export default SubCommand(
 
     const NextReward = await db.levelReward.findFirst({
       where: {
-        guildId: msg.guildId,
+        guildId: msg.guild.id,
         level: { gt: stats.level },
       },
       orderBy: { level: "asc" },

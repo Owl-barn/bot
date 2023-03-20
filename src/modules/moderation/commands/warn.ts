@@ -11,6 +11,7 @@ import {
   escapeMarkdown,
 } from "discord.js";
 import { ModerationType } from "@prisma/client";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
 const db = state.db;
 
@@ -79,9 +80,9 @@ export default Command(
         data: {
           expiresOn,
           reason: reason,
-          userId: target.id,
-          moderatorId: msg.user.id,
-          guildId: msg.guild.id,
+          moderator: connectOrCreate(msg.user.id),
+          target: connectOrCreate(target.id),
+          guild: connectOrCreate(msg.guild.id),
           moderationType: ModerationType.warn,
         },
       })

@@ -44,6 +44,8 @@ export default Command(
     const user = msg.options.getUser("user") || msg.user;
     const member = !msg.options.getBoolean("global") ? await msg.guild?.members.fetch(user.id) : undefined;
 
+    const guildConfig = state.guilds.get(msg.guild?.id || "");
+
     const userData = await state.db.user.findUnique({
       where: { id: user.id },
       select: {
@@ -106,13 +108,13 @@ export default Command(
 
       fields.push({
         name: "Friends",
-        value: `** Friends:** ${friends}\n ** Friendships:** ${friendships}`,
+        value: `**Friends:** ${friends}\n **Friendships:** ${friendships}`,
         inline: true,
       });
     }
 
     // Level.
-    if (userData?.Level) {
+    if (guildConfig?.level && userData?.Level) {
       if (!member) {
 
         let highestXP = 0;

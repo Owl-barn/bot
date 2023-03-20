@@ -9,6 +9,7 @@ import {
   escapeMarkdown,
   GuildMember,
 } from "discord.js";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
 export default SubCommand(
 
@@ -125,12 +126,13 @@ export default SubCommand(
 
     await state.db.infraction.create({
       data: {
-        expiresOn: new Date(Date.now() + durationMs),
         reason,
-        userId: target.id,
-        moderatorId: msg.user.id,
-        guildId: msg.guildId as string,
         moderationType: ModerationType.timeout,
+        expiresOn: new Date(Date.now() + durationMs),
+
+        target: connectOrCreate(target.id),
+        guild: connectOrCreate(msg.guild.id),
+        moderator: connectOrCreate(msg.user.id),
       },
     });
 

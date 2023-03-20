@@ -8,7 +8,7 @@ import { logType } from "@lib/services/logService";
 export default cron(
   {
     name: "BirthdayAdd",
-    time: "0 * * * *",
+    time: "0 0 * * *",
   },
 
   async () => {

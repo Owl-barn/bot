@@ -10,6 +10,7 @@ import {
   APIEmbedField,
   escapeMarkdown,
 } from "discord.js";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
 export default Command(
 
@@ -104,10 +105,11 @@ export default Command(
       data: {
         expiresOn,
         reason: reason,
-        userId: target.id,
-        moderatorId: msg.user.id,
-        guildId: msg.guildId as string,
         moderationType: ModerationType.ban,
+
+        target: connectOrCreate(target.id),
+        moderator: connectOrCreate(msg.user.id),
+        guild: connectOrCreate(msg.guild.id),
       },
     });
     const fields: APIEmbedField[] = [];

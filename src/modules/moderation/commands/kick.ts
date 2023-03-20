@@ -8,6 +8,7 @@ import {
   ApplicationCommandOptionType,
   escapeMarkdown,
 } from "discord.js";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
 export default Command(
 
@@ -78,11 +79,12 @@ export default Command(
 
     await state.db.infraction.create({
       data: {
-        userId: target.id,
         reason: reason,
-        guildId: msg.guild.id,
-        moderatorId: msg.user.id,
         moderationType: ModerationType.kick,
+
+        target: connectOrCreate(target.id),
+        guild: connectOrCreate(msg.guild.id),
+        moderator: connectOrCreate(msg.user.id),
       },
     });
 

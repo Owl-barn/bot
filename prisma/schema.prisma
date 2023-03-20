@@ -231,15 +231,16 @@ model User {
   subscribedSince  DateTime?
 
   // Core
+  isBanned         Boolean      @default(false)
   subscribedGuilds Guild[]
   CommandLog       CommandLog[]
-  isBanned         Boolean      @default(false)
 
   // Birthday
   birthdays Birthday[]
 
   // Notify
-  friendships Friendship[]
+  friendships Friendship[] @relation("friend")
+  friends     Friendship[] @relation("user")
 
   // Owlet
   MediaLog MediaLog[]
@@ -263,7 +264,8 @@ model Friendship {
 
   isPending Boolean @default(true)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user   User @relation(name: "user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  friend User @relation(name: "friend", fields: [friendId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
   @@unique([userId, friendId])
 }
