@@ -4,6 +4,7 @@ import { getAvatar } from "@lib/functions";
 import { Prisma } from "@prisma/client";
 import { state } from "@app";
 import { ChannelType, ChatInputCommandInteraction } from "discord.js";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
 export enum logType {
   JOIN_LEAVE,
@@ -101,12 +102,13 @@ export class LogService {
     subCommandGroup ? (commandName += `_${subCommandGroup}`) : null;
     subCommand ? (commandName += `_${subCommand}`) : null;
 
-    const query: Prisma.CommandLogUncheckedCreateInput = {
-      userId: interaction.user.id,
+    const query: Prisma.CommandLogCreateInput = {
       commandName: commandName,
-      guildId: interaction.guildId,
-      channelId: interaction.channelId,
       isHidden,
+
+      channelId: interaction.channelId,
+      user: connectOrCreate(interaction.user.id),
+      guild: interaction.guildId ? connectOrCreate(interaction.guildId) : undefined,
     };
 
     const guildName = interaction.guild ? interaction.guild.name : "DM";
