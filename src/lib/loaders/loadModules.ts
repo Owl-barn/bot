@@ -5,6 +5,7 @@ import { loadEvents } from "@lib/loaders/loadEvents";
 import { loadCommands } from "@lib/loaders/loadCommands";
 import { loadButtons } from "@lib/loaders/loadButons";
 import path from "path";
+import { loadJobs } from "./loadJobs";
 
 export async function loadModules() {
 
@@ -28,10 +29,11 @@ export async function loadModules() {
           throw `Failed to initialize module "${module.name}": `.red + String(error);
         });
 
-    // Load the module's events, commands, and buttons.
+    // Load the module's events, commands, cronjobs, and buttons.
     moduleFiles.includes("events") && await loadEvents(module.path + "events/");
     moduleFiles.includes("commands") && await loadCommands(module.path + "commands/");
     moduleFiles.includes("buttons") && await loadButtons(module.path + "buttons/");
+    moduleFiles.includes("cron") && await loadJobs(module.path + "cron/");
 
 
     // Add the module to the state object.
