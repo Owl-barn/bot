@@ -1,12 +1,12 @@
 import { state } from "@app";
 import { warningEmbedTemplate } from "@lib/embedTemplate";
+import { getAccessInfo } from "@structs/access/getAcessInfo";
+import { subscriptionTiers } from "@structs/access/subscription";
 import { CommandGroup } from "@structs/command";
 import { CommandStruct } from "@structs/command/command";
 import { ParentCommandStruct } from "@structs/command/parent";
 import { SubCommandStruct } from "@structs/command/subcommand";
-import { subscriptionTiers } from "@structs/command/subscription";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
-import { getAccessInfo } from "./checkSubscription";
 import { respond } from "./respond";
 
 export async function commandEvent(msg: ChatInputCommandInteraction) {
@@ -59,7 +59,7 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
       fields.push({
         name: "Available with the following guild subscriptions",
         value: accessInfo.recommendedGuildSubscriptions
-          .map(x => `\`${subscriptionTiers[x].name}\``)
+          .map(x => `\`${subscriptionTiers[x.key].name}\``)
           .join(", "),
       });
     }
@@ -68,7 +68,7 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
       fields.push({
         name: "Available with the following personal subscriptions",
         value: accessInfo.recommendedUserSubscriptions
-          .map(x => `\`${subscriptionTiers[x].name}\``)
+          .map(x => `\`${subscriptionTiers[x.key].name}\``)
           .join(", "),
       });
     }

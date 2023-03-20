@@ -34,12 +34,6 @@ export interface BaseCommandInfo {
   descriptionLocalization?: LocalizationMap;
 }
 
-export type Premium = number;
-export interface Throttling {
-  duration: number;
-  usages: number;
-}
-
 export type CommandEnum =
   | ParentCommandStruct
   | SubCommandGroupStruct

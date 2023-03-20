@@ -8,6 +8,7 @@ import {
   EmbedAuthorOptions,
 } from "discord.js";
 import { localState } from "..";
+import { baseAccessConfig } from "../lib/accessConfig";
 import { isDJ } from "../lib/isdj";
 import { wsResponse } from "../structs/websocket";
 
@@ -18,8 +19,6 @@ export default Command(
     description: "stop the music and clear the queue",
     group: CommandGroup.music,
 
-    premium: 1,
-
     arguments: [
       {
         name: "bot_id",
@@ -28,6 +27,8 @@ export default Command(
         required: false,
       },
     ],
+
+    access: baseAccessConfig,
 
     throttling: {
       duration: 30,

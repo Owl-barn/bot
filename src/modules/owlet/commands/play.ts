@@ -10,6 +10,7 @@ import { isDJ } from "../lib/isdj";
 import { QueueInfo } from "../structs/queue";
 import { Track } from "../structs/track";
 import { wsResponse } from "../structs/websocket";
+import { baseAccessConfig } from "../lib/accessConfig";
 
 export default Command(
 
@@ -18,8 +19,6 @@ export default Command(
     name: "play",
     description: "Plays a song",
     group: CommandGroup.music,
-
-    premium: 1,
 
     arguments: [
       {
@@ -42,10 +41,7 @@ export default Command(
       },
     ],
 
-    throttling: {
-      duration: 30,
-      usages: 6,
-    },
+    access: baseAccessConfig,
   },
 
   // Execute

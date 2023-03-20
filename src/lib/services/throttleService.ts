@@ -9,6 +9,8 @@ export class ThrottleService {
     user: string,
     command: CommandInfo | SubCommandInfo,
   ): number | boolean {
+    const throttleConfig = command.throttling;
+    if (!throttleConfig) return false;
     const listUser = this.list[guild]?.[user];
     if (!listUser) return false;
 
@@ -20,7 +22,7 @@ export class ThrottleService {
     this.list[guild][user] = listUser.filter((item) => {
       if (item.name !== command.name) return true;
 
-      if (now > item.date + command.throttling.duration) return false;
+      if (now > item.date + throttleConfig.duration) return false;
 
       total++;
       if (item.date < oldest) oldest = item.date;
@@ -28,8 +30,8 @@ export class ThrottleService {
       return true;
     });
 
-    if (total >= command.throttling.usages)
-      return command.throttling.duration - (now - oldest);
+    if (total >= throttleConfig.usages)
+      return throttleConfig.duration - (now - oldest);
 
     return false;
   }

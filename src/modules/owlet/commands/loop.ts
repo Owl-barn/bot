@@ -8,6 +8,7 @@ import {
   EmbedAuthorOptions,
 } from "discord.js";
 import { localState } from "..";
+import { baseAccessConfig } from "../lib/accessConfig";
 import { isDJ } from "../lib/isdj";
 import { wsResponse } from "../structs/websocket";
 
@@ -38,15 +39,7 @@ export default Command(
       },
     ],
 
-    access: {
-      guildTier: 1,
-      individualTier: 1,
-    },
-
-    throttling: {
-      duration: 30,
-      usages: 2,
-    },
+    access: baseAccessConfig,
   },
 
   // Execute

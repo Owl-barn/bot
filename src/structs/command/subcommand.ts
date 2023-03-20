@@ -1,11 +1,12 @@
+import { Throttling } from "@structs/access/throttling";
 import { PermissionsString } from "discord.js";
-import { BaseCommandInfo, CommandType, Premium, RunFunction, Throttling } from ".";
+import { BaseCommandInfo, CommandType, RunFunction } from ".";
 import { Argument } from "./argument";
+import { Access } from "@structs/access";
 
 export interface SubCommandInfo extends BaseCommandInfo {
   isGlobal?: boolean;
   adminOnly?: boolean;
-  premium?: Premium;
   disabled?: boolean;
 
   arguments?: Argument<string | number>[];
@@ -13,7 +14,9 @@ export interface SubCommandInfo extends BaseCommandInfo {
   userPermissions?: PermissionsString[];
   botPermissions?: PermissionsString[];
 
-  throttling: Throttling;
+  throttling?: Throttling;
+
+  access?: Access;
 }
 
 export interface SubCommandStruct {

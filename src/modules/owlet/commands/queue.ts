@@ -12,6 +12,7 @@ import {
 } from "discord.js";
 import moment from "moment";
 import { localState } from "..";
+import { baseAccessConfig } from "../lib/accessConfig";
 import { progressBar } from "../lib/progressbar";
 import { QueueInfo } from "../structs/queue";
 import { CurrentTrack, Track } from "../structs/track";
@@ -33,7 +34,7 @@ export default Command(
       },
     ],
 
-    premium: 1,
+    access: baseAccessConfig,
 
     throttling: {
       duration: 30,

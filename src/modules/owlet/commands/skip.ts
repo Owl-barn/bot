@@ -9,6 +9,7 @@ import {
   GuildMember,
 } from "discord.js";
 import { localState } from "..";
+import { baseAccessConfig } from "../lib/accessConfig";
 import { isDJ } from "../lib/isdj";
 import Owlet from "../lib/owlet";
 import { QueueInfo } from "../structs/queue";
@@ -21,8 +22,6 @@ export default Command(
     name: "skip",
     description: "skips a song",
     group: CommandGroup.music,
-
-    premium: 1,
 
     arguments: [
       {
@@ -45,6 +44,8 @@ export default Command(
         required: false,
       },
     ],
+
+    access: baseAccessConfig,
 
     throttling: {
       duration: 30,
