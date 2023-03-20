@@ -23,6 +23,9 @@ const loadEnvironment = cleanEnv(process.env, {
     choices: ["development", "production", "staging"],
   }),
 
+  // Main
+  APP_NAME: str(),
+
   // Database
   DATABASE_URL: url(),
 

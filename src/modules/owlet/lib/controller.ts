@@ -129,11 +129,9 @@ export default class Controller {
      * @param id bot id.
      */
   private removeBot = (id: string) => {
-    console.log(`- Removing bot <@${id}> from the list.`.yellow.bold);
-
     this.bots.delete(id);
     console.log(
-      `- Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold,
+      ` > Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold,
     );
   }
 

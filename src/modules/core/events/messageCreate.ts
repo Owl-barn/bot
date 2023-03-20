@@ -17,6 +17,15 @@ export default Event({
 
     switch (msg.content) {
 
+      case "cache*": {
+        const guilds = await state.db.guild.findMany();
+        state.guilds = new Map();
+        for (const guild of guilds) state.guilds.set(guild.id, guild);
+        msg.reply(`reset cache for ${guilds.length} guilds.`);
+        return;
+      }
+
+      // Pick random person from vc.
       case "spin*": {
         if (!msg.member?.voice.channel?.members) return;
         const members = msg.member?.voice.channel?.members
@@ -25,16 +34,18 @@ export default Event({
 
         const result = members[Math.floor(Math.random() * members.length)];
 
-        await msg.reply(`${result!.displayName}`);
+        await msg.reply(`${result?.displayName}`);
         return;
       }
 
+      // Remove all global and guild commands.
       case "reset*": {
         await msg.guild?.commands.set([]);
         await client.application?.commands.set([]);
         return;
       }
 
+      // Remove all private rooms from this guild.
       case "vc*": {
         const vcs = await state.db.privateRoom.findMany({
           where: { guildId: msg.guildId as string },
@@ -52,11 +63,12 @@ export default Event({
           continue;
         }
 
-        msg.reply("Deleted private roomsm.");
+        msg.reply("Deleted private rooms.");
         return;
       }
 
-      case "update*": {
+      // Sets slash commands for all guilds.
+      case "innitall*": {
         const guilds = client.guilds.cache;
         const start = Date.now();
         const message = await msg.reply("updating...");
@@ -72,15 +84,7 @@ export default Event({
         return;
       }
 
-      case "fix*": {
-        const data = msg.client.guilds.cache.map(guild => ({ id: guild.id }));
-
-        const result = await state.db.guild.createMany({ data, skipDuplicates: true });
-
-        msg.reply(`Fixed ${result.count} guilds.`);
-        return;
-      }
-
+      // Sets slash commands for this guild.
       case "innit*": {
         const start = Date.now();
         if (!msg.guild) return;
@@ -91,6 +95,7 @@ export default Event({
         return;
       }
 
+      // Gets stats for birthdays.
       case "age*": {
         let birthdays = await state.db.birthday.findMany({
           where: { guildId: msg.guildId as string },

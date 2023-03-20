@@ -14,7 +14,6 @@ export default Command(
     name: "stats",
     description: "shows bot stats",
     group: CommandGroup.moderation,
-    premium: 0,
 
     arguments: [
       {

@@ -18,7 +18,7 @@ model Guild {
   // Premium
   subscribedUserId String?
   subscribedUser   User?   @relation(fields: [subscribedUserId], references: [id])
-  subscriptionTier Int     @default(0)
+  subscriptionTier Int?
 
   // Logs
   logJoinLeave String?
@@ -61,27 +61,6 @@ model Guild {
   selfroleCollections SelfroleCollection[]
 }
 
-model Friendship {
-  createdAt DateTime @default(now())
-
-  userId   String
-  friendId String
-
-  isPending Boolean @default(true)
-
-  @@unique([userId, friendId])
-}
-
-model User {
-  id        String   @id
-  createdAt DateTime @default(now())
-
-  subscription Int     @default(0)
-  isBanned     Boolean @default(false)
-
-  guilds Guild[]
-}
-
 model Level {
   createdAt DateTime @default(now())
 
@@ -91,6 +70,7 @@ model Level {
   experience Int @default(0)
 
   guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
   @@unique([userId, guildId])
 }
@@ -118,21 +98,7 @@ model PrivateRoom {
   waitingRoomId String @unique
 
   guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@unique([userId, guildId])
-}
-
-model Birthday {
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId  String
-  guildId String
-
-  date    DateTime?
-  hasRole Boolean   @default(false)
-
-  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
   @@unique([userId, guildId])
 }
@@ -184,6 +150,7 @@ model MediaLog {
   playDuration Int?
 
   guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 }
 
 model CommandLog {
@@ -194,11 +161,12 @@ model CommandLog {
   channelId String?
 
   commandName String
-  userId      String?
+  userId      String
 
   isHidden Boolean
 
   guild Guild? @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 }
 
 model Infraction {
@@ -206,8 +174,8 @@ model Infraction {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId      String?
-  moderatorId String?
+  userId      String
+  moderatorId String
   guildId     String
 
   reason    String?
@@ -216,7 +184,9 @@ model Infraction {
 
   moderationType ModerationType
 
-  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  guild     Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  target    User  @relation(name: "infractions", fields: [userId], references: [id], onDelete: Cascade)
+  moderator User  @relation(name: "moderationAction", fields: [moderatorId], references: [id], onDelete: Cascade)
 
   @@unique([guildId, id])
 }
@@ -246,6 +216,72 @@ model Whitelist {
 
   @@unique([guildId, userId], name: "whitelist_guild_user_un")
   @@unique([guildId, minecraftId], name: "whitelist_guild_uuid_un")
+}
+
+// User info
+
+model User {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  id String @id
+
+  // Subscription
+  subscriptionTier Int?
+  subscribedSince  DateTime?
+
+  // Core
+  subscribedGuilds Guild[]
+  CommandLog       CommandLog[]
+  isBanned         Boolean      @default(false)
+
+  // Birthday
+  birthdays Birthday[]
+
+  // Notify
+  friendships Friendship[]
+
+  // Owlet
+  MediaLog MediaLog[]
+
+  // PrivateRoom
+  PrivateRoom PrivateRoom[]
+
+  // Level
+  Level Level[]
+
+  // Moderation
+  moderationActions Infraction[] @relation("moderationAction")
+  infractions       Infraction[] @relation("infractions")
+}
+
+model Friendship {
+  createdAt DateTime @default(now())
+
+  userId   String
+  friendId String
+
+  isPending Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([userId, friendId])
+}
+
+model Birthday {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId  String
+  guildId String
+
+  date    DateTime?
+  hasRole Boolean   @default(false)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([userId, guildId])
 }
 
 // Enums
