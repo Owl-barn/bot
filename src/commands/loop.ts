@@ -1,5 +1,4 @@
 import { state } from "@app";
-import { loopMode } from "@lib/queue/loop";
 import { Command } from "@structs/command";
 
 export default Command({
@@ -19,13 +18,3 @@ export default Command({
     return { loop };
   }
 });
-
-export interface Arguments {
-  guildId: string,
-  loop: loopMode,
-}
-
-export interface Response {
-  loop: loopMode;
-}
-

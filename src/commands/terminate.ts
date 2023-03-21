@@ -1,7 +1,6 @@
 import { state } from "@app";
 import { Command } from "@structs/command";
 
-
 export default Command({
   // Command Info
   name: "Terminate",
@@ -20,9 +19,3 @@ export default Command({
     return {};
   }
 });
-
-export interface Arguments {
-  now: boolean,
-};
-
-export interface Response { }

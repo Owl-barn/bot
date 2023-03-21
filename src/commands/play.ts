@@ -1,7 +1,6 @@
 import { state } from "@app";
 import { getQueueInfo } from "@lib/queue/queueInfo";
 import { Command } from "@structs/command";
-import { Track } from "../lib/track";
 
 export default Command({
   // Command Info
@@ -59,22 +58,3 @@ export default Command({
     return { track, queueInfo: getQueueInfo(queue) };
   }
 });
-
-
-export interface Arguments {
-  guildId: string,
-  channelId: string,
-  userId: string,
-  force: boolean,
-  query: string,
-};
-
-export interface Response {
-  track: Track;
-  queueInfo: QueueInfo
-}
-
-interface QueueInfo {
-  length: number;
-  size: number;
-}

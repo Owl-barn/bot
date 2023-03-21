@@ -1,5 +1,6 @@
 import { state } from "@app";
 import { Command } from "@structs/command";
+import { Guild } from "@structs/commands/status";
 
 export default Command({
   // Command Info
@@ -29,16 +30,3 @@ export default Command({
 
   }
 });
-
-export interface Arguments { };
-
-export interface Response {
-  id: string;
-  uptime: number;
-  guilds: Guild[];
-}
-
-interface Guild {
-  id: string;
-  channelId?: string;
-}

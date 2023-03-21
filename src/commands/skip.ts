@@ -23,12 +23,3 @@ export default Command({
     return { track };
   }
 });
-
-export interface Arguments {
-  guildId: string,
-  index: number,
-};
-
-export interface Response {
-  track: Track;
-}

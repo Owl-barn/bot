@@ -1,7 +1,6 @@
 import { state } from "@app";
 import { Command } from "@structs/command";
-import { QueueInfo, getQueueInfo } from "../lib/queue/queueInfo";
-import { Track, CurrentTrack } from "../lib/track";
+import { getQueueInfo } from "../lib/queue/queueInfo";
 
 export default Command({
   // Command Info
@@ -29,13 +28,3 @@ export default Command({
     };
   }
 });
-
-export interface Arguments {
-  guildId: string,
-};
-
-export interface Response {
-  queue: Track[];
-  current: CurrentTrack | null;
-  queueInfo: QueueInfo;
-}

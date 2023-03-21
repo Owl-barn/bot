@@ -18,10 +18,3 @@ export default Command({
     return {};
   }
 });
-
-export interface Arguments {
-  guildId: string,
-};
-
-export interface Response {
-}
