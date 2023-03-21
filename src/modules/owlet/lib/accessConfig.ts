@@ -3,7 +3,7 @@ const baseAccessConfig = {
   default: {
     throttling: {
       duration: 30,
-      usages: 6,
+      usages: 1,
     },
 
     guildThrottling: {
@@ -14,6 +14,10 @@ const baseAccessConfig = {
 
   1: {
     guildThrottling: null,
+    throttling: {
+      duration: 30,
+      usages: 6,
+    },
   },
 
 };

@@ -150,6 +150,7 @@ export class LogService {
       text: `${interaction.user.tag} <@${interaction.user.id}>`,
       iconURL: getAvatar(interaction.member || interaction.user),
     });
+    embed.setTimestamp();
     this.addToQueue(embed, interaction.guildId, logType.BOT);
   };
 }
