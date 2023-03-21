@@ -1,4 +1,4 @@
-import { cleanEnv, str, url } from "envalid";
+import { cleanEnv, str, url, num } from "envalid";
 import { config } from "dotenv";
 config();
 
@@ -10,10 +10,14 @@ const env = cleanEnv(process.env, {
   // Main
   PASSWORD: str(),
   ADDRESS: url(),
-
   LOG_LEVEL: str({
     choices: ["error", "warn", "info", "verbose", "debug", "silly"],
     default: "info",
+  }),
+
+  // Music
+  IDLE_TIMEOUT: num({
+    default: 120000, // 2 minutes
   }),
 
   // Spotify

@@ -241,7 +241,7 @@ class Queue extends EventEmitter {
 
     // Queue is empty
     if (this.queue.length === 0) {
-      this.setIdle(120000);
+      this.setIdle(state.env.IDLE_TIMEOUT);
       this.current = null;
       this.queueLock = false;
 
