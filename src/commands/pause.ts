@@ -11,7 +11,7 @@ export default Command({
     const { guildId } = data;
     const queue = state.controller.getQueue(guildId);
 
-    if (!queue || queue.destroyed) throw "No music is playing";
+    if (!queue || queue.destroyed) return { error: "No music is playing" };
 
     const paused = queue.player.state.status != AudioPlayerStatus.Paused;
 

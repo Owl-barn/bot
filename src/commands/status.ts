@@ -7,10 +7,10 @@ export default Command({
 
   // Command Run
   async run() {
-    if (!state.client) return { error: "No client" };
+    if (!state.client) throw "No client";
 
     const id = state.client.user?.id;
-    if (!id) return { error: "Bot is not ready" };
+    if (!id) throw "Bot is not ready";
 
     const guilds: Guild[] = [];
 

@@ -12,15 +12,15 @@ export default Command({
     const { guildId, index } = data;
     const queue = state.controller.getQueue(guildId);
 
-    if (!queue || queue.destroyed) throw "No music is playing right now.";
+    if (!queue || queue.destroyed) return { error: "No music is playing right now." };
 
-    let removed: Track | null;
-    if (index == 0) removed = queue.skip();
-    else removed = queue.removeTrack(index - 1);
+    let track: Track | null;
+    if (index == 0) track = queue.skip();
+    else track = queue.removeTrack(index - 1);
 
-    if (!removed) throw "I couldn't find that song.";
+    if (!track) return { error: "I couldn't find that song." };
 
-    return { track: removed };
+    return { track };
   }
 });
 

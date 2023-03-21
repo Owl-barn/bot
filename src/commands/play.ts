@@ -14,8 +14,8 @@ export default Command({
     const guild = await state.client.guilds.fetch(guildId);
     const channel = await guild.channels.fetch(channelId);
 
-    if (!channel || !channel.isVoiceBased()) throw "That is not a voice channel";
-    if (!channel.joinable) throw "I can't join this channel";
+    if (!channel || !channel.isVoiceBased()) return { error: "That is not a voice channel" };
+    if (!channel.joinable) return { error: "I can't join this channel" };
 
     let queue = state.controller.getQueue(guildId);
     if (!queue || queue.destroyed) {
@@ -49,7 +49,7 @@ export default Command({
 
     let track = await state.controller.search(query, userId);
 
-    if (!track) throw "Could not find a track with that name";
+    if (!track) return { error: "Could not find a track with that name" }
 
     // Add the track to the queue
     queue.addTrack(track, force);
