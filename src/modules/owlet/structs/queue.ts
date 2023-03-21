@@ -1,14 +1,14 @@
 import { Track, CurrentTrack } from "./track";
 
 export enum QueueEvent {
-  SongEnd = "songEnd",
-  SongStart = "songStart",
-  QueueEnd = "queueEnd",
-  SongError = "songError",
-  Shutdown = "shutdown",
+  SongEnd = "SongEnd",
+  SongStart = "SongStart",
+  QueueEnd = "QueueEnd",
+  SongError = "SongError",
+  Shutdown = "Shutdown",
 }
 
-export enum QueueRepeatMode {
+export enum LoopMode {
   OFF = 0,
   TRACK = 1,
   QUEUE = 2,
@@ -19,7 +19,7 @@ export interface QueueInfo {
   length: number;
   size: number;
   paused: boolean;
-  repeat: QueueRepeatMode;
+  loop: LoopMode;
 }
 
 export interface Queue {
