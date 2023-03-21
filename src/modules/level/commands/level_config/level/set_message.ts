@@ -27,7 +27,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "no guild??";
     let message = msg.options.getString("message");
 
     const embed = embedTemplate();

@@ -49,7 +49,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "No guild on timeout command";
     const timeoutLimit = 2419200000;
 
     let reason = msg.options.getString("reason", false);

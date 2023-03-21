@@ -30,7 +30,6 @@ export default Command(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "No guild on ban??";
     const target = msg.options.getUser("user");
 
     const embed = embedTemplate();

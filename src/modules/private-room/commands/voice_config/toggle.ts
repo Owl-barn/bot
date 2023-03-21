@@ -21,8 +21,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "No guild???";
-
     let channelID = null;
     let categoryID = null;
     const config = await state.db.guild.findUnique({

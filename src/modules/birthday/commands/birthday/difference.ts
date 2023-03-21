@@ -34,7 +34,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "No guildID???";
 
     const first_user = msg.options.getMember(
       "first_user",

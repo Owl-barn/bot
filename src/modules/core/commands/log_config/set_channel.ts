@@ -38,7 +38,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "No guildID???";
+
     const channel = msg.options.getChannel("channel", true);
     const type = msg.options.getNumber("type", false);
 

@@ -19,8 +19,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild??";
-
     const deleted = await state.db.levelReward.deleteMany({
       where: { guildId: msg.guildId },
     });

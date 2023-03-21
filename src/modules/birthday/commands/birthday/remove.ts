@@ -18,8 +18,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "No guildID in remove_birthday??";
-
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 

@@ -6,12 +6,12 @@ import { CommandGroup } from "@structs/command";
 import { CommandStruct } from "@structs/command/command";
 import { ParentCommandStruct } from "@structs/command/parent";
 import { SubCommandStruct } from "@structs/command/subcommand";
+import { ReturnMessage } from "@structs/returnmessage";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
 import { respond } from "./respond";
 
 export async function commandEvent(msg: ChatInputCommandInteraction) {
   let { commandName } = msg;
-  if (!msg.guildId) return;
 
   const timeStart = Date.now();
 
@@ -21,11 +21,10 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
   subCommandGroup ? (commandName += `-${subCommandGroup}`) : null;
   subCommand ? (commandName += `-${subCommand}`) : null;
 
-  const command = state.commands.get(commandName) as
-    | SubCommandStruct
-    | CommandStruct;
+  const command = state.commands.get(commandName) as SubCommandStruct | CommandStruct;
 
   if (!command) return;
+  if (command.info.isGlobal === false && !msg.inCachedGuild()) throw "guild not cached";
 
   let parentCommand: ParentCommandStruct | undefined;
   // if the command includes a dash, that means its a subcommand
@@ -46,8 +45,7 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
     );
 
   // Check if premium command.
-  const accessInfo = await getAccessInfo(command.info.access, msg.user.id, msg.guildId);
-  console.log(accessInfo);
+  const accessInfo = await getAccessInfo(command.info.access, msg.user.id, msg.guildId || undefined);
   if (accessInfo.guildAccess === false || accessInfo.userAccess === false) {
 
     const embed = warningEmbedTemplate();
@@ -121,7 +119,7 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
       );
   }
 
-  respond(msg, timeStart, command?.run);
+  respond(msg, timeStart, command?.run as (interaction: ChatInputCommandInteraction) => Promise<ReturnMessage>);
 }
 
 const quickReply = async (msg: ChatInputCommandInteraction, content: string): Promise<void> => {

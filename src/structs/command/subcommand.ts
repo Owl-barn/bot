@@ -21,10 +21,10 @@ export interface SubCommandInfo extends BaseCommandInfo {
 
 export interface SubCommandStruct {
   info: SubCommandInfo;
-  run: RunFunction;
+  run: RunFunction<boolean>;
 }
 
-export function SubCommand(info: SubCommandStruct["info"], run: SubCommandStruct["run"]): SubCommandStruct {
+export function SubCommand<I extends SubCommandInfo>(info: I, run: RunFunction<I["isGlobal"] extends true ? false : true>): SubCommandStruct {
   return {
     info: {
       ...info,

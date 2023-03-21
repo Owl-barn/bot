@@ -18,8 +18,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild in self_role_collection_list";
-
     const collections = await state.db.selfroleCollection.findMany({
       where: { guildId: msg.guildId },
       include: { roles: true },

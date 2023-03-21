@@ -32,7 +32,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "No guildID???";
+
 
     const birthday = msg.options.getString("birthday", true);
     const birthdayCheck = new RegExp(

@@ -18,7 +18,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "Level Command didnt get guildID";
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 

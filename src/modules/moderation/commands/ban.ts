@@ -58,7 +58,6 @@ export default Command(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "No guild on ban??";
     let reason = msg.options.getString("reason");
     const days = msg.options.getInteger("delete") ?? 1;
     const duration = msg.options.getString("duration");

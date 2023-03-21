@@ -27,8 +27,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild??";
-
     const role = msg.options.getRole("birthdayRoleId") as Role | undefined;
 
     const failEmbed = failEmbedTemplate("I cant assign this role.");

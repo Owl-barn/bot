@@ -46,8 +46,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild in self_role_role_add";
-
     const role = msg.options.getRole("role", true);
     let title = msg.options.getString("title", true);
     let description = msg.options.getString("description", true);

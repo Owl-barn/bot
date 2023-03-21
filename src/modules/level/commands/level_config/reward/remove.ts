@@ -28,8 +28,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild??";
-    const role = msg.options.getRole("role", true) as Role;
+    const role = msg.options.getRole("role", true);
 
     await state.db.levelReward.delete({
       where: { roleId: role.id },

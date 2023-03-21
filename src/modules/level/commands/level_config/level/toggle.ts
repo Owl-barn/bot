@@ -27,7 +27,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "no guild??";
     const level = msg.options.getBoolean("state", true);
 
     const guild = await state.db.guild.update({

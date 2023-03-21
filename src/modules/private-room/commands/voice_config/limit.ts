@@ -29,7 +29,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "No guildID???";
     const limit = msg.options.getInteger("limit", true);
 
     const guild = await state.db.guild.update({

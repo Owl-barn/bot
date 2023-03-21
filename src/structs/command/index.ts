@@ -21,7 +21,7 @@ export enum CommandGroup {
   music = "music",
 }
 
-export type RunFunction = (interaction: ChatInputCommandInteraction) => Promise<ReturnMessage>;
+export type RunFunction<G extends boolean> = (interaction: ChatInputCommandInteraction<G extends true ? "cached" : undefined>) => Promise<ReturnMessage>;
 
 export interface BaseCommandInfo {
   type?: CommandType;

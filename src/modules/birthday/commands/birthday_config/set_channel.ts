@@ -31,8 +31,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild??";
-
     const channel = msg.options.getChannel("birthdayChannelId") as
       | GuildBasedChannel
       | undefined;

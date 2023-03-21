@@ -3,7 +3,7 @@ import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import { formatNumber } from "@lib/number";
 import { SubCommand } from "@structs/command/subcommand";
-import { ApplicationCommandOptionType, GuildMember } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
 import { calculateLevelFromXP } from "../../lib/calculateLevelFromXP";
 import { progressBar } from "modules/owlet/lib/progressbar";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
@@ -35,9 +35,9 @@ export default SubCommand(
   // Execute
   async (msg) => {
     const member =
-      (msg.options.getMember("user") as GuildMember | null) ||
-      (msg.member as GuildMember);
-    if (!msg.guild) throw "Level Command didnt get guild??";
+      msg.options.getMember("user") ||
+      msg.member;
+
     const failEmbed = failEmbedTemplate();
     const embed = embedTemplate();
 

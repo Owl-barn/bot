@@ -3,9 +3,7 @@ import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import {
   ApplicationCommandOptionType,
-  ChannelType,
   ClientUser,
-  GuildBasedChannel,
 } from "discord.js";
 
 export default SubCommand(
@@ -44,16 +42,14 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild??";
-
     const description = msg.options.getString("description", true);
     const title = msg.options.getString("title", true);
     const channel = msg.options.getChannel(
       "channel",
       true,
-    ) as GuildBasedChannel;
+    );
 
-    if (channel.type !== ChannelType.GuildText)
+    if (!channel.isTextBased())
       return {
         embeds: [failEmbedTemplate("Channel is not a text channel.")],
       };

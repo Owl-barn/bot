@@ -30,32 +30,31 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "No guildID???";
-    let user = msg.options.getMember("user") as GuildMember | undefined;
+    let member = msg.options.getMember("user");
 
-    if (!user) user = msg.member as GuildMember;
+    if (!member) member = msg.member as GuildMember;
 
     // Fetch the birthday.
     let query: { date: Date | null } | null;
-    if (!user.user.bot) {
+    if (!member.user.bot) {
       query = await state.db.birthday.findUnique({
         where: {
           userId_guildId: {
-            userId: user.id,
+            userId: member.id,
             guildId: msg.guildId,
           },
         },
       });
     } else {
       query = {
-        date: user.user.createdAt,
+        date: member.user.createdAt,
       };
     }
 
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    embed.setTitle(`${user.user.username}'s birthday`);
+    embed.setTitle(`${member.user.username}'s birthday`);
 
     if (!query?.date) {
       failEmbed.setDescription("This user has no birthday registered");
@@ -68,7 +67,7 @@ export default SubCommand(
     const starSign = getStarSign(query.date);
 
     const userString =
-      user.id === msg.user.id ? `you were` : `<@!${user.id}> was`;
+      member.id === msg.user.id ? `you were` : `<@!${member.id}> was`;
 
     const birthdayString = moment(query.date).format("DD-MM-YYYY");
 

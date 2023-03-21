@@ -28,8 +28,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild in self_role_role_add";
-
     const collectionId = msg.options.getString("collection", true);
     const collection = await state.db.selfroleCollection.findUnique({
       where: { id: collectionId },

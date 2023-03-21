@@ -27,7 +27,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild??";
     const user = msg.options.getUser("user", true);
 
     await state.db.birthday.delete({

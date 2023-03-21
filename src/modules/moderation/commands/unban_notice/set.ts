@@ -29,7 +29,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "No guildID???";
+
     let unbanNotice = msg.options.getString("unbanNotice", true);
     unbanNotice = escapeMarkdown(unbanNotice).substring(0, 255);
 

@@ -32,7 +32,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "No guildID???";
+
     const type = msg.options.getNumber("type", false);
 
     const guild = await state.db.guild.update({

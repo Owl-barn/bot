@@ -33,7 +33,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guildId) throw "no guild??";
     const level = msg.options.getInteger("level", true);
     const role = msg.options.getRole("role", true) as Role;
 

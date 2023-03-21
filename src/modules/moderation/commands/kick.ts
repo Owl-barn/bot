@@ -4,7 +4,6 @@ import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import {
-  GuildMember,
   ApplicationCommandOptionType,
   escapeMarkdown,
 } from "discord.js";
@@ -43,10 +42,8 @@ export default Command(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "No guild on kick??";
-
     let reason = msg.options.getString("reason");
-    const target = msg.options.getMember("user") as GuildMember | null;
+    const target = msg.options.getMember("user");
 
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();

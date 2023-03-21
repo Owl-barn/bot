@@ -53,8 +53,6 @@ export default Command(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "No guild on warn command";
-
     const target = msg.options.getUser("user", true);
     const duration = msg.options.getString("duration");
     let reason = msg.options.getString("reason", true);
