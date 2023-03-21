@@ -1,30 +1,31 @@
 import { state } from "@app";
-import { AudioPlayerStatus } from "@discordjs/voice";
+import { loopMode } from "@lib/queue/loop";
 import { Command } from "@structs/command";
 
 export default Command({
   // Command Info
-  name: "Pause",
+  name: "Loop",
 
   // Command Run
   async run(data) {
-    const { guildId } = data;
+    const { guildId, loop } = data;
+
     const queue = state.controller.getQueue(guildId);
 
     if (!queue || queue.destroyed) throw "No music is playing";
 
-    const paused = queue.player.state.status != AudioPlayerStatus.Paused;
+    queue.setRepeatMode(loop);
 
-    queue.pause();
-
-    return { paused };
+    return { loop };
   }
 });
 
 export interface Arguments {
   guildId: string,
+  loop: loopMode,
 }
 
 export interface Response {
-  paused: boolean;
+  loop: loopMode;
 }
+

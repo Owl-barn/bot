@@ -1,18 +1,27 @@
-import { bot } from "../app";
+import { state } from "@app";
+import { Command } from "@structs/command";
 
-export default async function stop(message: {
-    data: { guildId: string };
-}): Promise<{}> {
-    const { guildId } = message.data;
+export default Command({
+  // Command Info
+  name: "Stop",
 
-    const client = bot.getClient();
-    const player = client.player;
+  // Command Run
+  async run(data) {
+    const { guildId } = data;
 
-    const queue = player.getQueue(guildId);
+    const queue = state.controller.getQueue(guildId);
 
     if (!queue || queue.destroyed) throw "No music is playing";
 
     queue.stop();
 
     return {};
+  }
+});
+
+export interface Arguments {
+  guildId: string,
+};
+
+export interface Response {
 }

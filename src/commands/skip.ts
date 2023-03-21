@@ -1,15 +1,16 @@
-import { bot } from "../app";
-import Track from "../music/track";
+import { state } from "@app";
+import { Command } from "@structs/command";
+import { Track } from "../lib/track";
 
-export default async function skip(message: {
-    data: { guildId: string; index: number };
-}): Promise<{}> {
-    const { guildId, index } = message.data;
+export default Command({
+  // Command Info
+  name: "Skip",
 
-    const client = bot.getClient();
-    const player = client.player;
 
-    const queue = player.getQueue(guildId);
+  // Command Run
+  async run(data) {
+    const { guildId, index } = data;
+    const queue = state.controller.getQueue(guildId);
 
     if (!queue || queue.destroyed) throw "No music is playing right now.";
 
@@ -20,4 +21,14 @@ export default async function skip(message: {
     if (!removed) throw "I couldn't find that song.";
 
     return { track: removed };
+  }
+});
+
+export interface Arguments {
+  guildId: string,
+  index: number,
+};
+
+export interface Response {
+  track: Track;
 }

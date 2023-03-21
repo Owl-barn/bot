@@ -1,55 +1,55 @@
-import Bot from "./bot";
-import getQueue from "./commands/get_queue";
-import pause from "./commands/pause";
-import play from "./commands/play";
-import stop from "./commands/stop";
-import getStatus from "./commands/status";
-import { RavenWS } from "./wsLib";
-import repeat from "./commands/repeat";
-import skip from "./commands/skip";
-import voiceStateUpdate from "./events/voicestateupdate";
-import terminate from "./commands/terminate";
+import colors from "colors";
+colors.enable();
 
-export const bot = new Bot();
-export const ws = new RavenWS(
-    process.env.ADDRESS as string,
-    process.env.PASSWORD as string,
-    process.env.NODE_ENV === "development",
-);
+import { Client } from "discord.js";
+import { loadClient } from "@lib/loaders/loadClient";
+import { loadEnvironment } from "@lib/loaders/loadEnvironment ";
+import { Server } from "@lib/server";
+import { CommandStruct } from "@structs/command";
+import { loadCommands } from "@lib/loaders/loadCommands";
+import { Controller } from "@lib/controller";
+import { loadEvents } from "@lib/loaders/loadEvents";
+import { Commands } from "commands";
+import status from "commands/status";
+import { runCommand } from "@lib/processCommand";
+import { Logger } from "winston";
+import { loadLogger } from "@lib/loaders/loadLogger";
 
-const main = async () => {
-    ws.on("Status", getStatus);
-    ws.on("Play", play);
-    ws.on("Loop", repeat);
-    ws.on("Queue", getQueue);
-    ws.on("Stop", stop);
-    ws.on("Skip", skip);
-    ws.on("Pause", pause);
-    ws.on("Terminate", terminate);
-    ws.on("ConnectionOpened", getStatus);
+interface State {
+  env: typeof loadEnvironment;
+  controller: Controller;
+  server: Server;
+  client: Client;
+  commands: Map<string, CommandStruct<keyof Commands>>;
+  logger: Logger;
+}
 
-    const token = await ws.connect();
-    const client = await bot.start(token);
+const state = {
+  env: loadEnvironment,
+  commands: new Map(),
+  logger: loadLogger,
+} as unknown as State;
 
-    const status = await getStatus();
-    ws.send("Status", status);
+export { state };
 
-    client.on("voiceStateUpdate", voiceStateUpdate);
+(async () => {
+  // Websocket Server
+  state.server = new Server();
+  const token = await state.server.connect();
 
-    client.on("guildCreate", async (guild) => {
-        const status = await getStatus();
-        ws.send("Status", status);
-    });
+  // Client
+  state.client = await loadClient(token);
 
-    client.on("guildDelete", async (guild) => {
-        const status = await getStatus();
-        ws.send("Status", status);
-    });
+  await loadCommands(`${__dirname}/commands`);
+  await loadEvents(`${__dirname}/events`)
 
-    client.on("guildDelete", async (guild) => {
-        const status = await getStatus();
-        ws.send("Status", status);
-    });
-};
+  // Send initial status to server.
+  state.server.broadcast("Status", await status.run({}));
 
-main();
+  // If bot reconnects, resend guild info to server.
+  state.server.on("ConnectionOpened", () => runCommand(status, { mid: "", command: "Status", data: {} }));
+
+
+  // Music Player
+  state.controller = new Controller();
+})();
