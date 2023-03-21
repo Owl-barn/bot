@@ -9,9 +9,8 @@ import { CommandStruct } from "@structs/command";
 import { loadCommands } from "@lib/loaders/loadCommands";
 import { Controller } from "@lib/controller";
 import { loadEvents } from "@lib/loaders/loadEvents";
-import { Commands } from "commands";
+import { Commands } from "@structs/commands";
 import status from "commands/status";
-import { runCommand } from "@lib/processCommand";
 import { Logger } from "winston";
 import { loadLogger } from "@lib/loaders/loadLogger";
 

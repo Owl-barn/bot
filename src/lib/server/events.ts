@@ -1,6 +1,5 @@
-
-import { Commands } from "commands";
 import { BaseMessage } from "./message";
+import { Commands } from "@structs/commands";
 
 // export interface Events {
 //   "ConnectionOpened": () => Promise<Record<string, unknown>>;

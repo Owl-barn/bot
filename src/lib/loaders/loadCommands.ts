@@ -1,7 +1,7 @@
 import fs from "fs";
 import { state } from "app";
 import { CommandStruct } from "@structs/command";
-import { Commands } from "commands";
+import { Commands } from "@structs/commands";
 import { processCommand } from "@lib/processCommand";
 
 
