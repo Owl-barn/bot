@@ -91,10 +91,7 @@ class Server extends EventEmitter {
 
   private onClose = (error: WebSocket.CloseEvent) => {
     if (!error.reason) {
-      console.log(
-        `Socket is closed. Reconnect will be attempted in ${this.timeout / 1000} seconds`,
-        error.reason,
-      );
+      state.log.ws.info(`Socket is closed. Reconnect will be attempted in ${this.timeout / 1000} seconds`, error.reason);
 
       // Try to reconnect after x seconds.
       setTimeout(() => {
@@ -107,8 +104,7 @@ class Server extends EventEmitter {
   }
 
   private onError = (error: WebSocket.ErrorEvent) => {
-    console.error(`Socket encountered error:\n${error.message}\nClosing socket`,
-    );
+    state.log.ws.error(`Socket encountered error:\n${error.message}\nClosing socket`);
     this.ws.close();
   }
 

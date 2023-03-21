@@ -21,6 +21,6 @@ export function runCommand(command: CommandStruct<keyof Commands>, data: BaseMes
     })
     .catch((error) => {
       state.log.main.error(`Command "${data.command}" failed to execute:`, error);
-      state.server.broadcast("CommandResponse", { error }, data.mid);
+      state.server.broadcast("CommandResponse", { error: error.message }, data.mid);
     });
 }

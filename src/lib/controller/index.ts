@@ -76,7 +76,7 @@ export class Controller {
     // If yt video.
     const ytValidate = play.yt_validate(query);
     if (ytValidate === "video") {
-      const result = await play.video_info(query).catch((e) => console.error(e));
+      const result = await play.video_info(query).catch((e) => { state.log.queue.error(e) });
       if (!result) throw "Couldnt play this song";
       const videoData = result.video_details;
       const trackInput = {
