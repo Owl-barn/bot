@@ -16,7 +16,7 @@ export function getQueueInfo(queue: Queue): QueueInfo {
   return {
     length,
     size: tracks.length,
-    repeat: queue.getRepeatMode(),
+    loop: queue.getLoopMode(),
     paused: queue.player.state.status === AudioPlayerStatus.Paused,
   };
 }
@@ -25,5 +25,5 @@ export interface QueueInfo {
   length: number;
   size: number;
   paused: boolean;
-  repeat: loopMode;
+  loop: loopMode;
 }

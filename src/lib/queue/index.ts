@@ -39,7 +39,7 @@ class Queue extends EventEmitter {
 
   private queue: Track[] = [];
   private current: Track | null = null;
-  private repeatMode: loopMode = loopMode.Off;
+  private loopMode: loopMode = loopMode.Off;
 
   constructor(channel: VoiceBasedChannel) {
     super();
@@ -68,7 +68,7 @@ class Queue extends EventEmitter {
     this.player = createAudioPlayer();
     this.player.on("stateChange" as any, this.onStateChange);
     this.player.on(AudioPlayerStatus.Paused, this.onPause);
-    this.player.on("error", console.error);
+    this.player.on("error", state.log.queue.error);
 
     // Subscribe to the player.
     this.voiceConnection.subscribe(this.player);
@@ -77,23 +77,23 @@ class Queue extends EventEmitter {
       this.voiceConnection,
       VoiceConnectionStatus.Ready,
       20e3,
-    ).catch(console.error);
+    ).catch(e => state.log.queue.error(e));
   }
 
   /**
-   * Sets the repeat mode of the current queue.
+   * Sets the loop mode of the current queue.
    * @param mode `Off`, `Track` or `Queue`.
    */
-  public setRepeatMode = (mode: loopMode): void => {
-    this.repeatMode = mode;
+  public setLoopMode = (mode: loopMode): void => {
+    this.loopMode = mode;
   };
 
   /**
-   * Shows you what the repeat mode is currently set to.
-   * @returns The current repeat mode.
+   * Shows you what the loop mode is currently set to.
+   * @returns The current loop mode.
    */
-  public getRepeatMode = (): loopMode => {
-    return this.repeatMode;
+  public getLoopMode = (): loopMode => {
+    return this.loopMode;
   };
 
   /**
@@ -150,7 +150,7 @@ class Queue extends EventEmitter {
   public play = async (track: Track): Promise<void> => {
     // Get the track stream.
     const stream = await track.getStream().catch((e) => {
-      console.error(e);
+      state.log.queue.error(e);
       this.emit("SongError", track, this.queue);
     });
 
@@ -233,9 +233,9 @@ class Queue extends EventEmitter {
         state.controller.destroyQueue(this.guild);
       }
 
-      if (this.repeatMode === loopMode.Track)
+      if (this.loopMode === loopMode.Track)
         this.queue.unshift(this.current);
-      else if (this.repeatMode === loopMode.Queue)
+      else if (this.loopMode === loopMode.Queue)
         this.queue.push(this.current);
     }
 
@@ -257,7 +257,7 @@ class Queue extends EventEmitter {
       this.play(nextSong);
       this.lastpause = Date.now();
     } catch (e) {
-      console.error(e);
+      state.log.queue.error(e);
       this.onIdle();
     } finally {
       this.queueLock = false;
