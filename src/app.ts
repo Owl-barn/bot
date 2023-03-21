@@ -50,21 +50,27 @@ export { state };
 
   // Websocket Server
   state.server = new Server();
+
   const token = await state.server.connect();
 
   // Client
   state.client = await loadClient(token);
 
+  // Music Player
+  state.controller = new Controller();
+
   await loadCommands(`${__dirname}/commands`);
   await loadEvents(`${__dirname}/events`)
 
-  // Send initial status to server.
-  state.server.broadcast("Status", await status.run({}));
-
   // If bot reconnects, resend guild info to server.
-  state.server.on("ConnectionOpened", () => runCommand(status, { mid: "", command: "Status", data: {} }));
+  const broadcast = () => status.run({})
+    .then((status) => state.server.broadcast("Status", status))
+    .then(() => state.log.ws.info("Sent status to server"))
+    .catch((e) => state.log.ws.error("Failed to send status to server: ", e));
 
 
-  // Music Player
-  state.controller = new Controller();
+  state.server.on("ConnectionOpened", broadcast);
+
+  // Send initial status to server.
+  await broadcast();
 })();
