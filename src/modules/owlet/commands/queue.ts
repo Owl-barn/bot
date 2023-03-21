@@ -16,7 +16,6 @@ import { baseAccessConfig } from "../lib/accessConfig";
 import { progressBar } from "../lib/progressbar";
 import { QueueInfo } from "../structs/queue";
 import { CurrentTrack, Track } from "../structs/track";
-import { wsResponse } from "../structs/websocket";
 
 export default Command(
   // Info
@@ -44,8 +43,7 @@ export default Command(
 
   // Execute
   async (msg) => {
-    const botId = msg.options.get("bot_id") as string | null;
-    if (!msg.guild) throw "no guild in stop command??";
+    const botId = msg.options.getString("bot_id");
 
     const member = msg.member as GuildMember;
     const vc = member.voice.channel;
@@ -81,22 +79,10 @@ export default Command(
     failEmbed.setAuthor(author);
     embed.setAuthor(author);
 
-    const request = {
-      command: "Queue",
-      mid: msg.id,
-      data: {
-        guildId: msg.guild.id,
-      },
-    };
+    const response = await musicBot.runCommand("Queue", { guildId: msg.guild.id }, msg.id);
+    if (response.error) return { embeds: [failEmbed.setDescription(response.error)] };
 
-    const data = (await musicBot.send(request)) as response;
-
-    if (data.error) {
-      const response = failEmbed.setDescription(data.error);
-      return { embeds: [response] };
-    }
-
-    embed = makeEmbed(embed, data.queue, data.current, data.queueInfo);
+    embed = makeEmbed(embed, response.queue, response.current, response.queueInfo);
 
     return { embeds: [embed] };
   }
@@ -105,7 +91,7 @@ export default Command(
 function makeEmbed(
   embed: EmbedBuilder,
   queue: Track[],
-  current: CurrentTrack,
+  current: CurrentTrack | null,
   queueInfo: QueueInfo,
 ) {
   if (!current) {
@@ -143,11 +129,11 @@ function makeEmbed(
   }
 
   embed.addFields(list);
-  if (queueInfo.repeat) {
+  if (queueInfo.loop) {
     embed.addFields([
       {
         name: "Loop",
-        value: queueInfo.repeat == 1 ? "🔂 Track" : "🔁 Queue",
+        value: queueInfo.loop == 1 ? "🔂 Track" : "🔁 Queue",
       },
     ]);
   }
@@ -160,10 +146,4 @@ function makeEmbed(
   });
 
   return embed;
-}
-
-interface response extends wsResponse {
-  queue: Track[];
-  current: CurrentTrack;
-  queueInfo: QueueInfo;
 }

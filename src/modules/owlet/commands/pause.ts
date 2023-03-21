@@ -10,7 +10,6 @@ import {
 import { localState } from "..";
 import { baseAccessConfig } from "../lib/accessConfig";
 import { isDJ } from "../lib/isdj";
-import { wsResponse } from "../structs/websocket";
 
 export default Command(
   // Info
@@ -34,7 +33,6 @@ export default Command(
   // Execute
   async (msg) => {
     const botId = msg.options.getString("bot_id");
-    if (!msg.guild) throw "no guild in stop command??";
 
     const member = msg.member as GuildMember;
     const dj = isDJ(member);
@@ -45,9 +43,7 @@ export default Command(
     const embed = embedTemplate();
 
     if (vc == null && botId == undefined) {
-      const response = failEmbed.setDescription(
-        "Join a voice channel first.",
-      );
+      const response = failEmbed.setDescription("Join a voice channel first.");
       return { embeds: [response] };
     }
 
@@ -56,9 +52,7 @@ export default Command(
       : vc && music.getOwlet(vc.id, vc.guildId);
 
     if (!musicBot) {
-      const response = failEmbed.setDescription(
-        "No available music bots.",
-      );
+      const response = failEmbed.setDescription("No available music bots.");
       return { embeds: [response] };
     }
 
@@ -86,25 +80,12 @@ export default Command(
       }
     }
 
-    const request = {
-      command: "Pause",
-      mid: msg.id,
-      data: {
-        guildId: msg.guild.id,
-      },
-    };
+    const response = await musicBot.runCommand("Pause", { guildId: msg.guild.id }, msg.id);
 
-    const response = (await musicBot.send(request)) as response;
-
-    if (response.error)
-      return { embeds: [failEmbed.setDescription(response.error)] };
+    if (response.error) return { embeds: [failEmbed.setDescription(response.error)] };
 
     embed.setDescription(`Music ${response.paused ? "paused" : "resumed"}`);
 
     return { embeds: [embed] };
   },
 );
-
-interface response extends wsResponse {
-  paused: boolean;
-}

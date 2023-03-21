@@ -1,20 +1,28 @@
 import { state } from "@app";
 import WebSocket from "ws";
-import { QueueEvent, Queue } from "../structs/queue";
-import { Track } from "../structs/track";
-import { wsRequest } from "../structs/websocket";
+import { QueueEvent } from "../structs/queue";
+import { Events } from "../structs/events";
+import { EventEmitter } from "events";
+import { Commands } from "../structs/commands";
+import { baseData } from "../structs/websocket";
+import { Guild } from "../structs/commands/status";
 
-export default class Owlet {
+declare interface Owlet {
+  on<U extends keyof Events>(event: U, listener: (data: Events[U]) => void): this;
+  emit<U extends keyof Events>(event: U, data: Events[U]): boolean;
+}
+
+class Owlet extends EventEmitter {
   private id: string;
   private guilds: Map<string, Guild> = new Map();
+
   private shutdown = false;
   private socket: WebSocket;
-  private promises: Map<string, Record<"resolve" | "reject", (x: any) => void>> = new Map();
-  private callbacks: Map<string, ((...args: any[]) => Promise<void> | void)[]> = new Map();
 
-  public isDisabled = (): boolean => this.shutdown;
+  private promises: Map<string, Record<"resolve" | "reject", (x: any) => void>> = new Map();
 
   constructor(id: string, socket: WebSocket, guilds: Guild[]) {
+    super();
     this.id = id;
     this.socket = socket;
     this.socket.on("message", this.onMessage);
@@ -24,95 +32,56 @@ export default class Owlet {
   private onMessage = async (data: WebSocket.Data): Promise<void> => {
     let message: {
       mid: string;
-      data: { track: Track; channelId: string; guildId: string };
-      command: string;
+      data: Events[keyof Events] & baseData;
+      command: keyof Events;
     };
 
     try {
       message = JSON.parse(data.toString());
-    } catch (e) {
-      return;
-    }
+    } catch (e) { return; }
+
 
     if (message.command === QueueEvent.Shutdown) this.shutdown = true;
 
     const promise = this.promises.get(message.mid);
     if (promise) {
-      promise.resolve(message.data);
+      if (message.data.exception) promise.reject(message.data.exception);
+      else promise.resolve(message.data);
       this.promises.delete(message.mid);
     }
 
-    const messageData = message.data;
 
-    const callbacks = this.callbacks
-      .get(message.command)
-      ?.map((callback) => callback(...Object.values(messageData)));
-
-    if (!callbacks) return;
-
-    Promise.all(callbacks).catch(console.error);
+    this.emit(message.command, message.data);
   };
 
-  public on(
-    event: QueueEvent.Shutdown,
-    callback: (guildId: string, channelId: string) => Promise<void> | void,
-  ): void;
-
-  public on(
-    event: QueueEvent.QueueEnd,
-    callback: (queue: Queue) => Promise<void> | void,
-  ): void;
-
-  public on(
-    event: QueueEvent.SongEnd | QueueEvent.SongStart | QueueEvent.SongError,
-    callback: (
-      track: Track,
-      channelId: string,
-      guildId: string,
-    ) => Promise<void> | void,
-  ): void;
-  public on(
-    event: QueueEvent | string,
-    callback: (...args: any[]) => Promise<void> | void,
-  ): void {
-    if (!this.callbacks.get(event)) this.callbacks.set(event, []);
-    this.callbacks.get(event)?.push(callback);
-  }
 
   public getId = (): string => this.id;
-
-  public getGuilds = (): Map<string, Guild> => this.guilds;
+  public isDisabled = (): boolean => this.shutdown;
+  public getGuilds = () => this.guilds;
+  public getGuild = (id: string) => this.guilds.get(id);
 
   public updateGuilds = (guilds: Guild[]): void => {
     console.log(`~ Updating guilds for <@${this.id}>`.cyan.italic);
-    for (const guild of guilds) {
-      this.guilds.set(guild.id, guild);
-    }
+    for (const guild of guilds) this.guilds.set(guild.id, guild);
   };
 
-  public getGuild(id: string): Guild | undefined {
-    return this.guilds.get(id);
-  }
-
   public terminate(now: boolean): void {
-    this.send({
-      command: "Terminate",
-      mid: "terminate",
-      data: { now },
-    }).catch(() => {
-      null;
-    });
+    this.runCommand("Terminate", { now }).catch(console.error);
   }
 
-  /**
-     * Sends a command to the owlet.
-     * @param message message to send.
-     * @returns promise of the owlet's response.
-     */
-  public async send<T>(message: wsRequest): Promise<T> {
-    if (state.env.isDevelopment) console.log("Sent".yellow.bold, message);
+  public async runCommand<T extends keyof Commands>(
+    command: T,
+    data: Commands[T]["arguments"],
+    id?: string
+  ): Promise<Commands[T]["response"] & baseData> {
+
+    if (state.env.isDevelopment) console.log("Sent".yellow.bold, data);
+
+    const mid = id || Math.random().toString(36).substring(7);
+    const message = { mid, command, ...data };
 
     this.socket.send(JSON.stringify(message));
+
     const result = new Promise<T>((resolve, reject) => {
       this.promises.set(message.mid, { resolve, reject });
       setTimeout(() => {
@@ -124,7 +93,4 @@ export default class Owlet {
   }
 }
 
-interface Guild {
-  id: string;
-  channelId: string;
-}
+export { Owlet };

@@ -1,5 +1,5 @@
-import { ChannelType, Snowflake } from "discord.js";
-import Owlet from "./owlet";
+import { Snowflake } from "discord.js";
+import { Owlet } from "./owlet";
 import WS from "ws";
 import fs from "fs";
 import { IncomingMessage } from "http";
@@ -7,8 +7,10 @@ import path from "path";
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import { QueueEvent } from "../structs/queue";
-import { Credentials, wsResponse } from "../structs/websocket";
+import { Credentials, baseMessage, Authenticate, Status } from "../structs/websocket";
 import { state } from "@app";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
+import { Guild } from "../structs/commands/status";
 
 export default class Controller {
   private bots: Map<string, Owlet> = new Map();
@@ -21,16 +23,11 @@ export default class Controller {
 
     // Try to load the owlets from the file.
     try {
-      const buffer = fs.readFileSync(
-        path.join(__dirname, "../data/owlets.json"),
-        "utf8",
-      );
+      const buffer = fs.readFileSync(path.join(__dirname, "../data/owlets.json"), "utf8");
 
-      const owletJson = JSON.parse(buffer.toString()) as
-        | Credentials[]
-        | undefined;
-
+      const owletJson = JSON.parse(buffer.toString()) as Credentials[] | undefined;
       if (!owletJson) throw "No owlets found.";
+
       this.owlets = owletJson;
     } catch (e) {
       if (typeof e === "string") console.error(e.yellow.bold);
@@ -62,6 +59,7 @@ export default class Controller {
     try {
       message = JSON.parse(data.toString());
     } catch (e) {
+      console.error(e);
       return;
     }
 
@@ -77,10 +75,6 @@ export default class Controller {
     }
   };
 
-  /**
-     * Returns all the registered owlet ids, connected or not
-     * @returns Array of owlet user ids.
-     */
   public getBotIds = (): Snowflake[] => {
     return this.owlets.map((owlet) => owlet.id);
   }
@@ -89,7 +83,7 @@ export default class Controller {
      * broadcasts a message to all owlets.
      * @param data message to send
      */
-  public broadcast = (data: apiRequest) => {
+  public broadcast = (data: baseMessage<Record<string, unknown>>) => {
     this.wss.clients.forEach((ws) => ws.send(JSON.stringify(data)));
   }
 
@@ -124,29 +118,26 @@ export default class Controller {
     return undefined;
   }
 
-  /**
-     * Remove the bot from the list.
-     * @param id bot id.
-     */
   private removeBot = (id: string) => {
     this.bots.delete(id);
-    console.log(
-      ` > Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold,
-    );
+    console.log(` > Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold);
   }
 
   private addBot = (id: string, ws: WS, guilds: Guild[]) => {
     const owlet = new Owlet(id, ws, guilds);
 
-    owlet.on(QueueEvent.SongStart, async (track, channelId, guildId) => {
+    owlet.on(QueueEvent.SongStart, async ({ track, channelId, guildId }) => {
+
       const guild = state.client.guilds.cache.get(guildId);
       if (!guild) return;
+
       const channel = await state.client.channels.fetch(channelId);
       if (!channel) return;
+
       const bot = await guild?.members.fetch(id);
       if (!bot) return;
 
-      if (channel.type !== ChannelType.GuildVoice) return;
+      if (!channel.isVoiceBased()) return;
       const embed = embedTemplate();
 
       embed.setAuthor({
@@ -170,19 +161,31 @@ export default class Controller {
       ]);
 
       await channel.send({ embeds: [embed] }).catch(() => {
-        console.log(
-          `Failed to send song start embed in <#${channel.id}>.`.red
-            .italic,
-        );
+        console.log(`Failed to send song start embed in <#${channel.id}>.`.red.italic);
       });
     });
 
-    owlet.on(QueueEvent.Shutdown, async (guildId, channelId) => {
+    owlet.on(QueueEvent.SongEnd, async ({ track, guildId }) => {
+      await state.db.mediaLog.create({
+        data: {
+          guild: connectOrCreate(guildId),
+          user: connectOrCreate(track.requestedBy),
+          url: track.url,
+
+          duration: track.durationMs,
+          playDuration: track.progressMs <= track.durationMs ? track.progressMs : track.durationMs,
+        },
+      });
+
+    });
+
+    owlet.on(QueueEvent.Shutdown, async ({ guildId, channelId }) => {
       const guild = state.client.guilds.cache.get(guildId);
       if (!guild) return;
+
       const channel = await state.client.channels.fetch(channelId);
-      if (!channel) return;
-      if (channel.type !== ChannelType.GuildVoice) return;
+      if (!channel || !channel.isVoiceBased()) return;
+
       const bot = await guild?.members.fetch(id);
       if (!bot) return;
 
@@ -197,28 +200,19 @@ export default class Controller {
         "There is currently bot maintenance going on, This music bot will restart after the song or after 10 minutes",
       );
 
-      await channel.send({ embeds: [embed] }).catch(() => {
-        console.log(
-          `Failed to send shutdown embed in <#${channel.id}>.`.red
-            .italic,
-        );
-      });
+      await channel.send({ embeds: [embed] })
+        .catch(() => console.log(`Failed to send shutdown embed in <#${channel.id}>.`.red.italic));
     });
 
     // If the bot disconnects remove it from the list.
     ws.on("close", () => this.removeBot(id));
+
     this.bots.set(id, owlet);
 
-
-    console.log(
-      `+ Owlet connected <@${id}>, ${this.bots.size} active.`.green
-        .italic,
-    );
+    console.log(`+ Owlet connected <@${id}>, ${this.bots.size} active.`.green.italic);
   }
-  /**
-     * Authenticates the owlet.
-     */
-  private authenticate = async (ws: WS, message: apiRequest) => {
+
+  private authenticate = async (ws: WS, message: baseMessage<Authenticate>) => {
     const pass = message.data.password;
 
     // Check password.
@@ -226,13 +220,13 @@ export default class Controller {
       return ws.send(
         JSON.stringify({
           mid: message.mid,
-          error: "incorrect password",
+          data: { error: "incorrect password" },
         }),
       );
     }
 
     // Check if bot is reconnecting.
-    const botToken = message.data.token as string | undefined;
+    const botToken = message.data.token;
     if (botToken) {
       const owletInfo = this.owlets.find((x) => x.token == botToken);
 
@@ -241,7 +235,7 @@ export default class Controller {
         return ws.send(
           JSON.stringify({
             mid: message.mid,
-            error: "No bot account with that id in the system.",
+            data: { error: "No bot account with that id in the system." },
           }),
         );
       }
@@ -251,7 +245,7 @@ export default class Controller {
         return ws.send(
           JSON.stringify({
             mid: message.mid,
-            error: "bot account already in use",
+            data: { error: "bot account already in use" },
           }),
         );
       }
@@ -270,13 +264,13 @@ export default class Controller {
       ws.send(JSON.stringify(response));
     } else {
       // Get credentials.
-      const credentials = await this.getCredentials();
+      const credentials = this.getCredentials();
 
       if (!credentials) {
         return ws.send(
           JSON.stringify({
             mid: message.mid,
-            error: "No bot accounts left",
+            data: { error: "No bot accounts left" },
           }),
         );
       }
@@ -285,7 +279,9 @@ export default class Controller {
       const response = {
         command: "Authenticate",
         mid: message.mid,
-        token: credentials.token,
+        data: {
+          token: credentials.token,
+        },
       };
 
       this.addBot(credentials.id, ws, []);
@@ -297,36 +293,26 @@ export default class Controller {
   /**
      * Updates the current status of the owlet.
      * @param ws websocket
-     * @param message message
+     * @param msg message
      * @returns nothing
      */
-  private status = async (ws: WS, message: wsResponse) => {
-    const data = message.data as unknown as status;
-    const bot = this.bots.get(data.id);
+  private status = async (ws: WS, msg: baseMessage<Status>) => {
+    const bot = this.bots.get(msg.data.id ?? "");
 
     if (!bot) {
       return ws.send(
         JSON.stringify({
-          mid: message.mid,
-          error: "bot not found",
+          mid: msg.mid,
+          data: { error: "bot not found" },
         }),
       );
     }
 
-    bot.updateGuilds(data.guilds);
+    bot.updateGuilds(msg.data.guilds);
   }
 
-  /**
-     * Returns all owlets.
-     * @returns map of owlets
-     */
   public getOwlets = (): Map<string, Owlet> => this.bots;
-
-  /**
-     * Returns the Owlet by the given id.
-     */
-  public getOwletById = (botId: string): Owlet | undefined =>
-    this.bots.get(botId);
+  public getOwletById = (botId: string) => this.bots.get(botId);
 
   /**
      * Returns the Owlet currently connected to that channel or an available one
@@ -348,6 +334,7 @@ export default class Controller {
     // Check if main bot is available.
     if (state.client.user) {
       const main = this.bots.get(state.client.user.id)?.getGuilds().get(guildId);
+
       if (main && !main.channelId) return this.bots.get(state.client.user.id);
     }
 
@@ -363,21 +350,4 @@ export default class Controller {
     // return undefined if no bot is available.
     return undefined;
   };
-}
-
-interface status {
-  id: string;
-  uptime: number;
-  guilds: { id: string; channelId: string }[];
-}
-
-interface apiRequest {
-  command: string;
-  mid: string;
-  data: any;
-}
-
-interface Guild {
-  id: string;
-  channelId: string;
 }

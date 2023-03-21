@@ -11,10 +11,8 @@ import {
 import { localState } from "..";
 import { baseAccessConfig } from "../lib/accessConfig";
 import { isDJ } from "../lib/isdj";
-import Owlet from "../lib/owlet";
-import { QueueInfo } from "../structs/queue";
-import { CurrentTrack, Track } from "../structs/track";
-import { wsResponse } from "../structs/websocket";
+import { Owlet } from "../lib/owlet";
+import { Track } from "../structs/track";
 
 export default Command(
   // Info
@@ -58,7 +56,6 @@ export default Command(
     const botId = msg.options.getString("bot_id");
     const force = msg.options.getBoolean("force") ?? false;
     const index = msg.options.getInteger("index") ?? 0;
-    if (!msg.guild) throw "no guild in stop command??";
 
     const member = msg.member as GuildMember;
     const vc = member.voice.channel;
@@ -110,7 +107,7 @@ export default Command(
 
     // If the bot is alone with the user or if a dj is forcing the skip.
     if (djBool || aloneBool) {
-      const response = await skip(msg, musicBot, index, force);
+      const response = await skip(msg, musicBot, index);
 
       if (response.error) {
         failEmbed.setDescription(response.error);
@@ -122,19 +119,10 @@ export default Command(
     }
 
     // Get queue data from the bot.
-    const queueRequest = {
-      command: "Queue",
-      mid: msg.id + "_queue",
-      data: {
-        guildId: msg.guild.id,
-      },
-    };
+    const queueResponse = await musicBot.runCommand("Queue", { guildId: msg.guild.id }, msg.id + "_queue");
+    if (queueResponse.error)
+      return { embeds: [failEmbed.setDescription(queueResponse.error)] };
 
-    const queueResponse = (await musicBot.send(queueRequest)) as response;
-    if (queueResponse.error) {
-      const fail = failEmbed.setDescription(queueResponse.error);
-      return { embeds: [fail] };
-    }
 
     const queue = queueResponse.queue;
     const current = queueResponse.current;
@@ -154,7 +142,7 @@ export default Command(
 
       if (selected && selected.requestedBy === msg.user.id) {
         // User provided a valid index and owns the song.
-        const response = await skip(msg, musicBot, index, force);
+        const response = await skip(msg, musicBot, index);
         if (response.error) {
           failEmbed.setDescription(response.error);
           return { embeds: [failEmbed] };
@@ -170,8 +158,8 @@ export default Command(
       }
 
       // User tried skipping current song and they added the song.
-    } else if (current.requestedBy == msg.user.id) {
-      const response = await skip(msg, musicBot, index, force);
+    } else if (current?.requestedBy == msg.user.id) {
+      const response = await skip(msg, musicBot, index);
       if (response.error) {
         failEmbed.setDescription(response.error);
         return { embeds: [failEmbed] };
@@ -195,28 +183,13 @@ export default Command(
 );
 
 async function skip(
-  msg: ChatInputCommandInteraction,
+  msg: ChatInputCommandInteraction<"cached">,
   musicBot: Owlet,
   index: number,
-  force: boolean,
 ) {
-  if (!msg.guild) throw "no guild in skip command??";
-  const request = {
-    command: "Skip",
-    mid: msg.id,
-    data: {
-      force,
-      guildId: msg.guild.id,
-      index,
-    },
-  };
-
-  return (await musicBot.send(request)) as wsResponse;
-}
-
-interface response extends wsResponse {
-  queue: Track[];
-  current: CurrentTrack;
-  queueInfo: QueueInfo;
-  loop: boolean;
+  return await musicBot.runCommand(
+    "Skip",
+    { guildId: msg.guild.id, index },
+    msg.id
+  );
 }

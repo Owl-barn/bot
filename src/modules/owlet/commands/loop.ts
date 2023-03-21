@@ -10,7 +10,6 @@ import {
 import { localState } from "..";
 import { baseAccessConfig } from "../lib/accessConfig";
 import { isDJ } from "../lib/isdj";
-import { wsResponse } from "../structs/websocket";
 
 export default Command(
   // Info
@@ -21,7 +20,7 @@ export default Command(
 
     arguments: [
       {
-        name: "repeat_mode",
+        name: "loop_mode",
         description: "the loop mode",
         type: ApplicationCommandOptionType.Number,
         choices: [
@@ -44,9 +43,8 @@ export default Command(
 
   // Execute
   async (msg) => {
-    const repeat = msg.options.getNumber("repeat_mode", true);
+    const loop = msg.options.getNumber("loop_mode", true);
     const botId = msg.options.getString("bot_id");
-    if (!msg.guild) throw "no guild in stop command??";
 
     const member = msg.member as GuildMember;
     const dj = isDJ(member);
@@ -57,9 +55,7 @@ export default Command(
     const embed = embedTemplate();
 
     if (vc == null && botId == undefined) {
-      const response = failEmbed.setDescription(
-        "Join a voice channel first.",
-      );
+      const response = failEmbed.setDescription("Join a voice channel first.");
       return { embeds: [response] };
     }
 
@@ -68,15 +64,13 @@ export default Command(
       : vc && music.getOwlet(vc.id, vc.guildId);
 
     if (!musicBot) {
-      const response = failEmbed.setDescription(
-        "No available music bots.",
-      );
+      const response = failEmbed.setDescription("No available music bots.");
       return { embeds: [response] };
     }
 
     const bot = await msg.guild.members.fetch(musicBot.getId());
     const author: EmbedAuthorOptions = {
-      name: "Repeat",
+      name: "Loop",
       iconURL: getAvatar(bot),
     };
 
@@ -84,50 +78,39 @@ export default Command(
     embed.setAuthor(author);
 
     if (
-      !dj ||
-      !vc ||
+      !dj || !vc ||
       vc?.id !== musicBot.getGuild(msg.guild.id)?.channelId
     ) {
       return {
-        embeds: [
-          failEmbed.setDescription(
-            "You need the `DJ` role to do that!",
-          ),
-        ],
+        embeds: [failEmbed.setDescription("You need the `DJ` role to do that!")],
       };
     }
 
-    const request = {
-      command: "Loop",
-      mid: msg.id,
-      data: {
-        guildId: msg.guild.id,
-        repeat,
-      },
-    };
 
-    const response = (await musicBot.send(request)) as response;
+    const response = await musicBot.runCommand(
+      "Loop",
+      { guildId: msg.guild.id, loop },
+      msg.id
+    );
 
-    let repeatMode = "";
+    if (response.error) return { embeds: [failEmbed.setDescription(response.error)] };
 
-    switch (response.repeat) {
+    let loopMode = "";
+
+    switch (response.loop) {
       case 0:
-        repeatMode = "❎ Off";
+        loopMode = "❎ Off";
         break;
       case 1:
-        repeatMode = "🔂 Track";
+        loopMode = "🔂 Track";
         break;
       case 2:
-        repeatMode = "🔁 Queue";
+        loopMode = "🔁 Queue";
         break;
     }
 
-    embed.setDescription(`now set to: ${repeatMode}`);
+    embed.setDescription(`now set to: ${loopMode}`);
 
     return { embeds: [embed] };
   }
 );
-
-interface response extends wsResponse {
-  loop: boolean;
-}

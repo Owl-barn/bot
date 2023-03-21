@@ -10,7 +10,6 @@ import {
 import { localState } from "..";
 import { baseAccessConfig } from "../lib/accessConfig";
 import { isDJ } from "../lib/isdj";
-import { wsResponse } from "../structs/websocket";
 
 export default Command(
   // Info
@@ -39,8 +38,6 @@ export default Command(
   // Execute
   async (msg) => {
     const botId = msg.options.getString("bot_id");
-    if (!msg.guild) throw "no guild in stop command??";
-
     const member = msg.member as GuildMember;
     const dj = isDJ(member);
     const vc = member.voice.channel;
@@ -84,18 +81,9 @@ export default Command(
       return { embeds: [response] };
     }
 
-    const request = {
-      command: "Stop",
-      mid: msg.id,
-      data: {
-        guildId: msg.guild.id,
-      },
-    };
-
-    const response = (await musicBot.send(request)) as wsResponse;
-
-    if (response.error)
-      return { embeds: [failEmbed.setDescription(response.error)] };
+    // Send the command to the music bot
+    const response = await musicBot.runCommand("Stop", { guildId: msg.guild.id }, msg.id);
+    if (response.error) return { embeds: [failEmbed.setDescription(response.error)] };
 
     embed.setDescription("Music stopped");
 

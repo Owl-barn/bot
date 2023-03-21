@@ -1,9 +1,6 @@
 import { SubCommand } from "@structs/command/subcommand";
 import { embedTemplate } from "lib/embedTemplate";
 import { localState } from "../..";
-import { QueueInfo } from "../../structs/queue";
-import { Track, CurrentTrack } from "../../structs/track";
-import { wsResponse } from "../../structs/websocket";
 
 export default SubCommand(
 
@@ -20,7 +17,6 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    if (!msg.guild) throw "no guild in owlet status command??";
     const embed = embedTemplate();
     const client = msg.client;
 
@@ -33,15 +29,12 @@ export default SubCommand(
 
       for (const guild of bot.getGuilds().values()) {
         if (!guild.channelId) continue;
-        const request = {
-          command: "Queue",
-          mid: bot.getId() + guild.id,
-          data: { guildId: msg.guild.id },
-        };
 
-        const queue = (await bot
-          .send(request)
-          .catch(console.error)) as Response;
+        const queue = await bot.runCommand(
+          "Queue",
+          { guildId: msg.guild.id },
+          bot.getId() + guild.id,
+        ).catch(console.error);
 
         if (!queue || queue.error) continue;
 
@@ -78,9 +71,3 @@ export default SubCommand(
   },
 
 );
-
-interface Response extends wsResponse {
-  queue: Track[];
-  current: CurrentTrack;
-  queueInfo: QueueInfo;
-}

@@ -9,7 +9,6 @@ import { localState as VCState } from "modules/private-room";
 import { isDJ } from "../lib/isdj";
 import { QueueInfo } from "../structs/queue";
 import { Track } from "../structs/track";
-import { wsResponse } from "../structs/websocket";
 import { baseAccessConfig } from "../lib/accessConfig";
 
 export default Command(
@@ -50,7 +49,6 @@ export default Command(
     const botId = msg.options.getString("bot_id");
     const hidden = msg.options.getBoolean("hidden") ?? false;
     let force = msg.options.getBoolean("force") ?? false;
-    if (!msg.guild) throw "no guild in stop command??";
 
     const member = msg.member as GuildMember;
     const dj = isDJ(member);
@@ -66,9 +64,7 @@ export default Command(
     // Check if the user is in a waiting room
     if (VCState.controller.getRooms().find((x) => x.waitingRoomId == vc.id)) {
       return {
-        embeds: [
-          failEmbedTemplate("You can't play music in a waiting room."),
-        ],
+        embeds: [failEmbedTemplate("You can't play music in a waiting room.")],
       };
     }
 
@@ -81,8 +77,7 @@ export default Command(
         ? music.getOwletById(botId)
         : music.getOwlet(vc.id, vc.guildId);
 
-    if (!musicBot)
-      return { embeds: [failEmbedTemplate("No available music bots.")] };
+    if (!musicBot) return { embeds: [failEmbedTemplate("No available music bots.")] };
 
     const bot = await msg.guild.members.fetch(musicBot.getId());
     const author: EmbedAuthorOptions = {
@@ -96,30 +91,20 @@ export default Command(
     failEmbed.setAuthor(author);
 
     if (musicBot.isDisabled()) {
-      failEmbed.setDescription(
-        "Maintenance in progress please try a different owlet or try again later (~10 minutes)",
-      );
-      return {
-        embeds: [failEmbed],
-      };
+      failEmbed.setDescription("Maintenance in progress please try a different owlet or try again later (~10 minutes)");
+      return { embeds: [failEmbed] };
     }
 
-    const request = {
-      command: "Play",
-      mid: msg.id,
-      data: {
-        guildId: msg.guild.id,
-        channelId: vc.id,
-        userId: msg.user.id,
-        query,
-        force,
-      },
+    const requestData = {
+      guildId: msg.guild.id,
+      channelId: vc.id,
+      userId: msg.user.id,
+      query,
+      force,
     };
 
-    const response = (await musicBot.send(request)) as response;
-
-    if (response.error)
-      return { embeds: [failEmbed.setDescription(response.error)] };
+    const response = await musicBot.runCommand("Play", requestData, msg.id);
+    if (response.error) return { embeds: [failEmbed.setDescription(response.error)] };
 
     embed = makeEmbed(embed, response.track, response.queueInfo);
     embed.setAuthor(author);
@@ -164,9 +149,4 @@ function makeEmbed(embed: EmbedBuilder, track: Track, queueInfo: QueueInfo) {
   }
 
   return embed;
-}
-
-interface response extends wsResponse {
-  track: Track;
-  queueInfo: QueueInfo;
 }
