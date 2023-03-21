@@ -20,7 +20,9 @@ export function runCommand(command: CommandStruct<keyof Commands>, data: BaseMes
       state.server.broadcast("CommandResponse", response, data.mid);
     })
     .catch((error) => {
+      const exception = typeof error === "string" ? error : error.message;
+
       state.log.main.error(`Command "${data.command}" failed to execute:`, error);
-      state.server.broadcast("CommandResponse", { error: error.message }, data.mid);
+      state.server.broadcast("CommandResponse", { exception }, data.mid);
     });
 }
