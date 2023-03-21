@@ -14,16 +14,15 @@ export class Controller {
   }
 
   private async login() {
-    await play
-      .setToken({
-        spotify: {
-          client_id: state.env.SP_ID,
-          client_secret: state.env.SP_SECRET,
-          refresh_token: state.env.SP_RT,
-          market: state.env.SP_MARKET,
-        },
-      })
-      .then(() => console.log("Spotify token set"));
+    await play.setToken({
+      spotify: {
+        client_id: state.env.SP_ID,
+        client_secret: state.env.SP_SECRET,
+        refresh_token: state.env.SP_RT,
+        market: state.env.SP_MARKET,
+      },
+    })
+    state.log.controller.info("Spotify token set");
   }
 
   public getQueue = (guildId: string) => this.queues.get(guildId);
@@ -33,18 +32,21 @@ export class Controller {
   public createQueue = (channel: VoiceBasedChannel) => {
     const queue = new Queue(channel);
     this.queues.set(channel.guildId, queue);
+    state.log.controller.debug(`Created queue for ${channel.guildId}`);
     return queue;
   };
 
   public destroyQueue = (guildId: string) => {
     this.queues.delete(guildId);
-
-    if (!this.shutdown) return;
-    if (this.queues.size === 0) return process.exit(2);
+    state.log.controller.info(`Destroyed queue for ${guildId}`);
+    if (this.shutdown && this.queues.size === 0) return process.exit(1);
   };
 
   public softShutdown = () => {
     this.shutdown = true;
+
+    // Broadcast shutdown to all users.
+    state.log.controller.info(`Emitting shutdown to ${this.queues.size} queues`);
     this.queues.forEach(async (queue) => {
       queue.voiceConnection.joinConfig;
 
@@ -53,7 +55,11 @@ export class Controller {
         queue.voiceConnection.joinConfig.guildId,
         queue.voiceConnection.joinConfig.channelId ?? undefined,
       );
+
     });
+
+    // If no queues left, exit.
+    if (this.queues.size === 0) return process.exit(1);
   };
 
   public isShutdown = () => this.shutdown;

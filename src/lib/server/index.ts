@@ -64,7 +64,7 @@ class Server extends EventEmitter {
 
     // If we have a token, resolve the promise.
     if (this.resolve) this.resolve(this.token);
-    console.log(" > Successfully connected".cyan.bold);
+    state.log.ws.info("Successfully connected");
 
     // Reset the timeout.
     this.timeout = 5000;
@@ -74,8 +74,7 @@ class Server extends EventEmitter {
   private onMessage = (message: WebSocket.MessageEvent) => {
     const msg = JSON.parse(message.data.toString()) as BaseMessage;
 
-    state.logger.log("debug", "Received message:", msg)
-    if (state.env.isDev) console.log("received".green.bold, msg);
+    state.log.ws.debug(`Received message: ${msg.command}(${msg.mid})`, { data: msg });
 
     // If the message is an event, call the event listeners.
     if (msg.command) {
@@ -122,12 +121,9 @@ class Server extends EventEmitter {
       return new Promise((resolve, reject) => {
 
         try {
-          state.logger.log("debug", "Sending message:", message)
-          if (state.env.isDev) console.log("sending".yellow.bold, message);
+          state.log.ws.debug(`Sending message: ${message.command}(${message.mid})`, { data: message });
 
-          this.ws.send(
-            JSON.stringify(message),
-          );
+          this.ws.send(JSON.stringify(message));
 
           this.sending.set(mid, resolve);
         } catch (e) {
@@ -141,8 +137,7 @@ class Server extends EventEmitter {
         await this.connect();
 
         const mid = generateMId();
-        state.logger.log("debug", "Sending message:", message)
-        if (state.env.isDev) console.log("sending", { command: command, mid, data });
+        state.log.ws.debug(`Sending message: ${message.command}(${message.mid})`, { data: message });
 
         this.ws.send(JSON.stringify({ command: command, mid, data }));
         this.sending.set(mid, resolve);

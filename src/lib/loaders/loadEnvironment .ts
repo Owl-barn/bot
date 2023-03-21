@@ -2,7 +2,7 @@ import { cleanEnv, str, url } from "envalid";
 import { config } from "dotenv";
 config();
 
-const loadEnvironment = cleanEnv(process.env, {
+const env = cleanEnv(process.env, {
   NODE_ENV: str({
     choices: ["development", "production", "staging"],
   }),
@@ -10,6 +10,11 @@ const loadEnvironment = cleanEnv(process.env, {
   // Main
   PASSWORD: str(),
   ADDRESS: url(),
+
+  LOG_LEVEL: str({
+    choices: ["error", "warn", "info", "verbose", "debug", "silly"],
+    default: "info",
+  }),
 
   // Spotify
   SP_ID: str(),
@@ -19,4 +24,4 @@ const loadEnvironment = cleanEnv(process.env, {
 
 });
 
-export { loadEnvironment };
+export { env };

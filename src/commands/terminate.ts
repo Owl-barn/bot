@@ -10,12 +10,11 @@ export default Command({
   async run(data) {
     const { now } = data;
 
-    if (now) process.exit();
-    else if (state.controller.getQueues().size === 0) process.exit();
+    if (now) process.exit(1);
     state.controller.softShutdown();
 
     setTimeout(() => {
-      process.exit();
+      process.exit(1);
     }, 10 * 60 * 1000);
 
     return {};

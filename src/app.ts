@@ -3,7 +3,7 @@ colors.enable();
 
 import { Client } from "discord.js";
 import { loadClient } from "@lib/loaders/loadClient";
-import { loadEnvironment } from "@lib/loaders/loadEnvironment ";
+import { env } from "@lib/loaders/loadEnvironment ";
 import { Server } from "@lib/server";
 import { CommandStruct } from "@structs/command";
 import { loadCommands } from "@lib/loaders/loadCommands";
@@ -15,24 +15,39 @@ import { runCommand } from "@lib/processCommand";
 import { Logger } from "winston";
 import { loadLogger } from "@lib/loaders/loadLogger";
 
+
+interface Log {
+  main: Logger;
+  ws: Logger;
+  queue: Logger;
+  controller: Logger;
+  client: Logger;
+}
 interface State {
-  env: typeof loadEnvironment;
+  env: typeof env;
   controller: Controller;
   server: Server;
   client: Client;
   commands: Map<string, CommandStruct<keyof Commands>>;
-  logger: Logger;
+  log: Log;
 }
 
 const state = {
-  env: loadEnvironment,
+  env,
   commands: new Map(),
-  logger: loadLogger,
+  log: {} as Log,
 } as unknown as State;
 
 export { state };
 
 (async () => {
+  // Logger
+  state.log.main = loadLogger();
+  state.log.ws = state.log.main.child({ label: "ws" });
+  state.log.queue = state.log.main.child({ label: "queue" });
+  state.log.controller = state.log.main.child({ label: "controller" });
+  state.log.client = state.log.main.child({ label: "client" });
+
   // Websocket Server
   state.server = new Server();
   const token = await state.server.connect();

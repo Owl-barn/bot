@@ -14,6 +14,7 @@ const loadClient = (token: string): Promise<Client> => {
           if (!client.user) {
             reject("Client user not available");
           } else {
+            state.log.client.info(`Client ready, logged in as ${client.user.tag} (${client.user.id})`);
             console.log(
               " ✓ Client ready, logged in as ".green.bold +
               client.user.tag.cyan +

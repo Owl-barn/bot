@@ -6,7 +6,7 @@ import { BaseMessage } from "./server/message";
 export function processCommand(data: BaseMessage<any>) {
   let command = state.commands.get(data.command);
   if (!command) {
-    state.logger.log("warn", `Command "${data.command}" not found.`);
+    state.log.main.log("warn", `Command "${data.command}" not found.`);
     return;
   }
 
@@ -16,11 +16,11 @@ export function processCommand(data: BaseMessage<any>) {
 export function runCommand(command: CommandStruct<keyof Commands>, data: BaseMessage<any>) {
   command.run(data.data)
     .then((response) => {
-      state.logger.info(`Command "${data.command}" executed successfully.`);
+      state.log.main.info(`Command "${data.command}" executed successfully.`);
       state.server.broadcast("CommandResponse", response, data.mid);
     })
     .catch((error) => {
-      state.logger.error(`Command "${data.command}" failed to execute:`, error);
+      state.log.main.error(`Command "${data.command}" failed to execute:`, error);
       state.server.broadcast("CommandResponse", { error }, data.mid);
     });
 }
