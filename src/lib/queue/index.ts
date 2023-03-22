@@ -161,27 +161,23 @@ class Queue extends EventEmitter {
 
     // If there is a current track, emit the Songstart event.
     if (this.current)
-      this.emit("SongStart", this.current, this.queue);
+      this.emit("SongStart", track, this.queue);
 
     this.current = track;
     return;
   };
 
-  /**
-   * Returns the current queue.
-   */
   public getTracks = (): Track[] => {
     return this.queue;
   };
 
-  /**
-   * Returns the current track.
-   */
   public nowPlaying = (): CurrentTrack | null => {
     if (this.current === null) return null;
     let progressMs = this.playedMs;
-    if (this.player.state.status === AudioPlayerStatus.Playing)
+
+    if (this.player.state.status !== AudioPlayerStatus.Paused)
       progressMs += Date.now() - this.lastpause;
+
     return {
       ...this.current,
       progressMs,
@@ -189,10 +185,6 @@ class Queue extends EventEmitter {
     };
   };
 
-  /**
-   *
-   * @returns returns `true` if the track is paused.
-   */
   public pause = (): boolean => {
     const state = this.player.state.status == AudioPlayerStatus.Paused;
     const success = state ? this.player.unpause() : this.player.pause();
@@ -208,9 +200,6 @@ class Queue extends EventEmitter {
     this.leaveTimeout = setTimeout(() => this.stop(), duration);
   };
 
-  /**
-   * Clear the timeout to stop the bot.
-   */
   public clearIdle = (): void => {
     if (this.leaveTimeout) clearTimeout(this.leaveTimeout);
   };
