@@ -4,7 +4,8 @@
   "description": "a simple owlet (copilot wrote this and i 100% agree)",
   "main": "app.js",
   "scripts": {
-    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/app.js"
+    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/app.js",
+    "compile": "tsc"
   },
   "repository": {
     "type": "git",
