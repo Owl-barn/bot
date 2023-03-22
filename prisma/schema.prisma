@@ -7,243 +7,283 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model guilds {
-  created  DateTime @default(now()) @db.Timestamp(0)
-  guild_id String   @id @db.VarChar()
-  premium  Boolean  @default(false) @db.Boolean
-  banned   Boolean  @default(false) @db.Boolean
-  dev      Boolean  @default(false) @db.Boolean
+model Guild {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  log_join_leave String? @db.VarChar()
-  log_events     String? @db.VarChar()
-  log_bot        String? @db.VarChar()
+  isBanned Boolean @default(false)
+  isDev    Boolean @default(false)
 
-  birthday_role    String? @db.VarChar()
-  birthday_channel String? @db.VarChar()
+  // Premium
+  subscribedUserId String?
+  subscribedUser   User?   @relation(fields: [subscribedUserId], references: [id])
+  subscriptionTier Int?
 
-  staff_role   String? @db.VarChar()
-  unban_notice String? @db.VarChar(256)
+  // Logs
+  logJoinLeave String?
+  logEvents    String?
+  logBot       String?
 
-  vc_category_id String? @db.VarChar()
-  vc_channel_id  String? @db.VarChar()
-  vc_limit       Int     @default(4) @db.Integer()
+  // Birthday
+  birthdayRoleId    String?
+  birthdayChannelId String?
+  birthdays         Birthday[]
 
-  level_modifier Float   @default(1.0) @db.DoublePrecision()
-  level_channel  String? @db.VarChar()
-  level_message  String? @default("You leveled up!, you're now {LEVEL}") @db.VarChar(256)
-  level          Boolean @default(false) @db.Boolean()
+  // Moderation
+  staffRoleId String?
+  unbanNotice String?
+  infractions Infraction[]
+  commandLogs CommandLog[]
 
-  whitelist      whitelist[]
-  self_role_main self_role_main[]
-  birthdays      birthdays[]
-  rcon           rcon[]
-  levels         level[]
-  level_reward   level_reward[]
-  afk            afk[]
-  private_vc     private_vc[]
-  moderation_log moderation_log[]
-  songs_played   songs_played[]
-  command_log    command_log[]
+  // Private rooms
+  privateRoomCategoryId String?
+  privateRoomChannelId  String?
+  privateRoomLimit      Int           @default(4)
+  privateRooms          PrivateRoom[]
+
+  // Leveling
+  levelModifier  Float         @default(1.0)
+  levelChannelId String?
+  levelMessage   String?       @default("You leveled up!, you're now {LEVEL}")
+  level          Boolean       @default(false)
+  levels         Level[]
+  levelRewards   LevelReward[]
+
+  // Owlet
+  songs MediaLog[]
+
+  // Whitelist
+  rconEnabled      Boolean     @default(false)
+  rconRoleId       String?
+  rconPassword     String?
+  rconHost         String?
+  rconPort         Int         @default(25575)
+  whitelistedUsers Whitelist[]
+
+  // Selfroles
+  selfroleCollections SelfroleCollection[]
 }
 
-model friendships {
-  created   DateTime @default(now()) @db.Timestamp(0)
-  user_id   String   @db.VarChar()
-  friend_id String   @db.VarChar()
-  pending   Boolean  @default(true) @db.Boolean
+model Level {
+  createdAt DateTime @default(now())
 
-  @@unique([user_id, friend_id])
+  userId  String
+  guildId String
+
+  experience Int @default(0)
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userId, guildId])
 }
 
-model banned_user {
-  created DateTime @default(now()) @db.Timestamp(0)
-  user_id String   @db.VarChar()
-  reason  String?  @db.VarChar(256)
+model LevelReward {
+  createdAt DateTime @default(now())
 
-  @@unique([user_id])
+  roleId  String
+  guildId String
+
+  level Int
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([roleId])
 }
 
-model level {
-  created DateTime @default(now()) @db.Timestamp(0)
+model PrivateRoom {
+  createdAt DateTime @default(now())
 
-  user_id  String @db.VarChar()
-  guild_id String @db.VarChar()
+  userId  String
+  guildId String
 
-  experience Int @default(0) @db.Integer()
+  mainRoomId    String @unique
+  waitingRoomId String @unique
 
-  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@unique([user_id, guild_id])
+  @@unique([userId, guildId])
 }
 
-model level_reward {
-  created DateTime @default(now()) @db.Timestamp(0)
+model SelfroleCollection {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  role_id  String @db.VarChar()
-  guild_id String @db.VarChar()
+  guildId   String
+  channelId String
+  messageId String?
 
-  level Int @db.Integer()
+  title       String
+  description String
 
-  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@unique([role_id])
+  roles Selfrole[]
 }
 
-model afk {
-  created  DateTime @default(now()) @db.Timestamp(0)
-  user_id  String   @db.VarChar()
-  guild_id String   @db.VarChar()
+model Selfrole {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  reason String? @db.VarChar(256)
-  global Boolean @db.Boolean
-
-  guild guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@unique([guild_id, user_id])
-}
-
-model private_vc {
-  created  DateTime @default(now()) @db.Timestamp(0)
-  user_id  String   @db.VarChar()
-  guild_id String   @db.VarChar()
-
-  main_channel_id String @unique @db.VarChar()
-  wait_channel_id String @unique @db.VarChar()
-
-  guild guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@unique([user_id, guild_id])
-}
-
-model birthdays {
-  created DateTime @default(now()) @db.Timestamp(0)
-  updated DateTime @default(now()) @db.Timestamp(0)
-
-  user_id  String @db.VarChar()
-  guild_id String @db.VarChar()
-
-  birthday DateTime? @db.Timestamp(0)
-  has_role Boolean   @default(false) @db.Boolean
-
-  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@unique([user_id, guild_id])
-}
-
-model sessions {
-  session_id    String   @id(map: "sessions_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  created       DateTime @default(now()) @db.Timestamp(0)
-  user_id       String   @db.VarChar()
-  access_token  String   @db.Char(30)
-  refresh_token String   @db.Char(30)
-  expire        DateTime @db.Timestamp(6)
-}
-
-model self_role_main {
-  uuid        String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  guild_id    String  @db.VarChar()
-  channel_id  String  @db.VarChar()
-  message_id  String? @db.VarChar()
-  title       String  @db.VarChar(64)
-  description String  @db.VarChar(1024)
-
-  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict, map: "self_role_main_FK")
-
-  self_role_roles self_role_roles[]
-}
-
-model self_role_roles {
-  uuid      String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  main_uuid String @db.Uuid
-  role_id   String @db.VarChar()
+  collectionId String
+  roleId       String
 
   title       String @db.VarChar(32)
-  description String @db.VarChar()
+  description String
 
-  self_role_main self_role_main @relation(fields: [main_uuid], references: [uuid], onDelete: Cascade, onUpdate: Restrict, map: "self_role_roles_FK")
+  collection SelfroleCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
-  @@unique([role_id, main_uuid])
-  @@unique([title, main_uuid])
+  @@unique([roleId, collectionId])
+  @@unique([title, collectionId])
 }
 
 // Logs
-model songs_played {
-  uuid    String   @id(map: "songsPlayed_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  created DateTime @default(now()) @db.Timestamp(0)
+model MediaLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  guild_id String @db.VarChar()
-  user_id  String @db.VarChar()
+  guildId String
+  userId  String
+  url     String
 
-  song_duration Int  @db.Integer
-  play_duration Int? @db.Integer
+  duration Int
+  progress Int?
 
-  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@index([guild_id], map: "songsPlayed_FK")
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
-model command_log {
-  uuid    String   @id(map: "command_log_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  created DateTime @default(now()) @db.Timestamp(0)
+model CommandLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  guild_id   String? @db.VarChar()
-  channel_id String? @db.VarChar()
+  guildId   String?
+  channelId String?
 
-  command_name String  @db.VarChar(32)
-  user         String? @db.VarChar()
+  commandName String
+  userId      String
 
-  hidden Boolean @db.Boolean
+  isHidden Boolean
 
-  guilds guilds? @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
-
-  @@index([guild_id], map: "command_log_FK")
+  guild Guild? @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
-model moderation_log {
-  uuid    String   @id() @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  created DateTime @default(now()) @db.Timestamp(0)
+model Infraction {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user      String? @db.VarChar()
-  moderator String? @db.VarChar()
-  guild_id  String  @db.VarChar()
+  userId      String
+  moderatorId String
+  guildId     String
 
-  reason  String?   @db.VarChar(256)
-  expiry  DateTime? @db.Timestamp(0)
-  deleted Boolean   @default(false) @db.Boolean
+  reason    String?
+  expiresOn DateTime?
+  deletedOn DateTime?
 
-  moderation_type moderation_type
+  moderationType ModerationType
 
-  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+  guild     Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  target    User  @relation(name: "infractions", fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  moderator User  @relation(name: "moderationAction", fields: [moderatorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@unique([guild_id, uuid])
+  @@unique([guildId, id])
 }
 
 // Minecraft
-model rcon {
-  guild_id String  @id(map: "rcon_pk") @db.VarChar()
-  host     String  @db.VarChar(32)
-  port     Int
-  password String  @db.VarChar(64)
-  role_id  String? @db.VarChar()
+model Whitelist {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  guilds guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: Restrict)
+  userId      String
+  guildId     String
+  minecraftId String
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([guildId, userId], name: "whitelist_guild_user_un")
+  @@unique([guildId, minecraftId], name: "whitelist_guild_uuid_un")
 }
 
-model whitelist {
-  guild_id String   @db.VarChar()
-  created  DateTime @default(now()) @db.Timestamp(0)
-  mc_uuid  String   @db.Char(32)
-  user_id  String   @db.VarChar()
-  uuid     String   @id(map: "whitelist_pk") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+// User info
 
-  guilds guilds @relation(fields: [guild_id], references: [guild_id])
+model User {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@unique([guild_id, user_id], name: "whitelist_guild_user_un")
-  @@unique([guild_id, mc_uuid], name: "whitelist_guild_uuid_un")
+  id String @id
+
+  // Subscription
+  subscriptionTier Int?
+  subscribedSince  DateTime?
+
+  // Core
+  isBanned         Boolean      @default(false)
+  subscribedGuilds Guild[]
+  CommandLog       CommandLog[]
+
+  // Birthday
+  birthdays Birthday[]
+
+  // Notify
+  friendships Friendship[] @relation("friend")
+  friends     Friendship[] @relation("user")
+
+  // Owlet
+  MediaLog MediaLog[]
+
+  // PrivateRoom
+  PrivateRoom PrivateRoom[]
+
+  // Level
+  Level Level[]
+
+  // Whitelist
+  Whitelist Whitelist[]
+
+  // Moderation
+  moderationActions Infraction[] @relation("moderationAction")
+  infractions       Infraction[] @relation("infractions")
+}
+
+model Friendship {
+  createdAt DateTime @default(now())
+
+  userId   String
+  friendId String
+
+  isPending Boolean @default(true)
+
+  user   User @relation(name: "user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  friend User @relation(name: "friend", fields: [friendId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userId, friendId])
+}
+
+model Birthday {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId  String
+  guildId String
+
+  date    DateTime?
+  hasRole Boolean   @default(false)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userId, guildId])
 }
 
 // Enums
-enum moderation_type {
+enum ModerationType {
   ban
   kick
   warn

@@ -1,23 +1,90 @@
+import { loadClient } from "@lib/loaders/loadClient";
+import { LogService } from "@lib/services/logService";
+import { loadModules } from "@lib/loaders/loadModules";
+import { loadEnvironment } from "@lib/loaders/loadEnvironment ";
+import { ThrottleService } from "@lib/services/throttleService";
+
 import colors from "colors";
-import bot from "./bot";
-import env from "./modules/env";
+import { Client } from "discord.js";
+import { Guild, PrismaClient } from "@prisma/client";
+
+import { Button } from "@structs/button";
+import { Module } from "@structs/module";
+import { CommandEnum } from "@structs/command";
+import registerCommand from "@lib/command.register";
+import { Logger } from "winston";
+import { loadLogger } from "@lib/loaders/loadLogger";
 
 colors.enable();
 
-import GuildsController from "./routes/guilds/guilds.controller";
-import LeaderboardController from "./routes/leaderboard/leaderboard.controller";
-import OauthController from "./routes/oauth/oauth.controller";
-import StatusController from "./routes/status/controller";
-import WebServer from "./web";
+export interface State {
+  db: PrismaClient;
+  env: typeof import("./lib/loaders/loadEnvironment ").loadEnvironment;
+  client: Client;
 
-env;
+  commands: Map<string, CommandEnum>;
+  buttons: Map<string, Button>;
 
-const web = new WebServer([
-    new OauthController(),
-    new GuildsController(),
-    new LeaderboardController(),
-    new StatusController(),
-]);
-web.listen();
+  modules: Map<string, Module>;
 
-bot;
+  bannedUsers: Map<string, string>;
+  guilds: Map<string, Guild>;
+
+  botLog: LogService;
+  log: Logger;
+
+  throttle: ThrottleService;
+}
+
+const state = {
+  env: loadEnvironment,
+  db: new PrismaClient(),
+
+  commands: new Map(),
+  buttons: new Map(),
+  modules: new Map(),
+  guilds: new Map(),
+
+} as unknown as State;
+
+(async () => {
+  loadLogger();
+  await loadClient();
+  await loadModules();
+
+  await registerGuilds();
+
+  state.botLog = new LogService();
+  state.throttle = new ThrottleService();
+}
+)();
+
+export { state };
+
+async function registerGuilds() {
+  let guilds = await state.db.guild.findMany();
+
+  const unregisteredGuilds: { id: string }[] = [];
+
+  for (const guild of state.client.guilds.cache.values()) {
+    if (!guilds.find((g) => g.id === guild.id)) {
+      unregisteredGuilds.push({ id: guild.id });
+    }
+  }
+
+  if (unregisteredGuilds.length > 0) {
+    await state.db.guild.createMany({ data: unregisteredGuilds });
+    guilds = await state.db.guild.findMany();
+  }
+
+  guilds.forEach((guild) => state.guilds.set(guild.id, guild));
+
+  if (unregisteredGuilds.length > 0) {
+    for (const { id } of unregisteredGuilds) {
+      const guild = await state.client.guilds.fetch(id);
+      guild && await registerCommand(guild);
+    }
+
+    console.log(`- Registered `.cyan.bold + guilds.length.toString().green + ` new guild${guilds.length > 1 ? "s" : ""}`.cyan.bold);
+  }
+}
