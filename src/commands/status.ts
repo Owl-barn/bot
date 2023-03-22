@@ -1,42 +1,32 @@
-import { bot } from "../app";
+import { state } from "@app";
+import { Command } from "@structs/command";
+import { Guild } from "@structs/commands/status";
 
-export default async function getStatus(): Promise<{}> {
-    const client = bot.getClient();
+export default Command({
+  // Command Info
+  name: "Status",
 
-    if (!client) return { error: "No client" };
+  // Command Run
+  async run() {
+    if (!state.client) throw "No client";
 
-    const id = client.user?.id;
-
-    if (!id)
-        return {
-            error: "Bot is not ready",
-        };
+    const id = state.client.user?.id;
+    if (!id) throw "Bot is not ready";
 
     const guilds: Guild[] = [];
 
-    for (const guild of client.guilds.cache.values()) {
-        const item: Guild = { id: guild.id };
-        const channelId = guild.members.me?.voice.channelId;
-        channelId ? (item.channelId = channelId) : null;
-        guilds.push(item);
+    for (const guild of state.client.guilds.cache.values()) {
+      const item: Guild = { id: guild.id };
+      const channelId = guild.members.me?.voice.channelId;
+      channelId && (item.channelId = channelId);
+      guilds.push(item);
     }
 
-    const status: Status = {
-        id,
-        uptime: process.uptime(),
-        guilds,
+    return {
+      id,
+      uptime: process.uptime(),
+      guilds,
     };
 
-    return { ...status };
-}
-
-interface Status {
-    id: string;
-    uptime: number;
-    guilds: Guild[];
-}
-
-interface Guild {
-    id: string;
-    channelId?: string;
-}
+  }
+});

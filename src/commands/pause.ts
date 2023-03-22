@@ -1,21 +1,22 @@
+import { state } from "@app";
 import { AudioPlayerStatus } from "@discordjs/voice";
-import { bot } from "../app";
+import { Command } from "@structs/command";
 
-export default async function pause(message: {
-    data: { guildId: string };
-}): Promise<{}> {
-    const { guildId } = message.data;
+export default Command({
+  // Command Info
+  name: "Pause",
 
-    const client = bot.getClient();
-    const player = client.player;
+  // Command Run
+  async run(data) {
+    const { guildId } = data;
+    const queue = state.controller.getQueue(guildId);
 
-    const queue = player.getQueue(guildId);
-
-    if (!queue || queue.destroyed) throw "No music is playing";
+    if (!queue || queue.destroyed) return { error: "No music is playing" };
 
     const paused = queue.player.state.status != AudioPlayerStatus.Paused;
 
     queue.pause();
 
     return { paused };
-}
+  }
+});

@@ -1,19 +1,21 @@
-import { bot } from "../app";
+import { state } from "@app";
+import { Command } from "@structs/command";
 
-export default async function terminate(message: {
-    data: { now: boolean };
-}): Promise<{}> {
-    const { now } = message.data;
-    const client = bot.getClient();
-    const player = client.player;
+export default Command({
+  // Command Info
+  name: "Terminate",
 
-    if (now) process.exit();
-    else if (player.getQueues().size === 0) process.exit();
-    player.softShutdown();
+  // Command Run
+  async run(data) {
+    const { now } = data;
+
+    if (now) process.exit(1);
+    state.controller.softShutdown();
 
     setTimeout(() => {
-        process.exit();
+      process.exit(1);
     }, 10 * 60 * 1000);
 
     return {};
-}
+  }
+});
