@@ -13,6 +13,8 @@ export async function loadCommands(path: string) {
   for (const file of commandFiles) {
     const folderPath = path + file.name;
 
+    if (file.name.startsWith("_")) continue;
+
     if (file.name.endsWith(".js")) {
       const command = await generateSimpleCommand(folderPath);
       if (!command) continue;
@@ -27,15 +29,12 @@ export async function loadCommands(path: string) {
 
     for (const subCommand of command) {
       state.commands.set(subCommand.name, subCommand.command);
+      // Log
+      if (state.env.isDevelopment)
+        state.log.debug(`Loaded command: ${subCommand.name.green}`);
     }
 
   }
-
-  // Log all commands.
-  if (state.env.isDevelopment)
-    for (const command of state.commands.keys())
-      state.log.debug(`Loaded command: ${command.green}`);
-
 
   console.log(
     " - Loaded ".green +
@@ -85,7 +84,11 @@ async function generateSubCommand(folderPath: string): Promise<returnType[] | un
 
   // Loop through all sub commands
   for (const file of commandFiles) {
+    if (file.name.startsWith("_")) continue;
+
     if (file.name === "index.js") continue;
+
+    // If file is a js file, it is a simple command
     if (file.name.endsWith(".js")) {
       const command = await generateSimpleCommand(`${folderPath}/${file.name}`);
 
@@ -101,6 +104,7 @@ async function generateSubCommand(folderPath: string): Promise<returnType[] | un
 
     if (!file.isDirectory()) continue;
 
+    // If file is a folder, it is a sub command group
     const subCommands = await generateSubCommand(`${folderPath}/${file.name}`);
     if (!subCommands) continue;
 

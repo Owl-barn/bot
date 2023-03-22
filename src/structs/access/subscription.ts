@@ -11,7 +11,7 @@ const subscriptionTiers = {
   },
   1: {
     name: "Pigeon",
-    guildLimit: 0,
+    guildLimit: 1,
   },
   2: {
     name: "Chicken",
