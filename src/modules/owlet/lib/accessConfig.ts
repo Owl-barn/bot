@@ -1,3 +1,4 @@
+import { adminAccess } from "@lib/adminAccess";
 import { Access } from "@structs/access";
 
 const baseAccessConfig: Access = {
@@ -17,6 +18,7 @@ const baseAccessConfig: Access = {
     userAccess: true,
   },
 
+  999: adminAccess,
 };
 
 export { baseAccessConfig };

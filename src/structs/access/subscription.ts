@@ -21,9 +21,9 @@ const subscriptionTiers = {
     name: "Cockatiel",
     guildLimit: 1,
   },
-  100: {
+  999: {
     name: "Owl",
-    guildLimit: 100,
+    guildLimit: 999,
     locked: true,
   },
 };
