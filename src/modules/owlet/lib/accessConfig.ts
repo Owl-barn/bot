@@ -1,23 +1,20 @@
-const baseAccessConfig = {
+import { Access } from "@structs/access";
+
+const baseAccessConfig: Access = {
 
   default: {
+    guildAccess: false,
+    userAccess: false,
+
     throttling: {
       duration: 30,
-      usages: 1,
-    },
-
-    guildThrottling: {
-      duration: 1800, // 30 minutes
       usages: 6,
     },
   },
 
   1: {
-    guildThrottling: null,
-    throttling: {
-      duration: 30,
-      usages: 6,
-    },
+    guildAccess: true,
+    userAccess: true,
   },
 
 };

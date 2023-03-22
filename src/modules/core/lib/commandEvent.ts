@@ -47,7 +47,7 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
 
   // Check if premium command.
   const accessInfo = await getAccessInfo(command.info.access, msg.user.id, msg.guildId || undefined);
-  if (accessInfo.guildAccess === false || accessInfo.userAccess === false) {
+  if (accessInfo.guildAccess === false && accessInfo.userAccess === false) {
 
     const embed = warningEmbedTemplate();
     embed.setTitle("🦉 Subscription Required");
