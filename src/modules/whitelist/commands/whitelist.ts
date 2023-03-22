@@ -4,6 +4,7 @@ import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import { getMcUUID, RCONHandler } from "../lib/mc.service";
+import { getConfig } from "../lib/getConfig";
 
 export default Command(
 
@@ -39,12 +40,10 @@ export default Command(
     const author = msg.member as GuildMember;
 
     // Get guild.
-    const rconGuild = await state.db.rcon.findFirst({
-      where: { guildId: author.guild.id },
-    });
+    const config = await getConfig(msg.guildId);
 
     // Check if connected server.
-    if (rconGuild === null) {
+    if (config === null) {
       const response = failEmbedTemplate(
         "No minecraft server connected to this guild.",
       );
@@ -59,8 +58,6 @@ export default Command(
       return {
         embeds: [failEmbedTemplate("mc account doesn't exist")],
       };
-
-    uuid = uuid as string;
 
     // Check if already registered.
     const userExists = await state.db.whitelist.findFirst({
@@ -78,11 +75,7 @@ export default Command(
     }
 
     // Execute command.
-    const response = await RCONHandler([`whitelist add ${username}`], {
-      host: rconGuild.host,
-      port: rconGuild.port,
-      password: rconGuild.password,
-    }).catch(() => null);
+    const response = await RCONHandler([`whitelist add ${username}`], config).catch(() => null);
 
     // If already whitelisted.
     if (response === null) {
@@ -102,7 +95,7 @@ export default Command(
     });
 
     // Give role.
-    if (rconGuild.roleId) author.roles.add(rconGuild.roleId);
+    if (config.rconRoleId) author.roles.add(config.rconRoleId);
 
     // Set Nickname.
     author.setNickname(username).catch(() => null);

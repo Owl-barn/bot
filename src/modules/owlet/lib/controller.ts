@@ -199,7 +199,7 @@ export default class Controller {
           url: track.url,
 
           duration: track.durationMs,
-          playDuration: track.progressMs <= track.durationMs ? track.progressMs : track.durationMs,
+          progress: track.progressMs <= track.durationMs ? track.progressMs : track.durationMs,
         },
       });
 

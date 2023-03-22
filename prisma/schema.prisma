@@ -54,8 +54,12 @@ model Guild {
   songs MediaLog[]
 
   // Whitelist
-  whitelist Whitelist[]
-  rcon      rcon[]
+  rconEnabled      Boolean     @default(false)
+  rconRoleId       String?
+  rconPassword     String?
+  rconHost         String?
+  rconPort         Int         @default(25575)
+  whitelistedUsers Whitelist[]
 
   // Selfroles
   selfroleCollections SelfroleCollection[]
@@ -69,8 +73,8 @@ model Level {
 
   experience Int @default(0)
 
-  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([userId, guildId])
 }
@@ -97,8 +101,8 @@ model PrivateRoom {
   mainRoomId    String @unique
   waitingRoomId String @unique
 
-  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@unique([userId, guildId])
 }
@@ -146,11 +150,11 @@ model MediaLog {
   userId  String
   url     String
 
-  durationMs Int
-  playedMs   Int?
+  duration Int
+  progress Int?
 
-  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model CommandLog {
@@ -165,8 +169,8 @@ model CommandLog {
 
   isHidden Boolean
 
-  guild Guild? @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  guild Guild? @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Infraction {
@@ -184,26 +188,14 @@ model Infraction {
 
   moderationType ModerationType
 
-  guild     Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
-  target    User  @relation(name: "infractions", fields: [userId], references: [id], onDelete: Cascade)
-  moderator User  @relation(name: "moderationAction", fields: [moderatorId], references: [id], onDelete: Cascade)
+  guild     Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  target    User  @relation(name: "infractions", fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  moderator User  @relation(name: "moderationAction", fields: [moderatorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@unique([guildId, id])
 }
 
 // Minecraft
-model rcon {
-  guildId String @id
-
-  host     String
-  port     Int
-  password String
-
-  roleId String?
-
-  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-}
-
 model Whitelist {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
@@ -212,7 +204,8 @@ model Whitelist {
   guildId     String
   minecraftId String
 
-  guild Guild @relation(fields: [guildId], references: [id])
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([guildId, userId], name: "whitelist_guild_user_un")
   @@unique([guildId, minecraftId], name: "whitelist_guild_uuid_un")
@@ -251,6 +244,9 @@ model User {
   // Level
   Level Level[]
 
+  // Whitelist
+  Whitelist Whitelist[]
+
   // Moderation
   moderationActions Infraction[] @relation("moderationAction")
   infractions       Infraction[] @relation("infractions")
@@ -264,8 +260,8 @@ model Friendship {
 
   isPending Boolean @default(true)
 
-  user   User @relation(name: "user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  friend User @relation(name: "friend", fields: [friendId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user   User @relation(name: "user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  friend User @relation(name: "friend", fields: [friendId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([userId, friendId])
 }
@@ -280,8 +276,8 @@ model Birthday {
   date    DateTime?
   hasRole Boolean   @default(false)
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([userId, guildId])
 }

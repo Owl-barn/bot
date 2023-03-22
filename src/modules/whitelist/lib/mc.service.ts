@@ -4,6 +4,7 @@ import axios from "axios";
 import { ChatInputCommandInteraction, Guild } from "discord.js";
 import { Rcon } from "rcon-client/lib";
 import { localState } from "..";
+import { getConfig, RconGuild } from "./getConfig";
 
 /**
  * Fetches the player's minecraft `UUID` from Mojang's API.
@@ -49,12 +50,12 @@ export async function getMcName(id: string): Promise<string | null> {
  */
 export async function RCONHandler(
   commands: string[],
-  login: RCONLogin,
+  login: RconGuild,
 ): Promise<string[]> {
   const rcon = await Rcon.connect({
-    host: login.host,
-    port: login.port,
-    password: login.password,
+    host: login.rconHost,
+    port: login.rconPort,
+    password: login.rconPassword,
   }).catch(() => false);
 
   if (typeof rcon == "boolean") throw "Server unreachable.";
@@ -105,11 +106,9 @@ export async function massWhitelist(
   db: PrismaClient,
 ): Promise<void> {
   const users = await db.whitelist.findMany();
-  const rconInfo = await db.rcon.findUnique({
-    where: { guildId: guild.id },
-  });
+  const config = await getConfig(guild.id);
 
-  if (!rconInfo) throw "No rcon info";
+  if (!config) throw "No rcon info";
 
   const commands: string[] = [];
   const left: string[] = [];
@@ -144,8 +143,8 @@ export async function massWhitelist(
           );
       }
 
-      if (rconInfo.roleId && !dcUser.roles.cache.has(rconInfo.roleId)) {
-        await dcUser.roles.add(rconInfo.roleId);
+      if (config.rconRoleId && !dcUser.roles.cache.has(config.rconRoleId)) {
+        await dcUser.roles.add(config.rconRoleId);
         console.log(`Added role to ${user.userId}`.green);
       }
 
@@ -155,16 +154,10 @@ export async function massWhitelist(
       console.log(`whitelist entry failed: ${user.userId}`.red);
     }
   }
-  const whitelisted = await RCONHandler(commands, rconInfo);
+  const whitelisted = await RCONHandler(commands, config);
   console.log(whitelisted);
 
   db.whitelist.deleteMany({
     where: { OR: [{ userId: { in: left } }] },
   });
 }
-
-export type RCONLogin = {
-  host: string;
-  port: number;
-  password: string;
-};

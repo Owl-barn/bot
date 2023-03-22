@@ -50,8 +50,8 @@ export default Command(
 
     const musicPlayed = await db.mediaLog.aggregate({
       _count: { id: true },
-      _avg: { playDuration: true, duration: true },
-      _sum: { playDuration: true, duration: true },
+      _avg: { progress: true, duration: true },
+      _sum: { progress: true, duration: true },
       where: global ? {} : { guildId: msg.guildId as string },
     });
 
@@ -116,12 +116,12 @@ export default Command(
       fields.push({
         name: "Music Usage",
         value: `**Average:** \`${Math.round(
-          (musicPlayed._avg.playDuration || 0) / 60,
+          (musicPlayed._avg.progress || 0) / 60,
         )}/${Math.round(
           (musicPlayed._avg.duration || 0) / 60,
         )}\` minutes
                 **sum:** \`
-                ${Math.round((musicPlayed._sum.playDuration || 0) / 60,)}/
+                ${Math.round((musicPlayed._sum.progress || 0) / 60,)}/
                 ${Math.round((musicPlayed._sum.duration || 0) / 60,)}
                 \` minutes
                 **amount:** \`${musicPlayed._count.id}\` songs played
