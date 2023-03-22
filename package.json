@@ -4,10 +4,9 @@
   "description": "",
   "author": "Owlive",
   "scripts": {
+    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/app.js",
     "init": "npm i && npx prisma db push && npx prisma generate",
     "compile": "tsc",
-    "start": "node ./dist/app.js",
-    "build": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/app.js",
     "updatePrisma": "npm i --save-dev prisma@latest && npm i --save-dev @prisma/client@latest"
   },
   "devDependencies": {
