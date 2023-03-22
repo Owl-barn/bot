@@ -83,10 +83,6 @@ export default Command(
           guild: connectOrCreate(msg.guild.id),
           moderationType: ModerationType.warn,
         },
-      })
-      .catch((e: Error) => {
-        console.log(e);
-        throw "couldnt create warn??";
       });
 
     const warnCount = await db.infraction.count({

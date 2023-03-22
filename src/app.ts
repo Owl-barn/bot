@@ -12,6 +12,8 @@ import { Button } from "@structs/button";
 import { Module } from "@structs/module";
 import { CommandEnum } from "@structs/command";
 import registerCommand from "@lib/command.register";
+import { Logger } from "winston";
+import { loadLogger } from "@lib/loaders/loadLogger";
 
 colors.enable();
 
@@ -28,7 +30,9 @@ export interface State {
   bannedUsers: Map<string, string>;
   guilds: Map<string, Guild>;
 
-  log: LogService;
+  botLog: LogService;
+  log: Logger;
+
   throttle: ThrottleService;
 }
 
@@ -44,9 +48,20 @@ const state = {
 } as unknown as State;
 
 (async () => {
+  loadLogger();
   await loadClient();
   await loadModules();
 
+  await registerGuilds();
+
+  state.botLog = new LogService();
+  state.throttle = new ThrottleService();
+}
+)();
+
+export { state };
+
+async function registerGuilds() {
   let guilds = await state.db.guild.findMany();
 
   const unregisteredGuilds: { id: string }[] = [];
@@ -72,11 +87,4 @@ const state = {
 
     console.log(`- Registered `.cyan.bold + guilds.length.toString().green + ` new guild${guilds.length > 1 ? "s" : ""}`.cyan.bold);
   }
-
-
-  state.log = new LogService();
-  state.throttle = new ThrottleService();
 }
-)();
-
-export { state };

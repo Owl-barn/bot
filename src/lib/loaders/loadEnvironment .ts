@@ -25,6 +25,10 @@ const loadEnvironment = cleanEnv(process.env, {
 
   // Main
   APP_NAME: str(),
+  LOG_LEVEL: str({
+    choices: ["error", "warn", "info", "verbose", "debug", "silly"],
+    default: "info",
+  }),
 
   // Database
   DATABASE_URL: url(),

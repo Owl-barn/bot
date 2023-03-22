@@ -31,7 +31,7 @@ export default Event({
       });
     }
 
-    state.log.push(embed, msg.guildId, logType.EVENT);
+    state.botLog.push(embed, msg.guildId, logType.EVENT);
   },
 
 });

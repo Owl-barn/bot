@@ -1,6 +1,7 @@
 import { state } from "@app";
 import { ReturnMessage } from "@structs/returnmessage";
 import { ChatInputCommandInteraction } from "discord.js";
+import { localState } from "..";
 import { errorEmbed } from "./interactionError";
 
 export async function respond(
@@ -19,34 +20,45 @@ export async function respond(
     interaction.commandName,
   );
 
-  const response = await func(interaction)
+  const response: ReturnMessage | null = await func(interaction)
     .then((x) => {
       if (!x) return null;
       x.ephemeral = x.ephemeral || hidden;
       return x;
     })
-    .catch((e: Error) => {
-      console.log(e);
+    .catch((error) => {
+      localState.log.error(`Error in command ${interaction.commandName.green}`, { error });
       return {
         ephemeral: true,
         embeds: [errorEmbed],
-      } as ReturnMessage;
+      };
     });
 
   const processingDuration = Date.now() - timeStart;
 
+  const logError = (error: Error) => {
+    localState.log.error(`Error sending command response for ${interaction.commandName.green}`, { error });
+  };
+
   if (!response) return;
   if (interaction.replied)
-    await interaction.followUp(response).catch(console.error);
+    await interaction
+      .followUp(response)
+      .catch(logError);
+
   else if (interaction.deferred)
     await interaction
       .editReply(response)
-      .catch(console.error);
-  else await interaction.reply(response).catch(console.error);
+      .catch(logError);
 
-  state.log.logCommand(interaction, processingDuration, hidden);
+  else
+    await interaction
+      .reply(response)
+      .catch(logError);
+
+  state.botLog.logCommand(interaction, processingDuration, hidden);
 
   if (response.callback)
-    respond(interaction, 0, response.callback).catch(console.error);
+    respond(interaction, 0, response.callback).catch(logError);
 }
 

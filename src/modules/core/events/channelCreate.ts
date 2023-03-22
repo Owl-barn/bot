@@ -1,11 +1,12 @@
 import { Event } from "@structs/event";
+import { localState } from "..";
 
 export default Event({
   name: "channelCreate",
   once: false,
 
   async execute(channel) {
-    channel && console.log(`new channel: ${channel.name}: ${channel.guild.name}`.yellow);
+    channel && localState.log.info(`new channel: ${channel.name.green} <#${channel.id}> in ${channel.guild.name.green}`);
   },
 
 });

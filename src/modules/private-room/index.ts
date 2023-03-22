@@ -1,9 +1,15 @@
+import { LocalState } from "@structs/localState";
 import { Module } from "@structs/module";
 import { Controller } from "./lib/controller";
 
+
+interface State extends LocalState {
+  controller: Controller,
+}
+
 const localState = {
   controller: new Controller(),
-};
+} as State;
 
 export { localState };
 

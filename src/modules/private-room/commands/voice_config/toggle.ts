@@ -32,9 +32,15 @@ export default SubCommand(
       const channel = msg.guild?.channels.cache.get(config.privateRoomChannelId);
       const category = config.privateRoomCategoryId && msg.guild?.channels.cache.get(config.privateRoomCategoryId);
 
-      if (channel) await channel.delete().catch(console.error);
+      if (channel)
+        await channel
+          .delete()
+          .catch(localState.log.error);
+
       if (category)
-        await category.delete().catch(console.error);
+        await category
+          .delete()
+          .catch(localState.log.error);
 
       const vcs = await state.db.privateRoom.findMany({
         where: { guildId: msg.guildId as string },
@@ -43,8 +49,8 @@ export default SubCommand(
       for (const vc of vcs) {
         const main = msg.guild?.channels.cache.get(vc.mainRoomId);
         const wait = msg.guild?.channels.cache.get(vc.waitingRoomId);
-        await main?.delete().catch(console.error);
-        await wait?.delete().catch(console.error);
+        await main?.delete().catch(localState.log.error);
+        await wait?.delete().catch(localState.log.error);
       }
     } else {
       const botPermissions: OverwriteResolvable = {
@@ -90,7 +96,7 @@ export default SubCommand(
       data: { privateRoomChannelId: channelID, privateRoomCategoryId: categoryID },
     });
 
-    localState.controller.updateConfig(query);
+    state.guilds.set(msg.guild.id, query);
 
     const response = channelID
       ? `Enabled private vcs <#${channelID}>`

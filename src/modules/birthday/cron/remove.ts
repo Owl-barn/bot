@@ -1,6 +1,7 @@
 import { state } from "@app";
 import { Birthday } from "@prisma/client";
 import { cron } from "@structs/cron";
+import { localState } from "..";
 
 export default cron(
   {
@@ -60,5 +61,7 @@ export default cron(
       // set hasRole to false.
       await removeFromDb(birthday);
     }
+
+    localState.log.info("Completed birthday remove cron job.", { data: failures });
   },
 );

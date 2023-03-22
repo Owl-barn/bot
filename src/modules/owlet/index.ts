@@ -1,3 +1,4 @@
+import { LocalState } from "@structs/localState";
 import { Module } from "@structs/module";
 import Controller from "./lib/controller";
 
@@ -7,11 +8,11 @@ export default {
   initialize,
 } as Module;
 
-interface LocalState {
+interface State extends LocalState {
   controller: Controller,
 }
 
-const localState = {} as unknown as LocalState;
+const localState = {} as unknown as State;
 
 async function initialize() {
   localState.controller = new Controller();

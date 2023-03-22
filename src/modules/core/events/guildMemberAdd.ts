@@ -34,5 +34,5 @@ async function logJoin(member: GuildMember) {
     iconURL: getAvatar(member),
   });
 
-  state.log.push(embed, member.guild.id, logType.JOIN_LEAVE);
+  state.botLog.push(embed, member.guild.id, logType.JOIN_LEAVE);
 }

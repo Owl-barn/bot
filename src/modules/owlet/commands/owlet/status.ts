@@ -34,9 +34,9 @@ export default SubCommand(
           "Queue",
           { guildId: msg.guild.id },
           bot.getId() + guild.id,
-        ).catch(console.error);
+        );
 
-        if (!queue || queue.error) continue;
+        if (queue.error || queue.exception) continue;
 
         const queueLength = new Date(queue.queueInfo.length)
           .toISOString()

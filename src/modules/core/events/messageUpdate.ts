@@ -44,6 +44,6 @@ export default Event({
       iconURL: getAvatar(member),
     });
 
-    state.log.push(embed, current.guildId, logType.EVENT);
+    state.botLog.push(embed, current.guildId, logType.EVENT);
   },
 });

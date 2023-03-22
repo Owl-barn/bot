@@ -1,6 +1,7 @@
 import { state } from "@app";
 import { getMcName, RCONHandler } from "../lib/mc.service";
 import { Event } from "@structs/event";
+import { localState } from "..";
 
 export default Event({
   name: "guildMemberRemove",
@@ -28,12 +29,8 @@ export default Event({
         })
         .catch(() => null);
 
-      console.log({ whitelist });
-
       if (!whitelist) return;
       const mcName = await getMcName(whitelist.minecraftId);
-
-      console.log({ mcName });
 
       if (!mcName) return;
       const result = await RCONHandler(
@@ -41,9 +38,8 @@ export default Event({
         guild.rcon[0],
       ).catch(() => null);
 
-      console.log({ result });
-      if (!result) console.log(`Failed to remove ${member.id} from whitelist`);
-      else console.log(`Removed ${member.id} from whitelist`);
+      if (!result) localState.log.warn(`couldn't remove ${member.id.cyan} from whitelist in (${member.guild.id.cyan})`);
+      else localState.log.info(`Removed ${member.id.cyan} from whitelist in (${member.guild.id.cyan})`);
     }
   },
 

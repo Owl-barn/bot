@@ -10,25 +10,18 @@ export async function loadButtons(path: string) {
     if (!file.name.endsWith(".js")) continue;
     const button = (await import(path + file.name)).default as Button;
 
-    if (button == undefined) {
-      continue;
-    }
+    if (button == undefined) continue;
 
     if (state.buttons.get(button.name) !== undefined)
       throw `duplicate commands with name: ${button.name}`.red.bold;
 
+    if (button.disabled) continue;
 
     // Add command to client.
     state.buttons.set(button.name, button);
     // Log.
-    if (state.env.isDevelopment) {
-      console.log(
-        `${" - Loaded button:".cyan.italic}${button.disabled
-          ? button.name.red.italic
-          : button.name.green.italic
-        }`,
-      );
-    }
+    if (state.env.isDevelopment)
+      state.log.debug(`Loaded button: ${button.name.green}`);
   }
 
   console.log(

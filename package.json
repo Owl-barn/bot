@@ -29,6 +29,7 @@
     "moment": "^2.29.4",
     "rcon-client": "^4.2.3",
     "tsconfig-paths": "^4.1.2",
+    "winston": "^3.8.2",
     "ws": "^8.12.1"
   }
 }

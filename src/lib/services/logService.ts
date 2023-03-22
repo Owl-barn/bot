@@ -31,7 +31,10 @@ export class LogService {
     if (!embeds) return;
     this.logCache.delete(`${guild}_${type}`);
 
-    await this.sendMessage(guild, embeds, type);
+    await this.sendMessage(guild, embeds, type)
+      .catch((error) => {
+        state.log.error(`Error sending log message`, { error });
+      });
   };
 
   private sendMessage = async (
@@ -61,7 +64,7 @@ export class LogService {
     if (!isGuildVoice) return;
 
     // send the embeds
-    await channel.send({ embeds: embeds }).catch(console.error);
+    await channel.send({ embeds: embeds });
   };
 
   private addToQueue = (content: EmbedBuilder, guild: string, type: logType) => {
@@ -120,20 +123,21 @@ export class LogService {
       " - " +
       `${duration}ms`.yellow,
       interaction.user.username,
-      commandName,
+      commandName.green,
       isHidden ? "True".green : "False".red,
     ];
 
     state.db.commandLog
       .create({ data: query })
-      .then(() => console.info(logList.join(" | ")))
-      .catch(console.error);
+      .then(() => state.log.info("Command: " + logList.join(" | ")))
+      .catch(state.log.error);
 
     if (!interaction.guildId) return;
     const embed = embedTemplate();
     embed.setTitle("Command Usage");
-    interaction.channel &&
-      embed.setDescription(`<#${interaction.channel.id}>`);
+
+    interaction.channel && embed.setDescription(`<#${interaction.channel.id}>`);
+
     embed.addFields([
       {
         name: "Hidden",
@@ -146,11 +150,14 @@ export class LogService {
         inline: true,
       },
     ]);
+
     embed.setFooter({
       text: `${interaction.user.tag} <@${interaction.user.id}>`,
       iconURL: getAvatar(interaction.member || interaction.user),
     });
+
     embed.setTimestamp();
+
     this.addToQueue(embed, interaction.guildId, logType.BOT);
   };
 }

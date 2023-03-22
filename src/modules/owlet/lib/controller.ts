@@ -11,42 +11,70 @@ import { Credentials, baseMessage, Authenticate, Status } from "../structs/webso
 import { state } from "@app";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { Guild } from "../structs/commands/status";
+import { localState } from "..";
 
 export default class Controller {
   private bots: Map<string, Owlet> = new Map();
   private wss: WS.Server;
-  private owlets: Credentials[] = [];
+  private credentials: Credentials[] = [];
 
   constructor() {
     this.wss = new WS.Server({ port: state.env.OWLET_PORT });
     this.wss.on("connection", this.onConnection);
 
     // Try to load the owlets from the file.
-    try {
-      const buffer = fs.readFileSync(path.join(__dirname, "../data/owlets.json"), "utf8");
+    this.loadCredentials();
 
-      const owletJson = JSON.parse(buffer.toString()) as Credentials[] | undefined;
-      if (!owletJson) throw "No owlets found.";
-
-      this.owlets = owletJson;
-    } catch (e) {
-      if (typeof e === "string") console.error(e.yellow.bold);
-      else console.error(" ✘ No owlets.json found.".yellow.bold);
-    }
-
+    // Add main bot to the credentials.
     if (!state.client.user) throw "Client user is not defined.";
-    // Add main bot to the owlet list.
-    this.owlets.unshift({
+    this.credentials.unshift({
       id: state.client.user.id,
       token: state.env.DISCORD_TOKEN,
     });
 
     console.log(
       " - Loaded Owlet service with ".green +
-      this.owlets.length.toString().cyan +
+      this.credentials.length.toString().cyan +
       " owlets on port ".green +
       state.env.OWLET_PORT.toString().cyan,
     );
+  }
+
+  private loadCredentials = async () => {
+    // Load the credentials from the file.
+    let buffer;
+    try {
+      buffer = fs.readFileSync(path.join(__dirname, "../data/owlets.json"), "utf8");
+    } catch (error) {
+      localState.log.warn("Failed to find/open credentials", { error });
+      return;
+    }
+
+    // Parse the credentials.
+    let credentials: Credentials[];
+    try {
+      credentials = JSON.parse(buffer.toString());
+    } catch (error) {
+      localState.log.error("Failed to parse credentials", { error });
+      return;
+    }
+
+    // Check if the credentials are valid.
+    if (!Array.isArray(credentials)) {
+      localState.log.error("Credentials are not an array");
+      return;
+    }
+
+    for (const credential of credentials) {
+      if (!credential.id || !credential.token) {
+        localState.log.error("Invalid credential", { credential });
+        return;
+      }
+    }
+
+    // Set the credentials.
+    this.credentials = credentials;
+    localState.log.debug(`Loaded ${String(credentials.length).cyan} credentials`);
   }
 
   private onConnection = (socket: WS, _request: IncomingMessage): void => {
@@ -59,11 +87,9 @@ export default class Controller {
     try {
       message = JSON.parse(data.toString());
     } catch (e) {
-      console.error(e);
+      localState.log.error("Failed to parse message", { data });
       return;
     }
-
-    if (state.env.isDevelopment) console.log("Received:".yellow.bold, message);
 
     switch (message.command) {
       case "Authenticate":
@@ -76,7 +102,7 @@ export default class Controller {
   };
 
   public getBotIds = (): Snowflake[] => {
-    return this.owlets.map((owlet) => owlet.id);
+    return this.credentials.map((owlet) => owlet.id);
   }
 
   /**
@@ -110,7 +136,7 @@ export default class Controller {
      * @returns Owlet credentials.
      */
   private getCredentials = () => {
-    const credentialList = this.owlets;
+    const credentialList = this.credentials;
     for (const credential of credentialList) {
       if (this.bots.has(credential.id)) continue;
       return credential;
@@ -120,7 +146,7 @@ export default class Controller {
 
   private removeBot = (id: string) => {
     this.bots.delete(id);
-    console.log(` > Owlet disconnected <@${id}>, ${this.bots.size} active.`.red.bold);
+    localState.log.info(`Owlet disconnected <@${id.cyan}>, ${String(this.bots.size).cyan} active.`);
   }
 
   private addBot = (id: string, ws: WS, guilds: Guild[]) => {
@@ -160,8 +186,8 @@ export default class Controller {
         },
       ]);
 
-      await channel.send({ embeds: [embed] }).catch(() => {
-        console.log(`Failed to send song start embed in <#${channel.id}>.`.red.italic);
+      await channel.send({ embeds: [embed] }).catch((e) => {
+        localState.log.warn(`Failed to send song start embed in <#${channel.id.cyan}>.`, { data: e });
       });
     });
 
@@ -201,19 +227,18 @@ export default class Controller {
       );
 
       await channel.send({ embeds: [embed] })
-        .catch(() => console.log(`Failed to send shutdown embed in <#${channel.id}>.`.red.italic));
+        .catch((e) => localState.log.warn(`Failed to send shutdown embed in <#${channel.id.cyan}>.`, { data: e }));
     });
 
     // If the bot disconnects remove it from the list.
     ws.on("close", () => this.removeBot(id));
 
     this.bots.set(id, owlet);
-
-    console.log(`+ Owlet connected <@${id}>, ${this.bots.size} active.`.green.italic);
   }
 
   private authenticate = async (ws: WS, message: baseMessage<Authenticate>) => {
     const pass = message.data.password;
+    localState.log.debug(`Received auth request<${message.mid.cyan}>`);
 
     // Check password.
     if (pass != state.env.OWLET_PASSWORD) {
@@ -228,7 +253,7 @@ export default class Controller {
     // Check if bot is reconnecting.
     const botToken = message.data.token;
     if (botToken) {
-      const owletInfo = this.owlets.find((x) => x.token == botToken);
+      const owletInfo = this.credentials.find((x) => x.token == botToken);
 
       // Bot account not in list.
       if (!owletInfo) {
@@ -260,6 +285,7 @@ export default class Controller {
       };
 
       this.addBot(owletInfo.id, ws, []);
+      localState.log.info(`Re-Authenticated Owlet <@${owletInfo.id.cyan}> on request<${message.mid.cyan}>, ${String(this.bots.size + 1).cyan} active`);
 
       ws.send(JSON.stringify(response));
     } else {
@@ -285,6 +311,7 @@ export default class Controller {
       };
 
       this.addBot(credentials.id, ws, []);
+      localState.log.info(`Authenticated Owlet <@${credentials.id.cyan}> on request<${message.mid.cyan}>, ${String(this.bots.size + 1).cyan} active`);
 
       ws.send(JSON.stringify(response));
     }

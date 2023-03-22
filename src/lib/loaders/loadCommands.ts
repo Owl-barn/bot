@@ -31,13 +31,11 @@ export async function loadCommands(path: string) {
 
   }
 
-  if (state.env.isDevelopment) {
-    for (const command of state.commands.keys()) {
-      console.log(
-        ` - Loaded command: `.cyan.italic + command.green.italic,
-      );
-    }
-  }
+  // Log all commands.
+  if (state.env.isDevelopment)
+    for (const command of state.commands.keys())
+      state.log.debug(`Loaded command: ${command.green}`);
+
 
   console.log(
     " - Loaded ".green +

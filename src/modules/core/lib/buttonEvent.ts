@@ -1,6 +1,7 @@
 import { state } from "@app";
 import { ReturnMessage } from "@structs/returnmessage";
 import { ButtonInteraction } from "discord.js";
+import { localState } from "..";
 import { errorEmbed } from "./interactionError";
 
 export async function buttonEvent(msg: ButtonInteraction) {
@@ -13,15 +14,20 @@ export async function buttonEvent(msg: ButtonInteraction) {
 
   if (!command) return;
 
-  const response = await command.run(msg).catch((e: Error) => {
-    console.log(e);
-    return {
-      ephemeral: true,
-      embeds: [errorEmbed],
-    } as ReturnMessage;
-  });
+  const response: ReturnMessage = await command
+    .run(msg)
+    .catch((error) => {
+      localState.log.error(`Error running button command: `, { error });
+      return {
+        ephemeral: true,
+        embeds: [errorEmbed],
+      };
+    });
 
   if (Object.keys(response).length === 0) return;
-  await msg.reply(response).catch(console.error);
+  await msg.reply(response)
+    .catch((error) => {
+      localState.log.error(`Error sending button response: `, { error });
+    });
 }
 

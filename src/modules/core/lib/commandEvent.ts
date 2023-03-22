@@ -8,6 +8,7 @@ import { ParentCommandStruct } from "@structs/command/parent";
 import { SubCommandStruct } from "@structs/command/subcommand";
 import { ReturnMessage } from "@structs/returnmessage";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
+import { localState } from "..";
 import { respond } from "./respond";
 
 export async function commandEvent(msg: ChatInputCommandInteraction) {
@@ -119,11 +120,13 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
       );
   }
 
-  respond(msg, timeStart, command?.run as (interaction: ChatInputCommandInteraction) => Promise<ReturnMessage>);
+  await respond(msg, timeStart, command?.run as (interaction: ChatInputCommandInteraction) => Promise<ReturnMessage>);
 }
 
 const quickReply = async (msg: ChatInputCommandInteraction, content: string): Promise<void> => {
   await msg
     .reply({ ephemeral: true, content })
-    .catch(console.error);
+    .catch(error => {
+      localState.log.error(`Error sending quick reply: `, { error });
+    });
 };

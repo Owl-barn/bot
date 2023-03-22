@@ -8,6 +8,7 @@ import {
 import { state } from "@app";
 import registerCommand from "@lib/command.register";
 import { embedTemplate } from "@lib/embedTemplate";
+import { localState } from "..";
 
 
 export default Event({
@@ -18,7 +19,7 @@ export default Event({
     try {
       if (!guild) throw "failed to register guild";
 
-      console.log(`Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.red.bold);
+      localState.log.info(`Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.red.bold);
 
       await registerCommand(guild);
 
@@ -87,10 +88,10 @@ export default Event({
       await channel
         .send({ embeds: [embed], components: [component] })
         .catch(() =>
-          console.log("Couldnt send message in new server."),
+          localState.log.warn(`Couldnt send message in new server. (${guild.id})`),
         );
     } catch (e) {
-      console.error(e);
+      localState.log.error(e);
     }
   },
 });

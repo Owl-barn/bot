@@ -1,6 +1,7 @@
 import { state } from "@app";
 import { Event } from "@structs/event";
 import { RoleResolvable } from "discord.js";
+import { localState } from "..";
 import { calculateLevelFromXP } from "../lib/calculateLevelFromXP";
 
 export default Event({
@@ -39,7 +40,9 @@ export default Event({
 
     await member.roles
       .add(roles, "Level roles")
-      .catch(() => console.log("Couldnt assign roles"));
+      .catch((error) => {
+        localState.log.warn(`Failed to add level roles to <@${member.user.tag.green}>`, { error });
+      });
   },
 
 });

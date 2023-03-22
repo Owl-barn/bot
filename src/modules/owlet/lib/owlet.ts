@@ -1,4 +1,3 @@
-import { state } from "@app";
 import WebSocket from "ws";
 import { QueueEvent } from "../structs/queue";
 import { Events } from "../structs/events";
@@ -6,6 +5,7 @@ import { EventEmitter } from "events";
 import { Commands } from "../structs/commands";
 import { baseData } from "../structs/websocket";
 import { Guild } from "../structs/commands/status";
+import { localState } from "..";
 
 declare interface Owlet {
   on<U extends keyof Events>(event: U, listener: (data: Events[U]) => void): this;
@@ -38,8 +38,12 @@ class Owlet extends EventEmitter {
 
     try {
       message = JSON.parse(data.toString());
-    } catch (e) { return; }
+    } catch (e) {
+      localState.log.error("Failed to parse message", { data });
+      return;
+    }
 
+    localState.log.debug(`Received message ${message.command.green}<${message.mid.cyan}> from <@${this.id.cyan}>`, { data: message });
 
     if (message.command === QueueEvent.Shutdown) this.shutdown = true;
 
@@ -61,12 +65,12 @@ class Owlet extends EventEmitter {
   public getGuild = (id: string) => this.guilds.get(id);
 
   public updateGuilds = (guilds: Guild[]): void => {
-    console.log(`~ Updating guilds for <@${this.id}>`.cyan.italic);
+    localState.log.debug(`Updating guilds for <@${this.id.cyan}>`);
     for (const guild of guilds) this.guilds.set(guild.id, guild);
   };
 
   public terminate(now: boolean): void {
-    this.runCommand("Terminate", { now }).catch(console.error);
+    this.runCommand("Terminate", { now }).catch(localState.log.error);
   }
 
   public async runCommand<T extends keyof Commands>(
@@ -74,11 +78,10 @@ class Owlet extends EventEmitter {
     data: Commands[T]["arguments"],
     id?: string
   ): Promise<Commands[T]["response"] & baseData> {
-
-    if (state.env.isDevelopment) console.log("Sent".yellow.bold, data);
-
     const mid = id || Math.random().toString(36).substring(7);
-    const message = { mid, command, ...data };
+    const message = { mid, command, data };
+
+    localState.log.debug(`Sending message ${command.green}<${mid.cyan}> to <@${this.id.cyan}>`, { data: message });
 
     this.socket.send(JSON.stringify(message));
 

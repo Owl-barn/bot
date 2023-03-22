@@ -12,6 +12,7 @@ import {
 } from "discord.js";
 import { localState as VCState } from "modules/private-room";
 import { Friendship } from "@prisma/client";
+import { localState } from "..";
 
 export class Controller {
   private timeout: Map<string, NodeJS.Timeout> = new Map();
@@ -87,7 +88,11 @@ export class Controller {
     if (!member) return;
     if (!member.voice.channel) return;
     if (member.voice.channel.id !== channel.id) return;
-    await this.notifyUsers(member, friends).catch(console.error);
+    await this
+      .notifyUsers(member, friends)
+      .catch(error => {
+        localState.log.error("Error notifying users", { error });
+      });
   };
 
   private notifyUsers = async (
@@ -144,7 +149,7 @@ export class Controller {
         friend.send({ embeds: [embed], components: [component] }),
       );
 
-      console.log(`Notifying ${friend.user.tag} for ${member.user.tag}`);
+      localState.log.debug(`Notifying ${friend.user.tag.cyan} for ${member.user.tag.cyan}`);
     });
 
     await Promise.all(notifyQueue);

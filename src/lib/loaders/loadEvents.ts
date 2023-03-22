@@ -15,19 +15,18 @@ export async function loadEvents(path: string) {
 
     if (event.once)
       state.client.once(event.name, (...args) =>
-        event.execute(...args).catch(console.error),
+        event.execute(...args).catch(error => { state.log.error(`Error in event ${event.name}: `, { error }); }),
       );
 
     else
       state.client.on(event.name, (...args) =>
-        event.execute(...args).catch(console.error),
+        event.execute(...args).catch(error => { state.log.error(`Error in event ${event.name}: `, { error }); }),
       );
 
     eventCount++;
 
-    if (state.env.isDevelopment) {
-      console.log(` - Loaded Event: ${event.name.green.italic}`.cyan.italic);
-    }
+    if (state.env.isDevelopment)
+      state.log.debug(`Loaded Event: ${event.name.green}`);
   }
 
   console.log(" - Loaded ".green + String(eventCount).cyan + " events".green);

@@ -33,15 +33,6 @@ export default SubCommand(
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const RegExp =
-      /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gm;
-    if (!RegExp.test(id)) {
-      const response = failEmbed.setDescription(
-        "Invalid infraction ID provided",
-      );
-      return { embeds: [response] };
-    }
-
     const infraction = await state.db.infraction
       .update({
         where: {
@@ -53,8 +44,7 @@ export default SubCommand(
         data: {
           deletedOn: new Date(),
         },
-      })
-      .catch(console.error);
+      }).catch(() => null);
 
     if (!infraction) {
       const response = failEmbed.setDescription(

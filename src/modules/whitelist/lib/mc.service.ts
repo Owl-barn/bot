@@ -3,6 +3,7 @@ import { state } from "@app";
 import axios from "axios";
 import { ChatInputCommandInteraction, Guild } from "discord.js";
 import { Rcon } from "rcon-client/lib";
+import { localState } from "..";
 
 /**
  * Fetches the player's minecraft `UUID` from Mojang's API.
@@ -74,23 +75,29 @@ export async function RCONHandler(
 export async function massRename(msg: ChatInputCommandInteraction): Promise<void> {
   const users = await state.db.whitelist.findMany();
 
+  const data = {
+    success: [] as string[],
+    failed: [] as string[],
+  };
+
   for (const user of users) {
     try {
       const dcUser = await msg.guild?.members.fetch(user.userId);
       const mcName = await getMcName(user.minecraftId);
 
-      if (!mcName || !dcUser) throw "missing";
-
+      if (!mcName) throw "missing MC name";
+      if (!dcUser) throw "missing DC user";
       if (dcUser.nickname == mcName) continue;
 
       await dcUser.setNickname(mcName);
-
-      console.log(`mass rename success: ${user.userId}`.green);
-    } catch (e) {
-      console.error(e);
-      console.log(`mass rename entry failed: ${user.userId}`.red);
+      data.success.push(user.userId);
+    } catch (error) {
+      data.failed.push(user.userId);
+      localState.log.warn(`Mass rename entry failed <@${user.id.cyan}`, { error });
     }
   }
+
+  localState.log.info("Mass rename complete.", { data });
 }
 
 export async function massWhitelist(

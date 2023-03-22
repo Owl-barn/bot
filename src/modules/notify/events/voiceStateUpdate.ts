@@ -8,7 +8,7 @@ export default Event({
   async execute(oldState, newState) {
     await localState.controller
       .onChange(oldState, newState)
-      .catch(console.error);
+      .catch(localState.log.error);
   },
 
 });

@@ -6,6 +6,7 @@ import { loadCommands } from "@lib/loaders/loadCommands";
 import { loadButtons } from "@lib/loaders/loadButons";
 import path from "path";
 import { loadJobs } from "./loadJobs";
+import { LocalState } from "@structs/localState";
 
 export async function loadModules() {
 
@@ -21,6 +22,11 @@ export async function loadModules() {
     module.path = `${folderPath}/`;
 
     console.log(`⌛ Loading module: ${module.name.cyan.italic}`.green.bold);
+
+
+    // Set the module's logger.
+    const localState = (await import(`${folderPath}/index.js`)).localState as LocalState;
+    localState.log = state.log.child({ label: module.name });
 
     // Initialize the module's async state objects.
     if (module.initialize)

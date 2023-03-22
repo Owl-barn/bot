@@ -8,6 +8,7 @@ export default cron(
   },
 
   async () => {
+    localState.log.debug("Running cleanup cron job...");
     localState.timeout = new Map();
   },
 );

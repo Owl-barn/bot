@@ -3,6 +3,7 @@ import { cron } from "@structs/cron";
 import { yearsAgo } from "@lib/time";
 import { failEmbedTemplate, warningEmbedTemplate } from "@lib/embedTemplate";
 import { logType } from "@lib/services/logService";
+import { localState } from "..";
 
 
 export default cron(
@@ -53,7 +54,7 @@ export default cron(
         const role = await guild.roles.fetch(birthday.guild.birthdayRoleId).catch(() => null);
         if (role === null) {
           // Notify the bot owner.
-          state.log.push(
+          state.botLog.push(
             failEmbedTemplate("Could not find birthday role, removing from birthday role from config..."),
             birthday.guildId,
             logType.BOT
@@ -65,7 +66,7 @@ export default cron(
         // Attempt to fetch the member, if it fails return.
         const member = await guild.members.fetch(birthday.userId).catch(() => null);
         if (member === null) {
-          state.log.push(
+          state.botLog.push(
             warningEmbedTemplate(`Tried assigning birthday role to a user that is not in the guild. \`<@${birthday.userId}>\``),
             birthday.guildId,
             logType.BOT
@@ -76,7 +77,7 @@ export default cron(
         // Attempt to add the role, if it fails remove the role from the database and return.
         const roleAdded = await member.roles.add(role).catch(() => null);
         if (roleAdded === null) {
-          state.log.push(
+          state.botLog.push(
             warningEmbedTemplate(`Tried assigning birthday role to a user, but failed. \`<@${birthday.userId}>\` \nrole removed from config.`),
             birthday.guildId,
             logType.BOT
@@ -88,14 +89,15 @@ export default cron(
         await state.db.birthday.update({
           where: { userId_guildId: { userId: birthday.userId, guildId: birthday.guildId } },
           data: { hasRole: true },
-        }).catch(console.error);
+        }).catch(error => {
+          state.log.error(`Error updating birthday`, { error });
+        });
 
       };
       await addRole();
 
       // Birthday message.
       const sendBirthdayMessage = async () => {
-        // this shouldnt be needed 🥴
         if (!birthday.date) return;
         if (!birthday.guild.birthdayChannelId) return;
         if (unavailableChannels.includes(birthday.guildId)) return;
@@ -106,7 +108,7 @@ export default cron(
           // Make sure all future birthdays in this guild dont run this code.
           unavailableChannels.push(birthday.guildId);
           // Notify the bot owner.
-          state.log.push(
+          state.botLog.push(
             failEmbedTemplate("Could not find birthday channel, removing from birthday channel from config..."),
             birthday.guildId,
             logType.BOT
@@ -123,7 +125,7 @@ export default cron(
 
         const messageSent = await channel.send(`Happy ${yearsAgo(birthday.date)}th birthday <@${birthday.userId}>!!!`).catch(() => null);
         if (messageSent === null) {
-          state.log.push(
+          state.botLog.push(
             warningEmbedTemplate(`Tried sending birthday message to a channel, but failed. \`<#${birthday.guild.birthdayChannelId}>\``),
             birthday.guildId,
             logType.BOT
@@ -135,11 +137,11 @@ export default cron(
 
     }
 
-    console.log(`
-    Processed ${birthdays.length} birthdays\n
-    Roles added: ${processed.rolesAdded}\n
-    Messages sent: ${processed.messagesSent}
-    `.cyan);
+    const data = {
+      ...processed,
+      birthdays: birthdays.length,
+    };
 
+    localState.log.debug("Birthday add cron job finished", { data });
   },
 );

@@ -81,20 +81,7 @@ export default SubCommand(
           roleId: role.id,
           collectionId: collection.id,
         },
-      })
-      .catch((e) => {
-        console.error(e);
-        return null;
       });
-
-    if (!CollectionEntry)
-      return {
-        embeds: [
-          failEmbedTemplate(
-            "Something went wrong while adding the role to the collection.",
-          ),
-        ],
-      };
 
     collection.roles.push(CollectionEntry);
 

@@ -13,12 +13,16 @@ export default Event({
 
     if (interaction.isButton()) {
       await buttonEvent(interaction)
-        .catch(console.error);
+        .catch(error => {
+          state.log.error(`Error executing button event ${interaction.customId.cyan}`, { error });
+        });
       return;
-    }
-    if (interaction.isChatInputCommand()) {
+
+    } else if (interaction.isChatInputCommand()) {
       await commandEvent(interaction)
-        .catch(console.error);
+        .catch(error => {
+          state.log.error(`Error executing command event ${interaction.commandName.cyan}`, { error });
+        });
       return;
     }
   },

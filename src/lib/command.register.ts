@@ -329,8 +329,9 @@ export default async function registerCommand(guild: Guild) {
       { body: commandJson },
     )
     .then(() => {
-      const guildString = `${guild.id} - ${guild.name}`;
-      console.log(`Successfully registered application commands. guild: ${guildString}`.green);
+      state.log.info(`Successfully registered application commands. guild: ${guild.id.cyan} - "${guild.name.green}"`);
     })
-    .catch(console.error);
+    .catch(error => {
+      state.log.error(`Failed to register application commands. guild: ${guild.id.cyan} - "${guild.name.green}"`, { error });
+    });
 }

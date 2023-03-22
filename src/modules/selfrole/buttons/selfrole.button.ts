@@ -1,16 +1,17 @@
 import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { Button } from "@structs/button";
-import { GuildMember } from "discord.js";
+import { EmbedBuilder } from "discord.js";
+import { localState } from "..";
 
 export default {
   name: "selfrole",
 
   async run(msg) {
-    if (!msg.guildId) throw "No guild";
+    if (!msg.inCachedGuild()) throw "No guild";
 
     const error = { ephemeral: true, content: "An error occured" };
-    const user = msg.member as GuildMember | undefined;
+    const user = msg.member;
 
     const buttonID = msg.customId.trim();
 
@@ -22,19 +23,26 @@ export default {
 
     if (!query) return error;
 
+    let embed: EmbedBuilder;
+    let roleError;
     const hasRole = user.roles.cache.get(query.roleId);
 
     if (hasRole) {
-      user.roles.remove(query.roleId);
-      const embed = failEmbedTemplate(
-        `Role <@&${query.roleId}> removed!`,
-      );
-      return { ephemeral: true, embeds: [embed] };
+      await user.roles.remove(query.roleId).catch((e) => roleError = e);
+      embed = failEmbedTemplate(`Role <@&${query.roleId}> removed!`);
     } else {
-      user.roles.add(query.roleId);
-      const embed = embedTemplate(`Role <@&${query.roleId}> added!`);
-      return { ephemeral: true, embeds: [embed] };
+      await user.roles.add(query.roleId).catch((e) => roleError = e);
+      embed = embedTemplate(`Role <@&${query.roleId}> added!`);
     }
+
+    if (roleError) {
+      localState.log.error(`Failed to ${hasRole ? "remove" : "add"} role: <@${user.user.tag.green}> <@!${query.roleId.cyan}>`, { error: roleError });
+      error.content = "Could not add/remove this role, please check the bot's permissions";
+      return error;
+    }
+
+    localState.log.info(`Role ${hasRole ? "removed" : "added"}: <@${user.user.tag.green}> <@!${query.roleId.cyan}>`);
+    return { ephemeral: true, embeds: [embed] };
   },
 
 } as Button;
