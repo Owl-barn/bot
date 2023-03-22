@@ -55,16 +55,13 @@ export class Controller {
       this.nouns.length.toString().cyan +
       " nouns.".green,
     );
-  }
+  };
 
   private loadRoomNames = async () => {
     // Load the room names from the file.
     let buffer;
     try {
-      buffer = fs.readFileSync(
-        path.join(__dirname, "../data/roomNames.json"),
-        "utf8",
-      );
+      buffer = fs.readFileSync(path.join(process.cwd(), "data", "roomNames.json"), "utf8");
     } catch (error) {
       localState.log.warn("Failed to find/open roomNames.json", { error });
       return;
@@ -93,7 +90,7 @@ export class Controller {
     this.nouns = data.nouns;
 
     localState.log.debug("Loaded room names.", { data });
-  }
+  };
 
   private purgeEmptyRooms = async () => {
     const rooms = await state.db.privateRoom.findMany();
@@ -155,21 +152,21 @@ export class Controller {
         waitRoom?.deletable && await waitRoom.delete();
       }
     }
-  }
+  };
 
   public upsertRoom = (room: PrivateRoom) => {
     const index = this.rooms.findIndex((x) => x.mainRoomId == room.mainRoomId);
     if (index == -1) this.rooms.push(room);
     else this.rooms[index] = room;
-  }
+  };
 
   public deleteRoom = (room: PrivateRoom) => {
     this.rooms = this.rooms.filter((x) => x.mainRoomId != room.mainRoomId);
-  }
+  };
 
   public getRooms = () => {
     return [...this.rooms];
-  }
+  };
 
   public onChange = async (old: VoiceState, current: VoiceState) => {
     const member = current.member;
@@ -223,7 +220,7 @@ export class Controller {
           .catch(error => localState.log.error(`Failed to run joinWaiting for ${errorUser}`, { error }));
       }
     }
-  }
+  };
 
   private joinWaiting = async (vc: VoiceState, room: PrivateRoom) => {
     const member = vc.member as GuildMember;
@@ -243,11 +240,11 @@ export class Controller {
 
     this.notifyRatelimit.add(member.id);
     setTimeout(() => this.notifyRatelimit.delete(member.id), 180000);
-  }
+  };
 
   private getGuildRooms = (guildId: string) => {
     return this.rooms.filter((x) => x.guildId == guildId);
-  }
+  };
 
   private startDelete = (
     vc: VoiceBasedChannel,
@@ -258,13 +255,13 @@ export class Controller {
       vc.id,
       setTimeout(() => this.disbandVC(vc, reason), duration * 1000),
     );
-  }
+  };
 
   private cancelDelete = (vc: VoiceBasedChannel) => {
     const timeout = this.deleteTimeout.get(vc.id);
     if (timeout) clearTimeout(timeout);
     this.deleteTimeout.delete(vc.id);
-  }
+  };
 
   private leaveHub = async (vc: VoiceState) => {
     if (!vc.channel) return;
@@ -284,7 +281,7 @@ export class Controller {
         "User was alone in vc for too long.",
       );
     }
-  }
+  };
 
   private joinHub = async (vc: VoiceState) => {
     const member = vc.member as GuildMember;
@@ -300,7 +297,7 @@ export class Controller {
       Connect: true,
       ViewChannel: true,
     });
-  }
+  };
 
   private createHub = async (vc: VoiceState) => {
     const member = vc.member as GuildMember;
@@ -452,7 +449,7 @@ export class Controller {
     });
 
     state.botLog.push(embed, vc.guild.id, logType.BOT);
-  }
+  };
 
   private deleteChannel = async (room: VoiceBasedChannel) => {
     room.deletable
@@ -460,7 +457,7 @@ export class Controller {
         .delete("Session expired")
         .catch(error => localState.log.error(`Room <#${room.id.cyan}> failed to delete`, { error }))
       : localState.log.error(`Room <#${room.id.cyan}> is not deletable.`);
-  }
+  };
 
   public disbandVC = async (
     vc: VoiceBasedChannel,
@@ -539,11 +536,11 @@ export class Controller {
 
     localState.log.info(`Deleted private room <#${mainRoom?.id.cyan}> (${mainRoom?.name.green})`);
     state.botLog.push(embed, vc.guild.id, logType.BOT);
-  }
+  };
 
   private getMemberCount = (vc: VoiceState) => {
     if (!vc.channel) return 0;
     const members = vc.channel.members.filter((x) => !x.user.bot);
     return members.size;
-  }
+  };
 }

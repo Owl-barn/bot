@@ -44,7 +44,7 @@ export default class Controller {
     // Load the credentials from the file.
     let buffer;
     try {
-      buffer = fs.readFileSync(path.join(__dirname, "../data/owlets.json"), "utf8");
+      buffer = fs.readFileSync(path.join(process.cwd(), "data", "owlets.json"), "utf8");
     } catch (error) {
       localState.log.warn("Failed to find/open credentials", { error });
       return;
@@ -75,7 +75,7 @@ export default class Controller {
     // Set the credentials.
     this.credentials = credentials;
     localState.log.debug(`Loaded ${String(credentials.length).cyan} credentials`);
-  }
+  };
 
   private onConnection = (socket: WS, _request: IncomingMessage): void => {
     socket.on("message", (x) => this.onMessage(socket, x));
@@ -103,7 +103,7 @@ export default class Controller {
 
   public getBotIds = (): Snowflake[] => {
     return this.credentials.map((owlet) => owlet.id);
-  }
+  };
 
   /**
      * broadcasts a message to all owlets.
@@ -111,7 +111,7 @@ export default class Controller {
      */
   public broadcast = (data: baseMessage<Record<string, unknown>>) => {
     this.wss.clients.forEach((ws) => ws.send(JSON.stringify(data)));
-  }
+  };
 
   /**
      * Terminates all connected owlets.
@@ -129,7 +129,7 @@ export default class Controller {
     this.broadcast(request);
 
     return botCount;
-  }
+  };
 
   /**
      * Returns the first unused bot account.
@@ -142,12 +142,12 @@ export default class Controller {
       return credential;
     }
     return undefined;
-  }
+  };
 
   private removeBot = (id: string) => {
     this.bots.delete(id);
     localState.log.info(`Owlet disconnected <@${id.cyan}>, ${String(this.bots.size).cyan} active.`);
-  }
+  };
 
   private addBot = (id: string, ws: WS, guilds: Guild[]) => {
     const owlet = new Owlet(id, ws, guilds);
@@ -234,7 +234,7 @@ export default class Controller {
     ws.on("close", () => this.removeBot(id));
 
     this.bots.set(id, owlet);
-  }
+  };
 
   private authenticate = async (ws: WS, message: baseMessage<Authenticate>) => {
     const pass = message.data.password;
@@ -315,7 +315,7 @@ export default class Controller {
 
       ws.send(JSON.stringify(response));
     }
-  }
+  };
 
   /**
      * Updates the current status of the owlet.
@@ -336,7 +336,7 @@ export default class Controller {
     }
 
     bot.updateGuilds(msg.data.guilds);
-  }
+  };
 
   public getOwlets = (): Map<string, Owlet> => this.bots;
   public getOwletById = (botId: string) => this.bots.get(botId);
