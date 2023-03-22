@@ -6,7 +6,7 @@ export default Event({
   once: false,
 
   async execute(channel) {
-    channel && localState.log.info(`new channel: ${channel.name.green} <#${channel.id}> in ${channel.guild.name.green}`);
+    channel && localState.log.debug(`new channel: ${channel.name.green} <#${channel.id}> in ${channel.guild.name.green}`);
   },
 
 });
