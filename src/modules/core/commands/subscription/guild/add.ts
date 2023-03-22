@@ -51,6 +51,10 @@ export default SubCommand(
     const guildAlreadySubscribed = user.subscribedGuilds.find((subscribedGuild) => subscribedGuild.id === guild?.id);
     if (guildAlreadySubscribed) return { embeds: [warningEmbedTemplate("You are already subscribed to that guild.")] };
 
+    // Check if guild is already subscribed to by another user
+    const alreadyTaken = await state.db.guild.findFirst({ where: { id: guild.id, NOT: [{ subscribedUserId: null }] } });
+    if (alreadyTaken) return { embeds: [warningEmbedTemplate("That guild is already subscribed to by another user.")] };
+
     // Check if user has reached the guild limit
     const subscription = subscriptionTiers[user.subscriptionTier as SubscriptionTierKey];
     if (user.subscribedGuilds.length >= subscription.guildLimit)
