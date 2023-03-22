@@ -5,6 +5,7 @@ import { Command } from "@structs/command/command";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import { getMcUUID, RCONHandler } from "../lib/mc.service";
 import { getConfig } from "../lib/getConfig";
+import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
 export default Command(
 
@@ -88,9 +89,9 @@ export default Command(
     // Add to db.
     await state.db.whitelist.create({
       data: {
-        userId: author.id,
+        user: connectOrCreate(author.id),
+        guild: connectOrCreate(author.guild.id),
         minecraftId: uuid,
-        guildId: author.guild.id,
       },
     });
 
