@@ -64,7 +64,7 @@ export class Controller {
 
   public isShutdown = () => this.shutdown;
 
-  public async search(query: string, user: string): Promise<Track> {
+  public async search(query: string, user: string): Promise<Track | { error: string }> {
     // If not Url search yt.
     if (!query.startsWith("https"))
       return await this.fetchYoutubeVideo(query, user);
@@ -74,45 +74,64 @@ export class Controller {
     }
 
     // If yt video.
-    const ytValidate = play.yt_validate(query);
-    if (ytValidate === "video") {
-      const result = await play.video_info(query).catch((e) => { state.log.queue.error(e) });
-      if (!result) throw "Couldnt play this song";
-      const videoData = result.video_details;
-      const trackInput = {
-        title: videoData.title,
-        author: videoData.channel?.name,
-        url: videoData.url,
-        thumbnail: videoData.thumbnails[0].url,
-        durationMs: videoData.durationInSec * 1000,
-        requestedBy: user,
-      };
+    const urlType = play.yt_validate(query);
 
-      return new Track(trackInput, user);
+    if (urlType === "video") {
+      return await this.getTrackFromUrl(query, user);
     }
 
-    if (ytValidate === "playlist" || ytValidate === "search") {
-      throw "Playlists and search urls are not supported currently";
+    if (urlType === "playlist") {
+      if (!query.includes("?v=")) return { error: "Playlists urls are not supported currently" }
+      const videoUrl = query.split("&list=")[0];
+      return await this.getTrackFromUrl(videoUrl, user);
     }
+
+    if (urlType === "search") return { error: "Playlists and search urls are not supported currently" }
 
     // If spotify url
     if (play.sp_validate(query) == "track") {
-      let song = await play.spotify(query).catch(() => null);
-      if (!song)
-        throw "Couldnt play this song, please try a youtube link";
-      if (song.type !== "track") throw "Please enter a song url";
+
+      let song = await play
+        .spotify(query)
+        .catch(error => { state.log.queue.warn("Couldnt fetch spotify URL", { error }) });
+
+      if (!song) return { error: "Couldnt play this song, please try a youtube link" }
+
+      if (song.type !== "track") return { error: "Please enter a song url" }
+
       song = song as play.SpotifyTrack;
+
       return this.fetchYoutubeVideo(
         `${song.name} - ${song.artists[0].name}`,
         user,
       );
     }
 
-    if (await play.so_validate(query)) {
-      throw "Soundcloud links are not supported currently";
-    }
+    if (await play.so_validate(query))
+      return { error: "Soundcloud links are not supported currently" }
+
 
     return await this.fetchYoutubeVideo(query, user);
+  }
+
+  private getTrackFromUrl = async (url: string, user: string) => {
+    const result = await play
+      .video_info(url)
+      .catch((error) => { state.log.queue.error(error) });
+
+    if (!result) throw "Couldnt play this song";
+
+    const videoData = result.video_details;
+    const trackInput = {
+      title: videoData.title,
+      author: videoData.channel?.name,
+      url: videoData.url,
+      thumbnail: videoData.thumbnails[0].url,
+      durationMs: videoData.durationInSec * 1000,
+      requestedBy: user,
+    };
+
+    return new Track(trackInput, user);
   }
 
   private async fetchYoutubeVideo(searchQuery: string, user: string) {
