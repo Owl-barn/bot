@@ -4,6 +4,8 @@ import { yearsAgo } from "@lib/time";
 import { failEmbedTemplate, warningEmbedTemplate } from "@lib/embedTemplate";
 import { logType } from "@lib/services/logService";
 import { localState } from "..";
+import { removeRoles } from "../lib/removeRoles";
+import { filter } from "../lib/filter";
 
 
 export default cron(
@@ -13,16 +15,15 @@ export default cron(
   },
 
   async () => {
-    let birthdays = await state.db.birthday.findMany({ include: { user: true, guild: true } });
-    const today = new Date();
+    // Remove roles from users that have them.
+    await removeRoles();
 
-    birthdays = birthdays.filter(birthday => {
-      const date = birthday.date;
-      if (!date) return false;
-      if (!birthday.user.isBanned) return false;
-      if (!birthday.guild.birthdayChannelId && !birthday.guild.birthdayRoleId) return false;
-      return date.getMonth() === today.getMonth() && date.getDate() === today.getDate();
-    });
+    let birthdays = await state.db.birthday.findMany({ include: { user: true, guild: true } });
+    console.log({ birthdays });
+
+    // Filter out birthdays that are not today.
+    birthdays = birthdays.filter(filter);
+    console.log({ birthdays });
 
     const unavailableRoles: string[] = [];
     const unavailableChannels: string[] = [];
@@ -35,6 +36,7 @@ export default cron(
       const guild = await state.client.guilds.fetch(birthday.guildId).catch(() => null);
       if (!guild) continue;
 
+      // Remove role if cant use.
       const removeRoleFromDb = async () => {
         // Remove the birthday role from the database.
         await state.db.guild.update({
@@ -91,9 +93,10 @@ export default cron(
           data: { hasRole: true },
         }).catch(error => {
           state.log.error(`Error updating birthday`, { error });
-        });
+        }).then(a => console.log({ a }));
 
       };
+
       await addRole();
 
       // Birthday message.
@@ -133,6 +136,7 @@ export default cron(
           unavailableChannels.push(birthday.guildId);
         }
       };
+
       await sendBirthdayMessage();
 
     }
@@ -142,6 +146,6 @@ export default cron(
       birthdays: birthdays.length,
     };
 
-    localState.log.debug("Birthday add cron job finished", { data });
+    localState.log.debug("Birthday cron job finished", { data });
   },
 );

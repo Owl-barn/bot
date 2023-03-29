@@ -27,7 +27,7 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    const role = msg.options.getRole("birthdayRoleId") as Role | undefined;
+    const role = msg.options.getRole("birthday_role") as Role | undefined;
 
     const failEmbed = failEmbedTemplate("I cant assign this role.");
 
