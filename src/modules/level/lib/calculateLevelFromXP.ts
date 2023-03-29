@@ -1,6 +1,14 @@
 import { localState } from "..";
 
-export function calculateLevelFromXP(exp: number) {
+export interface CalculatedLevel {
+  totalXP: number;
+  level: number;
+  levelXP: number;
+  currentXP: number;
+}
+
+
+export function calculateLevelFromXP(exp: number): CalculatedLevel {
   let currentLevel;
 
   for (let index = 0; index < localState.levelArray.length; index++) {
