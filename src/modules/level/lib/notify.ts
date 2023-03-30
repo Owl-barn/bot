@@ -33,16 +33,16 @@ export async function notify(msg: Message<true>, config: Guild, current: Calcula
         logType.BOT
       );
 
-      await msg.reply("You have leveled up!");
+      await msg.reply(message);
       return;
     }
 
     // If the channel is found, send the message.
-    await channel.send("You have leveled up!");
+    await channel.send(message);
     return;
 
   } else {
     // If the channel is not set, send the message to the user with a reply.
-    msg.reply("You have leveled up!");
+    msg.reply(message);
   }
 }

@@ -18,7 +18,7 @@ export default Event({
 
     const guildConfig = state.guilds.get(msg.guildId);
     if (!guildConfig) return;
-    if (guildConfig?.level) return;
+    if (!guildConfig?.level) return;
 
     // If the user has already gained XP in the last minute, return.
     const id = `${msg.guildId}-${msg.author.id}`;
