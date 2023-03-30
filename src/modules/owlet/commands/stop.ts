@@ -27,8 +27,6 @@ export default Command(
       },
     ],
 
-    access: baseAccessConfig,
-
     throttling: {
       duration: 30,
       usages: 1,

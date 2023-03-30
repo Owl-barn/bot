@@ -26,7 +26,7 @@ export default SubCommand(
     if (roles.length === 0) {
       embed.setDescription("There are no role rewards set up.");
     } else {
-      embed.setDescription("List of role rewards: " + roles.map((role) => `<@&${role.roleId}>`).join(", "));
+      embed.setDescription("List of role rewards:\n" + roles.map((role) => `<@&${role.roleId}>`).join(", "));
     }
 
 

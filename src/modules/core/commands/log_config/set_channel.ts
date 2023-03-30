@@ -1,4 +1,4 @@
-import { embedTemplate } from "@lib/embedTemplate";
+import { embedTemplate, warningEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
@@ -41,6 +41,11 @@ export default SubCommand(
 
     const channel = msg.options.getChannel("channel", true);
     const type = msg.options.getNumber("type", false);
+
+    if (channel.isTextBased() === false)
+      return {
+        embeds: [warningEmbedTemplate("The channel must be a text channel.")]
+      }
 
     const guild = await state.db.guild.update({
       where: { id: msg.guildId },
