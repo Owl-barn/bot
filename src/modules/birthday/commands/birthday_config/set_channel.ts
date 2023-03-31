@@ -40,12 +40,10 @@ export default SubCommand(
     if (channel && !channel.permissionsFor(msg.client.user as ClientUser))
       return { embeds: [failEmbed] };
 
-    const test = await state.db.guild.update({
+    await state.db.guild.update({
       where: { id: msg.guildId },
       data: { birthdayChannelId: channel?.id || null },
     });
-
-    console.log({ test });
 
 
     const embed = embedTemplate(
