@@ -45,18 +45,11 @@ export default Command(
       _count: true,
       orderBy: { _count: { commandName: "desc" } },
       take: 5,
-      where: global ? {} : { guildId: msg.guildId as string },
-    });
-
-    const musicPlayed = await db.mediaLog.aggregate({
-      _count: { id: true },
-      _avg: { progress: true, duration: true },
-      _sum: { progress: true, duration: true },
-      where: global ? {} : { guildId: msg.guildId as string },
+      where: global ? {} : { guildId: msg.guildId },
     });
 
     const birthdays = await db.birthday.count({
-      where: global ? {} : { guildId: msg.guildId as string },
+      where: global ? {} : { guildId: msg.guildId },
     });
 
     const fields = [
@@ -73,18 +66,12 @@ export default Command(
       },
       {
         name: "Memory usage",
-        value: `${(
-          process.memoryUsage().heapUsed /
-          1024 /
-          1024
-        ).toFixed(2)}MB`,
+        value: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB`,
         inline: true,
       },
       {
         name: "Uptime",
-        value: moment(Date.now() - (client.uptime as number))
-          .fromNow()
-          .replace(" ago", ""),
+        value: moment(Date.now() - (client.uptime as number)).fromNow().replace(" ago", ""),
         inline: true,
       },
       {
@@ -99,9 +86,7 @@ export default Command(
     ];
 
     const embed = embedTemplate();
-    embed.setTitle(
-      global ? "Global bot stats" : `${msg.guild?.name}'s bot stats`,
-    );
+    embed.setTitle(global ? "Global" : `${msg.guild?.name}'s` + " bot stats");
 
     if (commandUsage && commandUsage.length > 0) {
       fields.push({
@@ -112,18 +97,19 @@ export default Command(
       });
     }
 
+    // Music
+    const musicPlayed = await db.mediaLog.aggregate({
+      _count: { id: true },
+      _avg: { progress: true, duration: true },
+      _sum: { progress: true, duration: true },
+      where: global ? {} : { guildId: msg.guildId },
+    });
+
     if (musicPlayed) {
       fields.push({
         name: "Music Usage",
-        value: `**Average:** \`${Math.round(
-          (musicPlayed._avg.progress || 0) / 60,
-        )}/${Math.round(
-          (musicPlayed._avg.duration || 0) / 60,
-        )}\` minutes
-                **sum:** \`
-                ${Math.round((musicPlayed._sum.progress || 0) / 60,)}/
-                ${Math.round((musicPlayed._sum.duration || 0) / 60,)}
-                \` minutes
+        value: `**Average:** \`${Math.round((musicPlayed._avg.progress || 0) / 1000 / 60)}/${Math.round((musicPlayed._avg.duration || 0) / 1000 / 60,)}\` minutes
+                **sum:** \`${Math.round((musicPlayed._sum.progress || 0) / 1000 / 60)}/${Math.round((musicPlayed._sum.duration || 0) / 1000 / 60,)}\` minutes
                 **amount:** \`${musicPlayed._count.id}\` songs played
             `,
       });
