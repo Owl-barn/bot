@@ -19,11 +19,9 @@ export default cron(
     await removeRoles();
 
     let birthdays = await state.db.birthday.findMany({ include: { user: true, guild: true } });
-    console.log({ birthdays });
 
     // Filter out birthdays that are not today.
     birthdays = birthdays.filter(filter);
-    console.log({ birthdays });
 
     const unavailableRoles: string[] = [];
     const unavailableChannels: string[] = [];
@@ -93,7 +91,7 @@ export default cron(
           data: { hasRole: true },
         }).catch(error => {
           state.log.error(`Error updating birthday`, { error });
-        }).then(a => console.log({ a }));
+        });
 
       };
 
