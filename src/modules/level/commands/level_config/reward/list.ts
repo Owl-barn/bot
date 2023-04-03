@@ -1,7 +1,6 @@
-import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
+import { embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import { Role } from "discord.js";
 
 export default SubCommand(
 
@@ -18,24 +17,18 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    const level = msg.options.getInteger("level", true);
-    const role = msg.options.getRole("role", true) as Role;
 
-    const failEmbed = failEmbedTemplate();
-
-    if (!role.editable)
-      return {
-        embeds: [failEmbed.setDescription("I cant assign that role")],
-      };
-
-    await state.db.levelReward.create({
-      data: { guildId: msg.guildId, roleId: role.id, level },
-    });
+    const roles = await state.db.levelReward.findMany({ where: { guildId: msg.guild.id } });
 
     const embed = embedTemplate();
-    embed.setDescription(
-      `Successfully added ${role} as a level reward for level \`${level}\`.`,
-    );
+    embed.setTitle("Level Rewards");
+
+    if (roles.length === 0) {
+      embed.setDescription("There are no role rewards set up.");
+    } else {
+      embed.setDescription("List of role rewards:\n" + roles.map((role) => `<@&${role.roleId}>`).join(", "));
+    }
+
 
     return { embeds: [embed] };
   }

@@ -11,11 +11,11 @@ const subscriptionTiers = {
   },
   1: {
     name: "Pigeon",
-    guildLimit: 1,
+    guildLimit: 2,
   },
   2: {
     name: "Chicken",
-    guildLimit: 3,
+    guildLimit: 4,
   },
   3: {
     name: "Cockatiel",
