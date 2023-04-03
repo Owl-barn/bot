@@ -86,7 +86,7 @@ export default Command(
     ];
 
     const embed = embedTemplate();
-    embed.setTitle(global ? "Global" : `${msg.guild?.name}'s` + " bot stats");
+    embed.setTitle((global ? "Global" : `${msg.guild?.name}'s`) + " bot stats");
 
     if (commandUsage && commandUsage.length > 0) {
       fields.push({
