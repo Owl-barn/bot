@@ -46,9 +46,9 @@ export default Command({
       });
     }
 
-    let track = await state.controller.search(query, userId);
+    const track = await state.controller.search(query, userId);
 
-    if (!track) return { error: "Could not find a track with that name" }
+    if ("error" in track) return track;
 
     // Add the track to the queue
     queue.addTrack(track, force);
