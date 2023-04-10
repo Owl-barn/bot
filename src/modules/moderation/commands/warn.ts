@@ -4,7 +4,6 @@ import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import {
-  HexColorString,
   EmbedBuilder,
   ApplicationCommandOptionType,
   APIEmbedField,
@@ -12,6 +11,7 @@ import {
 } from "discord.js";
 import { ModerationType } from "@prisma/client";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
+import { getColour } from "../lib/getColour";
 
 const db = state.db;
 
@@ -98,20 +98,6 @@ export default Command(
       },
     });
 
-    let colour: HexColorString;
-
-    switch (warnCount) {
-      case 1:
-        colour = "#18ac15";
-        break;
-      case 2:
-        colour = "#d7b500";
-        break;
-      default:
-        colour = "#e60008";
-        break;
-    }
-
     const fields: APIEmbedField[] = [
       {
         name: "Reason",
@@ -128,7 +114,7 @@ export default Command(
     const embed = new EmbedBuilder();
     embed.setTitle(`You have been warned in "${msg.guild.name}"`);
     embed.setFields(fields);
-    embed.setColor(colour);
+    embed.setColor(getColour(warnCount));
 
     const dm = await target.send({ embeds: [embed] }).catch(() => null);
 

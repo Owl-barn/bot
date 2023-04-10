@@ -3,12 +3,9 @@ import { getAvatar } from "@lib/functions";
 import { ModerationType } from "@prisma/client";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import {
-  ApplicationCommandOptionType,
-  EmbedBuilder,
-  HexColorString,
-} from "discord.js";
+import { ApplicationCommandOptionType, EmbedBuilder } from "discord.js";
 import { formatInfraction } from "../../lib/formatinfraction";
+import { getColour } from "modules/moderation/lib/getColour";
 
 export default SubCommand(
 
@@ -69,29 +66,13 @@ export default SubCommand(
       inline: true,
     }));
 
-    let colour: HexColorString;
-
-    switch (logList.length) {
-      case 0:
-        colour = state.env.EMBED_COLOR;
-        break;
-      case 1:
-        colour = "#18ac15";
-        break;
-      case 2:
-        colour = "#d7b500";
-        break;
-      default:
-        colour = "#e60008";
-        break;
-    }
 
     const embed = new EmbedBuilder();
     embed.setAuthor({
       name: `${target.tag} has ${logs.length} infractions.`,
       iconURL: getAvatar(target),
     });
-    embed.setColor(colour);
+    embed.setColor(getColour(logList.length));
 
     logList.length !== 0
       ? embed.addFields(logList)

@@ -52,10 +52,10 @@ const loadEnvironment = cleanEnv(process.env, {
   ALONE_TIMEOUT: num(),
 
   // Embed
-  EMBED_COLOR: HexColor({ default: "#5c00ff" }),
-  EMBED_FAIL_COLOR: HexColor({ default: "#ff0000" }),
-  EMBED_WARNING_COLOR: HexColor({ default: "#ffa500" }),
-  EMBED_SUCCESS_COLOR: HexColor({ default: "#00ff00" }),
+  EMBED_COLOR: HexColor({ default: "#957f5f" }),
+  EMBED_FAIL_COLOR: HexColor({ default: "#934a4a" }),
+  EMBED_WARNING_COLOR: HexColor({ default: "#b7a125" }),
+  EMBED_SUCCESS_COLOR: HexColor({ default: "#769352" }),
 });
 
 export { loadEnvironment };

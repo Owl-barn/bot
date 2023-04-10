@@ -1,4 +1,4 @@
-# Raven bot
+# discord bot
 
 This is multi purpose modular discord bot. You are not allowed to use this bot for commercial purposes, or modify it in any way.
 
