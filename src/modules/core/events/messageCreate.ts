@@ -2,6 +2,9 @@ import registerCommand from "@lib/command.register";
 import { yearsAgo } from "@lib/time";
 import { state } from "@app";
 import { Event } from "@structs/event";
+import { Message } from "discord.js";
+import { embedTemplate } from "@lib/embedTemplate";
+import { localState } from "..";
 
 export default Event({
   name: "messageCreate",
@@ -10,6 +13,13 @@ export default Event({
   async execute(msg) {
     if (!msg) return;
     if (msg.author.bot) return;
+    if (msg.channel.isDMBased()) {
+      await relayDM(msg)
+        .catch(error =>
+          localState.log.error(`Failed to relay DM from ${msg.author.id}`, { error })
+        );
+      return;
+    }
 
     const client = msg.client;
 
@@ -123,3 +133,23 @@ export default Event({
 
   },
 });
+
+async function relayDM(msg: Message) {
+  if (!msg.content && msg.attachments.size === 0) return;
+  if (msg.author.id === state.env.OWNER_ID) return;
+
+  const user = await msg.client.users.fetch(state.env.OWNER_ID);
+
+  const embed = embedTemplate()
+    .setAuthor({ iconURL: msg.author.displayAvatarURL(), name: msg.author.tag })
+
+  if (msg.content)
+    embed.setDescription(msg.content);
+
+  if (msg.attachments.size > 0)
+    embed.addFields({ name: "Attachments", value: msg.attachments.map(x => ` - ${x.url}`).join("\n") });
+
+
+  await user.send({ embeds: [embed] });
+  localState.log.info(`Relayed DM from ${msg.author.tag} (${msg.author.id})`);
+}

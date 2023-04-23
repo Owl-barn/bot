@@ -1,4 +1,4 @@
-import { ActivityType, Client, GatewayIntentBits } from "discord.js";
+import { ActivityType, Client, GatewayIntentBits, Partials } from "discord.js";
 import { state } from "../../app";
 
 
@@ -12,6 +12,10 @@ const loadClient = (): Promise<Client> => {
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildPresences,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.DirectMessages,
+      ],
+      partials: [
+        Partials.Channel,
       ],
       allowedMentions: { parse: ["users"] },
     });
