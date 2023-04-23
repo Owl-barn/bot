@@ -107,7 +107,7 @@ export class Controller {
     const embed = embedTemplate();
     embed.setTitle("Your friend is in a voice channel!");
     embed.setDescription(
-      `<@${member.id}> joined <#${channel.id}> in \`${channel.guild.name}\`\n\n[Click here to join them!](${channel.url})`,
+      `<@${member.id}> joined <#${channel.id}> \n\n[Click here to join them!](${channel.url})`,
     );
     const avatar = getAvatar(member);
     if (avatar) embed.setThumbnail(avatar);
