@@ -65,6 +65,10 @@ export function nextDate(pastDate: Date, currentDate = new Date()): Date {
 }
 
 export function yearsAgo(pastDate: Date, presentDate = new Date()): number {
-  const difference = Number(presentDate) - Number(pastDate);
-  return Math.floor(difference / (1000 * 60 * 60 * 24 * 365.25));
+  let age = presentDate.getFullYear() - pastDate.getFullYear();
+  const m = presentDate.getMonth() - pastDate.getMonth();
+  if (m < 0 || (m === 0 && presentDate.getDate() < pastDate.getDate())) {
+      age--;
+  }
+  return age;
 }
