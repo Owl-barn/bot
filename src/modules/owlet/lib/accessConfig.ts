@@ -18,6 +18,11 @@ const baseAccessConfig: Access = {
     userAccess: true,
   },
 
+  4: {
+    guildAccess: true,
+    userAccess: true,
+  },
+
   999: adminAccess,
 };
 
