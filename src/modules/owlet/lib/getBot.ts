@@ -2,8 +2,9 @@ import { Guild, VoiceBasedChannel } from "discord.js";
 import { localState } from "..";
 
 
-export async function getOwlet(guild: Guild, vc: VoiceBasedChannel | null, botId: string | null) {
+export async function getOwlet(guild: Guild, vc?: VoiceBasedChannel | null, botId?: string | null) {
   try {
+
     // Get bot.
     const owlet = botId
       ? localState.controller.getOwletById(botId)

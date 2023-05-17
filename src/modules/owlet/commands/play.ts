@@ -4,13 +4,13 @@ import { Command } from "@structs/command/command";
 import { ApplicationCommandOptionType, GuildMember, EmbedAuthorOptions, escapeMarkdown, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import moment from "moment";
 import { failEmbedTemplate, embedTemplate } from "lib/embedTemplate";
-import { localState } from "..";
 import { localState as VCState } from "modules/private-room";
 import { isDJ } from "../lib/isdj";
 import { QueueInfo } from "../structs/queue";
 import { Track } from "../structs/track";
 import { baseAccessConfig } from "../lib/accessConfig";
 import { ReturnMessage } from "@structs/returnmessage";
+import { getOwlet } from "../lib/getBot";
 
 export default Command(
 
@@ -52,9 +52,7 @@ export default Command(
     let force = msg.options.getBoolean("force") ?? false;
 
     const member = msg.member as GuildMember;
-    const dj = isDJ(member);
     const vc = member.voice.channel;
-    const music = localState.controller;
 
     if (vc == null) {
       return {
@@ -69,18 +67,13 @@ export default Command(
       };
     }
 
-    if (!dj && force) force = false;
-
     await msg.deferReply({ ephemeral: hidden });
 
-    const musicBot =
-      botId && dj
-        ? music.getOwletById(botId)
-        : music.getOwlet(vc.id, vc.guildId);
+    // Set force to false if the user is not a DJ.
+    if (!isDJ(member) && force) force = false;
 
-    if (!musicBot) return { embeds: [failEmbedTemplate("No available music bots.")] };
-
-    const bot = await msg.guild.members.fetch(musicBot.getId());
+    // Get owlet.
+    const { owlet, bot } = await getOwlet(msg.guild, vc, botId);
     const author: EmbedAuthorOptions = {
       name: "Play",
       iconURL: getAvatar(bot),
@@ -89,7 +82,7 @@ export default Command(
     const failEmbed = failEmbedTemplate();
     failEmbed.setAuthor(author);
 
-    if (musicBot.isDisabled()) {
+    if (owlet.isDisabled()) {
       failEmbed.setDescription("Maintenance in progress please try a different owlet or try again later (~10 minutes)");
       return { embeds: [failEmbed] };
     }
@@ -102,7 +95,7 @@ export default Command(
       force,
     };
 
-    const response = await musicBot.runCommand("Play", requestData, msg.id);
+    const response = await owlet.runCommand("Play", requestData, msg.id);
     if (response.error) return { embeds: [failEmbed.setDescription(response.error)] };
 
     const res = generateResponse(response.track, response.queueInfo, author);
@@ -156,17 +149,23 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
 }
 
 function generateButtons(id: string) {
-  const playNowButton = new ButtonBuilder()
-    .setCustomId(`track-now_${id}`)
-    .setLabel("Play Now")
-    .setStyle(ButtonStyle.Primary);
+  const buttons = [];
 
-  const removeButton = new ButtonBuilder()
-    .setCustomId(`track-rm_${id}`)
-    .setLabel("Remove")
-    .setStyle(ButtonStyle.Danger);
+  // buttons.push(
+  //   new ButtonBuilder()
+  //     .setCustomId(`track-now_${id}`)
+  //     .setLabel("Play Now")
+  //     .setStyle(ButtonStyle.Primary)
+  // );
+
+  buttons.push(
+    new ButtonBuilder()
+      .setCustomId(`track-rm_${id}`)
+      .setLabel("Remove")
+      .setStyle(ButtonStyle.Danger)
+  );
 
 
   return (new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>)
-    .setComponents([playNowButton, removeButton]);
+    .setComponents(buttons);
 }
