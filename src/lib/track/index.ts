@@ -1,10 +1,11 @@
 import { AudioResource, createAudioResource } from "@discordjs/voice";
 import { formatDuration } from "@lib/formatDuration";
 import { escapeMarkdown } from "discord.js";
-import moment from "moment";
+import { createId } from '@paralleldrive/cuid2';
 import * as play from "play-dl";
 
 export class Track {
+  public id: string;
   public title: string;
   public author: string;
   public url: string;
@@ -17,9 +18,8 @@ export class Track {
     const title =
       input.title !== undefined ? input.title : "couldnt load title";
 
-    this.title = escapeMarkdown(
-      title.substring(0, 48).replace(/[()[\]]/g, ""),
-    );
+    this.id = createId();
+    this.title = escapeMarkdown(title.substring(0, 48).replace(/[()[\]]/g, ""));
     this.author = input.author ? escapeMarkdown(input.author) : "NaN";
     this.url = input.url;
     this.thumbnail = input.thumbnail as string;
