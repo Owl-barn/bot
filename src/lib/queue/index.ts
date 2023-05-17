@@ -108,14 +108,32 @@ class Queue extends EventEmitter {
    * Remove a track from the queue.
    * @param track
    */
-  public removeTrack = (track: Track | number): Track | null => {
-    let removed: Track;
-    if (track instanceof Track)
-      removed = this.queue.splice(this.queue.indexOf(track), 1)[0];
-    else removed = this.queue.splice(track, 1)[0];
-
-    return removed;
+  public removeTrack = (track: Track): Track | null => {
+    return this.queue.splice(this.queue.indexOf(track), 1)[0];
   };
+
+
+  public getTrack = (track: Track | number | string): Track | null => {
+
+    // Track
+    if (track instanceof Track)
+      return this.queue[this.queue.indexOf(track)];
+
+    // Index
+    else if (typeof track == "number")
+      return this.queue[track];
+
+    // ID
+    else if (typeof track == "string") {
+      const index = this.queue.findIndex((t) => t.id === track);
+      if (index === -1) return null;
+      return this.queue[index];
+    }
+
+    // !???
+    else return null;
+  };
+
 
   /**
    * Terminates the current queue.
