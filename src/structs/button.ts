@@ -4,5 +4,5 @@ import { ReturnMessage } from "./returnmessage";
 export interface Button {
   name: string;
   disabled?: boolean;
-  run: (msg: ButtonInteraction) => Promise<ReturnMessage>;
+  run: (msg: ButtonInteraction<"cached">) => Promise<ReturnMessage>;
 }

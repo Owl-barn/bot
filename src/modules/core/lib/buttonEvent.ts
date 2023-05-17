@@ -13,6 +13,8 @@ export async function buttonEvent(msg: ButtonInteraction) {
   const command = state.buttons.get(commandName);
 
   if (!command) return;
+  // TODO
+  if (!msg.inCachedGuild()) return;
 
   const response: ReturnMessage = await command
     .run(msg)
