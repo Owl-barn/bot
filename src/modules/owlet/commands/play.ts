@@ -113,7 +113,7 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
     .setThumbnail(track.thumbnail)
     .setTitle(queueInfo.size < 1 ? `Now playing` : "Song queued")
     .setDescription(`**[${track.title}](${track.url})**`)
-    .setFooter({ text: track.id })
+    // .setFooter({ text: track.id }) // for some reason this fucks up the formatting!??
     .setAuthor(author)
     .addFields([
       { name: "Channel", value: `*${channelName}*`, inline: true },
