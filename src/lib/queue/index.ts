@@ -57,8 +57,9 @@ class Queue extends EventEmitter {
     });
 
     this.voiceConnection.on(VoiceConnectionStatus.Destroyed, () => {
-      this.stop();
+      this.stop("Voice connection destroyed");
     });
+
     this.voiceConnection.on(
       VoiceConnectionStatus.Disconnected,
       this.onDisconnect,
@@ -138,17 +139,14 @@ class Queue extends EventEmitter {
   /**
    * Terminates the current queue.
    */
-  public stop = (): void => {
+  public stop = (reason: string): void => {
     this.queue = [];
     this.player.stop(true);
 
-    if (
-      this.voiceConnection.state.status !==
-      VoiceConnectionStatus.Destroyed
-    )
+    if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed)
       this.voiceConnection.destroy();
 
-    state.controller.destroyQueue(this.guild);
+    state.controller.destroyQueue(this.guild, reason);
   };
 
   /**
@@ -215,7 +213,7 @@ class Queue extends EventEmitter {
    * @param duration The time in milliseconds to wait before stopping the queue.
    */
   public setIdle = (duration: number): void => {
-    this.leaveTimeout = setTimeout(() => this.stop(), duration);
+    this.leaveTimeout = setTimeout(() => this.stop("Bot idle"), duration);
   };
 
   public clearIdle = (): void => {
@@ -237,7 +235,7 @@ class Queue extends EventEmitter {
 
       if (state.controller.isShutdown()) {
         this.voiceConnection.disconnect();
-        state.controller.destroyQueue(this.guild);
+        state.controller.destroyQueue(this.guild, "Bot shutdown in progress");
       }
 
       if (this.loopMode === loopMode.Track)
