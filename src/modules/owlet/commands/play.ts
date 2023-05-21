@@ -161,7 +161,7 @@ function generateButtons(id: string) {
   buttons.push(
     new ButtonBuilder()
       .setCustomId(`track-rm_${id}`)
-      .setLabel("Remove")
+      .setLabel("Skip")
       .setStyle(ButtonStyle.Danger)
   );
 
