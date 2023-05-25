@@ -13,7 +13,7 @@ export default Command({
 
     if (!queue || queue.destroyed) return { error: "No music is playing" }
 
-    queue.stop();
+    queue.stop("Stopped by user");
 
     return {};
   }
