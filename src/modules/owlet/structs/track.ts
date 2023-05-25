@@ -1,4 +1,5 @@
 export interface Track {
+  id: string;
   title: string;
   author: string;
   url: string;

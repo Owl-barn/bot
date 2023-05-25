@@ -1,15 +1,17 @@
 import { getAvatar } from "@lib/functions";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
-import { ApplicationCommandOptionType, GuildMember, EmbedAuthorOptions, EmbedBuilder, escapeMarkdown } from "discord.js";
+import { ApplicationCommandOptionType, GuildMember, EmbedAuthorOptions, escapeMarkdown, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import moment from "moment";
 import { failEmbedTemplate, embedTemplate } from "lib/embedTemplate";
-import { localState } from "..";
 import { localState as VCState } from "modules/private-room";
 import { isDJ } from "../lib/isdj";
 import { QueueInfo } from "../structs/queue";
 import { Track } from "../structs/track";
 import { baseAccessConfig } from "../lib/accessConfig";
+import { ReturnMessage } from "@structs/returnmessage";
+import { getOwlet } from "../lib/getBot";
+import button from "../buttons/remove";
 
 export default Command(
 
@@ -51,9 +53,7 @@ export default Command(
     let force = msg.options.getBoolean("force") ?? false;
 
     const member = msg.member as GuildMember;
-    const dj = isDJ(member);
     const vc = member.voice.channel;
-    const music = localState.controller;
 
     if (vc == null) {
       return {
@@ -68,29 +68,22 @@ export default Command(
       };
     }
 
-    if (!dj && force) force = false;
-
     await msg.deferReply({ ephemeral: hidden });
 
-    const musicBot =
-      botId && dj
-        ? music.getOwletById(botId)
-        : music.getOwlet(vc.id, vc.guildId);
+    // Set force to false if the user is not a DJ.
+    if (!isDJ(member) && force) force = false;
 
-    if (!musicBot) return { embeds: [failEmbedTemplate("No available music bots.")] };
-
-    const bot = await msg.guild.members.fetch(musicBot.getId());
+    // Get owlet.
+    const { owlet, bot } = await getOwlet(msg.guild, vc, botId);
     const author: EmbedAuthorOptions = {
       name: "Play",
       iconURL: getAvatar(bot),
     };
 
     const failEmbed = failEmbedTemplate();
-    let embed = embedTemplate();
-
     failEmbed.setAuthor(author);
 
-    if (musicBot.isDisabled()) {
+    if (owlet.isDisabled()) {
       failEmbed.setDescription("Maintenance in progress please try a different owlet or try again later (~10 minutes)");
       return { embeds: [failEmbed] };
     }
@@ -103,19 +96,17 @@ export default Command(
       force,
     };
 
-    const response = await musicBot.runCommand("Play", requestData, msg.id);
+    const response = await owlet.runCommand("Play", requestData, msg.id);
     if (response.error) return { embeds: [failEmbed.setDescription(response.error)] };
 
-    embed = makeEmbed(embed, response.track, response.queueInfo);
-    embed.setAuthor(author);
+    const res = generateResponse(response.track, response.queueInfo, author);
 
-    return {
-      embeds: [embed],
-    };
+    return res;
   },
 );
 
-function makeEmbed(embed: EmbedBuilder, track: Track, queueInfo: QueueInfo) {
+function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAuthorOptions): ReturnMessage {
+  const embed = embedTemplate();
   let channelName = escapeMarkdown(track.author);
   channelName = channelName.replace(/[()[\]]/g, "");
 
@@ -123,6 +114,8 @@ function makeEmbed(embed: EmbedBuilder, track: Track, queueInfo: QueueInfo) {
     .setThumbnail(track.thumbnail)
     .setTitle(queueInfo.size < 1 ? `Now playing` : "Song queued")
     .setDescription(`**[${track.title}](${track.url})**`)
+    // .setFooter({ text: track.id }) // for some reason this fucks up the formatting!??
+    .setAuthor(author)
     .addFields([
       { name: "Channel", value: `*${channelName}*`, inline: true },
       { name: "Duration", value: `${track.duration}`, inline: true },
@@ -132,6 +125,7 @@ function makeEmbed(embed: EmbedBuilder, track: Track, queueInfo: QueueInfo) {
         inline: true,
       },
     ]);
+
 
   if (queueInfo.size !== 0) {
     const timeTillPlay = moment()
@@ -148,5 +142,23 @@ function makeEmbed(embed: EmbedBuilder, track: Track, queueInfo: QueueInfo) {
     ]);
   }
 
-  return embed;
+  // Buttons
+  const components = [generateButtons(track.id)];
+
+  return { embeds: [embed], components };
+}
+
+function generateButtons(id: string) {
+  const buttons = [];
+
+  buttons.push(
+    new ButtonBuilder()
+      .setCustomId(`${button.info.name}-${id}`)
+      .setLabel("Skip")
+      .setStyle(ButtonStyle.Danger)
+  );
+
+
+  return (new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>)
+    .setComponents(buttons);
 }

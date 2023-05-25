@@ -7,6 +7,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
 } from "discord.js";
+import button from "../../../buttons/remove";
 
 
 export default SubCommand(
@@ -60,7 +61,7 @@ export default SubCommand(
     for (const role of collection.roles) {
       buttons.push(
         new ButtonBuilder()
-          .setCustomId(`selfroleRemove_${role.id}`)
+          .setCustomId(`${button.info.name}-${role.id}`)
           .setLabel(role.title)
           .setStyle(ButtonStyle.Danger),
       );

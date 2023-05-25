@@ -4,14 +4,14 @@ import WS from "ws";
 import fs from "fs";
 import { IncomingMessage } from "http";
 import path from "path";
-import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { getAvatar } from "@lib/functions";
 import { QueueEvent } from "../structs/queue";
 import { Credentials, baseMessage, Authenticate, Status } from "../structs/websocket";
 import { state } from "@app";
-import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { Guild } from "../structs/commands/status";
 import { localState } from "..";
+import { songStart } from "../owletevent/songStart";
+import { songEnd } from "../owletevent/songEnd";
+import { shutdown } from "../owletevent/shutdown";
 
 export default class Controller {
   private bots: Map<string, Owlet> = new Map();
@@ -152,83 +152,9 @@ export default class Controller {
   private addBot = (id: string, ws: WS, guilds: Guild[]) => {
     const owlet = new Owlet(id, ws, guilds);
 
-    owlet.on(QueueEvent.SongStart, async ({ track, channelId, guildId }) => {
-
-      const guild = state.client.guilds.cache.get(guildId);
-      if (!guild) return;
-
-      const channel = await state.client.channels.fetch(channelId);
-      if (!channel) return;
-
-      const bot = await guild?.members.fetch(id);
-      if (!bot) return;
-
-      if (!channel.isVoiceBased()) return;
-      const embed = embedTemplate();
-
-      embed.setAuthor({
-        iconURL: getAvatar(bot),
-        name: "Now playing",
-      });
-
-      embed.setThumbnail(track.thumbnail);
-
-      embed.addFields([
-        {
-          name: "Title",
-          value: `[${track.title}](${track.url})`,
-          inline: true,
-        },
-        {
-          name: "Duration",
-          value: track.duration,
-          inline: true,
-        },
-      ]);
-
-      await channel.send({ embeds: [embed] }).catch((e) => {
-        localState.log.warn(`Failed to send song start embed in <#${channel.id.cyan}>.`, { data: e });
-      });
-    });
-
-    owlet.on(QueueEvent.SongEnd, async ({ track, guildId }) => {
-      await state.db.mediaLog.create({
-        data: {
-          guild: connectOrCreate(guildId),
-          user: connectOrCreate(track.requestedBy),
-          url: track.url,
-
-          duration: track.durationMs,
-          progress: track.progressMs <= track.durationMs ? track.progressMs : track.durationMs,
-        },
-      });
-
-    });
-
-    owlet.on(QueueEvent.Shutdown, async ({ guildId, channelId }) => {
-      const guild = state.client.guilds.cache.get(guildId);
-      if (!guild) return;
-
-      const channel = await state.client.channels.fetch(channelId);
-      if (!channel || !channel.isVoiceBased()) return;
-
-      const bot = await guild?.members.fetch(id);
-      if (!bot) return;
-
-      const embed = failEmbedTemplate();
-
-      embed.setAuthor({
-        iconURL: getAvatar(bot),
-        name: "Maintenance",
-      });
-
-      embed.setDescription(
-        "There is currently bot maintenance going on, This music bot will restart after the song or after 10 minutes",
-      );
-
-      await channel.send({ embeds: [embed] })
-        .catch((e) => localState.log.warn(`Failed to send shutdown embed in <#${channel.id.cyan}>.`, { data: e }));
-    });
+    owlet.on(QueueEvent.SongStart, data => songStart({ ...data, owletId: id }));
+    owlet.on(QueueEvent.SongEnd, data => songEnd({ ...data, owletId: id }));
+    owlet.on(QueueEvent.Shutdown, data => shutdown({ ...data, owletId: id }));
 
     // If the bot disconnects remove it from the list.
     ws.on("close", () => this.removeBot(id));

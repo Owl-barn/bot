@@ -2,7 +2,10 @@ import { Track } from "../track";
 
 export interface Arguments {
   guildId: string,
-  index: number,
+  userId: string,
+  canForce?: boolean,
+  index?: number,
+  trackId?: string,
 }
 
 export interface Response {

@@ -8,7 +8,7 @@ import colors from "colors";
 import { Client } from "discord.js";
 import { Guild, PrismaClient } from "@prisma/client";
 
-import { Button } from "@structs/button";
+import { ButtonStruct } from "@structs/button";
 import { Module } from "@structs/module";
 import { CommandEnum } from "@structs/command";
 import registerCommand from "@lib/command.register";
@@ -23,7 +23,7 @@ export interface State {
   client: Client;
 
   commands: Map<string, CommandEnum>;
-  buttons: Map<string, Button>;
+  buttons: Map<string, ButtonStruct>;
 
   modules: Map<string, Module>;
 

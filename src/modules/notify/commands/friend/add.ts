@@ -14,6 +14,9 @@ import {
 import { checkFriendLimit } from "../../lib/checkFriendLimit";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
+import acceptButton from "../../buttons/accept";
+import declineButton from "../../buttons/decline";
+
 export default SubCommand(
 
   // Info
@@ -87,7 +90,10 @@ export default SubCommand(
     // Create the request message.
     const requestMessage = makeRequestMsg(msg, friendUser);
 
-    const sentDm = await friendUser.send(requestMessage).catch(() => null);
+    const sentDm = await friendUser.send(requestMessage).catch((e) => {
+      console.error(e);
+      return null;
+    });
 
     // Couldn't send a DM, try to send a message in the channel.
     if (sentDm === null) {
@@ -145,14 +151,14 @@ function makeRequestMsg(
 
   component.addComponents(
     new ButtonBuilder()
-      .setCustomId(`friend_accept_${msg.user.id}_${friendUser.id}`)
+      .setCustomId(`${acceptButton.info.name}-${msg.user.id}-${friendUser.id}`)
       .setLabel("Accept")
       .setStyle(ButtonStyle.Success),
   );
 
   component.addComponents(
     new ButtonBuilder()
-      .setCustomId(`friend_decline_${msg.user.id}_${friendUser.id}`)
+      .setCustomId(`${declineButton.info.name}-${msg.user.id}-${friendUser.id}`)
       .setLabel("Decline")
       .setStyle(ButtonStyle.Danger),
   );
