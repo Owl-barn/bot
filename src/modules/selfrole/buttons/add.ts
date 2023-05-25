@@ -4,10 +4,14 @@ import { Button } from "@structs/button";
 import { EmbedBuilder } from "discord.js";
 import { localState } from "..";
 
-export default {
-  name: "role_add",
+export default Button(
 
-  async run(msg) {
+  {
+    name: "role_add",
+    isGlobal: false,
+  },
+
+  async (msg) => {
     const error = { ephemeral: true, content: "An error occured" };
     const user = msg.member;
 
@@ -39,6 +43,6 @@ export default {
 
     localState.log.info(`Role ${hasRole ? "removed" : "added"}: <@${user.user.tag.green}> <@!${query.roleId.cyan}>`);
     return { ephemeral: true, embeds: [embed] };
-  },
+  }
 
-} as Button;
+);

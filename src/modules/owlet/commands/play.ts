@@ -153,7 +153,7 @@ function generateButtons(id: string) {
 
   buttons.push(
     new ButtonBuilder()
-      .setCustomId(`${button.name}-${id}`)
+      .setCustomId(`${button.info.name}-${id}`)
       .setLabel("Skip")
       .setStyle(ButtonStyle.Danger)
   );

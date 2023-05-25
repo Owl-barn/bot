@@ -2,10 +2,13 @@ import { failEmbedTemplate, successEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { Button } from "@structs/button";
 
-export default {
-  name: "friend_accept",
+export default Button(
+  {
+    name: "friend_accept",
+    isGlobal: true,
+  },
 
-  async run(msg) {
+  async (msg) => {
     const [user, friend] = msg.customId.split("-");
 
     if (msg.user.id !== friend) return {};
@@ -50,6 +53,6 @@ export default {
 
     await msg.update({ components: [], embeds: [embed] });
     return {};
-  },
+  }
 
-} as Button;
+);

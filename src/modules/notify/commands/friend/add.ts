@@ -151,14 +151,14 @@ function makeRequestMsg(
 
   component.addComponents(
     new ButtonBuilder()
-      .setCustomId(`${acceptButton.name}-${msg.user.id}-${friendUser.id}`)
+      .setCustomId(`${acceptButton.info.name}-${msg.user.id}-${friendUser.id}`)
       .setLabel("Accept")
       .setStyle(ButtonStyle.Success),
   );
 
   component.addComponents(
     new ButtonBuilder()
-      .setCustomId(`${declineButton.name}-${msg.user.id}-${friendUser.id}`)
+      .setCustomId(`${declineButton.info.name}-${msg.user.id}-${friendUser.id}`)
       .setLabel("Decline")
       .setStyle(ButtonStyle.Danger),
   );

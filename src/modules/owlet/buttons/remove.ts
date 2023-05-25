@@ -5,10 +5,14 @@ import { getOwlet } from "../lib/getBot";
 import { getAvatar } from "@lib/functions";
 import { EmbedAuthorOptions } from "discord.js";
 
-export default {
-  name: "track_rm",
+export default Button(
 
-  async run(msg) {
+  {
+    name: "track_rm",
+    isGlobal: false,
+  },
+
+  async (msg) => {
     if (!msg.guildId) throw "No guild";
 
     const trackId = msg.customId.trim();
@@ -57,6 +61,6 @@ export default {
     embed.setDescription(`Removed [${response.track.title}](${response.track.url}) from the queue.`);
     await msg.message.delete();
     return { embeds: [embed] };
-  },
+  }
 
-} as Button;
+);

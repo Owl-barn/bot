@@ -141,7 +141,7 @@ export class Controller {
 
       component.addComponents(
         new ButtonBuilder()
-          .setCustomId(`${button.name}-${friend.id}`)
+          .setCustomId(`${button.info.name}-${friend.id}`)
           .setLabel("Delete")
           .setStyle(ButtonStyle.Danger),
       );

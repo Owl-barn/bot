@@ -4,10 +4,14 @@ import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { updateCollection, generateButtons } from "../lib/selfrole";
 import { state } from "@app";
 
-export default {
-  name: "role_rm",
+export default Button(
 
-  async run(msg) {
+  {
+    name: "role_rm",
+    isGlobal: false,
+  },
+
+  async (msg) => {
     const error = { ephemeral: true, content: "An error occured" };
     const user = msg.member as GuildMember | undefined;
 
@@ -49,6 +53,6 @@ export default {
     });
 
     return { embeds: [embedTemplate("Role removed!")], ephemeral: true };
-  },
+  }
 
-} as Button;
+);

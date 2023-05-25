@@ -61,7 +61,7 @@ export default SubCommand(
     for (const role of collection.roles) {
       buttons.push(
         new ButtonBuilder()
-          .setCustomId(`${button.name}-${role.id}`)
+          .setCustomId(`${button.info.name}-${role.id}`)
           .setLabel(role.title)
           .setStyle(ButtonStyle.Danger),
       );

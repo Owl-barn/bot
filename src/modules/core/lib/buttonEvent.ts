@@ -11,10 +11,10 @@ export async function buttonEvent(msg: ButtonInteraction) {
   msg.customId = options.join("-");
 
   const command = state.buttons.get(commandName);
+  console.log(commandName, options, command);
 
   if (!command) return;
-  // TODO
-  if (!msg.inCachedGuild()) return;
+  if (!command.info.isGlobal && !msg.inCachedGuild()) return;
 
   const response: ReturnMessage = await command
     .run(msg)

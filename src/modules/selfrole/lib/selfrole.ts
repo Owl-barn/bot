@@ -39,7 +39,7 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
       embeds: generateEmbed(collection),
       components: generateButtons(
         collection,
-        button.name,
+        button.info.name,
         ButtonStyle.Primary,
       ),
     });
@@ -59,7 +59,7 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
       embeds: generateEmbed(collection),
       components: generateButtons(
         collection,
-        button.name,
+        button.info.name,
         ButtonStyle.Primary,
       ),
     });
