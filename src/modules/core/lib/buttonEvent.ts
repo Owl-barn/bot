@@ -5,10 +5,10 @@ import { localState } from "..";
 import { errorEmbed } from "./interactionError";
 
 export async function buttonEvent(msg: ButtonInteraction) {
-  const options = msg.customId.split("_");
+  const options = msg.customId.split("-");
   const commandName = options[0];
   options.shift();
-  msg.customId = options.join("_");
+  msg.customId = options.join("-");
 
   const command = state.buttons.get(commandName);
 

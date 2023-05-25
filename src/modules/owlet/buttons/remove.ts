@@ -6,7 +6,7 @@ import { getAvatar } from "@lib/functions";
 import { EmbedAuthorOptions } from "discord.js";
 
 export default {
-  name: "track-rm",
+  name: "track_rm",
 
   async run(msg) {
     if (!msg.guildId) throw "No guild";

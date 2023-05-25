@@ -5,11 +5,9 @@ import { updateCollection, generateButtons } from "../lib/selfrole";
 import { state } from "@app";
 
 export default {
-  name: "selfroleRemove",
+  name: "role_rm",
 
   async run(msg) {
-    if (!msg.guildId) throw "No guild";
-
     const error = { ephemeral: true, content: "An error occured" };
     const user = msg.member as GuildMember | undefined;
 

@@ -5,11 +5,9 @@ import { EmbedBuilder } from "discord.js";
 import { localState } from "..";
 
 export default {
-  name: "selfrole",
+  name: "role_add",
 
   async run(msg) {
-    if (!msg.inCachedGuild()) throw "No guild";
-
     const error = { ephemeral: true, content: "An error occured" };
     const user = msg.member;
 
@@ -17,9 +15,7 @@ export default {
 
     if (!user) return error;
 
-    const query = await state.db.selfrole.findFirst({
-      where: { id: buttonID },
-    });
+    const query = await state.db.selfrole.findFirst({ where: { id: buttonID } });
 
     if (!query) return error;
 

@@ -11,6 +11,7 @@ import { Track } from "../structs/track";
 import { baseAccessConfig } from "../lib/accessConfig";
 import { ReturnMessage } from "@structs/returnmessage";
 import { getOwlet } from "../lib/getBot";
+import button from "../buttons/remove";
 
 export default Command(
 
@@ -151,16 +152,9 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
 function generateButtons(id: string) {
   const buttons = [];
 
-  // buttons.push(
-  //   new ButtonBuilder()
-  //     .setCustomId(`track-now_${id}`)
-  //     .setLabel("Play Now")
-  //     .setStyle(ButtonStyle.Primary)
-  // );
-
   buttons.push(
     new ButtonBuilder()
-      .setCustomId(`track-rm_${id}`)
+      .setCustomId(`${button.name}-${id}`)
       .setLabel("Remove")
       .setStyle(ButtonStyle.Danger)
   );

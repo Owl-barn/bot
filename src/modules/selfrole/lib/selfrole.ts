@@ -10,6 +10,7 @@ import {
   Message,
 } from "discord.js";
 import prisma, { Selfrole } from "@prisma/client";
+import button from "../buttons/add";
 
 export async function isValidChannel(channelId: string) {
   const channel = await state.client.channels.fetch(channelId);
@@ -38,7 +39,7 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
       embeds: generateEmbed(collection),
       components: generateButtons(
         collection,
-        "selfrole",
+        button.name,
         ButtonStyle.Primary,
       ),
     });
@@ -58,7 +59,7 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
       embeds: generateEmbed(collection),
       components: generateButtons(
         collection,
-        "selfrole",
+        button.name,
         ButtonStyle.Primary,
       ),
     });
@@ -91,7 +92,7 @@ export function generateButtons(
   for (const role of collection.roles) {
     buttons.push(
       new ButtonBuilder()
-        .setCustomId(`${prefix}_${role.id}`)
+        .setCustomId(`${prefix}-${role.id}`)
         .setLabel(role.title)
         .setStyle(style),
     );

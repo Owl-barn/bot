@@ -13,6 +13,8 @@ import {
 import { localState as VCState } from "modules/private-room";
 import { Friendship } from "@prisma/client";
 import { localState } from "..";
+import button from "../../core/buttons/delete";
+
 
 export class Controller {
   private timeout: Map<string, NodeJS.Timeout> = new Map();
@@ -139,7 +141,7 @@ export class Controller {
 
       component.addComponents(
         new ButtonBuilder()
-          .setCustomId(`delete_${friend.id}`)
+          .setCustomId(`${button.name}-${friend.id}`)
           .setLabel("Delete")
           .setStyle(ButtonStyle.Danger),
       );

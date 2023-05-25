@@ -13,7 +13,7 @@ export async function loadButtons(path: string) {
     if (button == undefined) continue;
 
     if (state.buttons.get(button.name) !== undefined)
-      throw `duplicate commands with name: ${button.name}`.red.bold;
+      throw `duplicate buttons with name: ${button.name}`.red.bold;
 
     if (button.disabled) continue;
 
