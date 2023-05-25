@@ -114,7 +114,7 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
     .setThumbnail(track.thumbnail)
     .setTitle(queueInfo.size < 1 ? `Now playing` : "Song queued")
     .setDescription(`**[${track.title}](${track.url})**`)
-    .setFooter({ text: track.id })
+    // .setFooter({ text: track.id }) // for some reason this fucks up the formatting!??
     .setAuthor(author)
     .addFields([
       { name: "Channel", value: `*${channelName}*`, inline: true },
@@ -126,16 +126,12 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
       },
     ]);
 
-  const components = [];
 
   if (queueInfo.size !== 0) {
     const timeTillPlay = moment()
       .startOf("day")
       .milliseconds(queueInfo.length - track.durationMs)
       .format("H:mm:ss");
-
-    // Buttons
-    components.push(generateButtons(track.id));
 
     embed.addFields([
       {
@@ -146,6 +142,9 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
     ]);
   }
 
+  // Buttons
+  const components = [generateButtons(track.id)];
+
   return { embeds: [embed], components };
 }
 
@@ -155,7 +154,7 @@ function generateButtons(id: string) {
   buttons.push(
     new ButtonBuilder()
       .setCustomId(`${button.name}-${id}`)
-      .setLabel("Remove")
+      .setLabel("Skip")
       .setStyle(ButtonStyle.Danger)
   );
 
