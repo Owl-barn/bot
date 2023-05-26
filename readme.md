@@ -1,6 +1,6 @@
 # Hootsifer
 
-This is multi purpose modular discord bot.
+multi purpose modular discord bot.
 
 ## usage
 Please refer to [The Hootsifer main repo](https://github.com/Owl-barn/Hootsifer) to set up the bot with docker-compose.

@@ -12,6 +12,22 @@ export default SubCommand(
 
     arguments: [
       {
+        type: ApplicationCommandOptionType.String,
+        name: "type",
+        description: "Do you want to remove your own or your friend's alert?",
+        required: true,
+        choices: [
+          {
+            name: "My alert",
+            value: "alert",
+          },
+          {
+            name: "My friend's alert",
+            value: "friend",
+          },
+        ],
+      },
+      {
         type: ApplicationCommandOptionType.User,
         name: "user",
         description:
@@ -28,31 +44,36 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
+    const type = msg.options.getString("type", true) as "friend" | "alert";
     const friendUser = msg.options.getUser("user", true);
 
     const deleted = await state.db.friendship
       .delete({
         where: {
-          userId_friendId: {
-            userId: msg.user.id,
-            friendId: friendUser.id,
-          },
+          userId_friendId: type === "alert" ?
+            {
+              userId: msg.user.id,
+              friendId: friendUser.id,
+            } :
+            {
+              userId: friendUser.id,
+              friendId: msg.user.id,
+            },
         },
       })
       .catch(() => null);
 
+
     if (!deleted)
       return {
         embeds: [
-          failEmbedTemplate("That user is not on your friend list!"),
+          failEmbedTemplate(`That user is not on your ${type} list!`),
         ],
       };
 
     return {
       embeds: [
-        embedTemplate(
-          `Removed ${friendUser.username} from your friend list`,
-        ),
+        embedTemplate(`Successfully removed ${friendUser.username} from your ${type} list`),
       ],
     };
   }
