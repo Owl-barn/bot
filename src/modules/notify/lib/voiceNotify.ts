@@ -47,7 +47,7 @@ export class Controller {
     // Check if timed out.
     const lastNotify = this.lastNotified.get(member.id);
     if (lastNotify) {
-      if (lastNotify + state.env.VOICE_NOTIFY_DELAY * 60 * 1000 > Date.now()) return;
+      if (lastNotify + state.env.VOICE_NOTIFY_COOLDOWN * 1000 > Date.now()) return;
       else this.lastNotified.delete(member.id);
     }
 
@@ -74,7 +74,7 @@ export class Controller {
             newState.channel as VoiceBasedChannel,
             friends,
           ),
-        state.env.VOICE_NOTIFY_TIMEOUT * 60 * 1000,
+        state.env.VOICE_NOTIFY_DELAY * 1000,
       ),
     );
   };

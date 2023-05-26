@@ -271,13 +271,13 @@ export class Controller {
     if (memberCount == 0)
       this.startDelete(
         vc.channel,
-        state.env.ABANDON_TIMEOUT * 60,
+        state.env.ROOM_ABANDON_TIMEOUT,
         "The room was abandoned for too long.",
       );
     else if (memberCount == 1) {
       this.startDelete(
         vc.channel,
-        state.env.ALONE_TIMEOUT * 60,
+        state.env.ROOM_ALONE_TIMEOUT,
         "User was alone in vc for too long.",
       );
     }
@@ -423,7 +423,7 @@ export class Controller {
 
     this.startDelete(
       room,
-      state.env.ALONE_TIMEOUT * 60,
+      state.env.ROOM_ALONE_TIMEOUT,
       `Nobody joined <@${member.id}>'s room.`,
     );
 

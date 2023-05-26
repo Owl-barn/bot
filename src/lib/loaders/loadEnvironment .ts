@@ -21,21 +21,21 @@ const HexColor = makeValidator((x): HexColorString => {
 const loadEnvironment = cleanEnv(process.env, {
   NODE_ENV: str({
     choices: ["development", "production", "staging"],
+    default: "production",
   }),
 
   // Main
-  APP_NAME: str(),
+  APP_NAME: str({ default: "Hootsifer" }),
   LOG_LEVEL: str({
     choices: ["error", "warn", "info", "verbose", "debug", "silly"],
     default: "info",
   }),
 
   // Database
-  DATABASE_URL: url(),
-
-  // Owlet
-  OWLET_PASSWORD: str(),
-  OWLET_PORT: num({ default: 3001 }),
+  DATABASE_URL: url({
+    default: "postgresql://postgres:password@postgres:5432/postgres",
+    desc: "Postgres database URL",
+  }),
 
   // Discord
   OWNER_ID: str(),
@@ -44,12 +44,32 @@ const loadEnvironment = cleanEnv(process.env, {
   DISCORD_TOKEN: str(),
   SUPPORT_SERVER: discordInvite(),
 
-  VOICE_NOTIFY_DELAY: num({ default: 90 }),
-  VOICE_NOTIFY_TIMEOUT: num({ default: 1 }),
+  // Owlet
+  OWLET_PASSWORD: str({
+    default: "password",
+    desc: "Owlet password",
+  }),
+  OWLET_PORT: num({ default: 3001 }),
+
+  // Notify
+  VOICE_NOTIFY_COOLDOWN: num({
+    default: 5400, // 1.5 hours
+    desc: "Cooldown between voice notifications (seconds)",
+  }),
+  VOICE_NOTIFY_DELAY: num({
+    default: 60,
+    desc: "Delay before voice notifications (seconds)",
+  }),
 
   // Private room
-  ABANDON_TIMEOUT: num(),
-  ALONE_TIMEOUT: num(),
+  ROOM_ABANDON_TIMEOUT: num({
+    default: 180,
+    desc: "Time a private room has to be empty for before it is deleted (seconds)",
+  }),
+  ROOM_ALONE_TIMEOUT: num({
+    default: 300,
+    desc: "Max amount of time a user is allowed to be alone in a room for before it is deleted (seconds)",
+  }),
 
   // Embed
   EMBED_COLOR: HexColor({ default: "#957f5f" }),

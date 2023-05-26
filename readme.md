@@ -1,10 +1,16 @@
-# discord bot
+# Hootsifer
 
 This is multi purpose modular discord bot.
 
-## Optional Json files:
+## usage
+Please refer to [The Hootsifer main repo](https://github.com/Owl-barn/Hootsifer) to set up the bot with docker-compose.
 
-Add owlet bot accounts to the bot (it always uses the main bot account, so you dont have to add it)
+## Configuration
+Populate `.env` file with the desired values, you can see all the available options, default values and descriptions in [`./src/lib/loaders/loadEnvironment.ts`](https://github.com/Owl-barn/bot/blob/main/src/lib/loaders/loadEnvironment%20.ts)
+
+
+### Owlet bot accounts
+Add bot ID and Tokens to this file for the owlets to use (it always uses the main bot account, so you dont have to add it)
 
 `config/owlets.json`
 
@@ -17,6 +23,7 @@ Add owlet bot accounts to the bot (it always uses the main bot account, so you d
 ]
 ```
 
+### Private room names
 Add customized room names to private room system.
 
 `config/roomNames.json`
@@ -27,7 +34,3 @@ Add customized room names to private room system.
     "nouns": ["", ""]
 }
 ```
-
-
-## ⚠️ Disclaimer ⚠️
-You are not allowed to use this project for commercial purposes, or modify it in any way.
