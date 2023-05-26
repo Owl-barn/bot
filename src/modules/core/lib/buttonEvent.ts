@@ -11,7 +11,6 @@ export async function buttonEvent(msg: ButtonInteraction) {
   msg.customId = options.join("-");
 
   const command = state.buttons.get(commandName);
-  console.log(commandName, options, command);
 
   if (!command) return;
   if (!command.info.isGlobal && !msg.inCachedGuild()) return;
