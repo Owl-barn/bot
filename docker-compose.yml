@@ -14,9 +14,7 @@ services:
     volumes:
       - ./database:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: 7hghqrgyFjmNXBHta
-    ports:
-      - "9029:5432"
+      POSTGRES_PASSWORD: password
     networks:
       - bridge
     healthcheck:
