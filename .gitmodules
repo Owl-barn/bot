@@ -1,6 +1,8 @@
 [submodule "bot"]
 	path = bot
 	url = https://github.com/Owl-barn/bot.git
+	branch = main
 [submodule "owlet"]
 	path = owlet
 	url = https://github.com/Owl-barn/owlet.git
+	branch = main
