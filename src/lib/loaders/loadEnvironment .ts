@@ -60,6 +60,14 @@ const loadEnvironment = cleanEnv(process.env, {
     default: 60,
     desc: "Delay before voice notifications (seconds)",
   }),
+  VOICE_NOTIFY_FRIEND_LIMIT: num({
+    default: 8,
+    desc: "Max amount of friends a user can have",
+  }),
+  VOICE_NOTIFY_ALERT_LIMIT: num({
+    default: 20,
+    desc: "Max amount of friend alerts a user can have",
+  }),
 
   // Private room
   ROOM_ABANDON_TIMEOUT: num({

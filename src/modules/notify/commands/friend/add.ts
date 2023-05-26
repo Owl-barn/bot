@@ -2,34 +2,24 @@ import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  BaseMessageOptions,
-  User,
-  ChatInputCommandInteraction,
-} from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
 import { checkFriendLimit } from "../../lib/checkFriendLimit";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 
-import acceptButton from "../../buttons/accept";
-import declineButton from "../../buttons/decline";
+import { generateRequestMessage } from "modules/notify/lib/generateRequestMessage";
 
 export default SubCommand(
 
   // Info
   {
     name: "add",
-    description: "Add a user to your vc notify list!",
+    description: "Add a user to your VC alerts!",
 
     arguments: [
       {
         type: ApplicationCommandOptionType.User,
         name: "user",
-        description:
-          "Which user do you want to add to your vc notify list?",
+        description: "Which user do you want to add to your VC alerts?",
         required: true,
       },
     ],
@@ -62,9 +52,12 @@ export default SubCommand(
       };
     }
 
+    await msg.deferReply();
+
     const isAllowed = await checkFriendLimit(friendUser.id, msg.user.id);
 
-    if (isAllowed !== null) return isAllowed;
+    if (isAllowed.error !== undefined)
+      return { embeds: [failEmbedTemplate(isAllowed.error)] };
 
     // Check if the user is already in the list.
     const exists = await state.db.friendship.findUnique({
@@ -82,29 +75,28 @@ export default SubCommand(
           "You already have a pending friend request to this user!",
         )
         : failEmbedTemplate(
-          "You already have this user in your vc notify list!",
+          "You already have this user on your VC alerts!",
         );
       return { embeds: [response] };
     }
 
     // Create the request message.
-    const requestMessage = makeRequestMsg(msg, friendUser);
+    const requestMessage = generateRequestMessage(msg, friendUser);
 
-    const sentDm = await friendUser.send(requestMessage).catch((e) => {
-      console.error(e);
-      return null;
-    });
+    const sentDm = await friendUser
+      .send(requestMessage)
+      .catch((e) => {
+        console.error(e);
+        return null;
+      });
 
     // Couldn't send a DM, try to send a message in the channel.
     if (sentDm === null) {
 
       const error = {
-        embeds: [
-          failEmbedTemplate(
-            "I've no way to reach this user. Please make sure your friend is able to receive DMs from me!",
-          ),
-        ],
+        embeds: [failEmbedTemplate("I've no way to reach this user. Please make sure your friend is able to receive DMs from me!")],
       };
+
       if (!msg.channel) return error;
 
       const sentChannelMsg = await msg.channel
@@ -124,9 +116,22 @@ export default SubCommand(
     });
 
     const response = embedTemplate(
-      `Successfully sent ${friendUser} a request to be added to your vc notify list!`,
+      `Successfully sent ${friendUser} a request to be added to your VC alerts!\n`
     );
+
+    response.addFields([
+      {
+        name: "Capacity",
+        value: `You have used ${isAllowed.friendCount + 1}/${state.env.VOICE_NOTIFY_ALERT_LIMIT} alert slots!`,
+      },
+      {
+        name: "Disclaimer",
+        value: `this will only alert you when they join a voice channel, and not the other way around!`,
+      },
+    ]);
+
     response.setTitle("Friend request sent!");
+
     const userAvatar = getAvatar(friendUser);
     if (userAvatar) response.setThumbnail(userAvatar);
 
@@ -134,34 +139,3 @@ export default SubCommand(
   }
 
 );
-
-function makeRequestMsg(
-  msg: ChatInputCommandInteraction,
-  friendUser: User,
-): BaseMessageOptions {
-  const friendRequestEmbed = embedTemplate();
-  friendRequestEmbed.setTitle("Friend Request");
-  friendRequestEmbed.setDescription(
-    `${msg.user.username} (${msg.user}) has sent you a friend request!\nIf you choose to accept they will be notified when you join a voice channel in a mutual server!`,
-  );
-  const userAvatar = getAvatar(msg.user);
-  if (userAvatar) friendRequestEmbed.setThumbnail(userAvatar);
-
-  const component = new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;
-
-  component.addComponents(
-    new ButtonBuilder()
-      .setCustomId(`${acceptButton.info.name}-${msg.user.id}-${friendUser.id}`)
-      .setLabel("Accept")
-      .setStyle(ButtonStyle.Success),
-  );
-
-  component.addComponents(
-    new ButtonBuilder()
-      .setCustomId(`${declineButton.info.name}-${msg.user.id}-${friendUser.id}`)
-      .setLabel("Decline")
-      .setStyle(ButtonStyle.Danger),
-  );
-
-  return { embeds: [friendRequestEmbed], components: [component] };
-}

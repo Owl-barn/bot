@@ -1,4 +1,3 @@
-import { failEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 
 export async function checkFriendLimit(
@@ -11,10 +10,8 @@ export async function checkFriendLimit(
   });
 
   // Check if user has too many friends.
-  if (userFriendCount >= 20) {
-    return {
-      embeds: [failEmbedTemplate("You can't have more than 10 friends!")],
-    };
+  if (userFriendCount >= state.env.VOICE_NOTIFY_ALERT_LIMIT) {
+    return { error: `You can't have more than ${state.env.VOICE_NOTIFY_ALERT_LIMIT} friends!` };
   }
 
   // fetch friend's friends.
@@ -23,11 +20,9 @@ export async function checkFriendLimit(
   });
 
   // Check if friend has too many friends.
-  if (friendFriendCount >= 12) {
-    return {
-      embeds: [failEmbedTemplate("That user has too many friends!")],
-    };
+  if (friendFriendCount >= state.env.VOICE_NOTIFY_FRIEND_LIMIT) {
+    return { error: `That user has too many friends! (${state.env.VOICE_NOTIFY_FRIEND_LIMIT})` };
   }
 
-  return null;
+  return { friendCount: userFriendCount };
 }
