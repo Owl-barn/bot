@@ -1,7 +1,6 @@
 import { embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import { Friendship } from "@prisma/client";
 
 export default SubCommand(
 
@@ -40,13 +39,13 @@ export default SubCommand(
       `here you can see who gets alerted when you join vc ("my friends") and who you get alerted for when they join vc ("my alerts")`,
     );
 
-    const formatFriend = (friend: Friendship) => `<@${friend.userId}>` + (friend.isPending ? " (pending)" : "");
+    const formatFriend = (user: string, pending: boolean) => `<@${user}>` + (pending ? " (pending)" : "");
 
     embed.addFields({
       name: "My alerts",
       inline: true,
       value: alerts.length > 0 ?
-        alerts.map(formatFriend).join("\n")
+        alerts.map(x => formatFriend(x.friendId, x.isPending)).join("\n")
         : "You currently have no alerts :(",
     });
 
@@ -55,7 +54,7 @@ export default SubCommand(
       name: "my friends",
       inline: true,
       value: friends.length > 0 ?
-        friends.map(formatFriend).join("\n")
+        friends.map(x => formatFriend(x.userId, x.isPending)).join("\n")
         : "You currently have no friends :(",
     });
 
