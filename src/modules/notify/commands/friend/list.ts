@@ -1,6 +1,7 @@
 import { embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
+import { Friendship } from "@prisma/client";
 
 export default SubCommand(
 
@@ -31,35 +32,32 @@ export default SubCommand(
 
     // Check if the user has no friends.
     if (friends.length == 0 && alerts.length == 0) {
-      embed.setDescription("You currently have no friends :(");
+      embed.setDescription("You currently have no friends :(\nYou can add friends with `/friend add`!");
       return { embeds: [embed] };
     }
 
     embed.setDescription(
-      "Here you can see who gets notified when you join a voice channel and the the people you get notified of!",
+      `here you can see who gets alerted when you join vc ("my friends") and who you get alerted for when they join vc ("my alerts")`,
     );
 
-    if (alerts.length > 0) {
-      embed.addFields({
-        name: "My alerts",
-        inline: true,
-        value: alerts
-          .map((friend) =>
-            (`<@${friend.friendId}>` + (friend.isPending ? " (pending)" : "")))
-          .join("\n"),
-      });
-    }
+    const formatFriend = (friend: Friendship) => `<@${friend.userId}>` + (friend.isPending ? " (pending)" : "");
 
-    if (friends.length > 0) {
-      embed.addFields({
-        name: "my friends",
-        inline: true,
-        value: friends
-          .map((friend) =>
-            (`<@${friend.userId}>` + (friend.isPending ? " (pending)" : "")))
-          .join("\n"),
-      });
-    }
+    embed.addFields({
+      name: "My alerts",
+      inline: true,
+      value: alerts.length > 0 ?
+        alerts.map(formatFriend).join("\n")
+        : "You currently have no alerts :(",
+    });
+
+
+    embed.addFields({
+      name: "my friends",
+      inline: true,
+      value: friends.length > 0 ?
+        friends.map(formatFriend).join("\n")
+        : "You currently have no friends :(",
+    });
 
     return {
       embeds: [embed],
