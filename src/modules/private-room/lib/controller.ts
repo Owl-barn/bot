@@ -61,7 +61,7 @@ export class Controller {
     // Load the room names from the file.
     let buffer;
     try {
-      buffer = fs.readFileSync(path.join(process.cwd(), "data", "roomNames.json"), "utf8");
+      buffer = fs.readFileSync(path.join(process.cwd(), "config", "roomNames.json"), "utf8");
     } catch (error) {
       localState.log.warn("Failed to find/open roomNames.json", { error });
       return;

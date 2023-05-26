@@ -44,7 +44,7 @@ export default class Controller {
     // Load the credentials from the file.
     let buffer;
     try {
-      buffer = fs.readFileSync(path.join(process.cwd(), "data", "owlets.json"), "utf8");
+      buffer = fs.readFileSync(path.join(process.cwd(), "config", "owlets.json"), "utf8");
     } catch (error) {
       localState.log.warn("Failed to find/open credentials", { error });
       return;
