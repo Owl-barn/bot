@@ -1,0 +1,55 @@
+version: '3'
+
+networks:
+  bridge:
+
+
+services:
+
+  # Database
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    restart: always
+    volumes:
+      - ./database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 7hghqrgyFjmNXBHta
+    ports:
+      - "9029:5432"
+    networks:
+      - bridge
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Bot
+  bot:
+    build:
+      context: https://github.com/Owl-barn/bot.git
+      dockerfile: Dockerfile
+    container_name: bot
+    restart: always
+    volumes:
+      - ./bot/config:/app/config
+    env_file:
+      - ./bot/.env
+    depends_on:
+      - postgres
+    networks:
+      - bridge
+
+  # Owlet
+  owlet:
+    build:
+      context: https://github.com/Owl-barn/owlet.git
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./owlet/.env
+    depends_on:
+      - bot
+    networks:
+      - bridge
