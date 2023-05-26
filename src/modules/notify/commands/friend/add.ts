@@ -116,10 +116,19 @@ export default SubCommand(
     });
 
     const response = embedTemplate(
-      `Successfully sent ${friendUser} a request to be added to your VC alerts!\n` +
-      `They have 48 hours to accept your request!\n` +
-      `You have used ${isAllowed.friendCount + 1}/${state.env.VOICE_NOTIFY_ALERT_LIMIT} alert slots!`
+      `Successfully sent ${friendUser} a request to be added to your VC alerts!\n`
     );
+
+    response.addFields([
+      {
+        name: "Capacity",
+        value: `You have used ${isAllowed.friendCount + 1}/${state.env.VOICE_NOTIFY_ALERT_LIMIT} alert slots!`,
+      },
+      {
+        name: "Disclaimer",
+        value: `this will only alert you when they join a voice channel, and not the other way around!`,
+      },
+    ]);
 
     response.setTitle("Friend request sent!");
 
