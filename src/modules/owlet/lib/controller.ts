@@ -211,7 +211,7 @@ export default class Controller {
       };
 
       this.addBot(owletInfo.id, ws, []);
-      localState.log.info(`Re-Authenticated Owlet <@${owletInfo.id.cyan}> on request<${message.mid.cyan}>, ${String(this.bots.size + 1).cyan} active`);
+      localState.log.info(`Re-Authenticated Owlet <@${owletInfo.id.cyan}> on request<${message.mid.cyan}>, ${String(this.bots.size).cyan} active`);
 
       ws.send(JSON.stringify(response));
     } else {
@@ -237,7 +237,7 @@ export default class Controller {
       };
 
       this.addBot(credentials.id, ws, []);
-      localState.log.info(`Authenticated Owlet <@${credentials.id.cyan}> on request<${message.mid.cyan}>, ${String(this.bots.size + 1).cyan} active`);
+      localState.log.info(`Authenticated Owlet <@${credentials.id.cyan}> on request<${message.mid.cyan}>, ${String(this.bots.size).cyan} active`);
 
       ws.send(JSON.stringify(response));
     }
