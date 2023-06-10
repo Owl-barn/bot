@@ -15,7 +15,7 @@ import {
 import { Guild as DBGuild } from "@prisma/client";
 import { state } from "@app";
 import { CommandGroup, CommandType, CommandInfoEnum } from "@structs/command";
-import { Argument } from "@structs/command/argument";
+import { Argument, ArgumentChoice } from "@structs/command/argument";
 import { CommandInfo } from "@structs/command/command";
 import { ParentCommandInfo } from "@structs/command/parent";
 import { SubCommandInfo } from "@structs/command/subcommand";
@@ -252,9 +252,9 @@ function argumentHandler<T extends builderType>(
 
     if (argument.choices) {
       if (option.type == ApplicationCommandOptionType.String)
-        option.setChoices(...(argument as Argument<string>).choices);
+        option.setChoices(...argument.choices as ArgumentChoice<string>[]);
       if (option.type == ApplicationCommandOptionType.Number)
-        option.setChoices(...(argument as Argument<number>).choices);
+        option.setChoices(...argument.choices as ArgumentChoice<number>[]);
     }
 
     if (argument.autoComplete) {
