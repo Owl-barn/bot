@@ -1,6 +1,7 @@
 FROM node:16-alpine AS build
 WORKDIR /build/
 COPY package.json package-lock.json ./
+RUN apk add g++ make py3-pip
 RUN npm i
 COPY . .
 RUN npm run compile
