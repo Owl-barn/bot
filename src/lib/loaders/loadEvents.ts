@@ -14,14 +14,10 @@ export async function loadEvents(path: string) {
     const event = module.default as EventStruct<keyof ClientEvents>;
 
     if (event.once)
-      state.client.once(event.name, (...args) =>
-        event.execute(...args).catch(error => { state.log.error(`Error in event ${event.name}: `, { error }); }),
-      );
+      state.client.once(event.name, (...args) => eventHandler(args, event));
 
     else
-      state.client.on(event.name, (...args) =>
-        event.execute(...args).catch(error => { state.log.error(`Error in event ${event.name}: `, { error }); }),
-      );
+      state.client.on(event.name, (...args) => eventHandler(args, event));
 
     eventCount++;
 
@@ -31,3 +27,33 @@ export async function loadEvents(path: string) {
 
   console.log(" - Loaded ".green + String(eventCount).cyan + " events".green);
 }
+
+function BanCheck<T extends keyof ClientEvents>(args: ClientEvents[T]): boolean {
+  for (const arg of args) {
+    if (!arg) continue;
+
+    if (typeof arg === "object" && "guild" in arg && arg.guild) {
+      const guildConfig = state.guilds.get(arg.guild.id);
+
+      if (!guildConfig) {
+        state.log.warn(`Guild ${arg.guild.id} is not in the database!`);
+        return true;
+      }
+
+      if (guildConfig.isBanned) return true;
+    }
+  }
+  return false;
+}
+
+
+async function eventHandler<T extends keyof ClientEvents>(args: ClientEvents[T], event: EventStruct<keyof ClientEvents>): Promise<void> {
+  try {
+    if (!event.ignoreBans && BanCheck(args)) return;
+
+    await event.execute(...args);
+  } catch (error) {
+    state.log.error(`Error in event ${event.name}: `, { error });
+  }
+}
+
