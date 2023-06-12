@@ -7,7 +7,6 @@ import { Event } from "@structs/event";
 export default Event({
   name: "messageDelete",
   once: false,
-  ignoreBans: true,
 
   async execute(msg) {
     if (!msg.guildId) return;

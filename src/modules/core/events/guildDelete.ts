@@ -6,6 +6,7 @@ import { localState } from "..";
 export default Event({
   name: "guildDelete",
   once: false,
+  ignoreBans: true,
 
   async execute(guild) {
     if (!guild) throw "failed to log deleted guild";

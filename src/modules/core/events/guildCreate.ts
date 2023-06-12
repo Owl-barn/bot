@@ -14,6 +14,7 @@ import { localState } from "..";
 export default Event({
   name: "guildCreate",
   once: false,
+  ignoreBans: true,
 
   async execute(guild) {
     try {
@@ -21,7 +22,6 @@ export default Event({
 
       localState.log.info(`Joined new guild, Id: ${guild.id} Owner: ${guild.ownerId} Name: ${guild.name}`.red.bold);
 
-      await registerCommand(guild);
 
       // Notify bot owner.
       const notifEmbed = embedTemplate(
@@ -32,6 +32,12 @@ export default Event({
       const owner = await guild.client.users.fetch(state.env.OWNER_ID);
 
       await owner.send({ embeds: [notifEmbed] }).catch(() => null);
+
+      // Return if banned
+      const config = state.guilds.get(guild.id);
+      if (config?.isBanned) return;
+
+      await registerCommand(guild);
 
       // Attempt to find a welcome channel.
       let channel: NonThreadGuildBasedChannel | null =

@@ -8,8 +8,6 @@ export default Event({
   once: false,
 
   async execute(interaction) {
-    const guildconfig = interaction.guild && state.guilds.get(interaction.guild.id);
-    if (guildconfig?.isBanned) return;
 
     if (interaction.isButton()) {
       await buttonEvent(interaction)

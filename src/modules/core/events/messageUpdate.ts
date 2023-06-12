@@ -8,7 +8,6 @@ import { GuildMember, escapeMarkdown } from "discord.js";
 export default Event({
   name: "messageUpdate",
   once: false,
-  ignoreBans: true,
 
   async execute(old, current) {
     if (!current.guildId) return;
