@@ -141,7 +141,7 @@ async function relayDM(msg: Message) {
   const user = await msg.client.users.fetch(state.env.OWNER_ID);
 
   const embed = embedTemplate()
-    .setAuthor({ iconURL: msg.author.displayAvatarURL(), name: msg.author.tag })
+    .setAuthor({ iconURL: msg.author.displayAvatarURL(), name: msg.author.tag });
 
   if (msg.content)
     embed.setDescription(msg.content);
