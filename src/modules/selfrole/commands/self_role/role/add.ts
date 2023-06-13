@@ -15,26 +15,32 @@ export default SubCommand(
       {
         type: ApplicationCommandOptionType.String,
         name: "collection",
-        description: "What channel to add the collection to.",
+        description: "What channel to add the role to.",
         required: true,
       },
       {
         type: ApplicationCommandOptionType.Role,
         name: "role",
-        description: "What role to add to the collection.",
+        description: "What role to add to the role.",
         required: true,
       },
       {
         type: ApplicationCommandOptionType.String,
         name: "title",
-        description: "What name to give the collection.",
+        description: "What name to give the role.",
         required: true,
       },
       {
         type: ApplicationCommandOptionType.String,
+        name: "emoji",
+        description: "What emoji to assign the role.",
+        required: false,
+      },
+      {
+        type: ApplicationCommandOptionType.String,
         name: "description",
-        description: "What description to give the collection.",
-        required: true,
+        description: "What description to give the role.",
+        required: false,
       },
     ],
 
@@ -48,11 +54,12 @@ export default SubCommand(
   async (msg) => {
     const role = msg.options.getRole("role", true);
     let title = msg.options.getString("title", true);
-    let description = msg.options.getString("description", true);
+    const emoji = msg.options.getString("emoji", false);
+    let description = msg.options.getString("description", false);
     const collectionId = msg.options.getString("collection", true);
 
     title = escapeMarkdown(title);
-    description = escapeMarkdown(description);
+    description = description && escapeMarkdown(description);
 
     const collection = await state.db.selfroleCollection
       .findFirst({
@@ -77,6 +84,7 @@ export default SubCommand(
       .create({
         data: {
           title,
+          emoji,
           description,
           roleId: role.id,
           collectionId: collection.id,

@@ -37,10 +37,7 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
   async function sendMessage() {
     message = await channel.send({
       embeds: generateEmbed(collection),
-      components: generateMenu(
-        collection,
-        button.info.name
-      ),
+      components: generateMenu(collection, button.info.name),
     });
     await state.db.selfroleCollection.update({
       where: { id: collection.id },
@@ -74,7 +71,7 @@ export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
   collection.description && embed.setDescription(collection.description);
 
   for (const role of collection.roles) {
-    embed.addFields([{ name: role.title, value: role.description ?? "No description provided" }]);
+    embed.addFields([{ name: (role.emoji ? role.emoji : "") + role.title, value: role.description ?? "No description provided" }]);
   }
 
   return [embed];
@@ -92,7 +89,7 @@ export function generateMenu(
   for (const role of collection.roles) {
     const option = new StringSelectMenuOptionBuilder()
       .setLabel(role.title)
-      .setValue(`${prefix}-${role.id}`);
+      .setValue(role.id);
 
     role.emoji && option.setEmoji(role.emoji);
     role.description && option.setDescription(role.description);
@@ -102,7 +99,7 @@ export function generateMenu(
 
   // build the menu
   const menu = new StringSelectMenuBuilder()
-    .setCustomId("starter")
+    .setCustomId(prefix)
     .setPlaceholder("Select a role!")
     .addOptions(options);
 
