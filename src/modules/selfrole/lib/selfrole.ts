@@ -70,9 +70,9 @@ export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
   collection.title && embed.setTitle(collection.title);
   collection.description && embed.setDescription(collection.description);
 
-  for (const role of collection.roles) {
-    embed.addFields([{ name: (role.emoji ? role.emoji : "") + role.title, value: role.description ?? "No description provided" }]);
-  }
+  embed.addFields(collection.roles.map((role) =>
+    ({ name: (role.emoji ? role.emoji : "") + role.title, value: role.description ?? "No description provided" })
+  ));
 
   return [embed];
 }

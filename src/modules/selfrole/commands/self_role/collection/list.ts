@@ -36,7 +36,7 @@ export default SubCommand(
 
       if (collection.roles.length !== 0) {
         const roleList = collection.roles
-          .map((role) => `- ${role.title}`)
+          .map((role) => `-${role.emoji ?? ""}${role.title}`)
           .join("\n");
         roles += `\`\`\`${roleList}\`\`\``;
       } else {
