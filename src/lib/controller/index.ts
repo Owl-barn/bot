@@ -124,7 +124,7 @@ export class Controller {
           return { error: "Can't play privated videos." }
 
         if (message.includes("confirm your age"))
-          return { error: "Can't play age restricted videos." }
+          return { error: "Can't play age restricted videos. Try adding `lyrics` or `official audio` to your query if its a song!" }
 
         state.log.queue.error("Couldnt fetch video info: ", { error });
       });
