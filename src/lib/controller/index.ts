@@ -111,27 +111,34 @@ export class Controller {
       return { error: "Soundcloud links are not supported currently" }
 
 
-    const track = await this.fetchYoutubeVideo(query, user);
-
-    if ("error" in track) return track;
-
-    return track;
+    return await this.fetchYoutubeVideo(query, user);
   }
 
   private getTrackFromUrl = async (url: string, user: string) => {
-    const result = await play
+    const song = await play
       .video_info(url)
-      .catch((error) => { state.log.queue.error(error) });
+      .catch((error) => {
 
-    if (!result) throw "Couldnt play this song";
+        const message = error.message.toLowerCase();
+        if (message.includes("private video"))
+          return { error: "Can't play privated videos." }
 
-    const videoData = result.video_details;
+        if (message.includes("confirm your age"))
+          return { error: "Can't play age restricted videos." }
+
+        state.log.queue.error("Couldnt fetch video info: ", { error });
+      });
+
+    if (!song) throw new Error("Couldnt fetch video info");
+    if ("error" in song) return song;
+
+    const info = song.video_details;
     const trackInput = {
-      title: videoData.title,
-      author: videoData.channel?.name,
-      url: videoData.url,
-      thumbnail: videoData.thumbnails[0].url,
-      durationMs: videoData.durationInSec * 1000,
+      title: info.title,
+      author: info.channel?.name,
+      url: info.url,
+      thumbnail: info.thumbnails[0].url,
+      durationMs: info.durationInSec * 1000,
       requestedBy: user,
     };
 
@@ -139,32 +146,15 @@ export class Controller {
   }
 
   private async fetchYoutubeVideo(searchQuery: string, user: string) {
-    const searchResult = (
-      await play.search(searchQuery, {
-        source: { youtube: "video" },
-        limit: 1,
-        fuzzy: true,
-      })
-    )[0];
+    const song = await play.search(searchQuery, {
+      source: { youtube: "video" },
+      limit: 1,
+      fuzzy: true,
+    })
+      .catch((error) => { state.log.queue.warn("Couldnt fetch search result: ", { error }); })
+      .then((results) => results?.[0]);
 
-    if (searchResult.private) {
-      return { error: "This video is private" }
-    }
-
-    if (searchResult.discretionAdvised) {
-      return { error: "This video is age restricted, Please try adding `lyrics` or `official audio` to your query" }
-    }
-
-    const trackInput = {
-      title: searchResult.title,
-      author: searchResult.channel?.name,
-      url: searchResult.url,
-      thumbnail: searchResult.thumbnails[0].url,
-      durationMs: searchResult.durationInSec * 1000,
-      requestedBy: user,
-    };
-
-    const track = new Track(trackInput, user);
-    return track;
+    if (!song) return { error: "Couldnt play this song" }
+    return await this.getTrackFromUrl(song.url, user);
   }
 }
