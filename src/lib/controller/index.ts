@@ -111,7 +111,11 @@ export class Controller {
       return { error: "Soundcloud links are not supported currently" }
 
 
-    return await this.fetchYoutubeVideo(query, user);
+    const track = await this.fetchYoutubeVideo(query, user);
+
+    if ("error" in track) return track;
+
+    return track;
   }
 
   private getTrackFromUrl = async (url: string, user: string) => {
@@ -142,6 +146,14 @@ export class Controller {
         fuzzy: true,
       })
     )[0];
+
+    if (searchResult.private) {
+      return { error: "This video is private" }
+    }
+
+    if (searchResult.discretionAdvised) {
+      return { error: "This video is age restricted, Please try adding `lyrics` or `official audio` to your query" }
+    }
 
     const trackInput = {
       title: searchResult.title,
