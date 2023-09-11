@@ -23,12 +23,15 @@
       "@structs/*": [
         "./structs/*"
       ],
+      "@modules/*": [
+        "./modules/*"
+      ],
       "@lib/*": [
         "./lib/*"
       ],
       "@app": [
         "./app"
-      ]
+      ],
     }
   },
   "exclude": [

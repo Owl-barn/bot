@@ -1,5 +1,5 @@
 import { Button } from "@structs/button";
-import { localState } from "..";
+import { localState } from "@modules/core";
 
 
 export default Button(

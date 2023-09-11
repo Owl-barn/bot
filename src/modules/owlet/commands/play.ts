@@ -11,7 +11,7 @@ import { Track } from "../structs/track";
 import { baseAccessConfig } from "../lib/accessConfig";
 import { ReturnMessage } from "@structs/returnmessage";
 import { getOwlet } from "../lib/getBot";
-import button from "../buttons/remove";
+import button from "../components/buttons/remove";
 
 export default Command(
 

@@ -13,7 +13,7 @@ import {
 import { localState as VCState } from "modules/private-room";
 import { Friendship } from "@prisma/client";
 import { localState } from "..";
-import button from "../../core/buttons/delete";
+import button from "../../core/components/buttons/delete";
 
 
 export class Controller {

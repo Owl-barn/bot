@@ -1,8 +1,8 @@
 import { embedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import { ChatInputCommandInteraction, User, BaseMessageOptions, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import acceptButton from "../buttons/accept";
-import declineButton from "../buttons/decline";
+import acceptButton from "../components/buttons/accept";
+import declineButton from "../components/buttons/decline";
 
 export function generateRequestMessage(
   msg: ChatInputCommandInteraction,
