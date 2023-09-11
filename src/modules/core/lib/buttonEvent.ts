@@ -15,13 +15,15 @@ export async function buttonEvent(msg: ButtonInteraction) {
   if (!command) return;
   if (!command.info.isGlobal && !msg.inCachedGuild()) return;
 
+  const config = state.guilds.get(msg.guildId || "e");
+
   const response: ReturnMessage = await command
     .run(msg)
     .catch((error) => {
       localState.log.error(`Error running button command: `, { error });
       return {
         ephemeral: true,
-        embeds: [errorEmbed],
+        embeds: [errorEmbed(config?.hideSupportInvite || false)],
       };
     });
 
