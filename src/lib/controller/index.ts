@@ -69,10 +69,6 @@ export class Controller {
     if (!query.startsWith("https"))
       return await this.fetchYoutubeVideo(query, user);
 
-    if (!play.is_expired()) {
-      await play.refreshToken();
-    }
-
     // If yt video.
     const urlType = play.yt_validate(query);
 
@@ -89,15 +85,22 @@ export class Controller {
     if (urlType === "search") return { error: "Playlists and search urls are not supported currently" }
 
     // If spotify url
-    if (play.sp_validate(query) == "track") {
+    const spotifyType = play.sp_validate(query)
+    if (spotifyType) {
+
+      if (spotifyType !== "track") return { error: `You entered a ${spotifyType} link, which is currently not supported.` }
+
+      // Refresh token if expired
+      if (play.is_expired()) {
+        await play.refreshToken();
+        state.log.controller.info("Refreshed spotify token");
+      }
 
       let song = await play
         .spotify(query)
         .catch(error => { state.log.queue.warn("Couldnt fetch spotify URL", { error }) });
 
       if (!song) return { error: "Couldnt play this song, please try a youtube link" }
-
-      if (song.type !== "track") return { error: "Please enter a song url" }
 
       song = song as play.SpotifyTrack;
 
@@ -129,7 +132,7 @@ export class Controller {
         if (message.includes("unavailable"))
           return { error: "This video is unavailable in the bot's country." }
 
-        state.log.queue.error("Couldnt fetch video info: ", { error });
+        state.log.queue.error("Couldnt fetch video info: ", { error, message });
       });
 
     if (!song) throw new Error("Couldnt fetch video info");
