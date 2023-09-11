@@ -7,7 +7,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
 } from "discord.js";
-import button from "../../../buttons/remove";
+import button from "@modules/selfrole/components/buttons/remove";
 
 
 export default SubCommand(

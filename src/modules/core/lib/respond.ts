@@ -20,6 +20,8 @@ export async function respond(
     interaction.commandName,
   );
 
+  const config = state.guilds.get(interaction.guildId || "e");
+
   const response: ReturnMessage | null = await func(interaction)
     .then((x) => {
       if (!x) return null;
@@ -30,7 +32,7 @@ export async function respond(
       localState.log.error(`Error in command ${interaction.commandName.green}`, { error });
       return {
         ephemeral: true,
-        embeds: [errorEmbed],
+        embeds: [errorEmbed(config?.hideSupportInvite || false)],
       };
     });
 

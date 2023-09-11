@@ -63,6 +63,9 @@ model Guild {
 
   // Selfroles
   selfroleCollections SelfroleCollection[]
+
+  // Misc
+  hideSupportInvite Boolean @default(false)
 }
 
 model Level {

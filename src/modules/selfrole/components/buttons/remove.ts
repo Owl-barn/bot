@@ -1,7 +1,7 @@
 import { GuildMember } from "discord.js";
 import { Button } from "@structs/button";
 import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
-import { updateCollection, generateMenu } from "../lib/selfrole";
+import { updateCollection, generateMenu } from "@modules/selfrole/lib/selfrole";
 import { state } from "@app";
 
 export default Button(

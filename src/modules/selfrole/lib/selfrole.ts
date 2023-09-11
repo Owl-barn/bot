@@ -10,7 +10,7 @@ import {
   StringSelectMenuOptionBuilder,
 } from "discord.js";
 import prisma, { Selfrole } from "@prisma/client";
-import button from "../buttons/add";
+import button from "../components/buttons/add";
 
 export async function isValidChannel(channelId: string) {
   const channel = await state.client.channels.fetch(channelId);

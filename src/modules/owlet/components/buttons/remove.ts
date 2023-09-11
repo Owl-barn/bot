@@ -1,7 +1,7 @@
 import { Button } from "@structs/button";
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { canForce } from "../lib/isdj";
-import { getOwlet } from "../lib/getBot";
+import { canForce } from "../../lib/isdj";
+import { getOwlet } from "../../lib/getBot";
 import { getAvatar } from "@lib/functions";
 import { EmbedAuthorOptions } from "discord.js";
 

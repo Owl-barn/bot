@@ -2,7 +2,7 @@ import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { Button } from "@structs/button";
 import { EmbedBuilder } from "discord.js";
-import { localState } from "..";
+import { localState } from "../../";
 
 export default Button(
 
