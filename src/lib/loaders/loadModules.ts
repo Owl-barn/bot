@@ -38,7 +38,7 @@ export async function loadModules() {
     // Load the module's events, commands, cronjobs, and buttons.
     moduleFiles.includes("events") && await loadEvents(module.path + "events/");
     moduleFiles.includes("commands") && await loadCommands(module.path + "commands/");
-    moduleFiles.includes("buttons") && await loadButtons(module.path + "buttons/");
+    moduleFiles.includes("buttons") && await loadButtons(module.path + "components/buttons/");
     moduleFiles.includes("cron") && await loadJobs(module.path + "cron/");
 
 
