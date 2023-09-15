@@ -27,6 +27,7 @@ export default Event({
 
     switch (msg.content) {
 
+      // Reset cached guild configs.
       case "cache*": {
         const guilds = await state.db.guild.findMany();
         state.guilds = new Map();
@@ -122,9 +123,9 @@ export default Event({
         const average = Math.round(combined / birthdays.length);
 
         msg.reply(
-          `Average: ${average}`
-          + `Median: ${yearsAgo(birthdays[Math.round(birthdays.length / 2)].date as Date)}`
-          + `Range: ${yearsAgo(birthdays[0].date as Date)} - ${yearsAgo(birthdays[birthdays.length - 1].date as Date,)}`,
+          `**Average:** ${average}\n`
+          + `**Median:** ${yearsAgo(birthdays[Math.round(birthdays.length / 2)].date as Date)}\n`
+          + `**Range:** ${yearsAgo(birthdays[0].date as Date)} - ${yearsAgo(birthdays[birthdays.length - 1].date as Date,)}`,
         );
 
         return;
