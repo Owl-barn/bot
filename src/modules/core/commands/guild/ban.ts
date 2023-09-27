@@ -56,7 +56,7 @@ export default SubCommand(
     state.guilds.set(guildData.id, guildData);
 
     let left = false;
-    if (leave && isBanned) {
+    if (leave) {
       const leaveGuild = await guild.leave();
       if (leaveGuild) left = true;
     }
