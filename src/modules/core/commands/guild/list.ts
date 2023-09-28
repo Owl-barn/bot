@@ -1,4 +1,5 @@
 import { state } from "@app";
+import { formatGuildInfo } from "@modules/core/lib/formatGuildInfo";
 import { SubCommand } from "@structs/command/subcommand";
 import { AttachmentBuilder } from "discord.js";
 
@@ -31,14 +32,9 @@ export default SubCommand(
     const output = guilds
       .map((guild) => {
         const db = guildInfo.find((y) => y.id == guild.id);
-        const owner = msg.client.users.cache.get(guild.ownerId);
+        if (!db) return;
         const info = {
-          id: guild.id,
-          name: guild.name,
-          owner: guild.ownerId + (owner ? ` - ${owner?.displayName}` : ""),
-          membercount: guild.memberCount,
-          premium: db?.subscriptionTier,
-          level: db?.level,
+          ...formatGuildInfo(guild, db),
           commandUsage: db?._count.commandLogs,
           selfRoles: db?.selfroleCollections.length,
         };

@@ -2,9 +2,10 @@ import registerCommand from "@lib/command.register";
 import { yearsAgo } from "@lib/time";
 import { state } from "@app";
 import { Event } from "@structs/event";
-import { Message } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ComponentType, Guild, Message } from "discord.js";
 import { embedTemplate } from "@lib/embedTemplate";
 import { localState } from "..";
+import { formatGuildInfo } from "../lib/formatGuildInfo";
 
 export default Event({
   name: "messageCreate",
@@ -129,6 +130,81 @@ export default Event({
         );
 
         return;
+      }
+
+      case "prune*": {
+        const now = new Date();
+        const cutoff = new Date(now.setDate(now.getDate() - 90));
+
+        const guildInfo = await state.db.guild.findMany({
+          include: {
+            _count: {
+              select: {
+                commandLogs: { where: { createdAt: { gt: cutoff } } },
+              },
+            },
+            selfroleCollections: true,
+          },
+        });
+
+        const leave: Guild[] = [];
+        const leaveInfo = [];
+
+        for (const guild of client.guilds.cache.values()) {
+          const db = guildInfo.find((y) => y.id == guild.id);
+          if (!db) continue;
+          if (db._count.commandLogs > 5) continue;
+          if (db.selfroleCollections.length > 0) continue;
+          if (db.subscriptionTier) continue;
+          if (db.level) continue;
+          if (db.privateRoomChannelId) continue;
+
+          leaveInfo.push(formatGuildInfo(guild, db));
+          leave.push(guild);
+        }
+
+        if (leave.length === 0) {
+          await msg.reply("No inactive guilds");
+          return;
+        }
+
+        const button = new ButtonBuilder()
+          .setCustomId("ConfirmPrune")
+          .setLabel("Confirm")
+          .setStyle(ButtonStyle.Danger);
+
+        const row = new ActionRowBuilder()
+          .addComponents(button) as ActionRowBuilder<ButtonBuilder>;
+
+        const attachment = new AttachmentBuilder(
+          Buffer.from(JSON.stringify(leaveInfo, null, 2))
+        );
+        attachment.setName("info.txt");
+
+        const message = await msg.reply({
+          content: `${leave.length} inactive guilds, leave?`,
+          components: [row],
+          files: [attachment],
+        });
+
+        const collector = message.createMessageComponentCollector({
+          componentType: ComponentType.Button,
+          time: 15000,
+        });
+
+        collector.on("collect", async (i) => {
+          if (i.user.id !== state.env.OWNER_ID) return;
+          await i.deferReply({ ephemeral: true });
+
+          for (const guild of leave) {
+            await guild.leave();
+          }
+
+          collector.stop();
+          await i.editReply("Done");
+          await i.message.delete();
+        });
+
       }
     }
 
