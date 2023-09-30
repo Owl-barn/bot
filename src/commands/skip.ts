@@ -37,7 +37,7 @@ export default Command({
     if (!track) return { error: "I couldn't find that song." };
 
     // Check if user can skip
-    if (track.requestedBy !== userId && !data.canForce) return { error: "You can't skip a song you didn't request." };
+    if (track.requestedBy !== userId && !canForce) return { error: "You can't skip a song you didn't request." };
 
     // Skip
     if (isNowPlaying) queue.skip();

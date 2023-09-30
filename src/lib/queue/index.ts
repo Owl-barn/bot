@@ -186,6 +186,19 @@ class Queue extends EventEmitter {
     return;
   };
 
+
+  /**
+   *
+   */
+  public bump = (track: Track): void => {
+    if (!this.current) return;
+    const index = this.queue.indexOf(track);
+    if (index === -1) return;
+    this.queue.splice(index, 1);
+    this.queue.unshift(track);
+    this.skip();
+  };
+
   public getTracks = (): Track[] => {
     return this.queue;
   };
