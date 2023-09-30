@@ -48,6 +48,11 @@ export class Controller {
     // Broadcast shutdown to all users.
     state.log.controller.info(`Emitting shutdown to ${this.queues.size} queues`);
     this.queues.forEach(async (queue) => {
+      if (queue.isIdle()) {
+        queue.stop("Shutdown");
+        return;
+      }
+
       queue.voiceConnection.joinConfig;
 
       state.server.broadcast(

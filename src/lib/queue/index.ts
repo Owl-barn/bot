@@ -232,6 +232,10 @@ class Queue extends EventEmitter {
     this.leaveTimeout = setTimeout(() => this.stop("Bot idle"), duration);
   };
 
+  public isIdle = (): boolean => {
+    return this.leaveTimeout !== undefined;
+  }
+
   public clearIdle = (): void => {
     if (this.leaveTimeout) clearTimeout(this.leaveTimeout);
   };
