@@ -38,7 +38,7 @@ export class Controller {
 
   public destroyQueue = (guildId: string, reason = "Unknown") => {
     this.queues.delete(guildId);
-    state.log.controller.info(`Destroyed queue for ${guildId} with reason: ${reason}`);
+    state.log.controller.debug(`Destroyed queue for ${guildId} with reason: ${reason}`);
     if (this.shutdown && this.queues.size === 0) return process.exit(1);
   };
 

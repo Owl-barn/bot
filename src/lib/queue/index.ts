@@ -140,6 +140,9 @@ class Queue extends EventEmitter {
    * Terminates the current queue.
    */
   public stop = (reason: string): void => {
+    if (this.destroyed) return;
+    this.destroyed = true;
+
     this.queue = [];
     this.player.stop(true);
 
@@ -156,7 +159,7 @@ class Queue extends EventEmitter {
   public addTrack = (track: Track, addToFront?: boolean): void => {
     if (addToFront) this.queue.unshift(track);
     else this.queue.push(track);
-    void this.onIdle();
+    this.onIdle();
   };
 
   /**
@@ -220,7 +223,7 @@ class Queue extends EventEmitter {
     if (this.leaveTimeout) clearTimeout(this.leaveTimeout);
   };
 
-  private onIdle = (): void => {
+  private onIdle = async (): Promise<void> => {
     const isIdle = this.player.state.status === AudioPlayerStatus.Idle;
     if (this.queueLock || !isIdle) return;
 
@@ -259,7 +262,7 @@ class Queue extends EventEmitter {
     const nextSong = this.queue.shift() as Track;
 
     try {
-      this.play(nextSong);
+      await this.play(nextSong);
       this.lastpause = Date.now();
     } catch (e) {
       state.log.queue.error(e);
