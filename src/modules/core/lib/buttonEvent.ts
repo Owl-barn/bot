@@ -28,7 +28,12 @@ export async function buttonEvent(msg: ButtonInteraction) {
     });
 
   if (Object.keys(response).length === 0) return;
-  await msg.reply(response)
+
+  let reply: Promise<unknown>;
+  if (msg.replied) reply = msg.followUp(response);
+  else reply = msg.reply(response);
+
+  await reply
     .catch((error) => {
       localState.log.error(`Error sending button response: `, { error });
     });

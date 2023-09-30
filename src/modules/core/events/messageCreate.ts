@@ -132,6 +132,7 @@ export default Event({
         return;
       }
 
+      // Leave all inactive guilds.
       case "prune*": {
         const now = new Date();
         const cutoff = new Date(now.setDate(now.getDate() - 90));
