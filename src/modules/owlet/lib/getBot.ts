@@ -11,14 +11,14 @@ export async function getOwlet(guild: Guild, vc?: VoiceBasedChannel | null, botI
       : vc && localState.controller.getOwlet(vc.id, vc.guildId);
 
     if (!owlet) {
-      throw "No available music bots.";
+      throw new Error("No available music bots.");
     }
 
     const bot = await guild.members.fetch(owlet.getId());
 
     return { owlet, bot };
-  } catch (e) {
-    localState.log.error(e);
-    throw "Unable to get bot.";
+  } catch (error) {
+    localState.log.error(error);
+    throw new Error(`Unable to get bot: ${error}`);
   }
 }

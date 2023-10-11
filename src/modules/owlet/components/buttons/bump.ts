@@ -1,6 +1,6 @@
 import { Button } from "@structs/button";
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { canForce } from "../../lib/isdj";
+import { canForce, isWithBot } from "../../lib/isdj";
 import { getOwlet } from "../../lib/getBot";
 import { getAvatar } from "@lib/functions";
 import { EmbedAuthorOptions } from "discord.js";
@@ -18,16 +18,29 @@ export default Button(
 
     const query = msg.customId.trim();
 
+    const failEmbed = failEmbedTemplate();
+
+    if (!isWithBot(msg.member)) {
+      failEmbed.setDescription("Please join voicechat with the bot to use this functionality.");
+      return { embeds: [failEmbed], ephemeral: true };
+    }
+
     const { owlet, bot } = await getOwlet(msg.guild, msg.member.voice.channel);
     const author: EmbedAuthorOptions = {
       name: "Bump",
       iconURL: getAvatar(bot),
     };
 
+    failEmbed.setAuthor(author)
+      .setFooter({
+        text: msg.user.username,
+        iconURL: getAvatar(msg.member),
+      });
+
+
     if (!canForce(msg.member, owlet, true)) {
-      const embed = failEmbedTemplate("You need the `DJ` role to do this");
-      embed.setAuthor(author);
-      return { embeds: [embed], ephemeral: true };
+      failEmbed.setDescription("you need the `DJ` role to do that.");
+      return { embeds: [failEmbed], ephemeral: true };
     }
 
 
@@ -37,14 +50,6 @@ export default Button(
         text: msg.user.username,
         iconURL: getAvatar(msg.member),
       });
-
-    const failEmbed = failEmbedTemplate()
-      .setAuthor(author)
-      .setFooter({
-        text: msg.user.username,
-        iconURL: getAvatar(msg.member),
-      });
-
 
     // Send the command to the bot.
     const response = await owlet.runCommand(
