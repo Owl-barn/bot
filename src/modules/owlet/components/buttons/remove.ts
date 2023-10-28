@@ -37,11 +37,6 @@ export default Button(
       });
 
 
-    if (!canForce(msg.member, owlet, true)) {
-      failEmbed.setDescription("You don't have permission to bump.");
-      return { embeds: [failEmbed], ephemeral: true };
-    }
-
     const embed = embedTemplate()
       .setAuthor(author)
       .setFooter({
