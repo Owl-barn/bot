@@ -2,15 +2,15 @@ import { embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import {
   ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   ChannelType,
   ClientUser,
   EmbedBuilder,
   Message,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
 } from "discord.js";
 import prisma, { Selfrole } from "@prisma/client";
-import button from "../components/buttons/add";
+import button from "../components/selectmenus/toggle";
 
 export async function isValidChannel(channelId: string) {
   const channel = await state.client.channels.fetch(channelId);
@@ -37,11 +37,7 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
   async function sendMessage() {
     message = await channel.send({
       embeds: generateEmbed(collection),
-      components: generateButtons(
-        collection,
-        button.info.name,
-        ButtonStyle.Primary,
-      ),
+      components: generateMenu(collection, button.info.name),
     });
     await state.db.selfroleCollection.update({
       where: { id: collection.id },
@@ -57,10 +53,9 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
     }
     message = await message.edit({
       embeds: generateEmbed(collection),
-      components: generateButtons(
+      components: generateMenu(
         collection,
         button.info.name,
-        ButtonStyle.Primary,
       ),
     });
   } else {
@@ -70,36 +65,55 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
 
 export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
   const embed = embedTemplate()
-    .setTitle(collection.title)
-    .setDescription(collection.description)
     .setFooter({ text: collection.id });
 
-  for (const role of collection.roles) {
-    embed.addFields([{ name: role.title, value: role.description }]);
-  }
+  collection.title && embed.setTitle(collection.title);
+  collection.description && embed.setDescription(collection.description);
+
+
+  embed.addFields(collection.roles.map((role) => {
+    let name = role.emoji ? state.client.emojis.resolveId(role.emoji) : "";
+    name += ` ${role.title}`;
+
+    return {
+      name,
+      value: role.description ?? "No description provided",
+      inline: false,
+    };
+  }));
 
   return [embed];
 }
 
-export function generateButtons(
+export function generateMenu(
   collection: selfRoleCollection,
   prefix: string,
-  style: ButtonStyle,
-): ActionRowBuilder<ButtonBuilder>[] {
+): ActionRowBuilder<StringSelectMenuBuilder>[] {
   if (collection.roles.length == 0) return [];
 
-  const buttons: ButtonBuilder[] = [];
+
+  // Make the menu items
+  const options: StringSelectMenuOptionBuilder[] = [];
   for (const role of collection.roles) {
-    buttons.push(
-      new ButtonBuilder()
-        .setCustomId(`${prefix}-${role.id}`)
-        .setLabel(role.title)
-        .setStyle(style),
-    );
+    const option = new StringSelectMenuOptionBuilder()
+      .setLabel(role.title)
+      .setValue(role.id);
+
+    role.emoji && option.setEmoji(role.emoji);
+    role.description && option.setDescription(role.description.substring(0, 99));
+
+    options.push(option);
   }
 
-  const component = new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;
-  component.setComponents(buttons);
+  // build the menu
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId(prefix)
+    .setPlaceholder("Select a role!")
+    .addOptions(options);
+
+
+  const component = new ActionRowBuilder() as ActionRowBuilder<StringSelectMenuBuilder>;
+  component.setComponents(menu);
 
   return [component];
 }

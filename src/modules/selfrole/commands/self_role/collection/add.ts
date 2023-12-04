@@ -24,13 +24,13 @@ export default SubCommand(
         type: ApplicationCommandOptionType.String,
         name: "title",
         description: "What name to give the collection.",
-        required: true,
+        required: false,
       },
       {
         type: ApplicationCommandOptionType.String,
         name: "description",
         description: "What description to give the collection.",
-        required: true,
+        required: false,
       },
     ],
 
@@ -42,8 +42,8 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    const description = msg.options.getString("description", true);
-    const title = msg.options.getString("title", true);
+    const description = msg.options.getString("description");
+    const title = msg.options.getString("title");
     const channel = msg.options.getChannel(
       "channel",
       true,

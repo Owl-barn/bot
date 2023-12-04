@@ -3,7 +3,7 @@ import { state } from "@app";
 import { Module } from "@structs/module";
 import { loadEvents } from "@lib/loaders/loadEvents";
 import { loadCommands } from "@lib/loaders/loadCommands";
-import { loadButtons } from "@lib/loaders/loadButons";
+import { loadInteractables } from "@lib/loaders/loadInteractables";
 import path from "path";
 import { loadJobs } from "./loadJobs";
 import { LocalState } from "@structs/localState";
@@ -42,7 +42,8 @@ export async function loadModules() {
 
     if (moduleFiles.includes("components")) {
       const componentFiles = fs.readdirSync(module.path + "components/");
-      componentFiles.includes("buttons") && await loadButtons(module.path + "components/buttons/");
+      componentFiles.includes("buttons") && await loadInteractables(module.path + "components/buttons/", "buttons");
+      componentFiles.includes("selectmenus") && await loadInteractables(module.path + "components/selectmenus/", "selectmenus");
     }
 
     // Add the module to the state object.

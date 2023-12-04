@@ -1,16 +1,12 @@
 import { state } from "@app";
 import { ReturnMessage } from "@structs/returnmessage";
-import { ButtonInteraction } from "discord.js";
+import { AnySelectMenuInteraction } from "discord.js";
 import { localState } from "..";
 import { errorEmbed } from "./interactionError";
 
-export async function buttonEvent(msg: ButtonInteraction) {
-  const options = msg.customId.split("-");
-  const commandName = options[0];
-  options.shift();
-  msg.customId = options.join("-");
+export async function SelectEvent(msg: AnySelectMenuInteraction) {
 
-  const command = state.interactables.buttons.get(commandName);
+  const command = state.interactables.selectmenus.get(msg.customId);
 
   if (!command) return;
   if (!command.info.isGlobal && !msg.inCachedGuild()) return;

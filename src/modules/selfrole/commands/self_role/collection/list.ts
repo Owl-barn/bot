@@ -8,7 +8,7 @@ export default SubCommand(
   // Info
   {
     name: "list",
-    description: "Remove a collection",
+    description: "Show all selfrole collections",
 
     throttling: {
       duration: 60,
@@ -32,20 +32,20 @@ export default SubCommand(
     embed.setTitle("Self Role Collections:");
 
     for (const collection of collections) {
-      let roles = `**id** ${collection.id}\n`;
+      let roles = `\`${collection.id}\`\n`;
 
       if (collection.roles.length !== 0) {
         const roleList = collection.roles
-          .map((role) => `- ${role.title}`)
+          .map((role) => `-${role.emoji ?? ""}${role.title}`)
           .join("\n");
-        roles += `Roles:\n\`\`\`${roleList}\`\`\``;
+        roles += `\`\`\`${roleList}\`\`\``;
       } else {
-        roles += "**Roles:**\nThere are currently no roles added yet.";
+        roles += "There are currently no roles added yet.";
       }
 
       embed.addFields([
         {
-          name: collection.title,
+          name: collection.title ?? "No title provided",
           value: roles,
         },
       ]);
