@@ -11,6 +11,7 @@ import {
 } from "discord.js";
 import prisma, { Selfrole } from "@prisma/client";
 import button from "../components/selectmenus/toggle";
+import { checkEmojis } from "@lib/emoji";
 
 export async function isValidChannel(channelId: string) {
   const channel = await state.client.channels.fetch(channelId);
@@ -70,10 +71,12 @@ export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
   collection.title && embed.setTitle(collection.title);
   collection.description && embed.setDescription(collection.description);
 
-
   embed.addFields(collection.roles.map((role) => {
-    let name = role.emoji ? state.client.emojis.resolveId(role.emoji) : "";
-    name += ` ${role.title}`;
+    let name = role.title;
+    if (role.emoji) {
+      const emoji = checkEmojis(role.emoji).unicode[0];
+      emoji && (name = `${emoji} ${name}`);
+    }
 
     return {
       name,
