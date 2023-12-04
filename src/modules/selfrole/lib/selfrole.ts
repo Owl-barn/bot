@@ -10,7 +10,7 @@ import {
   StringSelectMenuOptionBuilder,
 } from "discord.js";
 import prisma, { Selfrole } from "@prisma/client";
-import button from "../components/buttons/add";
+import button from "../components/selectmenus/toggle";
 
 export async function isValidChannel(channelId: string) {
   const channel = await state.client.channels.fetch(channelId);
@@ -70,9 +70,9 @@ export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
   collection.title && embed.setTitle(collection.title);
   collection.description && embed.setDescription(collection.description);
 
-  embed.addFields(collection.roles.map((role) =>
-    ({ name: (role.emoji ? role.emoji : "") + role.title, value: role.description ?? "No description provided" })
-  ));
+  // embed.addFields(collection.roles.map((role) =>
+  //   ({ name: (role.emoji ? role.emoji : "") + role.title, value: role.description ?? "No description provided" })
+  // ));
 
   return [embed];
 }

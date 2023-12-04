@@ -3,6 +3,7 @@ import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType, escapeMarkdown } from "discord.js";
 import { updateCollection } from "modules/selfrole/lib/selfrole";
+import { checkEmojis } from "@lib/emoji";
 
 export default SubCommand(
 
@@ -28,7 +29,7 @@ export default SubCommand(
         type: ApplicationCommandOptionType.String,
         name: "title",
         description: "What name to give the role.",
-        required: true,
+        required: false,
       },
       {
         type: ApplicationCommandOptionType.String,
@@ -53,13 +54,21 @@ export default SubCommand(
   // Execute
   async (msg) => {
     const role = msg.options.getRole("role", true);
-    let title = msg.options.getString("title", true);
-    const emoji = msg.options.getString("emoji", false);
+    let title = msg.options.getString("title", false);
+    let emoji = msg.options.getString("emoji", false);
     let description = msg.options.getString("description", false);
     const collectionId = msg.options.getString("collection", true);
 
+    title = title ?? role.name;
     title = escapeMarkdown(title);
     description = description && escapeMarkdown(description);
+
+    if (emoji) {
+      const emojis = checkEmojis(emoji);
+      if (emojis.custom[0]) emoji = emojis.custom[0][3];
+      else if (emojis.unicode[0]) emoji = emojis.unicode[0];
+      else emoji = null;
+    }
 
     const collection = await state.db.selfroleCollection
       .findFirst({
@@ -79,6 +88,16 @@ export default SubCommand(
           ),
         ],
       };
+
+    if (collection.roles.find((x) => x.roleId == role.id)) {
+      return {
+        embeds: [
+          failEmbedTemplate(
+            `Role \`${role.name}\` is already in collection \`${collection.title}\`.`,
+          ),
+        ],
+      };
+    }
 
     const CollectionEntry = await state.db.selfrole
       .create({

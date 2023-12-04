@@ -14,8 +14,16 @@ import { CommandEnum } from "@structs/command";
 import { Logger } from "winston";
 import { loadLogger } from "@lib/loaders/loadLogger";
 import { loadGuilds } from "@lib/loaders/loadGuilds";
+import { SelectMenuStruct } from "@structs/selectMenu";
 
 colors.enable();
+
+export type InteractablesEnum = ButtonStruct | SelectMenuStruct;
+
+export interface Interactables {
+  buttons: Map<string, ButtonStruct>;
+  selectmenus: Map<string, SelectMenuStruct>;
+}
 
 export interface State {
   db: PrismaClient;
@@ -23,7 +31,7 @@ export interface State {
   client: Client;
 
   commands: Map<string, CommandEnum>;
-  buttons: Map<string, ButtonStruct>;
+  interactables: Interactables;
 
   modules: Map<string, Module>;
 
@@ -41,7 +49,11 @@ const state = {
   db: new PrismaClient(),
 
   commands: new Map(),
-  buttons: new Map(),
+  interactables: {
+    buttons: new Map(),
+    selectmenus: new Map(),
+  },
+
   modules: new Map(),
   guilds: new Map(),
 
