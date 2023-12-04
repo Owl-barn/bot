@@ -70,9 +70,17 @@ export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
   collection.title && embed.setTitle(collection.title);
   collection.description && embed.setDescription(collection.description);
 
-  // embed.addFields(collection.roles.map((role) =>
-  //   ({ name: (role.emoji ? role.emoji : "") + role.title, value: role.description ?? "No description provided" })
-  // ));
+
+  embed.addFields(collection.roles.map((role) => {
+    let name = role.emoji ? state.client.emojis.resolveId(role.emoji) : "";
+    name += ` ${role.title}`;
+
+    return {
+      name,
+      value: role.description ?? "No description provided",
+      inline: false,
+    };
+  }));
 
   return [embed];
 }
@@ -92,7 +100,7 @@ export function generateMenu(
       .setValue(role.id);
 
     role.emoji && option.setEmoji(role.emoji);
-    role.description && option.setDescription(role.description);
+    role.description && option.setDescription(role.description.substring(0, 99));
 
     options.push(option);
   }

@@ -6,6 +6,7 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Compon
 import { embedTemplate } from "@lib/embedTemplate";
 import { localState } from "..";
 import { formatGuildInfo } from "../lib/formatGuildInfo";
+import { updateCollection } from "@modules/selfrole/lib/selfrole";
 
 export default Event({
   name: "messageCreate",
@@ -128,6 +129,20 @@ export default Event({
           + `**Median:** ${yearsAgo(birthdays[Math.round(birthdays.length / 2)].date as Date)}\n`
           + `**Range:** ${yearsAgo(birthdays[0].date as Date)} - ${yearsAgo(birthdays[birthdays.length - 1].date as Date,)}`,
         );
+
+        return;
+      }
+
+      case "collections*": {
+        const collections = await state.db.selfroleCollection.findMany({
+          include: { roles: true },
+        });
+
+        for (const collection of collections) {
+          await updateCollection(collection).catch(console.error);
+        }
+
+        msg.reply(`Updated all ${collections.length} collections`);
 
         return;
       }
