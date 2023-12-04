@@ -18,5 +18,5 @@ export function formatSubscriptions(embed: EmbedBuilder, user: (User & { subscri
 
 function guildItem(id: string) {
   const guild = state.client.guilds.cache.get(id);
-  return ` - ${guild?.name ?? `Unknown guild (${id})`}`;
+  return `- ${guild?.name ?? `Unknown guild`} (${id})`;
 }

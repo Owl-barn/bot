@@ -1,4 +1,5 @@
 import { state } from "@app";
+import { formatGuildInfo } from "@modules/core/lib/formatGuildInfo";
 import { SubCommand } from "@structs/command/subcommand";
 import { AttachmentBuilder } from "discord.js";
 
@@ -21,15 +22,28 @@ export default SubCommand(
       (x, y) => y.memberCount - x.memberCount,
     );
 
-    const guildInfo = await state.db.guild.findMany();
+    const guildInfo = await state.db.guild.findMany({
+      include: {
+        _count: { select: { commandLogs: true } },
+        selfroleCollections: true,
+      },
+    });
+
     const output = guilds
       .map((guild) => {
         const db = guildInfo.find((y) => y.id == guild.id);
-        return `id: ${guild.id} Premium: ${db?.subscriptionTier} owner: ${guild.ownerId} membercount: ${guild.memberCount} name: ${guild.name}`;
-      })
-      .join("\n");
+        if (!db) return;
+        const info = {
+          ...formatGuildInfo(guild, db),
+          commandUsage: db?._count.commandLogs,
+          selfRoles: db?.selfroleCollections.length,
+        };
+        return info;
+      });
 
-    const attachment = new AttachmentBuilder(Buffer.from(output));
+    const attachment = new AttachmentBuilder(
+      Buffer.from(JSON.stringify(output, null, 2))
+    );
     attachment.setName("info.txt");
 
     return { files: [attachment] };

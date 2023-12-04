@@ -1,6 +1,7 @@
 import { state } from "@app";
 import { GuildMember } from "discord.js";
 import { Owlet } from "./owlet";
+import { localState } from "..";
 
 export function isDJ(member: GuildMember): boolean {
   return (
@@ -8,6 +9,20 @@ export function isDJ(member: GuildMember): boolean {
     member.permissions.has("Administrator") ||
     member.id == state.env.OWNER_ID
   );
+}
+
+export function isWithBot(member: GuildMember): boolean {
+  // check if in vc
+  const vc = member.voice.channel;
+  if (!vc) return false;
+
+  // check if bot is in vc
+  const owlets = localState.controller.getBotIds();
+  if (!vc.members.find((x) => owlets.includes(x.id))) {
+    return false;
+  }
+
+  return true;
 }
 
 export function canForce(member: GuildMember, owlet: Owlet, force = false): boolean {

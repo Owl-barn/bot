@@ -52,7 +52,7 @@ export default Command(
     }
 
     // Get UUID
-    let uuid = await getMcUUID(username);
+    const uuid = await getMcUUID(username).catch(() => null);
 
     // Check if exists.
     if (!uuid)

@@ -11,7 +11,8 @@ import { Track } from "../structs/track";
 import { baseAccessConfig } from "../lib/accessConfig";
 import { ReturnMessage } from "@structs/returnmessage";
 import { getOwlet } from "../lib/getBot";
-import button from "../components/buttons/remove";
+import skipButton from "../components/buttons/remove";
+import bumpButton from "../components/buttons/bump";
 
 export default Command(
 
@@ -74,7 +75,14 @@ export default Command(
     if (!isDJ(member) && force) force = false;
 
     // Get owlet.
-    const { owlet, bot } = await getOwlet(msg.guild, vc, botId);
+    const node = await getOwlet(msg.guild, vc, botId).catch(() => null);
+    if (!node) {
+      return {
+        embeds: [failEmbedTemplate("There are currently no music bots available.")],
+      };
+    }
+
+    const { owlet, bot } = node;
     const author: EmbedAuthorOptions = {
       name: "Play",
       iconURL: getAvatar(bot),
@@ -109,6 +117,7 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
   const embed = embedTemplate();
   let channelName = escapeMarkdown(track.author);
   channelName = channelName.replace(/[()[\]]/g, "");
+  const playing = queueInfo.size === 0;
 
   embed
     .setThumbnail(track.thumbnail)
@@ -121,13 +130,13 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
       { name: "Duration", value: `${track.duration}`, inline: true },
       {
         name: "Queue Position",
-        value: `*${queueInfo.size !== 0 ? queueInfo.size : "Currently playing"}*`,
+        value: `*${playing ? "Currently playing" : queueInfo.size}*`,
         inline: true,
       },
     ]);
 
 
-  if (queueInfo.size !== 0) {
+  if (!playing) {
     const timeTillPlay = moment()
       .startOf("day")
       .milliseconds(queueInfo.length - track.durationMs)
@@ -143,17 +152,25 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
   }
 
   // Buttons
-  const components = [generateButtons(track.id)];
+  const components = [generateButtons(track.id, !playing)];
 
   return { embeds: [embed], components };
 }
 
-function generateButtons(id: string) {
+export function generateButtons(id: string, showBump = false) {
   const buttons = [];
+
+  if (showBump)
+    buttons.push(
+      new ButtonBuilder()
+        .setCustomId(`${bumpButton.info.name}-${id}`)
+        .setLabel("Play now")
+        .setStyle(ButtonStyle.Secondary)
+    );
 
   buttons.push(
     new ButtonBuilder()
-      .setCustomId(`${button.info.name}-${id}`)
+      .setCustomId(`${skipButton.info.name}-${id}`)
       .setLabel("Skip")
       .setStyle(ButtonStyle.Danger)
   );

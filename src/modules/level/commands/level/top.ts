@@ -1,7 +1,7 @@
 import { state } from "@app";
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { calculateLevelFromXP } from "@modules/level/lib/calculateLevelFromXP";
 import { SubCommand } from "@structs/command/subcommand";
-import { ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 
 export default SubCommand(
 
@@ -29,22 +29,29 @@ export default SubCommand(
       return { embeds: [response] };
     }
 
+    const levels = await state.db.level.findMany({
+      where: { guildId: msg.guildId },
+      orderBy: { experience: "desc" },
+    });
+
+    const top = levels.slice(0, 10);
+
     embed.setTitle(`${msg.guild?.name} leaderboard`);
+
     embed.setDescription(
-      "Click the link below to view the server's leaderboard",
+      top.map((x, i) => `${i + 1}. <@${x.userId}> - Level ${calculateLevelFromXP(x.experience).level}`)
+        .join("\n")
     );
 
-    // TODO - Add a leaderboard link
-    const button = new ButtonBuilder()
-      .setLabel("Leaderboard")
-      .setStyle(ButtonStyle.Link);
-    // .setURL(`${state.env.URL}/leaderboard/${msg.guildId}`);
+    const userIndex = levels.findIndex(x => x.userId === msg.user.id);
+    if (userIndex === -1 || userIndex > 10) {
+      embed.addFields({
+        name: "Your rank",
+        value: userIndex === -1 ? "Not ranked" : (userIndex + 1).toString(),
+      });
+    }
 
-    const component =
-      new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;
-    component.addComponents([button]);
-
-    return { embeds: [embed], components: [component] };
+    return { embeds: [embed] };
   }
 
 );
