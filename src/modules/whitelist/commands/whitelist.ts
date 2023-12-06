@@ -96,10 +96,10 @@ export default Command(
     });
 
     // Give role.
-    if (config.rconRoleId) author.roles.add(config.rconRoleId);
+    if (config.rconRoleId) await author.roles.add(config.rconRoleId);
 
     // Set Nickname.
-    author.setNickname(username).catch(() => null);
+    await author.setNickname(username).catch(() => null);
 
     // Respond.
     return { embeds: [embedTemplate("You've been whitelisted!")] };
