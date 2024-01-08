@@ -34,6 +34,10 @@ export default SubCommand(
 
     birthdays = birthdays.map(b => ({ ...b, date: nextDate(new Date(b.date as Date)) }));
     birthdays = birthdays.sort((x, y) => Number(x.date) - Number(y.date));
+
+    // Check if users are still in server
+    const users = await msg.guild.members.fetch({ user: birthdays.map(b => b.userId) });
+    birthdays = birthdays.filter(b => users.has(b.userId));
     birthdays = birthdays.slice(0, 10);
 
     const embed = embedTemplate();

@@ -46,6 +46,17 @@ export default cron(
         unavailableRoles.push(birthday.guildId);
       };
 
+      // Attempt to fetch the member, if it fails return.
+      const member = await guild.members.fetch(birthday.userId).catch(() => null);
+      if (member === null) {
+        state.botLog.push(
+          warningEmbedTemplate(`Tried assigning birthday role to a user that is not in the guild. \`<@${birthday.userId}>\``),
+          birthday.guildId,
+          logType.BOT
+        );
+        return;
+      }
+
       // Birthday role.
       const addRole = async () => {
         if (!birthday.guild.birthdayRoleId) return;
@@ -61,17 +72,6 @@ export default cron(
           );
 
           return await removeRoleFromDb();
-        }
-
-        // Attempt to fetch the member, if it fails return.
-        const member = await guild.members.fetch(birthday.userId).catch(() => null);
-        if (member === null) {
-          state.botLog.push(
-            warningEmbedTemplate(`Tried assigning birthday role to a user that is not in the guild. \`<@${birthday.userId}>\``),
-            birthday.guildId,
-            logType.BOT
-          );
-          return;
         }
 
         // Attempt to add the role, if it fails remove the role from the database and return.
