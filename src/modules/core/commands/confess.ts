@@ -4,6 +4,7 @@ import { embedTemplate } from "@lib/embedTemplate";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { ApplicationCommandOptionType } from "discord.js";
+import axios from "axios";
 
 
 export default Command(
@@ -73,8 +74,8 @@ const getImageUrl = async (text: string): Promise<string | undefined> => {
       // remove the "-gif-23456789" part
       const gifName = urlPath.base.split("-").slice(0, -2).join("-");
       // make a GET request to the URL
-      const response = await fetch(text);
-      const data = await response.text();
+      const response = await axios.get(url.href);
+      const data = await response.data;
       // find the GIF URL
       const regex = new RegExp(`https:\\/\\/media[0-9]?.tenor.com\\/.{16}\\/${gifName}\\.gif`, "g");
       if (data.match(regex)) {
