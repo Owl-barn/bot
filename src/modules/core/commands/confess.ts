@@ -71,15 +71,20 @@ const getImageUrl = async (text: string): Promise<string | undefined> => {
     let urlPath = path.parse(url.pathname);
     if (url.host === "tenor.com" && url.pathname.match(tenorRegex)) {
       // find out gif name from URL
-      // remove the "-gif-23456789" part
-      const gifName = urlPath.base.split("-").slice(0, -2).join("-");
       // make a GET request to the URL
       const response = await axios.get(url.href);
       const data = await response.data;
       // find the GIF URL
-      let regex = new RegExp(`https:\\/\\/media[0-9]?.tenor.com(\/m)?\\/.{16}\\/${gifName}\\.gif`, "g");
-      if (data.match(regex)) {
-        return data.match(regex)![0];
+      // remove the "-gif-23456789" part
+      let gifName = urlPath.base;
+      while (gifName !== "") {
+        gifName = gifName.split("-").slice(0, -1).join("-");
+        // find the GIF URL
+        let regex = new RegExp(`https:\\/\\/media[0-9]?.tenor.com(\/m)?\\/.{16}\\/${gifName}\\.gif`, "g");
+        let match = data.match(regex);
+        if (match) {
+          return match[0];
+        }
       }
     }
 
