@@ -77,7 +77,7 @@ const getImageUrl = async (text: string): Promise<string | undefined> => {
       const response = await axios.get(url.href);
       const data = await response.data;
       // find the GIF URL
-      const regex = new RegExp(`https:\\/\\/media[0-9]?.tenor.com\\/.{16}\\/${gifName}\\.gif`, "g");
+      let regex = new RegExp(`https:\\/\\/media[0-9]?.tenor.com(\/m)?\\/.{16}\\/${gifName}\\.gif`, "g");
       if (data.match(regex)) {
         return data.match(regex)![0];
       }
