@@ -59,7 +59,7 @@ export default Command(
   }
 );
 
-const tenorRegex = /\/.*\/view\/.*-[0-9]+/;
+const tenorRegex = /\/?.*\/view\/.*-[0-9]+/;
 const getImageUrl = async (text: string): Promise<string | undefined> => {
   const imageExtensions = ["jpg", "jpeg", "png", "apng", "webp", "gif", "avif"];
   try {
