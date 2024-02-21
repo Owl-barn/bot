@@ -1,3 +1,5 @@
+import path from "path";
+
 import { embedTemplate } from "@lib/embedTemplate";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
@@ -31,15 +33,18 @@ export default Command(
   async (msg) => {
     const confession = msg.options.getString("confession", true);
 
+    const channelName = "confessions";
+    const confessionChannel = msg.guild.channels.cache.find(c => c.name === channelName);
+    if (!confessionChannel || !confessionChannel.isTextBased())
+      return { content: `Couldn't find a channel with the name \`${channelName}\``, ephemeral: true };
+
     const confessionEmbed = embedTemplate()
       .setTitle(`Confession`)
       .setDescription(confession);
 
-    const channelName = "confessions";
-
-    const confessionChannel = msg.guild.channels.cache.find(c => c.name === channelName);
-    if (!confessionChannel || !confessionChannel.isTextBased())
-      return { content: `Couldn't find a channel with the name \`${channelName}\``, ephemeral: true };
+    if (isImageUrl(confession)) {
+      confessionEmbed.setImage(confession);
+    }
 
     const sent = await confessionChannel.send({ embeds: [confessionEmbed] })
       .catch(() => false);
@@ -52,3 +57,18 @@ export default Command(
     return { embeds: [responseEmbed], ephemeral: true };
   }
 );
+
+const isImageUrl = (text: string): boolean => {
+  const imageExtensions = ["jpg", "jpeg", "png", "apng", "webp", "gif", "avif"];
+  try {
+    let url = new URL(text);
+    if (url.protocol !== "http:" && url.protocol !== "https:")
+      return false;
+
+    let urlPath = path.parse(url.pathname);
+    let extension = urlPath.ext.substring(1); // substring removes the leading dot from the extension
+    return imageExtensions.indexOf(extension) != -1;
+  } catch {
+    return false;
+  }
+}
