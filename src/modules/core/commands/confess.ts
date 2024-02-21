@@ -44,7 +44,7 @@ export default Command(
 
     const imageUrl = await getImageUrl(confession);
     if (imageUrl) {
-      confessionEmbed.setImage(confession);
+      confessionEmbed.setImage(imageUrl);
     }
 
     const sent = await confessionChannel.send({ embeds: [confessionEmbed] })
