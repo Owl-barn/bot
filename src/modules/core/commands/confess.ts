@@ -59,23 +59,8 @@ export default Command(
   }
 );
 
-const tenorRegex = /https:\/\/tenor.com\/.*\/view\/.*-[0-9]+/;
+const tenorRegex = /\/.*\/view\/.*-[0-9]+/;
 const getImageUrl = async (text: string): Promise<string | undefined> => {
-  if (text.startsWith("https://tenor.com") && text.match(tenorRegex)) {
-    // find out gif name from URL
-    // last part of the URL
-    let gifName = text.split("/").pop()!;
-    // remove the "-gif-23456789" part
-    gifName = gifName.split("-").slice(0, -2).join("-");
-    // make a GET request to the URL
-    let response = await fetch(text);
-    let data = await response.text();
-    // find the GIF URL
-    let regex = new RegExp(`https:\\/\\/media[0-9]?.tenor.com\\/.{16}\\/${gifName}\\.gif`, "g");
-    if (data.match(regex)) {
-      return data.match(regex)![0];
-    }
-  }
   const imageExtensions = ["jpg", "jpeg", "png", "apng", "webp", "gif", "avif"];
   try {
     let url = new URL(text);
@@ -83,6 +68,20 @@ const getImageUrl = async (text: string): Promise<string | undefined> => {
       return undefined;
 
     let urlPath = path.parse(url.pathname);
+    if (url.host === "tenor.com" && url.pathname.match(tenorRegex)) {
+      // find out gif name from URL
+      // remove the "-gif-23456789" part
+      const gifName = urlPath.base.split("-").slice(0, -2).join("-");
+      // make a GET request to the URL
+      const response = await fetch(text);
+      const data = await response.text();
+      // find the GIF URL
+      const regex = new RegExp(`https:\\/\\/media[0-9]?.tenor.com\\/.{16}\\/${gifName}\\.gif`, "g");
+      if (data.match(regex)) {
+        return data.match(regex)![0];
+      }
+    }
+
     let extension = urlPath.ext.substring(1); // substring removes the leading dot from the extension
     if (imageExtensions.indexOf(extension) != -1) {
       return text;
