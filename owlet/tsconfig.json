@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "sourceMap": true,
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "baseUrl": "./src",
+    "outDir": "./dist",
+    "paths": {
+      "@structs/*": [
+        "./structs/*"
+      ],
+      "@lib/*": [
+        "./lib/*"
+      ],
+      "@app": [
+        "./app"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
