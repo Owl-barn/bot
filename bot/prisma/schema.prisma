@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Guild {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  isBanned Boolean @default(false)
+  isDev    Boolean @default(false)
+
+  // Premium
+  subscribedUserId String?
+  subscribedUser   User?   @relation(fields: [subscribedUserId], references: [id])
+  subscriptionTier Int?
+
+  // Logs
+  logJoinLeave String?
+  logEvents    String?
+  logBot       String?
+
+  // Birthday
+  birthdayRoleId    String?
+  birthdayChannelId String?
+  birthdays         Birthday[]
+
+  // Moderation
+  staffRoleId String?
+  unbanNotice String?
+  infractions Infraction[]
+  commandLogs CommandLog[]
+
+  // Private rooms
+  privateRoomCategoryId String?
+  privateRoomChannelId  String?
+  privateRoomLimit      Int           @default(4)
+  privateRooms          PrivateRoom[]
+
+  // Leveling
+  levelModifier  Float         @default(1.0)
+  levelChannelId String?
+  levelMessage   String?       @default("You leveled up!, you're now {LEVEL}")
+  level          Boolean       @default(false)
+  levels         Level[]
+  levelRewards   LevelReward[]
+
+  // Owlet
+  songs MediaLog[]
+
+  // Whitelist
+  rconEnabled      Boolean     @default(false)
+  rconRoleId       String?
+  rconPassword     String?
+  rconHost         String?
+  rconPort         Int         @default(25575)
+  whitelistedUsers Whitelist[]
+
+  // Selfroles
+  selfroleCollections SelfroleCollection[]
+
+  // Misc
+  hideSupportInvite Boolean @default(false)
+}
+
+model Level {
+  createdAt DateTime @default(now())
+
+  userId  String
+  guildId String
+
+  experience Int @default(0)
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userId, guildId])
+}
+
+model LevelReward {
+  createdAt DateTime @default(now())
+
+  roleId  String
+  guildId String
+
+  level Int
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([roleId])
+}
+
+model PrivateRoom {
+  createdAt DateTime @default(now())
+
+  userId  String
+  guildId String
+
+  mainRoomId    String @unique
+  waitingRoomId String @unique
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([userId, guildId])
+}
+
+model SelfroleCollection {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guildId   String
+  channelId String
+  messageId String?
+
+  title       String?
+  description String?
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  roles Selfrole[]
+}
+
+model Selfrole {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  collectionId String
+  roleId       String
+
+  emoji       String?
+  title       String
+  description String?
+
+  collection SelfroleCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([roleId, collectionId])
+  @@unique([title, collectionId])
+}
+
+// Logs
+model MediaLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  guildId String
+  userId  String
+  url     String
+
+  duration Int
+  progress Int?
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model CommandLog {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  guildId   String?
+  channelId String?
+
+  commandName String
+  userId      String
+
+  isHidden Boolean
+
+  guild Guild? @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Infraction {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId      String
+  moderatorId String
+  guildId     String
+
+  reason    String?
+  expiresOn DateTime?
+  deletedOn DateTime?
+
+  moderationType ModerationType
+
+  guild     Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  target    User  @relation(name: "infractions", fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  moderator User  @relation(name: "moderationAction", fields: [moderatorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([guildId, id])
+}
+
+// Minecraft
+model Whitelist {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId      String
+  guildId     String
+  minecraftId String
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([guildId, userId], name: "whitelist_guild_user_un")
+  @@unique([guildId, minecraftId], name: "whitelist_guild_uuid_un")
+}
+
+// User info
+
+model User {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  id String @id
+
+  // Subscription
+  subscriptionTier Int?
+  subscribedSince  DateTime?
+
+  // Core
+  isBanned         Boolean      @default(false)
+  subscribedGuilds Guild[]
+  CommandLog       CommandLog[]
+
+  // Birthday
+  birthdays Birthday[]
+
+  // Notify
+  friendships Friendship[] @relation("friend")
+  friends     Friendship[] @relation("user")
+
+  // Owlet
+  MediaLog MediaLog[]
+
+  // PrivateRoom
+  PrivateRoom PrivateRoom[]
+
+  // Level
+  Level Level[]
+
+  // Whitelist
+  Whitelist Whitelist[]
+
+  // Moderation
+  moderationActions Infraction[] @relation("moderationAction")
+  infractions       Infraction[] @relation("infractions")
+}
+
+model Friendship {
+  createdAt DateTime @default(now())
+
+  userId   String
+  friendId String
+
+  isPending Boolean @default(true)
+
+  user   User @relation(name: "user", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  friend User @relation(name: "friend", fields: [friendId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userId, friendId])
+}
+
+model Birthday {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId  String
+  guildId String
+
+  date    DateTime?
+  hasRole Boolean   @default(false)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userId, guildId])
+}
+
+// Enums
+enum ModerationType {
+  ban
+  kick
+  warn
+  timeout
+}
