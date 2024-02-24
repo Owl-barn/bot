@@ -25,10 +25,7 @@ services:
 
   # Bot
   bot:
-    build:
-      context: https://github.com/Owl-barn/bot.git
-      dockerfile: Dockerfile
-    container_name: bot
+    build: bot
     restart: always
     volumes:
       - ./bot/config:/app/config
@@ -41,9 +38,7 @@ services:
 
   # Owlet
   owlet:
-    build:
-      context: https://github.com/Owl-barn/owlet.git
-      dockerfile: Dockerfile
+    build: owlet
     restart: always
     env_file:
       - ./owlet/.env
