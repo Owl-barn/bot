@@ -39,8 +39,14 @@ export default Command(
     if (!confessionChannel || !confessionChannel.isTextBased())
       return { content: `Couldn't find a channel with the name \`${channelName}\``, ephemeral: true };
 
-    const sent = await confessionChannel.send(`**Confession:** ${confession}`)
-      .catch(() => false);
+    const sent = await confessionChannel.send({
+      content: `**Confession:** ${confession}`,
+      allowedMentions: {
+        users: [],
+        roles: [],
+        parse: []
+      }
+    }).catch(() => false);
 
     if (!sent) throw "couldn't send confession";
 
