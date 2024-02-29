@@ -43,7 +43,13 @@ export default SubCommand(
         ],
       };
 
-    await updateCollection(collection);
+
+    const fail = await updateCollection(collection).catch(() => true);
+
+    if (fail)
+      return {
+        embeds: [failEmbedTemplate(`Failed to reload collection ${collectionId}.`)],
+      };
 
     return {
       embeds: [embedTemplate("Successfully reloaded the collection.")],

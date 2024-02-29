@@ -112,7 +112,16 @@ export default SubCommand(
 
     collection.roles.push(CollectionEntry);
 
-    await updateCollection(collection);
+    const fail = await updateCollection(collection).catch(() => true);
+
+    if (fail)
+      return {
+        embeds: [
+          failEmbedTemplate(
+            `Failed update collection, but role \`${role.name}\` was added to collection \`${collection.title}\`.`,
+          ),
+        ],
+      };
 
     const embed = embedTemplate();
     embed.setFooter({ text: collection.id });

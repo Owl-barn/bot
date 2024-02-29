@@ -33,7 +33,7 @@ export async function isValidChannel(channelId: string) {
 export async function updateCollection(collection: selfRoleCollection): Promise<void> {
   const channel = await isValidChannel(collection.channelId);
 
-  let message: Message;
+  let message: Message | null;
 
   async function sendMessage() {
     message = await channel.send({
@@ -47,7 +47,7 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
   }
 
   if (collection.messageId) {
-    message = await channel.messages.fetch(collection.messageId);
+    message = await channel.messages.fetch(collection.messageId).catch(() => null);
     if (!message) {
       await sendMessage();
       return;
