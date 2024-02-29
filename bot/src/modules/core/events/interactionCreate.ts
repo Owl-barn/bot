@@ -11,6 +11,9 @@ export default Event({
   async execute(interaction) {
     let command: { run: Promise<unknown>, id: string } | undefined;
 
+    // If the user is banned, ignore their interactions
+    if (state.bannedUsers.get(interaction.user.id) !== undefined) return;
+
     if (interaction.isButton()) {
       command = {
         run: buttonEvent(interaction),

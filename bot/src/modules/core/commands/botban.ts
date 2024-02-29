@@ -54,6 +54,10 @@ export default Command(
     if (isBanned) state.bannedUsers.set(target, "");
     else state.bannedUsers.delete(target);
 
+    state.log.info(
+      `User ${target} has been ${isBanned ? "banned" : "unbanned"}, now ${state.bannedUsers.size} banned users`,
+    );
+
 
     const response = embedTemplate();
     response.setDescription(

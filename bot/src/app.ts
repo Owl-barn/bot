@@ -67,6 +67,14 @@ const state = {
 
   state.botLog = new LogService();
   state.throttle = new ThrottleService();
+
+  // Load banned users
+  state.bannedUsers = new Map();
+  const bannedUsers = await state.db.user.findMany({ where: { isBanned: true } });
+  for (const user of bannedUsers) {
+    state.bannedUsers.set(user.id, "");
+  }
+  console.log(" - Loaded ".green + bannedUsers.length.toString().cyan + " banned users".green);
 }
 )();
 
