@@ -47,7 +47,7 @@ export default Event({
     current.currentXP += toAdd;
 
     // If the user has leveled up, add the roles and notify the user.
-    if (current.currentXP >= localState.levelArray[current.level].xp) {
+    if (current.currentXP >= current.levelXP) {
       current.level += 1;
 
       const roles = await getRoles(msg, current);
