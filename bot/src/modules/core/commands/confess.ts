@@ -1,10 +1,7 @@
-import path from "path";
-
 import { embedTemplate } from "@lib/embedTemplate";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { ApplicationCommandOptionType } from "discord.js";
-import axios from "axios";
 
 
 export default Command(
@@ -40,12 +37,12 @@ export default Command(
       return { content: `Couldn't find a channel with the name \`${channelName}\``, ephemeral: true };
 
     const sent = await confessionChannel.send({
-      content: `**Confession:** ${confession}`,
+      content: `## **Confession:**\n${confession}`,
       allowedMentions: {
         users: [],
         roles: [],
-        parse: []
-      }
+        parse: [],
+      },
     }).catch(() => false);
 
     if (!sent) throw "couldn't send confession";
