@@ -12,7 +12,7 @@ export function calculateLevelFromXP(exp: number): CalculatedLevel {
   let currentLevel;
 
   for (let index = 0; index < localState.levelArray.length; index++) {
-    if (localState.levelArray[index].total < exp) continue;
+    if (exp >= localState.levelArray[index].total) continue;
     currentLevel = index === 0 ? 0 : index - 1;
     break;
   }
