@@ -27,37 +27,36 @@ export default Event({
 
 
     // Find or create level data for the user.
-    let level = await state.db.level.findUnique({
+    let levelData = await state.db.level.findUnique({
       where: {
         userId_guildId: { guildId: msg.guild.id, userId: msg.author.id },
       },
     });
 
-    if (!level)
-      level = await state.db.level.create({
+    if (!levelData)
+      levelData = await state.db.level.create({
         data: {
           user: connectOrCreate(msg.author.id),
           guild: connectOrCreate(msg.guild.id),
         },
       });
 
-    // Calculate the current level and add XP.
-    const current = calculateLevelFromXP(level.experience);
-    const toAdd = getRandomXP(guildConfig.levelModifier);
-    current.currentXP += toAdd;
+    // Calculate the old and new levels.
+    const oldLevel = calculateLevelFromXP(levelData.experience);
+    const toAdd = getRandomXP(guildConfig.levelModifier)
+    const newExperience = levelData.experience + toAdd;
+    const newLevel = calculateLevelFromXP(newExperience);
 
     // If the user has leveled up, add the roles and notify the user.
-    if (current.currentXP >= current.levelXP) {
-      current.level += 1;
-
-      const roles = await getRoles(msg, current);
+    if (newLevel.level > oldLevel.level) {
+      const roles = await getRoles(msg, newLevel);
       await addRoles(msg, roles);
-      await notify(msg, guildConfig, current, roles);
+      await notify(msg, guildConfig, newLevel, roles);
     }
 
     await state.db.level.update({
       where: { userId_guildId: { guildId: msg.guild.id, userId: msg.author.id } },
-      data: { experience: current.totalXP + toAdd },
+      data: { experience: newExperience },
     });
 
     localState.timeout.set(id, Date.now());
