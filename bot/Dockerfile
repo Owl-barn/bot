@@ -1,9 +1,14 @@
 FROM node:16-alpine AS build
 WORKDIR /build/
+# Install packages
 COPY package.json package-lock.json ./
 RUN npm i
+# Initialise prisma
+COPY prisma/schema.prisma prisma/schema.prisma
+RUN npx prisma generate
+# Copy and compile source code
 COPY . .
-RUN npx prisma generate && npm run compile
+RUN npm run compile
 
 FROM node:16-alpine as prod
 WORKDIR /app/
