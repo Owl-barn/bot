@@ -28,7 +28,8 @@ services:
     build: bot
     restart: always
     volumes:
-      - ./bot/config:/app/config
+      - ./bot/config:/app/config:ro
+      - ./bot/logs:/app/logs:rw
     env_file:
       - ./bot/.env
     depends_on:
@@ -40,6 +41,8 @@ services:
   owlet:
     build: owlet
     restart: always
+    volumes:
+      - ./owlet/logs:/app/logs:rw
     env_file:
       - ./owlet/.env
     depends_on:
