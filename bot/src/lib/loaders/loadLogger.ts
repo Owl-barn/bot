@@ -8,6 +8,12 @@ const consoleFormat = printf(({ level, message, label, timestamp }) => {
   return `${timestamp} [${renderedLabel}] ${level}: ${message}`;
 });
 
+const logFileFormat = format.combine(
+  format.uncolorize(),
+  format.timestamp(),
+  format.json(),
+);
+
 
 export const loadLogger = () =>
   state.log = createLogger({
@@ -23,16 +29,22 @@ export const loadLogger = () =>
         ),
       }),
 
+      // Info
       new transports.File({
         level: "debug",
+        dirname: "logs",
         filename: "combined.log",
+        format: logFileFormat,
+      }),
+
+      // Error
+      new transports.File({
+        level: "error",
+        dirname: "logs",
+        filename: "error.log",
         handleExceptions: true,
         handleRejections: true,
-        format: format.combine(
-          format.uncolorize(),
-          format.timestamp(),
-          format.json(),
-        ),
+        format: logFileFormat,
       }),
     ],
   });
