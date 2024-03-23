@@ -35,14 +35,14 @@ export default Command(
 
     throttling: {
       duration: 60,
-      usages: 2,
+      usages: 4,
     },
   },
 
   // Execute
   async (msg) => {
     const user = msg.options.getUser("user") || msg.user;
-    const member = !msg.options.getBoolean("global") ? await msg.guild?.members.fetch(user.id) : undefined;
+    const member = !msg.options.getBoolean("global") ? await msg.guild?.members.fetch(user.id).catch(() => undefined) : undefined;
 
     const guildConfig = state.guilds.get(msg.guild?.id || "");
 
@@ -76,6 +76,8 @@ export default Command(
 
     // Base Info.
     const info = [
+      `**Display Name:** ${member?.displayName || user.username}`,
+      `**Username:** ${user.username}`,
       `**tag:** ${user}`,
       `**ID:** \`${user.id}\``,
       `**Created:** <t:${createdTime}>`,
