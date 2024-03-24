@@ -46,6 +46,9 @@ export default Command(
       const notation = msg.options.getString("sides", true);
       const amount = msg.options.getInteger("amount", false) ?? 1;
 
+      const embed = embedTemplate();
+      embed.setThumbnail("https://cdn.discordapp.com/attachments/1221172261286056076/1221172281741545633/dice.png");
+
       // check, if notation is a simple number. parseInt doesn't work for dnd notation, because "1d6" would be parsed as "1"
       if (notation.match(/^\d+$/)) {
         const sides = parseInt(notation);
@@ -60,12 +63,15 @@ export default Command(
           let description = `rolled a ${roll}`;
 
           // coin flip if it's a two-sided die
-          if (sides === 2)
+          if (sides === 2) {
             description += ` | (${roll === 1 ? "Heads" : "Tails"})`;
+            embed.setThumbnail(null);
+            embed.setTitle(`Coin flip`);
+          } else {
+            embed.setTitle(`D${sides} dice roll`);
+          }
 
-          const embed = embedTemplate()
-            .setTitle(`D${sides} dice roll`)
-            .setDescription(description);
+          embed.setDescription(description);
 
           return { embeds: [embed] };
         }
@@ -87,7 +93,7 @@ export default Command(
           },
         ];
 
-        const embed = embedTemplate()
+        embed
           .setTitle(`Dice roll`)
           .setDescription(`rolled ${amount}d${notation}`)
           .addFields(fields);
@@ -111,7 +117,7 @@ export default Command(
           });
       }
 
-      const embed = embedTemplate()
+      embed
         .setTitle(`Dice roll`)
         .setDescription(`rolled ${renderAST(ast)}`)
         .addFields(fields);
