@@ -1,6 +1,7 @@
 import { state } from "@app";
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import stringDurationToMs, { msToString } from "@lib/time";
+import { localState } from "@modules/reminder";
 import { createReminder } from "@modules/reminder/lib/createReminder";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
@@ -45,6 +46,10 @@ export default SubCommand(
     const timeoutMs = stringDurationToMs(timeoutString);
     if (timeoutMs == 0)
       return { embeds: [ failEmbedTemplate("Invalid time specified") ] };
+
+    const reminderCount = await db.reminder.count({ where: { userId: msg.user.id } });
+    if (reminderCount >= localState.maxReminders)
+      return { embeds: [ failEmbedTemplate(`You can only have a maximum of ${localState.maxReminders} reminders at a time`) ] };
 
     const timeoutDate = new Date(Date.now() + timeoutMs);
     const entryId = await createReminder(msg.user, timeoutDate, description);

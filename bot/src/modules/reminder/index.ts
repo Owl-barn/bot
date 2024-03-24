@@ -11,9 +11,12 @@ export default {
 
 interface State extends LocalState {
   reminders: ReminderRef[],
+  maxReminders: number,
 }
 
-const localState = {} as State;
+const localState = {
+  maxReminders: 5,
+} as State;
 
 export { localState };
 
