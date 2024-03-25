@@ -254,6 +254,9 @@ model User {
   // Moderation
   moderationActions Infraction[] @relation("moderationAction")
   infractions       Infraction[] @relation("infractions")
+
+  // Reminder
+  reminders Reminder[]
 }
 
 model Friendship {
@@ -284,6 +287,20 @@ model Birthday {
   guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([userId, guildId])
+}
+
+// Reminders
+model Reminder {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId     String
+  messageUrl String?
+
+  description String?
+  triggersAt  DateTime
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 // Enums
