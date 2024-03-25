@@ -147,7 +147,7 @@ export default Command(
     });
 
     embed.setTitle(
-      `${target.username}#${target.discriminator} has been banned.`,
+      `${target.username} has been banned.`,
     );
     embed.addFields([
       {

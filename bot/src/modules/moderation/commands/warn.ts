@@ -119,7 +119,7 @@ export default Command(
     const dm = await target.send({ embeds: [embed] }).catch(() => null);
 
     embed.setTitle(
-      `${target.username}#${target.discriminator} has been warned, ${warnCount} total`,
+      `${target.username} has been warned, ${warnCount} total`,
     );
     embed.addFields([
       {
