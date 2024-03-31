@@ -3,8 +3,9 @@ import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import stringDurationToMs, { msToString } from "@lib/time";
 import { localState } from "@modules/reminder";
 import { createReminder } from "@modules/reminder/lib/createReminder";
+import { Reminder } from "@prisma/client";
 import { SubCommand } from "@structs/command/subcommand";
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, ButtonInteraction, ChatInputCommandInteraction } from "discord.js";
 
 const db = state.db;
 
@@ -33,8 +34,8 @@ export default SubCommand(
     ],
 
     throttling: {
-      duration: 60,
-      usages: 1,
+      duration: 5 * 60,
+      usages: 3,
     },
   },
 
@@ -52,7 +53,7 @@ export default SubCommand(
       return { embeds: [ failEmbedTemplate(`You can only have a maximum of ${localState.maxReminders} reminders at a time`) ] };
 
     const timeoutDate = new Date(Date.now() + timeoutMs);
-    const entryId = await createReminder(msg.user, timeoutDate, description);
+    const entry = await createReminder(msg.user, timeoutDate, description);
 
     const timeoutFormatted = msToString(timeoutMs);
     const embed = embedTemplate()
@@ -62,17 +63,19 @@ export default SubCommand(
 
     return {
       embeds: [embed],
-      callback: async (interaction) => {
-        const reply = await interaction.fetchReply();
-        await db.reminder.update({
-          where: {
-            id: entryId,
-          },
-          data: {
-            messageUrl: reply.url,
-          },
-        });
-      },
+      callback: (interaction) => interactionCallback(entry, interaction),
     };
   }
 );
+
+const interactionCallback = async (entry: Reminder, interaction: ChatInputCommandInteraction | ButtonInteraction) => {
+  const reply = await interaction.fetchReply();
+  await db.reminder.update({
+    where: {
+      id: entry.id,
+    },
+    data: {
+      messageUrl: reply.url,
+    },
+  });
+};

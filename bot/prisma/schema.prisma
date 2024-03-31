@@ -294,13 +294,12 @@ model Reminder {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  userId     String
-  messageUrl String?
-
+  messageUrl  String?
   description String?
   triggersAt  DateTime
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 // Enums

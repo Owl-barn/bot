@@ -2,10 +2,11 @@ import { state } from "@app";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { User } from "discord.js";
 import { localState } from "..";
+import { Reminder } from "@prisma/client";
 
 const db = state.db;
 
-export async function createReminder(user: User, triggersAt: Date, description: string | null): Promise<string> {
+export async function createReminder(user: User, triggersAt: Date, description: string | null): Promise<Reminder> {
   const entry = await db.reminder.create({
     data: {
       description,
@@ -25,5 +26,5 @@ export async function createReminder(user: User, triggersAt: Date, description: 
     localState.reminders.splice(index, 0, toInsert);
   }
 
-  return entry.id;
+  return entry;
 }

@@ -46,7 +46,7 @@ export default SubCommand(
     if (!reminder)
       return { embeds: [ failEmbedTemplate("Reminder does not exist") ] };
 
-    deleteReminder(reminder.id);
+    await deleteReminder(reminder.id);
 
     const embed = embedTemplate()
       .setTitle("Reminder removed")

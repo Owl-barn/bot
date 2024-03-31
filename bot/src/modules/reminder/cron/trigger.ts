@@ -15,6 +15,8 @@ export default cron(
 
   async () => {
     const currentTime = Date.now();
+
+    let updatedCount = 0;
     while (localState.reminders.length > 0 && currentTime >= localState.reminders[0].triggersAt.getTime()) {
       const reminderRef = localState.reminders.shift();
       if (reminderRef === undefined)
@@ -26,7 +28,7 @@ export default cron(
         continue;
       }
 
-      deleteReminder(reminder.id);
+      await deleteReminder(reminder.id);
 
       const user = await state.client.users.fetch(reminder.userId);
       if (!user) {
@@ -46,6 +48,11 @@ export default cron(
         localState.log.error(`Failed to send reminder ${reminderRef.id} to ${user.username} (${reminder.userId})`);
         continue;
       }
+
+      updatedCount++;
     }
+
+    if (updatedCount > 0)
+      localState.log.debug(`Sent ${updatedCount} reminders`);
   },
 );
