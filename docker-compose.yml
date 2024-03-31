@@ -43,7 +43,7 @@ services:
     restart: always
     deploy:
       mode: replicated
-      replicas: 3
+      replicas: 1
     volumes:
       - ./owlet/logs:/app/logs:rw
     env_file:
