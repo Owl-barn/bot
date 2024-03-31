@@ -41,6 +41,9 @@ services:
   owlet:
     build: owlet
     restart: always
+    deploy:
+      mode: replicated
+      replicas: 3
     volumes:
       - ./owlet/logs:/app/logs:rw
     env_file:
