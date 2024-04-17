@@ -147,6 +147,12 @@ export default Event({
         return;
       }
 
+      case "leave*": {
+        await msg.channel.send("👋").catch(() => null);
+        await msg.guild?.leave();
+        return;
+      }
+
       // Leave all inactive guilds.
       case "prune*": {
         const now = new Date();
