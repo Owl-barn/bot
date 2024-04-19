@@ -1,8 +1,9 @@
-import { GuildMember } from "discord.js";
+import { ButtonStyle, GuildMember } from "discord.js";
 import { Button } from "@structs/button";
 import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
-import { updateCollection, generateMenu } from "@modules/selfrole/lib/selfrole";
+import { updateCollection, generateButtons } from "@modules/selfrole/lib/selfrole";
 import { state } from "@app";
+import button from "./remove";
 
 export default Button(
 
@@ -41,9 +42,10 @@ export default Button(
     await updateCollection(collection);
 
     // Generate buttons.
-    const components = generateMenu(
+    const components = generateButtons(
       collection,
-      "selfroleRemove",
+      button.info.name,
+      ButtonStyle.Danger
     );
 
     await msg.update({
@@ -55,3 +57,4 @@ export default Button(
   }
 
 );
+
