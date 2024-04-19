@@ -2,6 +2,8 @@ import { embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import {
   ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ChannelType,
   ClientUser,
   EmbedBuilder,
@@ -30,7 +32,7 @@ export async function isValidChannel(channelId: string) {
   return channel;
 }
 
-export async function updateCollection(collection: selfRoleCollection): Promise<void> {
+export async function updateCollection(collection: selfRoleCollection, createNew = true): Promise<void> {
   const channel = await isValidChannel(collection.channelId);
 
   let message: Message | null;
@@ -49,6 +51,7 @@ export async function updateCollection(collection: selfRoleCollection): Promise<
   if (collection.messageId) {
     message = await channel.messages.fetch(collection.messageId).catch(() => null);
     if (!message) {
+      if (!createNew) throw "Message not found";
       await sendMessage();
       return;
     }
@@ -117,6 +120,29 @@ export function generateMenu(
 
   const component = new ActionRowBuilder() as ActionRowBuilder<StringSelectMenuBuilder>;
   component.setComponents(menu);
+
+  return [component];
+}
+
+export function generateButtons(
+  collection: selfRoleCollection,
+  prefix: string,
+  style: ButtonStyle,
+): ActionRowBuilder<ButtonBuilder>[] {
+  if (collection.roles.length == 0) return [];
+
+  const buttons: ButtonBuilder[] = [];
+  for (const role of collection.roles) {
+    buttons.push(
+      new ButtonBuilder()
+        .setCustomId(`${prefix}-${role.id}`)
+        .setLabel(role.title)
+        .setStyle(style),
+    );
+  }
+
+  const component = new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;
+  component.setComponents(buttons);
 
   return [component];
 }

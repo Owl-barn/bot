@@ -38,6 +38,6 @@ export async function toggleRole(member: GuildMember, selfRoleId: string) {
     return error;
   }
 
-  localState.log.info(`Role ${hasRole ? "removed" : "added"}: <@${member.user.tag.green}> <@!${selfrole.roleId.cyan}>`);
+  localState.log.info(`Role ${hasRole ? "removed" : "added"}: ${member.guild.name} | <@${member.user.tag.green}> <@!${selfrole.roleId.cyan}>`);
   return { ephemeral: true, embeds: [embed] };
 }
