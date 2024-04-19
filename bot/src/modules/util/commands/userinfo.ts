@@ -49,7 +49,7 @@ export default Command(
     const userData = await state.db.user.findUnique({
       where: { id: user.id },
       select: {
-        birthdays: true,
+        birthdays: { where: { NOT: { date: null } } },
 
         infractions: { where: { NOT: { deletedOn: null } } },
         moderationActions: true,
