@@ -4,6 +4,15 @@ import { ParentCommandStruct } from "@structs/command/parent";
 import { SubCommandGroupStruct } from "@structs/command/subcommandgroup";
 import fs from "fs";
 
+function registerCommand(input: returnType) {
+  const existingCommand = state.commands.get(input.name);
+  if (existingCommand) {
+    throw new Error(`Duplicate command name: ${input.name}, ${existingCommand.info.path} and ${input.command.info.path}`);
+  }
+  input.command.info.commandName = input.name;
+  state.commands.set(input.name, input.command);
+}
+
 export async function loadCommands(path: string) {
   const commandFiles = fs.readdirSync(path, { withFileTypes: true });
 
@@ -18,7 +27,7 @@ export async function loadCommands(path: string) {
     if (file.name.endsWith(".js")) {
       const command = await generateSimpleCommand(folderPath);
       if (!command) continue;
-      state.commands.set(command.name, command.command);
+      registerCommand(command);
       continue;
     }
 
@@ -28,7 +37,7 @@ export async function loadCommands(path: string) {
     if (!command) continue;
 
     for (const subCommand of command) {
-      state.commands.set(subCommand.name, subCommand.command);
+      registerCommand(subCommand);
       // Log
       if (state.env.isDevelopment)
         state.log.debug(`Loaded command: ${subCommand.name.green}`);
@@ -59,6 +68,7 @@ async function generateSimpleCommand(
   if (commandInfo == undefined) return;
 
   preName ? (commandInfo.name = `${preName}-${commandInfo.name}`) : null;
+  command.info.path = commandPath;
 
   return { name: commandInfo.name, command };
 }
@@ -93,7 +103,6 @@ async function generateSubCommand(folderPath: string): Promise<returnType[] | un
       const command = await generateSimpleCommand(`${folderPath}/${file.name}`);
 
       if (!command) continue;
-
       commands.push({
         name: `${commandName}-${command.name}`,
         command: command.command,

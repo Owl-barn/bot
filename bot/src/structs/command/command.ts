@@ -10,7 +10,10 @@ export interface CommandStruct {
   run: RunFunction<boolean>;
 }
 
-export function Command<I extends CommandInfo>(info: I, run: RunFunction<I["isGlobal"] extends true ? false : true>): CommandStruct {
+export function Command<I extends CommandInfo>(
+  info: I,
+  run: RunFunction<I["isGlobal"] extends true ? false : true>,
+): CommandStruct {
   return {
     info: { ...info, type: CommandType.Default },
     run,

@@ -4,6 +4,7 @@ import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType, escapeMarkdown } from "discord.js";
 import { updateCollection } from "modules/selfrole/lib/selfrole";
 import { checkEmojis } from "@lib/emoji";
+import { collectionAutocomplete } from "@modules/selfrole/lib/collectionAutocomplete";
 
 export default SubCommand(
 
@@ -17,6 +18,7 @@ export default SubCommand(
         type: ApplicationCommandOptionType.String,
         name: "collection",
         description: "What channel to add the role to.",
+        autoComplete: collectionAutocomplete,
         required: true,
       },
       {

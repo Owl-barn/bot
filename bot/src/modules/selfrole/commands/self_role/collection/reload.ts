@@ -3,6 +3,7 @@ import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
 import { updateCollection } from "modules/selfrole/lib/selfrole";
+import { collectionAutocomplete } from "@modules/selfrole/lib/collectionAutocomplete";
 
 export default SubCommand(
 
@@ -16,6 +17,7 @@ export default SubCommand(
         type: ApplicationCommandOptionType.String,
         name: "collection",
         description: "What collection to reload.",
+        autoComplete: collectionAutocomplete,
         required: true,
       },
     ],
