@@ -67,6 +67,15 @@ export async function updateCollection(collection: selfRoleCollection, createNew
   }
 }
 
+function generateRoleName(role: Selfrole) {
+  let name = role.title;
+  if (role.emoji) {
+    const emoji = checkEmojis(role.emoji).unicode[0];
+    emoji && (name = `${emoji} ${name}`);
+  }
+  return name;
+}
+
 export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
   const embed = embedTemplate()
     .setFooter({ text: collection.id });
@@ -74,19 +83,26 @@ export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
   collection.title && embed.setTitle(collection.title);
   collection.description && embed.setDescription(collection.description);
 
-  embed.addFields(collection.roles.map((role) => {
-    let name = role.title;
-    if (role.emoji) {
-      const emoji = checkEmojis(role.emoji).unicode[0];
-      emoji && (name = `${emoji} ${name}`);
-    }
-
-    return {
-      name,
+  const useFields = collection.roles.some((role) => role.description);
+  if (useFields) {
+    embed.addFields(collection.roles.map((role) => ({
+      name: generateRoleName(role),
       value: role.description ?? "No description provided",
       inline: false,
-    };
-  }));
+    })));
+
+  } else {
+    const description = collection.roles.reduce((acc, role) => {
+      const name = generateRoleName(role);
+      return acc + `${name}\n`;
+    }, "");
+
+    if (collection.description) {
+      embed.setFields([{ name: "Roles", value: description }]);
+    } else {
+      embed.setDescription(description);
+    }
+  }
 
   return [embed];
 }
