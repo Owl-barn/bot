@@ -5,27 +5,26 @@ import { subscriptionTiers } from "@structs/access/subscription";
 import { CommandGroup } from "@structs/command";
 import { CommandStruct } from "@structs/command/command";
 import { ParentCommandStruct } from "@structs/command/parent";
-import { SubCommandStruct } from "@structs/command/subcommand";
 import { ReturnMessage } from "@structs/returnmessage";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
 import { localState } from "..";
 import { respond } from "./respond";
+import { getCommand } from "./getCommand";
+import { errorEmbed } from "./interactionError";
 
 export async function commandEvent(msg: ChatInputCommandInteraction) {
-  let { commandName } = msg;
-
   const timeStart = Date.now();
 
-  const subCommandGroup = msg.options.getSubcommandGroup(false);
-  const subCommand = msg.options.getSubcommand(false);
+  let command: ReturnType<typeof getCommand>;
+  try {
+    command = getCommand(msg);
+  } catch (error) {
+    localState.log.error(`Error getting command: ${error}`);
 
-  subCommandGroup ? (commandName += `-${subCommandGroup}`) : null;
-  subCommand ? (commandName += `-${subCommand}`) : null;
+    return await msg.reply({ embeds: [errorEmbed()] });
+  }
 
-  const command = state.commands.get(commandName) as SubCommandStruct | CommandStruct;
-
-  if (!command) return;
-  if (command.info.isGlobal === false && !msg.inCachedGuild()) throw "guild not cached";
+  const commandName = command.info.commandName as string;
 
   let parentCommand: ParentCommandStruct | undefined;
   // if the command includes a dash, that means its a subcommand

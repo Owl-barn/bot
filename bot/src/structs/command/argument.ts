@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType, LocalizationMap } from "discord.js";
+import { AutocompleteFunction } from ".";
 
-// eslint-disable-next-line no-shadow
-export enum argumentType {
+export enum ArgumentType {
   string = 1,
   integer = 2,
   number = 3,
@@ -16,9 +16,9 @@ export enum argumentType {
 
 export type Argument<T = string | number> = {
   type: Omit<
-  ApplicationCommandOptionType,
-  | ApplicationCommandOptionType.Subcommand
-  | ApplicationCommandOptionType.SubcommandGroup
+    ApplicationCommandOptionType,
+    | ApplicationCommandOptionType.Subcommand
+    | ApplicationCommandOptionType.SubcommandGroup
   >;
 
   name: string;
@@ -31,7 +31,7 @@ export type Argument<T = string | number> = {
   min?: number;
   max?: number;
   choices?: ArgumentChoice<T>[];
-  autoComplete?: boolean;
+  autoComplete?: AutocompleteFunction<boolean, T>;
 };
 
 export type ArgumentChoice<T> = {

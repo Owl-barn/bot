@@ -257,7 +257,7 @@ function argumentHandler<T extends builderType>(
         option.setChoices(...argument.choices as ArgumentChoice<number>[]);
     }
 
-    if (argument.autoComplete) {
+    if (argument.autoComplete !== undefined) {
       if (
         option.type == ApplicationCommandOptionType.String ||
         option.type == ApplicationCommandOptionType.Number ||
