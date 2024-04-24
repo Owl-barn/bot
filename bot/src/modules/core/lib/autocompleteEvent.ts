@@ -10,6 +10,8 @@ export async function AutocompleteEvent(msg: AutocompleteInteraction) {
 
   if (argument === undefined || argument.autoComplete === undefined) return;
 
+  // NOTE: Make this dynamic :((
+  if (!msg.inCachedGuild()) throw new Error("Guild not cached");
   const response = await argument.autoComplete(msg, focused.value);
 
   await msg.respond(response);

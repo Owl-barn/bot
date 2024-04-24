@@ -31,7 +31,8 @@ export type Argument<T = string | number> = {
   min?: number;
   max?: number;
   choices?: ArgumentChoice<T>[];
-  autoComplete?: AutocompleteFunction<boolean, T>;
+  // NOTE: i wish this type could be inferred
+  autoComplete?: AutocompleteFunction<true, string>;
 };
 
 export type ArgumentChoice<T> = {
