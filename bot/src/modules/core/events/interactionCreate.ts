@@ -3,6 +3,7 @@ import { Event } from "@structs/event";
 import { buttonEvent } from "../lib/buttonEvent";
 import { commandEvent } from "../lib/commandEvent";
 import { SelectEvent } from "../lib/selectEvent";
+import { AutocompleteEvent } from "../lib/autocompleteEvent";
 
 export default Event({
   name: "interactionCreate",
@@ -29,6 +30,11 @@ export default Event({
     } else if (interaction.isChatInputCommand()) {
       command = {
         run: commandEvent(interaction),
+        id: interaction.commandName,
+      };
+    } else if (interaction.isAutocomplete()) {
+      command = {
+        run: AutocompleteEvent(interaction),
         id: interaction.commandName,
       };
     }

@@ -9,7 +9,7 @@ export interface SubCommandInfo extends BaseCommandInfo {
   adminOnly?: boolean;
   disabled?: boolean;
 
-  arguments?: Argument<string | number>[];
+  arguments?: Argument[];
 
   userPermissions?: PermissionsString[];
   botPermissions?: PermissionsString[];
@@ -24,7 +24,10 @@ export interface SubCommandStruct {
   run: RunFunction<boolean>;
 }
 
-export function SubCommand<I extends SubCommandInfo>(info: I, run: RunFunction<I["isGlobal"] extends true ? false : true>): SubCommandStruct {
+export function SubCommand<I extends SubCommandInfo>(
+  info: I,
+  run: RunFunction<I["isGlobal"] extends true ? false : true>,
+): SubCommandStruct {
   return {
     info: {
       ...info,

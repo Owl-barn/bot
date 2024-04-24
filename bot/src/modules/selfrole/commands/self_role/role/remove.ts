@@ -8,6 +8,7 @@ import {
   ButtonStyle,
 } from "discord.js";
 import button from "@modules/selfrole/components/buttons/remove";
+import { collectionAutocomplete } from "@modules/selfrole/lib/collectionAutocomplete";
 
 
 export default SubCommand(
@@ -22,6 +23,7 @@ export default SubCommand(
         type: ApplicationCommandOptionType.String,
         name: "collection",
         description: "From which collection.",
+        autoComplete: collectionAutocomplete,
         required: true,
       },
     ],
