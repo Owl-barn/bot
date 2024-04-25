@@ -92,10 +92,13 @@ export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
     })));
 
   } else {
-    const description = collection.roles.reduce((acc, role) => {
+    let description = collection.roles.reduce((acc, role) => {
       const name = generateRoleName(role);
       return acc + `${name}\n`;
     }, "");
+
+    if (description.length === 0)
+      description = "No roles available";
 
     if (collection.description) {
       embed.setFields([{ name: "Roles", value: description }]);
@@ -161,6 +164,18 @@ export function generateButtons(
   component.setComponents(buttons);
 
   return [component];
+}
+
+export function generateInteractable(
+  collection: selfRoleCollection,
+  prefix: string,
+): ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] {
+  if (collection.roles.length == 0) return [];
+  else if (collection.roles.length > 5) {
+    return generateMenu(collection, prefix);
+  } else {
+    return generateButtons(collection, prefix, ButtonStyle.Primary);
+  }
 }
 
 export interface selfRoleCollection extends prisma.SelfroleCollection {

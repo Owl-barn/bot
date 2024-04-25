@@ -2,14 +2,11 @@ import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import {
-  ActionRowBuilder,
   ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
 } from "discord.js";
 import button from "@modules/selfrole/components/buttons/remove";
 import { collectionAutocomplete } from "@modules/selfrole/lib/collectionAutocomplete";
-
+import { generateInteractable } from "@modules/selfrole/lib/selfrole";
 
 export default SubCommand(
 
@@ -57,25 +54,11 @@ export default SubCommand(
     embed.setTitle(collection.title);
     embed.setDescription("Select a role to remove.");
 
-    const buttons: ButtonBuilder[] = [];
-
-    // Generate buttons.
-    for (const role of collection.roles) {
-      buttons.push(
-        new ButtonBuilder()
-          .setCustomId(`${button.info.name}-${role.id}`)
-          .setLabel(role.title)
-          .setStyle(ButtonStyle.Danger),
-      );
-    }
-
-    const component =
-      new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>;
-    component.setComponents(buttons);
+    const components = generateInteractable(collection, button.info.name);
 
     return {
       embeds: [embed],
-      components: [component],
+      components,
       ephemeral: true,
     };
   }
