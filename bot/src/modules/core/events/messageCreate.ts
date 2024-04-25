@@ -58,6 +58,20 @@ export default Event({
         return;
       }
 
+      // Shut the bot down. (docker shouldnt restart it)
+      case "terminate*": {
+        await msg.reply("Shutting down...");
+        process.exit(0);
+        return;
+      }
+
+      // Restart the bot. (docker should restart it)
+      case "restart*": {
+        await msg.reply("Restarting...");
+        process.exit(1);
+        return;
+      }
+
       // Remove all private rooms from this guild.
       case "vc*": {
         const vcs = await state.db.privateRoom.findMany({
@@ -133,6 +147,7 @@ export default Event({
         return;
       }
 
+      // Updates all selfrole collections.
       case "collections*": {
         const collections = await state.db.selfroleCollection.findMany({
           include: { roles: true },
@@ -147,9 +162,30 @@ export default Event({
         return;
       }
 
+      // Leave this guild.
       case "leave*": {
         await msg.channel.send("👋").catch(() => null);
         await msg.guild?.leave();
+        return;
+      }
+
+      // Toggle dev mode for this guild.
+      case "dev*": {
+        if (!msg.guild) return;
+        const guild = await state.db.guild.findUnique({
+          where: { id: msg.guild.id },
+        });
+
+        if (!guild) return;
+
+        await state.db.guild.update({
+          where: { id: msg.guild.id },
+          data: { isDev: !guild.isDev },
+        });
+
+        await registerCommand(msg.guild);
+
+        msg.reply(`Dev mode is now ${!guild.isDev ? "on" : "off"}`);
         return;
       }
 
