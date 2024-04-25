@@ -122,6 +122,7 @@ export default SubCommand(
       data: {
         title: template.title,
         description: template.description,
+        allowMultiple: template.allowMultiple,
         channelId: channel.id,
         guildId: msg.guild.id,
         roles: { create: roleQuery },
@@ -131,7 +132,9 @@ export default SubCommand(
 
     await updateCollection(collection);
 
+    const embed = embedTemplate(`Roles created: ${toBeCreatedRoles.length}\nRoles reused: ${template.roles.length - toBeCreatedRoles.length}`);
+    embed.setTitle("Template added");
 
-    return { embeds: [embedTemplate(`Template added.\nRoles created: ${toBeCreatedRoles.length}\nRoles reused: ${template.roles.length - toBeCreatedRoles.length}`)] };
+    return { embeds: [embed], ephemeral: true };
   },
 );

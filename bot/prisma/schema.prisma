@@ -119,8 +119,9 @@ model SelfroleCollection {
   channelId String
   messageId String?
 
-  title       String?
-  description String?
+  title         String?
+  description   String?
+  allowMultiple Boolean @default(true)
 
   guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 
@@ -299,7 +300,7 @@ model Reminder {
   triggersAt  DateTime
 
   userId String
-  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 // Enums

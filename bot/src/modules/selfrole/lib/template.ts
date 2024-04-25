@@ -3,6 +3,7 @@ import { ColorResolvable } from "discord.js";
 export type Template = {
   title: string;
   description?: string;
+  allowMultiple?: boolean;
   roles: {
     title: string;
     description?: string;
@@ -34,6 +35,7 @@ export const templates: Template[] = [
   },
   {
     title: "Color",
+    allowMultiple: false,
     roles: [
       { title: "Red", color: "Red" },
       { title: "Green", color: "Green" },

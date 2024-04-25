@@ -5,10 +5,14 @@ import { localState } from "..";
 import { logType } from "@lib/services/logService";
 
 export async function toggleRole(member: GuildMember, selfRoleId: string) {
-  const selfrole = await state.db.selfrole.findFirst({ where: { id: selfRoleId } });
+  const collection = await state.db.selfroleCollection.findFirst({
+    where: { roles: { some: { id: selfRoleId } } },
+    include: { roles: true },
+  });
+  const selfrole = collection?.roles.find((r) => r.id === selfRoleId);
   const error = { ephemeral: true, content: "An error occured" };
 
-  if (!selfrole) {
+  if (!selfrole || !collection) {
     localState.log.error(`Selfrole ${selfRoleId} not found`);
     return error;
   }
@@ -17,11 +21,20 @@ export async function toggleRole(member: GuildMember, selfRoleId: string) {
   let roleError;
   const hasRole = member.roles.cache.get(selfrole.roleId);
 
+  // Remove role
   if (hasRole) {
     await member.roles.remove(selfrole.roleId).catch((e) => roleError = e);
     embed = failEmbedTemplate(`Role <@&${selfrole.roleId}> removed!`);
+
   } else {
-    await member.roles.add(selfrole.roleId).catch((e) => roleError = e);
+    // Add role
+    if (!collection.allowMultiple) {
+      const roles = collection.roles.map((r) => r.roleId);
+      const otherRoles = member.roles.cache.filter((r) => !roles.includes(r.id)).map((r) => r.id);
+      await member.roles.set([...otherRoles, selfrole.roleId]).catch((e) => roleError = e);
+    } else {
+      await member.roles.add(selfrole.roleId).catch((e) => roleError = e);
+    }
     embed = embedTemplate(`Role <@&${selfrole.roleId}> added!`);
   }
 

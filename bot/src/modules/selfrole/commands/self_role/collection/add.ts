@@ -32,6 +32,12 @@ export default SubCommand(
         description: "What description to give the collection.",
         required: false,
       },
+      {
+        type: ApplicationCommandOptionType.Boolean,
+        name: "allow_multiple",
+        description: "Whether to allow multiple roles to be selected, default: true.",
+        required: false,
+      },
     ],
 
     throttling: {
@@ -44,6 +50,7 @@ export default SubCommand(
   async (msg) => {
     const description = msg.options.getString("description");
     const title = msg.options.getString("title");
+    const allowMultiple = msg.options.getBoolean("allow_multiple") ?? undefined;
     const channel = msg.options.getChannel(
       "channel",
       true,
@@ -71,6 +78,7 @@ export default SubCommand(
       data: {
         guildId: msg.guildId,
         channelId: channel.id,
+        allowMultiple,
         title,
         description,
       },
