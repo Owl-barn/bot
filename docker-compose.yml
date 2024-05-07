@@ -26,7 +26,9 @@ services:
   # Bot
   bot:
     build: bot
-    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
     volumes:
       - ./bot/config:/app/config:ro
       - ./bot/logs:/app/logs:rw
