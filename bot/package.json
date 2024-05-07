@@ -10,25 +10,25 @@
     "updatePrisma": "npm i --save-dev prisma@latest && npm i --save-dev @prisma/client@latest"
   },
   "devDependencies": {
-    "@prisma/client": "^5.10.2",
+    "@prisma/client": "^5.13.0",
     "@types/cron": "^2.4.0",
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "eslint": "^8.56.0",
-    "prisma": "^5.10.2",
-    "typescript": "^5.3.3"
+    "eslint": "^8.57.0",
+    "prisma": "^5.13.0",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "colors": "^1.4.0",
     "cron": "^2.4.4",
-    "discord.js": "^14.14.1",
+    "discord.js": "^14.15.2",
     "dotenv": "^16.4.5",
     "envalid": "^7.3.1",
     "moment": "^2.30.1",
     "rcon-client": "^4.2.4",
     "tsconfig-paths": "^4.2.0",
-    "winston": "^3.11.0",
-    "ws": "^8.16.0"
+    "winston": "^3.13.0",
+    "ws": "^8.17.0"
   }
 }
