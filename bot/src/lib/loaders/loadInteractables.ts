@@ -27,7 +27,7 @@ export async function loadInteractables<T extends keyof Interactables>(component
   console.log(
     " - Loaded ".green +
     String(state.interactables[key].size - oldButtonCount).cyan +
-    `${key}s`.green,
+    ` ${key}`.green,
   );
 
 }

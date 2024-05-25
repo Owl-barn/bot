@@ -3,6 +3,7 @@ import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import {
   ApplicationCommandOptionType,
+  ChannelType,
   ClientUser,
 } from "discord.js";
 
@@ -18,6 +19,7 @@ export default SubCommand(
         type: ApplicationCommandOptionType.Channel,
         name: "channel",
         description: "What channel to add the collection to.",
+        allowedChannelTypes: [ChannelType.GuildText],
         required: true,
       },
       {
@@ -55,11 +57,6 @@ export default SubCommand(
       "channel",
       true,
     );
-
-    if (!channel.isTextBased())
-      return {
-        embeds: [failEmbedTemplate("Channel is not a text channel.")],
-      };
 
     const canSend = channel
       .permissionsFor(msg.client.user as ClientUser)

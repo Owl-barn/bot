@@ -257,6 +257,12 @@ function argumentHandler<T extends builderType>(
         option.setChoices(...argument.choices as ArgumentChoice<number>[]);
     }
 
+    if (option.type === ApplicationCommandOptionType.Channel) {
+      if (argument.allowedChannelTypes) {
+        option.addChannelTypes(...argument.allowedChannelTypes);
+      }
+    }
+
     if (argument.autoComplete !== undefined) {
       if (
         option.type == ApplicationCommandOptionType.String ||

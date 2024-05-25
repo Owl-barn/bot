@@ -1,7 +1,7 @@
 import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, ChannelType } from "discord.js";
 import { updateCollection } from "@modules/selfrole/lib/selfrole";
 import { Template, templates } from "@modules/selfrole/lib/template";
 
@@ -38,6 +38,7 @@ export default SubCommand(
         type: ApplicationCommandOptionType.Channel,
         name: "channel",
         description: "Which channel should the self role be in.",
+        allowedChannelTypes: [ChannelType.GuildText],
         required: false,
       },
     ],
