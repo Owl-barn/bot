@@ -1,0 +1,49 @@
+$font: "raleway", Helvetica, sans-serif;
+
+@font-face {
+    font-family: "raleway";
+    src: url("/raleway-base.ttf");
+    font-display: swap;
+}
+
+:global(:root) {
+    --content-width: min(100%, 90ch);
+    --border-width: 2px;
+    --border-radius: 0.5rem;
+
+    // Text
+    --theme-text: #e6e6d7;
+    --theme-text-dark: #616161;
+
+    --theme-accent: #F18805;
+    --theme-danger: var(--color-red);
+    --theme-warning: var(--color-gold);
+    --theme-success: var(--color-gold);
+
+    // Elements
+    --theme-primary: rgb(22, 22, 22);
+    --theme-secondary: rgb(12, 12, 12);
+    --theme-tertiary: rgb(8, 8, 8);
+}
+
+:global(*) {
+    font-feature-settings:
+        "pnum" on,
+        "lnum" on;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+
+    font-family: $font;
+}
+
+:global(html, body) {
+    max-width: 100vw;
+    color-scheme: dark light;
+
+    color: var(--theme-text);
+}
+
+:global(html) {
+    background-color: var(--theme-primary);
+}
