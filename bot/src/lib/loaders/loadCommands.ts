@@ -5,6 +5,8 @@ import { SubCommandGroupStruct } from "@structs/command/subcommandgroup";
 import { CommandTreeModule } from "@structs/command/tree";
 import fs from "fs/promises";
 import { Dirent } from "fs";
+import { CommandStruct } from "@structs/command/command";
+import { SubCommandStruct } from "@structs/command/subcommand";
 
 export async function loadCommands(path: string): Promise<CommandTreeModule[]> {
   const topLevelFiles = await fs.readdir(path, { withFileTypes: true });
@@ -47,7 +49,7 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
     if (!index) throw "No default export found for " + path;
 
     // update current scope
-    currentScope = `${currentScope}-${index.info.name}`;
+    currentScope = [currentScope, index.info.name].filter(Boolean).join("-");
 
     // Loop over commands
     let commands: CommandTreeModule[] | undefined = [];
@@ -71,11 +73,10 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
   // Useable commands.
   if (file.isFile() && file.name.endsWith(".js")) {
 
-    const command = (await import(path)).default as CommandEnum | undefined;
+    const command = (await import(path)).default as CommandStruct | SubCommandStruct | undefined;
     if (!command) throw "No default export found for " + path;
 
-    currentScope = `${currentScope}-${command.info.name}`;
-
+    currentScope = [currentScope, command.info.name].filter(Boolean).join("-");
 
     // Check and add to global state
     const commandExists = state.commands.get(currentScope);
@@ -89,6 +90,7 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
 
     // Populate command info
     command.info.path = path;
+    command.info.commandName = currentScope;
 
     return {
       type: command.info.type,

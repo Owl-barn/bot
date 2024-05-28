@@ -3,7 +3,7 @@ services:
   # Database
   postgres:
     image: postgres:13
-    container_name: postgres
+    container_name: hootsifer_db
     restart: always
     ports:
       - "9029:5432"
@@ -22,6 +22,7 @@ services:
   # Bot
   bot:
     build: bot
+    container_name: hootsifer_bot
     deploy:
       restart_policy:
         condition: on-failure
@@ -56,8 +57,10 @@ services:
   # Web
   web:
     build: web
-    container_name: bot_web
+    container_name: hootsifer_web
     restart: always
+    ports:
+      - "3588:3000"
     depends_on:
       - bot
     networks:
