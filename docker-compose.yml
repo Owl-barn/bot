@@ -1,5 +1,3 @@
-version: '3'
-
 services:
 
   # Database
@@ -7,6 +5,8 @@ services:
     image: postgres:13
     container_name: postgres
     restart: always
+    ports:
+      - "9029:5432"
     volumes:
       - ./database:/var/lib/postgresql/data
     environment:
