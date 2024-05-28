@@ -17,6 +17,7 @@ import { loadGuilds } from "@lib/loaders/loadGuilds";
 import { SelectMenuStruct } from "@structs/selectMenu";
 import { initializeServer } from "api/webServer";
 import { CommandTree } from "@structs/command/tree";
+import Fastify, { FastifyInstance } from "fastify";
 
 colors.enable();
 
@@ -31,6 +32,7 @@ export interface State {
   db: PrismaClient;
   env: typeof import("./lib/loaders/loadEnvironment ").loadEnvironment;
   client: Client;
+  webServer: FastifyInstance;
 
   commands: Map<string, CommandEnum>;
   commandTree: CommandTree;
@@ -50,6 +52,7 @@ export interface State {
 const state = {
   env: loadEnvironment,
   db: new PrismaClient(),
+  webServer: Fastify(),
 
   commands: new Map(),
   commandTree: [],
@@ -79,6 +82,7 @@ const state = {
   for (const user of bannedUsers) {
     state.bannedUsers.set(user.id, "");
   }
+
   console.log(" - Loaded ".green + bannedUsers.length.toString().cyan + " banned users".green);
 }
 )();

@@ -8,6 +8,7 @@ import path from "path";
 import { loadJobs } from "./loadJobs";
 import { LocalState } from "@structs/localState";
 import { CommandType } from "@structs/command";
+import { loadEndpoints } from "./loadEndpoints";
 
 export async function loadModules() {
 
@@ -40,6 +41,7 @@ export async function loadModules() {
     moduleFiles.includes("events") && await loadEvents(module.path + "events/");
     const commands = moduleFiles.includes("commands") ? await loadCommands(module.path + "commands/") : [];
     moduleFiles.includes("cron") && await loadJobs(module.path + "cron/");
+    moduleFiles.includes("api") && loadEndpoints(module.path + "api/");
 
     if (moduleFiles.includes("components")) {
       const componentFiles = fs.readdirSync(module.path + "components/");

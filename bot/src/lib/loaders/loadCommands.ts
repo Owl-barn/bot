@@ -28,7 +28,6 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
   if (file.name.startsWith("_")) return;
 
   const path = `${file.path}/${file.name}`;
-  console.log({ path, file });
 
   // Command groups.
   if (file.isDirectory()) {
