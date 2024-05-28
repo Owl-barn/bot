@@ -1,10 +1,13 @@
 <script lang="ts">
     import Hero from "components/Hero.svelte";
     import Note from "components/art/Note.svelte";
+
+    let { data } = $props();
+    console.log(data.stats);
 </script>
 
 <main class="main">
-    <Hero />
+    <Hero stats={data.stats} />
 
     <section class="divider"></section>
 
@@ -12,8 +15,8 @@
         <!-- Music -->
         <article>
             <section class="artwork">
-                <Note delay={800} size={120} />
-                <Note delay={0} size={80} />
+                <Note delay={800} size={7.5} />
+                <Note delay={0} size={5} />
             </section>
             <section class="info">
                 <h1 class="premium">Music streaming</h1>
@@ -27,8 +30,8 @@
         <!-- Vc -->
         <article>
             <section class="artwork">
-                <Note delay={0} size={120} />
-                <Note delay={800} size={80} />
+                <Note delay={800} size={7.5} />
+                <Note delay={0} size={5} />
             </section>
             <section class="info">
                 <h1>Voice channel privacy</h1>
@@ -39,8 +42,8 @@
         <!-- Notify -->
         <article>
             <section class="artwork">
-                <Note delay={0} size={120} />
-                <Note delay={800} size={80} />
+                <Note delay={800} size={7.5} />
+                <Note delay={0} size={5} />
             </section>
             <section class="info">
                 <h1>Get notified</h1>
@@ -54,8 +57,8 @@
         <!-- Birthday -->
         <article>
             <section class="artwork">
-                <Note delay={0} size={120} />
-                <Note delay={800} size={80} />
+                <Note delay={800} size={7.5} />
+                <Note delay={0} size={5} />
             </section>
             <section class="info">
                 <h1>Happy Birthday!</h1>
@@ -69,8 +72,8 @@
         <!-- Moderation -->
         <article>
             <section class="artwork">
-                <Note delay={0} size={120} />
-                <Note delay={800} size={80} />
+                <Note delay={800} size={7.5} />
+                <Note delay={0} size={5} />
             </section>
             <section class="info">
                 <h1>Moderate with ease</h1>
@@ -85,8 +88,8 @@
         <!-- Level -->
         <article>
             <section class="artwork">
-                <Note delay={0} size={120} />
-                <Note delay={800} size={80} />
+                <Note delay={800} size={7.5} />
+                <Note delay={0} size={5} />
             </section>
             <section class="info">
                 <h1>Level leaderboard</h1>
@@ -97,8 +100,8 @@
         <!-- Selfrole -->
         <article>
             <section class="artwork">
-                <Note delay={0} size={120} />
-                <Note delay={800} size={80} />
+                <Note delay={800} size={7.5} />
+                <Note delay={0} size={5} />
             </section>
             <section class="info">
                 <h1>Express yourself!</h1>
@@ -173,10 +176,6 @@
         & > .artwork {
             flex-direction: row;
             align-items: center;
-
-            & > * {
-                padding: 10px;
-            }
         }
     }
 </style>

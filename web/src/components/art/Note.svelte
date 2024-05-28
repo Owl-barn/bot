@@ -8,9 +8,7 @@
 </script>
 
 <svg
-    style="animation-delay: -{delay}ms;"
-    width={size}
-    height={size}
+    style="animation-delay: -{delay}ms; --size: {size}rem;"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 360.28 377.05"
 >
@@ -30,6 +28,9 @@
         animation-timing-function: ease-in-out;
         animation-iteration-count: infinite;
         animation-direction: alternate;
+
+        width: clamp(0.5 * var(--size), 8vw, var(--size));
+        height: var(--size);
 
         // shadow
         filter: drop-shadow(5px 5px 6px rgba(0, 0, 0, 1));

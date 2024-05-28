@@ -1,20 +1,11 @@
 
-import adapter from '@sveltejs/adapter-static';
+import adapter from "@sveltejs/adapter-node";
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 export default {
 	preprocess: vitePreprocess({ style: true, script: false }),
-	compilerOptions: {
-		runes: true,
-	},
 	kit: {
-		adapter: adapter({
-			pages: 'build',
-			assets: 'build',
-			fallback: undefined,
-			precompress: false,
-			strict: true
-		}),
+		adapter: adapter(),
 		alias: {
 			"styles": "./src/styles",
 			"components": "./src/components",
