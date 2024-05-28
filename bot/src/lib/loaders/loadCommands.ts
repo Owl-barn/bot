@@ -2,128 +2,102 @@ import { state } from "@app";
 import { CommandEnum } from "@structs/command";
 import { ParentCommandStruct } from "@structs/command/parent";
 import { SubCommandGroupStruct } from "@structs/command/subcommandgroup";
-import fs from "fs";
+import { CommandTreeModule } from "@structs/command/tree";
+import fs from "fs/promises";
+import { Dirent } from "fs";
 
-function registerCommand(input: returnType) {
-  const existingCommand = state.commands.get(input.name);
-  if (existingCommand) {
-    throw new Error(`Duplicate command name: ${input.name}, ${existingCommand.info.path} and ${input.command.info.path}`);
-  }
-  input.command.info.commandName = input.name;
-  state.commands.set(input.name, input.command);
-}
+export async function loadCommands(path: string): Promise<CommandTreeModule[]> {
+  const topLevelFiles = await fs.readdir(path, { withFileTypes: true });
+  const commandTree: CommandTreeModule[] = [];
 
-export async function loadCommands(path: string) {
-  const commandFiles = fs.readdirSync(path, { withFileTypes: true });
-
-  // Loop through top level files/folders
-  const oldCommandCount = state.commands.size;
-
-  for (const file of commandFiles) {
-    const folderPath = path + file.name;
-
-    if (file.name.startsWith("_")) continue;
-
-    if (file.name.endsWith(".js")) {
-      const command = await generateSimpleCommand(folderPath);
-      if (!command) continue;
-      registerCommand(command);
-      continue;
-    }
-
-    if (!file.isDirectory()) continue;
-
-    const command = await generateSubCommand(folderPath);
-    if (!command) continue;
-
-    for (const subCommand of command) {
-      registerCommand(subCommand);
-      // Log
-      if (state.env.isDevelopment)
-        state.log.debug(`Loaded command: ${subCommand.name.green}`);
-    }
-
+  for (const file of topLevelFiles) {
+    const commands = await loadCommand(file);
+    commands && commandTree.push(commands);
   }
 
   console.log(
     " - Loaded ".green +
-    String(state.commands.size - oldCommandCount).cyan +
+    String(state.commands.size).cyan +
     " commands".green,
   );
+
+  return commandTree;
 }
 
-interface returnType {
-  name: string;
-  command: CommandEnum;
-}
+async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTreeModule | undefined> {
+  if (file.name.startsWith("_")) return;
 
-async function generateSimpleCommand(
-  commandPath: string,
-  preName?: string,
-): Promise<returnType | undefined> {
-  const command = (await import(commandPath)).default as CommandEnum | undefined;
-  if (!command) throw "No default export found for " + commandPath;
+  const path = `${file.path}/${file.name}`;
+  console.log({ path, file });
 
-  const commandInfo = command.info;
-  if (commandInfo == undefined) return;
+  // Command groups.
+  if (file.isDirectory()) {
+    const folder = await fs.readdir(path, { withFileTypes: true });
 
-  preName ? (commandInfo.name = `${preName}-${commandInfo.name}`) : null;
-  command.info.path = commandPath;
+    // Module info
+    const indexFile = folder.find((f) => f.name === "index.js");
 
-  return { name: commandInfo.name, command };
-}
-
-async function generateSubCommand(folderPath: string): Promise<returnType[] | undefined> {
-  const commandFiles = fs.readdirSync(folderPath, { withFileTypes: true });
-
-  if (commandFiles.findIndex(file => file.name === "index.js") == -1) {
-    console.warn("No index.js found in " + folderPath);
-    return;
-  }
-
-  const mainCommand = (await import(`${folderPath}/index.js`)).default as
-    | ParentCommandStruct
-    | SubCommandGroupStruct;
-
-  if (!mainCommand) throw "No main command found for " + folderPath;
-
-  const commandName = mainCommand.info.name;
-  const commands: returnType[] = [];
-
-  commands.push({ name: mainCommand.info.name, command: mainCommand });
-
-  // Loop through all sub commands
-  for (const file of commandFiles) {
-    if (file.name.startsWith("_")) continue;
-
-    if (file.name === "index.js") continue;
-
-    // If file is a js file, it is a simple command
-    if (file.name.endsWith(".js")) {
-      const command = await generateSimpleCommand(`${folderPath}/${file.name}`);
-
-      if (!command) continue;
-      commands.push({
-        name: `${commandName}-${command.name}`,
-        command: command.command,
-      });
-
-      continue;
+    if (!indexFile) {
+      throw `No index.js found in ${path}`.red.bold;
     }
 
-    if (!file.isDirectory()) continue;
+    const index = (await import(`${path}/index.js`)).default as
+      | ParentCommandStruct
+      | SubCommandGroupStruct;
 
-    // If file is a folder, it is a sub command group
-    const subCommands = await generateSubCommand(`${folderPath}/${file.name}`);
-    if (!subCommands) continue;
+    if (!index) throw "No default export found for " + path;
 
-    for (const subCommand of subCommands) {
-      commands.push({
-        name: `${commandName}-${subCommand.name}`,
-        command: subCommand.command,
-      });
+    // update current scope
+    currentScope = `${currentScope}-${index.info.name}`;
+
+    // Loop over commands
+    let commands: CommandTreeModule[] | undefined = [];
+
+    for (const subFile of folder) {
+      if (subFile.name === "index.js") continue;
+      const result = await loadCommand(subFile, currentScope);
+      result && commands.push(result);
     }
+
+    if (commands.length === 0) commands = undefined;
+
+    return {
+      type: index.info.type,
+      name: index.info.name,
+      description: index.info.description,
+      commands,
+    };
   }
 
-  return commands;
+  // Useable commands.
+  if (file.isFile() && file.name.endsWith(".js")) {
+
+    const command = (await import(path)).default as CommandEnum | undefined;
+    if (!command) throw "No default export found for " + path;
+
+    currentScope = `${currentScope}-${command.info.name}`;
+
+
+    // Check and add to global state
+    const commandExists = state.commands.get(currentScope);
+    if (commandExists) {
+      throw `Duplicate command name: ${command.info.name},
+        ${commandExists.info.path}
+        and ${command.info.path}`.red.bold;
+    }
+
+    state.commands.set(currentScope, command);
+
+    // Populate command info
+    command.info.path = path;
+
+    return {
+      type: command.info.type,
+      name: command.info.name,
+      description: command.info.description,
+    };
+  }
+
+  return;
 }
+

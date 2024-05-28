@@ -7,6 +7,7 @@ import { loadInteractables } from "@lib/loaders/loadInteractables";
 import path from "path";
 import { loadJobs } from "./loadJobs";
 import { LocalState } from "@structs/localState";
+import { CommandType } from "@structs/command";
 
 export async function loadModules() {
 
@@ -37,7 +38,7 @@ export async function loadModules() {
 
     // Load the module's events, commands, cronjobs, and buttons.
     moduleFiles.includes("events") && await loadEvents(module.path + "events/");
-    moduleFiles.includes("commands") && await loadCommands(module.path + "commands/");
+    const commands = moduleFiles.includes("commands") ? await loadCommands(module.path + "commands/") : [];
     moduleFiles.includes("cron") && await loadJobs(module.path + "cron/");
 
     if (moduleFiles.includes("components")) {
@@ -48,6 +49,13 @@ export async function loadModules() {
 
     // Add the module to the state object.
     state.modules.set(module.name, module);
+    state.commandTree.push({
+      type: CommandType.Module,
+      name: module.name,
+      description: module.description,
+      commands,
+    });
+
     console.log(`✅ Loaded module: ${module.name.cyan.italic}`.green.bold);
     console.log(`----------------------------------------`.cyan.bold);
   }

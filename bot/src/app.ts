@@ -15,6 +15,8 @@ import { Logger } from "winston";
 import { loadLogger } from "@lib/loaders/loadLogger";
 import { loadGuilds } from "@lib/loaders/loadGuilds";
 import { SelectMenuStruct } from "@structs/selectMenu";
+import { initializeServer } from "api/webServer";
+import { CommandTree } from "@structs/command/tree";
 
 colors.enable();
 
@@ -31,6 +33,7 @@ export interface State {
   client: Client;
 
   commands: Map<string, CommandEnum>;
+  commandTree: CommandTree;
   interactables: Interactables;
 
   modules: Map<string, Module>;
@@ -49,6 +52,7 @@ const state = {
   db: new PrismaClient(),
 
   commands: new Map(),
+  commandTree: [],
   interactables: {
     buttons: new Map(),
     selectmenus: new Map(),
@@ -64,6 +68,7 @@ const state = {
   await loadClient();
   await loadModules();
   await loadGuilds();
+  await initializeServer();
 
   state.botLog = new LogService();
   state.throttle = new ThrottleService();

@@ -6,6 +6,7 @@ import { SubCommandInfo, SubCommandStruct } from "./subcommand";
 import { SubCommandGroupInfo, SubCommandGroupStruct } from "./subcommandgroup";
 
 export enum CommandType {
+  Module = "Module",
   Parent = "Parent",
   SubcommandGroup = "SubcommandGroup",
   Subcommand = "Subcommand",
