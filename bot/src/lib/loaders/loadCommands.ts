@@ -1,5 +1,4 @@
 import { state } from "@app";
-import { CommandEnum } from "@structs/command";
 import { ParentCommandStruct } from "@structs/command/parent";
 import { SubCommandGroupStruct } from "@structs/command/subcommandgroup";
 import { CommandTreeModule } from "@structs/command/tree";
@@ -7,6 +6,7 @@ import fs from "fs/promises";
 import { Dirent } from "fs";
 import { CommandStruct } from "@structs/command/command";
 import { SubCommandStruct } from "@structs/command/subcommand";
+import { CommandEnum } from "@structs/command";
 
 export async function loadCommands(path: string): Promise<CommandTreeModule[]> {
   const topLevelFiles = await fs.readdir(path, { withFileTypes: true });
@@ -24,6 +24,16 @@ export async function loadCommands(path: string): Promise<CommandTreeModule[]> {
   );
 
   return commandTree;
+}
+
+function registerCommand(scope: string, command: CommandEnum) {
+  const commandExists = state.commands.get(scope);
+  if (commandExists) {
+    throw `Duplicate command name: ${command.info.name},
+      ${commandExists.info.path}
+      and ${command.info.path}`.red.bold;
+  }
+  state.commands.set(scope, command);
 }
 
 async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTreeModule | undefined> {
@@ -50,6 +60,13 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
 
     // update current scope
     currentScope = [currentScope, index.info.name].filter(Boolean).join("-");
+
+    // Populate command info
+    index.info.path = path;
+    index.info.commandName = currentScope;
+
+    // Register command
+    registerCommand(currentScope, index);
 
     // Loop over commands
     let commands: CommandTreeModule[] | undefined = [];
@@ -78,19 +95,12 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
 
     currentScope = [currentScope, command.info.name].filter(Boolean).join("-");
 
-    // Check and add to global state
-    const commandExists = state.commands.get(currentScope);
-    if (commandExists) {
-      throw `Duplicate command name: ${command.info.name},
-        ${commandExists.info.path}
-        and ${command.info.path}`.red.bold;
-    }
-
-    state.commands.set(currentScope, command);
-
     // Populate command info
     command.info.path = path;
     command.info.commandName = currentScope;
+
+    // Register command
+    registerCommand(currentScope, command);
 
     return {
       type: command.info.type,
