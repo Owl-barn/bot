@@ -77,17 +77,21 @@
 
 <style lang="scss">
     $dash: 1000;
-    $duration: 5s;
+    $duration: 6s;
 
     .circle {
-        stroke-dasharray: $dash;
+        stroke-dasharray: 200;
         animation-iteration-count: infinite;
         animation-timing-function: linear;
         animation-direction: alternate;
         animation-fill-mode: both;
         animation-duration: $duration;
-        // animation-delay: calc(0.2 * $duration);
+        animation-delay: 200ms;
         animation-name: dash;
+    }
+
+    .inner {
+        animation-delay: 400ms;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -100,7 +104,7 @@
         0% {
             stroke-dashoffset: $dash;
         }
-        70%,
+        50%,
         100% {
             stroke-dashoffset: 0;
         }
