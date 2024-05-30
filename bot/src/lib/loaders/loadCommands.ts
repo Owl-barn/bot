@@ -7,6 +7,7 @@ import { CommandEnum, ExecutableCommand, GroupCommand } from "@structs/command";
 export async function loadCommands(path: string): Promise<CommandTreeItem[]> {
   const topLevelFiles = await fs.readdir(path, { withFileTypes: true });
   const commandTree: CommandTreeItem[] = [];
+  const originalCommandCount = state.commands.size;
 
   for (const file of topLevelFiles) {
     const commands = await loadCommand(file);
@@ -15,7 +16,7 @@ export async function loadCommands(path: string): Promise<CommandTreeItem[]> {
 
   console.log(
     " - Loaded ".green +
-    String(state.commands.size).cyan +
+    String(state.commands.size - originalCommandCount).cyan +
     " commands".green,
   );
 

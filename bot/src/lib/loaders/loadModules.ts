@@ -40,7 +40,7 @@ export async function loadModules() {
     moduleFiles.includes("events") && await loadEvents(module.path + "events/");
     const commands = moduleFiles.includes("commands") ? await loadCommands(module.path + "commands/") : [];
     moduleFiles.includes("cron") && await loadJobs(module.path + "cron/");
-    moduleFiles.includes("api") && loadEndpoints(module.path + "api/");
+    moduleFiles.includes("api") && await loadEndpoints(module.path + "api/");
 
     if (moduleFiles.includes("components")) {
       const componentFiles = fs.readdirSync(module.path + "components/");
