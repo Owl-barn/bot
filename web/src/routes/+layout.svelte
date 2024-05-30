@@ -1,13 +1,21 @@
 <script lang="ts">
-    import { PUBLIC_INVITE_URL, PUBLIC_PREMIUM_URL } from '$env/static/public';
-    import Crown from 'components/art/Crown.svelte';
+    import { page } from "$app/stores";
+    import { PUBLIC_INVITE_URL, PUBLIC_PREMIUM_URL } from "$env/static/public";
+    import Crown from "components/art/Crown.svelte";
 
     let { children } = $props();
 </script>
+
 <nav>
+    {#if $page.url.pathname === "/"}
+        <a href="/docs">Docs</a>
+    {:else}
+        <a href="/">Home</a>
+    {/if}
+
     <div class="filler"></div>
-    <a class="invite" target="_blank" href={PUBLIC_INVITE_URL}>invite</a>
-    <a class="premium" target="_blank" href={PUBLIC_PREMIUM_URL}><Crown/></a>
+    <a target="_blank" href={PUBLIC_INVITE_URL}>invite</a>
+    <a class="premium" target="_blank" href={PUBLIC_PREMIUM_URL}><Crown /></a>
 </nav>
 {@render children()}
 
@@ -24,7 +32,7 @@
         justify-content: center;
         align-items: center;
         gap: 2rem;
-        padding: 1rem;
+        padding: 0.7rem 2rem;
     }
 
     a {
@@ -34,10 +42,9 @@
 
     .filler {
         flex: 1;
-    
     }
 
-    .invite {
+    a:not(.premium) {
         transition: color 0.3s;
         &:hover {
             color: var(--theme-accent-dark);
