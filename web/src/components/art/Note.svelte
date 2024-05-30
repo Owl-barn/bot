@@ -37,7 +37,7 @@
         filter: drop-shadow(5px 5px 12px rgba(0, 0, 0, 1));
 
         &:hover polygon {
-            animation: shake 700ms;
+            animation: shake 550ms ease-in-out;
             color: var(--theme-accent);
         }
     }
@@ -47,6 +47,8 @@
         stroke: inherit;
         stroke-miterlimit: 10;
         stroke-width: 10px;
+
+        transform-origin: center;
 
         transition: color 0.5s;
     }
@@ -73,10 +75,10 @@
             transform: rotate(0deg);
         }
         30% {
-            transform: rotate(-2deg);
+            transform: rotate(-5deg);
         }
         60% {
-            transform: rotate(2deg);
+            transform: rotate(5deg);
         }
     }
 </style>

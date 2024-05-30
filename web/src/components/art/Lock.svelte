@@ -26,6 +26,7 @@
     svg {
         width: $size;
         height: $size;
+        transition: color 0.5s;
 
         animation: move $duration infinite alternate ease-in-out;
         filter: drop-shadow(5px 5px 12px rgba(0, 0, 0, 1));
@@ -36,11 +37,19 @@
             stroke-miterlimit: 10;
             stroke-width: 20px;
         }
+
+        &:hover {
+            color: var(--theme-accent);
+            .ring {
+                transform: rotate(20deg);
+            }
+        }
     }
 
     .ring {
-        animation: open $duration infinite alternate ease-in-out;
         transform-origin: 732px 482px;
+        transition: transform 0.5s;
+        transform: rotate(0deg);
     }
 
     .body {
@@ -64,15 +73,6 @@
 
         100% {
             transform: translateY(-$reach);
-        }
-    }
-
-    @keyframes open {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(20deg);
         }
     }
 </style>

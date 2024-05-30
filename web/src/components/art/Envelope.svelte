@@ -21,6 +21,7 @@
         width: $size;
         height: $size;
 
+        transition: color 0.5s;
         animation: move $duration infinite alternate ease-in-out;
         filter: drop-shadow(5px 5px 12px rgba(0, 0, 0, 1));
 
@@ -31,21 +32,22 @@
             stroke-width: 20px;
         }
 
-        &:hover .gem {
-            animation: shake 700ms;
+        &:hover {
             color: var(--theme-accent);
+            .gem {
+                animation: shake 700ms;
+            }
         }
     }
 
     .gem {
-        transition: color 0.5s;
         transform-origin: center;
     }
 
-    .lid {
-        // animation: open $duration infinite alternate ease-in-out;
-        // transform-origin: 300px 350px;
-    }
+    // .lid {
+    //     animation: open $duration infinite alternate ease-in-out;
+    //     transform-origin: 300px 350px;
+    // }
 
     @media (prefers-reduced-motion: reduce) {
         svg {
