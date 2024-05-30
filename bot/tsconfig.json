@@ -20,6 +20,9 @@
     "baseUrl": "./src",
     "outDir": "./dist",
     "paths": {
+      "@shared/*": [
+        "../../lib/*"
+      ],
       "@structs/*": [
         "./structs/*"
       ],
@@ -34,6 +37,11 @@
       ],
     }
   },
+  "references": [
+    {
+      "path": "../lib",
+    }
+  ],
   "exclude": [
     "node_modules"
   ]

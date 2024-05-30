@@ -16,7 +16,7 @@ import { loadLogger } from "@lib/loaders/loadLogger";
 import { loadGuilds } from "@lib/loaders/loadGuilds";
 import { SelectMenuStruct } from "@structs/selectMenu";
 import { initializeServer } from "api/webServer";
-import { CommandTree } from "@structs/command/tree";
+import { CommandTree } from "@shared/src/web_api";
 import Fastify, { FastifyInstance } from "fastify";
 
 colors.enable();
@@ -34,7 +34,7 @@ export interface State {
   client: Client;
   webServer: FastifyInstance;
 
-  commands: Map<string, CommandEnum>;
+  commands: Map<string, CommandEnum<"processed">>;
   commandTree: CommandTree;
   interactables: Interactables;
 

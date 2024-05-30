@@ -1,16 +1,12 @@
 import { state } from "@app";
-import { ParentCommandStruct } from "@structs/command/parent";
-import { SubCommandGroupStruct } from "@structs/command/subcommandgroup";
-import { CommandTreeModule } from "@structs/command/tree";
+import { CommandTreeItem, CommandType } from "@shared/src/web_api";
 import fs from "fs/promises";
 import { Dirent } from "fs";
-import { CommandStruct } from "@structs/command/command";
-import { SubCommandStruct } from "@structs/command/subcommand";
-import { CommandEnum } from "@structs/command";
+import { CommandEnum, ExecutableCommand, GroupCommand } from "@structs/command";
 
-export async function loadCommands(path: string): Promise<CommandTreeModule[]> {
+export async function loadCommands(path: string): Promise<CommandTreeItem[]> {
   const topLevelFiles = await fs.readdir(path, { withFileTypes: true });
-  const commandTree: CommandTreeModule[] = [];
+  const commandTree: CommandTreeItem[] = [];
 
   for (const file of topLevelFiles) {
     const commands = await loadCommand(file);
@@ -26,7 +22,8 @@ export async function loadCommands(path: string): Promise<CommandTreeModule[]> {
   return commandTree;
 }
 
-function registerCommand(scope: string, command: CommandEnum) {
+// Register the command in the state.
+function registerCommand(scope: string, command: CommandEnum<"processed">) {
   const commandExists = state.commands.get(scope);
   if (commandExists) {
     throw `Duplicate command name: ${command.info.name},
@@ -36,7 +33,23 @@ function registerCommand(scope: string, command: CommandEnum) {
   state.commands.set(scope, command);
 }
 
-async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTreeModule | undefined> {
+// Process the command to add the path and command name.
+function processCommand(
+  command: CommandEnum<"configured">,
+  path: string,
+  commandName: string
+): CommandEnum<"processed"> {
+  const processedCommand: CommandEnum<"processed"> = {
+    info: {
+      ...command.info,
+      path,
+      commandName,
+    },
+  };
+  return processedCommand;
+}
+
+async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTreeItem | undefined> {
   if (file.name.startsWith("_")) return;
 
   const path = `${file.path}/${file.name}`;
@@ -52,24 +65,21 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
       throw `No index.js found in ${path}`.red.bold;
     }
 
-    const index = (await import(`${path}/index.js`)).default as
-      | ParentCommandStruct
-      | SubCommandGroupStruct;
+    const rawIndex = (await import(`${path}/index.js`)).default as
+      GroupCommand<"configured"> | undefined;
 
-    if (!index) throw "No default export found for " + path;
+    if (!rawIndex) throw "No default export found for " + path;
 
     // update current scope
-    currentScope = [currentScope, index.info.name].filter(Boolean).join("-");
+    currentScope = [currentScope, rawIndex.info.name].filter(Boolean).join("-");
 
-    // Populate command info
-    index.info.path = path;
-    index.info.commandName = currentScope;
+    const index = processCommand(rawIndex, path, currentScope) as GroupCommand<"processed">;
 
     // Register command
     registerCommand(currentScope, index);
 
     // Loop over commands
-    let commands: CommandTreeModule[] | undefined = [];
+    let commands: CommandTreeItem[] | undefined = [];
 
     for (const subFile of folder) {
       if (subFile.name === "index.js") continue;
@@ -80,7 +90,7 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
     if (commands.length === 0) commands = undefined;
 
     return {
-      type: index.info.type,
+      type: CommandType.Group,
       name: index.info.name,
       description: index.info.description,
       commands,
@@ -90,22 +100,25 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
   // Useable commands.
   if (file.isFile() && file.name.endsWith(".js")) {
 
-    const command = (await import(path)).default as CommandStruct | SubCommandStruct | undefined;
-    if (!command) throw "No default export found for " + path;
+    const rawCommand = (await import(path)).default as ExecutableCommand<"configured"> | undefined;
+    if (!rawCommand) throw "No default export found for " + path;
 
-    currentScope = [currentScope, command.info.name].filter(Boolean).join("-");
+    currentScope = [currentScope, rawCommand.info.name].filter(Boolean).join("-");
 
-    // Populate command info
-    command.info.path = path;
-    command.info.commandName = currentScope;
+    const command = processCommand(rawCommand, path, currentScope) as ExecutableCommand<"processed">;
 
     // Register command
     registerCommand(currentScope, command);
 
     return {
-      type: command.info.type,
+      type: CommandType.Command,
       name: command.info.name,
+      commandName: command.info.commandName,
       description: command.info.description,
+      options: command.info.arguments?.map((arg) => ({
+        ...arg,
+        autoComplete: arg.autoComplete !== undefined,
+      })),
     };
   }
 

@@ -7,8 +7,8 @@ import { loadInteractables } from "@lib/loaders/loadInteractables";
 import path from "path";
 import { loadJobs } from "./loadJobs";
 import { LocalState } from "@structs/localState";
-import { CommandType } from "@structs/command";
 import { loadEndpoints } from "./loadEndpoints";
+import { CommandType } from "@shared/src/web_api";
 
 export async function loadModules() {
 
