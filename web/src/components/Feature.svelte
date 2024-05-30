@@ -85,6 +85,7 @@
 
         &:hover {
             text-decoration: underline;
+            color: var(--theme-accent-dark);
             :global(svg) {
                 transform: translateX(0.3em);
             }

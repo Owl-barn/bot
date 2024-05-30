@@ -38,6 +38,13 @@
         top: 0;
         left: 0;
         width: 100%;
+        z-index: 10;
+
+        background: linear-gradient(
+            var(--theme-primary) 0%,
+            var(--theme-primary) 30%,
+            transparent 100%
+        );
     }
 
     a {

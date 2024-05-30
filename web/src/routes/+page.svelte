@@ -25,8 +25,7 @@
             moduleId="owlet"
             premium
         >
-            Use Hootsifer's one of a kind Owlet system and listen to music in a <b
-                >multitude of channels</b
+            Use Hootsifer's one of a kind Owlet system and listen to music in a <b>multitude of channels</b
             > at once!
         </Feature>
 
@@ -57,7 +56,7 @@
             artwork={Notes}
             moduleId="moderation"
         >
-            Moderate your community easily and effectively with Hootsifer&apos;s
+            Moderate your community easily and effectively with Hootsifer's
             unique tools designed with the biggest of communities in mind!
         </Feature>
 
@@ -68,8 +67,7 @@
 
         <!-- Selfrole -->
         <Feature title="Express yourself!" artwork={Notes} moduleId="selfrole">
-            Allow your community to easily assign themselves certain
-            <b>self roles</b>!
+            Easily configure <b>self roles</b> for your community and watch your community express themselves!
         </Feature>
 
         <!-- Reminder -->
