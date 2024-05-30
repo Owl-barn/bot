@@ -13,7 +13,7 @@ export default SubCommand(
   // Info
   {
     name: "add",
-    description: "Add a user to your VC notify list",
+    description: "Add a user to your vc notify list",
 
     arguments: [
       {
