@@ -47,6 +47,7 @@
 
     article {
         display: flex;
+        align-items: center;
         gap: clamp(2rem, $scale, 3rem);
 
         &:nth-child(even) {

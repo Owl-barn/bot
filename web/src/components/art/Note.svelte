@@ -18,10 +18,11 @@
 </svg>
 
 <style lang="scss">
-    $reach: 30px;
+    $reach: 1rem;
 
     svg {
         stroke: currentColor;
+        overflow: visible;
 
         animation-name: move;
         animation-duration: 5s;
@@ -30,10 +31,15 @@
         animation-direction: alternate;
 
         width: clamp(0.4 * var(--size), 8vw, var(--size));
-        height: var(--size);
+        height: clamp(0.4 * var(--size), 8vw, var(--size));
 
         // shadow
-        filter: drop-shadow(5px 5px 6px rgba(0, 0, 0, 1));
+        filter: drop-shadow(5px 5px 12px rgba(0, 0, 0, 1));
+
+        &:hover polygon {
+            animation: shake 700ms;
+            color: var(--theme-accent);
+        }
     }
 
     polygon {
@@ -41,6 +47,14 @@
         stroke: inherit;
         stroke-miterlimit: 10;
         stroke-width: 10px;
+
+        transition: color 0.5s;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        svg {
+            animation: none;
+        }
     }
 
     @keyframes move {
@@ -50,6 +64,19 @@
 
         100% {
             transform: translateY(-$reach);
+        }
+    }
+
+    @keyframes shake {
+        0%,
+        100% {
+            transform: rotate(0deg);
+        }
+        30% {
+            transform: rotate(-2deg);
+        }
+        60% {
+            transform: rotate(2deg);
         }
     }
 </style>

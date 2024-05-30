@@ -1,14 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1079.66 716.97">
-    <defs>
-        <style>
-            .cls-1 {
-                fill: none;
-                stroke: currentColor;
-                stroke-miterlimit: 10;
-                stroke-width: 10px;
-            }
-        </style>
-    </defs>
     <polygon
         class="cls-1"
         points="944.12 418.55 854.03 622.08 854.02 622.08 854 622.09 542.62 708.83 231.21 622.08 141.12 418.55 164.48 247.28 537.07 204.92 542.62 204.28 548.17 204.92 920.76 247.28 944.12 418.55"
@@ -78,6 +68,13 @@
 <style lang="scss">
     $dash: 1000;
     $duration: 6s;
+
+    svg > * {
+        fill: none;
+        stroke: currentColor;
+        stroke-miterlimit: 10;
+        stroke-width: 10px;
+    }
 
     .circle {
         stroke-dasharray: 200;
