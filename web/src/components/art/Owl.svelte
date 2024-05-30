@@ -95,7 +95,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-        circle {
+        .circle {
             animation: none;
         }
     }

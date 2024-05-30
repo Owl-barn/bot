@@ -3,6 +3,7 @@ import type { CommandTreeItem } from "@shared/web_api";
 import fs from "fs/promises";
 import { Dirent } from "fs";
 import { CommandEnum, ExecutableCommand, GroupCommand } from "@structs/command";
+import { ApplicationCommandOptionType } from "discord.js";
 
 export async function loadCommands(path: string): Promise<CommandTreeItem[]> {
   const topLevelFiles = await fs.readdir(path, { withFileTypes: true });
@@ -80,7 +81,7 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
     registerCommand(currentScope, index);
 
     // Loop over commands
-    let commands: CommandTreeItem[] | undefined = [];
+    const commands: CommandTreeItem[] = [];
 
     for (const subFile of folder) {
       if (subFile.name === "index.js") continue;
@@ -88,7 +89,9 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
       result && commands.push(result);
     }
 
-    if (commands.length === 0) commands = undefined;
+    if ("group" in index.info && index.info.group === "owner") {
+      return;
+    }
 
     return {
       type: "Group",
@@ -111,6 +114,10 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
     // Register command
     registerCommand(currentScope, command);
 
+    if ("group" in command.info && command.info.group === "owner") {
+      return;
+    }
+
     return {
       type: "Command",
       name: command.info.name,
@@ -118,6 +125,8 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
       description: command.info.description,
       options: command.info.arguments?.map((arg) => ({
         ...arg,
+        type: ApplicationCommandOptionType[arg.type as ApplicationCommandOptionType],
+        required: arg.required === undefined ? false : arg.required,
         autoComplete: arg.autoComplete !== undefined,
       })),
     };

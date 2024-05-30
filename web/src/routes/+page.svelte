@@ -3,7 +3,6 @@
     import Note from "components/art/Note.svelte";
 
     let { data } = $props();
-    console.log(data.stats);
 </script>
 
 <main class="main">

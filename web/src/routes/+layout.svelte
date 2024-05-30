@@ -1,7 +1,10 @@
 <script lang="ts">
     let { children } = $props();
 </script>
-
+<nav>
+    <a href="/"></a>
+    <a href="/">Docs</a>
+</nav>
 {@render children()}
 
 <svelte:head>

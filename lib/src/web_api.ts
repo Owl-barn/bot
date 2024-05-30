@@ -8,10 +8,10 @@ export interface CommandTreeModule {
     type: "Module"
     name: string;
     description: string;
-    commands?: CommandTreeItem[];
+    commands: CommandTreeItem[];
 }
 
-export interface CommandTreeCommand extends Omit<CommandTreeModule, "type"> {
+export interface CommandTreeCommand extends Omit<CommandTreeModule, "type" | "commands"> {
     type: "Command"
     commandName: string;
     options?: CommandTreeOption[];
@@ -25,4 +25,8 @@ export interface CommandTreeGroup extends Omit<CommandTreeModule, "type"> {
 
 export interface CommandTreeOption {
     autoComplete: boolean;
+    name: string;
+    description: string;
+    required: boolean;
+    type: string;
 }
