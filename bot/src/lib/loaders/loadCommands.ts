@@ -48,6 +48,9 @@ function processCommand(
       commandName,
     },
   };
+  if ("run" in command) {
+    (processedCommand as ExecutableCommand<"processed">).run = command.run;
+  }
   return processedCommand;
 }
 
