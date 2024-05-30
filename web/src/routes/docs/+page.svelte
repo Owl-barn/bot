@@ -4,7 +4,6 @@
     let { data } = $props();
 </script>
 
-<h1>Command documentation</h1>
 <main>
     <ul>
         {#each data.commands as module}
@@ -18,6 +17,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
     }
 
     :global(ul) {

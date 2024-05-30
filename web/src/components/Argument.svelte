@@ -1,6 +1,6 @@
 <script lang="ts">
     import { optionTypes } from "lib/OptionType";
-    import type { CommandTreeOption } from "shared/src/web_api";
+    import type { CommandTreeOption } from "shared/web_api";
 
     interface Props {
         option: CommandTreeOption;
@@ -29,6 +29,7 @@
     .name {
         font-weight: 600;
         display: inline-flex;
+        padding-bottom: 2px;
 
         & .required {
             color: var(--theme-danger);
@@ -36,8 +37,8 @@
         }
 
         & .type {
-            font-weight: 400;
-            font-size: 0.8rem;
+            font-weight: 500;
+            font-size: 0.7rem;
             padding: 0.3em 0.6em;
             margin-left: 0.5em;
             border-radius: 0.4em;

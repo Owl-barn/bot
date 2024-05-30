@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CommandTreeModule } from "shared/src/web_api";
+    import type { CommandTreeModule } from "shared/web_api";
     import Command from "./Command.svelte";
     import Group from "./Group.svelte";
 
@@ -9,7 +9,7 @@
     let { module }: Props = $props();
 </script>
 
-<li class="item">
+<li class="item" id={module.name}>
     <section class="info">
         <h2>{module.name} <span> - {module.type}</span></h2>
         <p>{module.description}</p>
@@ -55,7 +55,7 @@
             padding: 1rem;
         }
 
-        :global( ul) {
+        :global(ul) {
             display: flex;
             flex-direction: column;
             gap: 1.3rem;

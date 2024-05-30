@@ -29,7 +29,7 @@
         animation-iteration-count: infinite;
         animation-direction: alternate;
 
-        width: clamp(0.5 * var(--size), 8vw, var(--size));
+        width: clamp(0.4 * var(--size), 8vw, var(--size));
         height: var(--size);
 
         // shadow

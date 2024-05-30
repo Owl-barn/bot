@@ -61,6 +61,8 @@ services:
     restart: always
     ports:
       - "3588:3000"
+    environment:
+      - API_URL=http://hootsifer_bot:3000
     depends_on:
       - bot
     networks:

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Feature from "components/Feature.svelte";
     import Hero from "components/Hero.svelte";
     import Note from "components/art/Note.svelte";
 
@@ -12,114 +13,74 @@
 
     <section class="features">
         <!-- Music -->
-        <article>
-            <section class="artwork">
-                <Note delay={800} size={7.5} />
-                <Note delay={0} size={5} />
-            </section>
-            <section class="info">
-                <h1 class="premium">Music streaming</h1>
-                <p>
-                    Use Hootsifer's one of a kind Owlet system and listen to
-                    music in a <b>multitude of channels</b> at once!
-                </p>
-            </section>
-        </article>
+
+        {#snippet Notes()}
+        <Note delay={800} size={6} />
+        <Note delay={0} size={4} />
+        {/snippet}
+        
+        <Feature
+            title="Music streaming"
+            artwork={Notes}
+            moduleId="owlet"
+            premium
+        >
+            Use Hootsifer's one of a kind Owlet system and listen to music in a <b
+                >multitude of channels</b
+            > at once!
+        </Feature>
 
         <!-- Vc -->
-        <article>
-            <section class="artwork">
-                <Note delay={800} size={7.5} />
-                <Note delay={0} size={5} />
-            </section>
-            <section class="info">
-                <h1>Voice channel privacy</h1>
-                <p>Create your own invite-only voice channel in 1 click!</p>
-            </section>
-        </article>
+        <Feature
+            title="Voice channel privacy"
+            artwork={Notes}
+            moduleId="private-room"
+        >
+            Create your own invite-only voice channel in 1 click!
+        </Feature>
 
         <!-- Notify -->
-        <article>
-            <section class="artwork">
-                <Note delay={800} size={7.5} />
-                <Note delay={0} size={5} />
-            </section>
-            <section class="info">
-                <h1>Get notified</h1>
-                <p>
-                    Get a personal message from hootsifer whenever your friend
-                    joins the voice chat!
-                </p>
-            </section>
-        </article>
+        <Feature title="Get notified" artwork={Notes} moduleId="notify">
+            Get a personal message from hootsifer whenever your friend joins the
+            voice chat!
+        </Feature>
 
         <!-- Birthday -->
-        <article>
-            <section class="artwork">
-                <Note delay={800} size={7.5} />
-                <Note delay={0} size={5} />
-            </section>
-            <section class="info">
-                <h1>Happy Birthday!</h1>
-                <p>
-                    Keep track of your friend&apos;s birthdays and automatically
-                    congratulate them with their own role!
-                </p>
-            </section>
-        </article>
+        <Feature title="Happy Birthday!" artwork={Notes} moduleId="birthday">
+            Keep track of your friend's birthdays and automatically congratulate
+            them with their own role!
+        </Feature>
 
         <!-- Moderation -->
-        <article>
-            <section class="artwork">
-                <Note delay={800} size={7.5} />
-                <Note delay={0} size={5} />
-            </section>
-            <section class="info">
-                <h1>Moderate with ease</h1>
-                <p>
-                    Moderate your community easily and effectively with
-                    Hootsifer&apos;s unique tools designed with the biggest of
-                    communities in mind!
-                </p>
-            </section>
-        </article>
+        <Feature
+            title="Moderate with ease"
+            artwork={Notes}
+            moduleId="moderation"
+        >
+            Moderate your community easily and effectively with Hootsifer&apos;s
+            unique tools designed with the biggest of communities in mind!
+        </Feature>
 
         <!-- Level -->
-        <article>
-            <section class="artwork">
-                <Note delay={800} size={7.5} />
-                <Note delay={0} size={5} />
-            </section>
-            <section class="info">
-                <h1>Level leaderboard</h1>
-                <p>Gain experience with each message and get rewards!</p>
-            </section>
-        </article>
+        <Feature title="Level leaderboard" artwork={Notes} moduleId="level">
+            Gain experience with each message and get rewards!
+        </Feature>
 
         <!-- Selfrole -->
-        <article>
-            <section class="artwork">
-                <Note delay={800} size={7.5} />
-                <Note delay={0} size={5} />
-            </section>
-            <section class="info">
-                <h1>Express yourself!</h1>
-                <p>
-                    Allow your community to easily assign themselves certain <b
-                        >self roles</b
-                    >!
-                </p>
-            </section>
-        </article>
+        <Feature title="Express yourself!" artwork={Notes} moduleId="selfrole">
+            Allow your community to easily assign themselves certain
+            <b>self roles</b>!
+        </Feature>
+
+        <!-- Reminder -->
+        <Feature title="Never forget" artwork={Notes} moduleId="reminder">
+            Set reminders for yourself and never forget to do that one thing again!
+        </Feature>
     </section>
 </main>
 
 <style lang="scss">
-    .premium::after {
-        content: "*";
-        font-size: 2rem;
-        color: var(--theme-accent);
-    }
+    $scale: 4vw;
 
     .main {
         padding: 3rem 2rem;
@@ -142,39 +103,7 @@
         align-items: center;
         flex-direction: column;
         width: min(80ch, 100%);
-        gap: 200px;
+        gap: clamp(5rem, $scale, 14rem);
         padding-top: 6rem;
-    }
-
-    article {
-        display: flex;
-        gap: 3rem;
-
-        &:nth-child(even) {
-            flex-direction: row-reverse;
-        }
-
-        * h1 {
-            font-size: 2.5rem;
-            padding: 0;
-            margin: 0;
-
-            text-align: left;
-        }
-
-        * p {
-            font-size: 1.1rem;
-            padding: 0;
-            margin: 0;
-        }
-
-        & .info {
-            flex: 2;
-        }
-
-        & > .artwork {
-            flex-direction: row;
-            align-items: center;
-        }
     }
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CommandTreeCommand } from "shared/src/web_api";
+    import type { CommandTreeCommand } from "shared/web_api";
     import Argument from "./Argument.svelte";
 
     interface Props {

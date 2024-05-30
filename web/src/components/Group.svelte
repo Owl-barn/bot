@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CommandTreeGroup } from "shared/src/web_api";
+    import type { CommandTreeGroup } from "shared/web_api";
     import Command from "./Command.svelte";
     import Group from "./Group.svelte";
 
