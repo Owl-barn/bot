@@ -21,7 +21,7 @@
     "outDir": "./dist",
     "paths": {
       "@shared/*": [
-        "../../lib/*"
+        "../../lib/src/*"
       ],
       "@structs/*": [
         "./structs/*"
@@ -39,7 +39,7 @@
   },
   "references": [
     {
-      "path": "../lib",
+      "path": "../lib"
     }
   ],
   "exclude": [

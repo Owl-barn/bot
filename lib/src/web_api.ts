@@ -2,28 +2,24 @@ export type CommandTree = CommandTreeModule[];
 
 export type CommandTreeItem = CommandTreeCommand | CommandTreeGroup;
 
-export enum CommandType {
-    Module = "Module",
-    Group = "Group",
-    Command = "Command",
-}
+export type CommandType = "Module" | "Group" | "Command";
 
 export interface CommandTreeModule {
-    type: CommandType.Module;
+    type: "Module"
     name: string;
     description: string;
     commands?: CommandTreeItem[];
 }
 
 export interface CommandTreeCommand extends Omit<CommandTreeModule, "type"> {
-    type: CommandType.Command
+    type: "Command"
     commandName: string;
     options?: CommandTreeOption[];
     examples?: string[];
 }
 
 export interface CommandTreeGroup extends Omit<CommandTreeModule, "type"> {
-    type: CommandType.Group
+    type: "Group"
 }
 
 

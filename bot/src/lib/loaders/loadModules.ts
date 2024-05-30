@@ -8,7 +8,6 @@ import path from "path";
 import { loadJobs } from "./loadJobs";
 import { LocalState } from "@structs/localState";
 import { loadEndpoints } from "./loadEndpoints";
-import { CommandType } from "@shared/src/web_api";
 
 export async function loadModules() {
 
@@ -52,7 +51,7 @@ export async function loadModules() {
     // Add the module to the state object.
     state.modules.set(module.name, module);
     state.commandTree.push({
-      type: CommandType.Module,
+      type: "Module",
       name: module.name,
       description: module.description,
       commands,

@@ -16,7 +16,7 @@ import { loadLogger } from "@lib/loaders/loadLogger";
 import { loadGuilds } from "@lib/loaders/loadGuilds";
 import { SelectMenuStruct } from "@structs/selectMenu";
 import { initializeServer } from "api/webServer";
-import { CommandTree } from "@shared/src/web_api";
+import type { CommandTree } from "@shared/web_api";
 import Fastify, { FastifyInstance } from "fastify";
 
 colors.enable();

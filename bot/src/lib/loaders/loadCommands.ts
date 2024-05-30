@@ -1,5 +1,5 @@
 import { state } from "@app";
-import { CommandTreeItem, CommandType } from "@shared/src/web_api";
+import type { CommandTreeItem } from "@shared/web_api";
 import fs from "fs/promises";
 import { Dirent } from "fs";
 import { CommandEnum, ExecutableCommand, GroupCommand } from "@structs/command";
@@ -90,7 +90,7 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
     if (commands.length === 0) commands = undefined;
 
     return {
-      type: CommandType.Group,
+      type: "Group",
       name: index.info.name,
       description: index.info.description,
       commands,
@@ -111,7 +111,7 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
     registerCommand(currentScope, command);
 
     return {
-      type: CommandType.Command,
+      type: "Command",
       name: command.info.name,
       commandName: command.info.commandName,
       description: command.info.description,
