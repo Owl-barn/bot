@@ -15,7 +15,7 @@ export default Command(
   // Info
   {
     name: "loop",
-    description: "loops the queue",
+    description: "loop the queue or the current song",
     group: CommandGroup.music,
 
     arguments: [

@@ -8,7 +8,6 @@ import {
   EmbedAuthorOptions,
 } from "discord.js";
 import { localState } from "..";
-import { baseAccessConfig } from "../lib/accessConfig";
 import { isDJ } from "../lib/isdj";
 
 export default Command(

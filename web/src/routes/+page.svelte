@@ -83,7 +83,7 @@
     $scale: 4vw;
 
     .main {
-        padding: 3rem 2rem;
+        padding: 6rem 2rem;
         padding-bottom: 12rem;
         display: flex;
         align-items: center;
