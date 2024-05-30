@@ -12,7 +12,7 @@ export default {
 			"lib": "./src/lib",
 			"stores": "./src/stores",
 			"routes": "./src/routes",
-			"shared": "../lib",
+			"shared": "./src/structs/shared",
 		}
 	}
 };

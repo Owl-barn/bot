@@ -1,5 +1,5 @@
 import { state } from "@app";
-import type { CommandTreeItem } from "@shared/web_api";
+import type { CommandTreeItem } from "@structs/shared/web_api";
 import fs from "fs/promises";
 import { Dirent } from "fs";
 import { CommandEnum, ExecutableCommand, GroupCommand } from "@structs/command";
