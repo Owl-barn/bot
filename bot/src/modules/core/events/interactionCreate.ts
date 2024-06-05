@@ -41,7 +41,8 @@ export default Event({
 
     if (!command) return;
     await command.run.catch(error => {
-      state.log.error(`Error executing command event ${command?.id.cyan}`, { error });
+      console.error(error);
+      state.log.error(`Error executing command event ${command?.id.cyan}`, { error: error });
     });
   },
 

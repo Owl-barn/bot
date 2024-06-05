@@ -36,13 +36,13 @@ const limitedGroups = [
   CommandGroup.config,
 ];
 
-function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGuild): (
+function convert(commands: Collection<string, CommandInfoEnum<"processed">>, guildInfo: DBGuild): (
   | SlashCommandBuilder
   | SlashCommandSubcommandsOnlyBuilder
   | SlashCommandSubcommandGroupBuilder
 )[] {
   const commandzzzz = commands.map(
-    (command: CommandInfoEnum, name: string): [string[], CommandInfoEnum] => [
+    (command: CommandInfoEnum<"processed">, name: string): [string[], CommandInfoEnum<"processed">] => [
       name.split("-"),
       command,
     ],
@@ -52,7 +52,7 @@ function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGui
 
   const command_grouped = groupBy(
     commandzzzz,
-    (a: [string[], CommandInfoEnum]) => a[0][0],
+    (a: [string[], CommandInfoEnum<"processed">]) => a[0][0],
   );
 
   const commandsArray = [];
@@ -66,8 +66,8 @@ function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGui
 
     // Get the top level command.
     const top_level_command = top_level_command_array[0][1] as
-      | CommandInfo
-      | ParentCommandInfo;
+      | CommandInfo<"processed">
+      | ParentCommandInfo<"processed">;
 
     let permissions = true;
     // Make the builder.
@@ -86,7 +86,7 @@ function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGui
 
     // Command is a normal default command.
     if (top_level_command.type == CommandType.Default) {
-      (top_level_command as CommandInfo).arguments?.forEach((argument) => {
+      (top_level_command as CommandInfo<"processed">).arguments?.forEach((argument) => {
         builder = argumentHandler(
           builder as SlashCommandBuilder,
           argument,
@@ -97,7 +97,7 @@ function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGui
     } else if (top_level_command.type == CommandType.Parent) {
       const subCommandsByLength = groupBy(
         top_level_command_array,
-        (a: [string[], CommandInfoEnum]) => a[0].length,
+        (a: [string[], CommandInfoEnum<"processed">]) => a[0].length,
       );
 
       const subCommandsLen2 = subCommandsByLength.get(2);
@@ -111,11 +111,11 @@ function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGui
 
       const subcommands = subOrGroupcommands.get(
         CommandType.Subcommand,
-      ) as [string[], SubCommandInfo][] | undefined;
+      ) as [string[], SubCommandInfo<"processed">][] | undefined;
 
       const subcommandGroups = subOrGroupcommands.get(
         CommandType.SubcommandGroup,
-      ) as [string[], SubCommandGroupInfo][] | undefined;
+      ) as [string[], SubCommandGroupInfo<"processed">][] | undefined;
 
       // Process the subCommands.
       subcommands?.forEach((subCommand) => {
@@ -129,7 +129,7 @@ function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGui
       }
 
       const subCommandsLen3 = subCommandsByLength.get(3) as
-        | [string[], SubCommandInfo][]
+        | [string[], SubCommandInfo<"processed">][]
         | undefined;
 
       if (subCommandsLen3 == undefined) {
@@ -139,7 +139,7 @@ function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGui
 
       const subCommandGroups = groupBy(
         subCommandsLen3,
-        (a: [string[], SubCommandInfo]) => a[0].slice(0, 2).join("-"),
+        (a: [string[], SubCommandInfo<"processed">]) => a[0].slice(0, 2).join("-"),
       );
 
       // Loop through the subcommand groups.
@@ -182,7 +182,7 @@ function convert(commands: Collection<string, CommandInfoEnum>, guildInfo: DBGui
 }
 
 function buildSubCommand(
-  command: SubCommandInfo,
+  command: SubCommandInfo<"processed">,
   builderInput?: SlashCommandSubcommandBuilder,
 ) {
   let builder = builderInput || new SlashCommandSubcommandBuilder();
@@ -318,7 +318,7 @@ export default async function registerCommand(guild: Guild) {
     state.guilds.set(guild.id, dbGuild);
   }
 
-  const commandInfo = new Collection<string, CommandInfoEnum>();
+  const commandInfo = new Collection<string, CommandInfoEnum<"processed">>();
   for (const [name, command] of state.commands) commandInfo.set(name, command.info);
 
   const commands = convert(commandInfo, dbGuild);

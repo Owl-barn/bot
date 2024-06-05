@@ -1,16 +1,12 @@
-version: '3'
-
-networks:
-  bridge:
-
-
 services:
 
   # Database
   postgres:
     image: postgres:13
-    container_name: postgres
+    container_name: hootsifer_db
     restart: always
+    ports:
+      - "9029:5432"
     volumes:
       - ./database:/var/lib/postgresql/data
     environment:
@@ -26,12 +22,15 @@ services:
   # Bot
   bot:
     build: bot
+    container_name: hootsifer_bot
     deploy:
       restart_policy:
         condition: on-failure
     volumes:
       - ./bot/config:/app/config:ro
       - ./bot/logs:/app/logs:rw
+    ports:
+      - "3589:3000"
     env_file:
       - ./bot/.env
     depends_on:
@@ -54,3 +53,24 @@ services:
       - bot
     networks:
       - bridge
+
+  # Web
+  web:
+    build: web
+    container_name: hootsifer_web
+    restart: always
+    ports:
+      - "3588:3000"
+    env_file:
+      - ./web/.env
+    depends_on:
+      - bot
+    networks:
+      - bridge
+      - nginx
+
+networks:
+  bridge:
+  nginx:
+    external: true
+    name: nginx
