@@ -10,3 +10,4 @@ WORKDIR /app/
 COPY --from=build /build/package.json /build/package-lock.json ./
 COPY --from=build /build/ ./
 CMD ["npm", "start"]
+
