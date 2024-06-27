@@ -1,6 +1,6 @@
 import { state } from "@app";
 import { cron } from "@structs/cron";
-import { yearsAgo } from "@lib/time";
+import { getOrdinalSuffix, yearsAgo } from "@lib/time";
 import { failEmbedTemplate, warningEmbedTemplate } from "@lib/embedTemplate";
 import { logType } from "@lib/services/logService";
 import { localState } from "..";
@@ -124,7 +124,8 @@ export default cron(
           return;
         }
 
-        const messageSent = await channel.send(`Happy ${yearsAgo(birthday.date)}th birthday <@${birthday.userId}>!!!`).catch(() => null);
+        const age = yearsAgo(birthday.date);
+        const messageSent = await channel.send(`Happy ${age}${getOrdinalSuffix(age)} birthday <@${birthday.userId}>!!!`).catch(() => null);
         if (messageSent === null) {
           state.botLog.push(
             warningEmbedTemplate(`Tried sending birthday message to a channel, but failed. \`<#${birthday.guild.birthdayChannelId}>\``),
