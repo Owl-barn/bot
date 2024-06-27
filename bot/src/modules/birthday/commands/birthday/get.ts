@@ -11,7 +11,7 @@ export default SubCommand(
   // Info
   {
     name: "get",
-    description: "See when it is your friends birthday!",
+    description: "See when it is your friends birthday",
 
     arguments: [
       {

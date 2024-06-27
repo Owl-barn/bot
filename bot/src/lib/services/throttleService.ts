@@ -7,7 +7,7 @@ export class ThrottleService {
   public isThrottled(
     guild: string,
     user: string,
-    command: CommandInfo | SubCommandInfo,
+    command: CommandInfo<"processed"> | SubCommandInfo<"processed">,
   ): number | boolean {
     const throttleConfig = command.throttling;
     if (!throttleConfig) return false;

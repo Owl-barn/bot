@@ -15,6 +15,9 @@ import { Logger } from "winston";
 import { loadLogger } from "@lib/loaders/loadLogger";
 import { loadGuilds } from "@lib/loaders/loadGuilds";
 import { SelectMenuStruct } from "@structs/selectMenu";
+import { initializeServer } from "api/webServer";
+import type { CommandTree } from "@structs/shared/web_api";
+import Fastify, { FastifyInstance } from "fastify";
 
 colors.enable();
 
@@ -29,8 +32,10 @@ export interface State {
   db: PrismaClient;
   env: typeof import("./lib/loaders/loadEnvironment ").loadEnvironment;
   client: Client;
+  webServer: FastifyInstance;
 
-  commands: Map<string, CommandEnum>;
+  commands: Map<string, CommandEnum<"processed">>;
+  commandTree: CommandTree;
   interactables: Interactables;
 
   modules: Map<string, Module>;
@@ -47,8 +52,10 @@ export interface State {
 const state = {
   env: loadEnvironment,
   db: new PrismaClient(),
+  webServer: Fastify(),
 
   commands: new Map(),
+  commandTree: [],
   interactables: {
     buttons: new Map(),
     selectmenus: new Map(),
@@ -64,6 +71,7 @@ const state = {
   await loadClient();
   await loadModules();
   await loadGuilds();
+  await initializeServer();
 
   state.botLog = new LogService();
   state.throttle = new ThrottleService();
@@ -74,6 +82,7 @@ const state = {
   for (const user of bannedUsers) {
     state.bannedUsers.set(user.id, "");
   }
+
   console.log(" - Loaded ".green + bannedUsers.length.toString().cyan + " banned users".green);
 }
 )();

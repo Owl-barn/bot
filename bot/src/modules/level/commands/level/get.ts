@@ -15,7 +15,7 @@ export default SubCommand(
   // Info
   {
     name: "get",
-    description: "Get your own or your friends current level!",
+    description: "Get your own or your friends current level",
 
     arguments: [
       {

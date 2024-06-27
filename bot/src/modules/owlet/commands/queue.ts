@@ -21,7 +21,7 @@ export default Command(
   // Info
   {
     name: "queue",
-    description: "shows queue",
+    description: "Display current queue",
     group: CommandGroup.music,
 
     arguments: [
