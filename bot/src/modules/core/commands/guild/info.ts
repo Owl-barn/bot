@@ -23,6 +23,12 @@ export default SubCommand(
         description: "guild id",
         required: true,
       },
+      {
+        type: ApplicationCommandOptionType.Boolean,
+        name: "show_users",
+        description: "show users in the guild",
+        required: false,
+      },
     ],
 
     throttling: {
@@ -34,6 +40,7 @@ export default SubCommand(
   // Execute
   async (msg) => {
     const guildID = msg.options.getString("guild_id");
+    const showUsers = msg.options.getBoolean("show_users") || false;
     const client = msg.client;
 
     let guild = msg.guild as Guild;
@@ -67,6 +74,18 @@ export default SubCommand(
       .map((x) => `id: ${x.id} name: ${x.name}`)
       .join("\n");
 
+    let userOutput;
+    if (showUsers) {
+      const users = guild.members.cache;
+
+      userOutput = users
+        .map(
+          (x) =>
+            `id: ${x.id} name: ${x.user.username} role: ${x.roles.highest.name}`,
+        )
+        .join("\n");
+    }
+
     const output = [
       guild.name,
       ownerString,
@@ -82,6 +101,8 @@ export default SubCommand(
       `channels:\n${channelOutput}`,
       "\n",
       `roles:\n${roleOutput}`,
+      "\n",
+      userOutput ? `users:\n${userOutput}` : "",
     ];
 
     const attachment = new AttachmentBuilder(
