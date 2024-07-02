@@ -14,7 +14,7 @@ const env = cleanEnv(process.env, {
 
   // Server
   PASSWORD: str({ default: "password" }),
-  ADDRESS: url({ default: "ws://bot:3001" }),
+  ADDRESS: url({ default: "ws://hootsifer_bot:3001" }),
 
   // Music
   IDLE_TIMEOUT: num({

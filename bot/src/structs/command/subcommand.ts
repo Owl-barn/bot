@@ -1,10 +1,11 @@
 import { Throttling } from "@structs/access/throttling";
 import { PermissionsString } from "discord.js";
-import { BaseCommandInfo, CommandType, RunFunction } from ".";
+import { CommandType, RunFunction } from ".";
+import { BaseCommandInfo, CommandStage } from "./basecommand";
 import { Argument } from "./argument";
 import { Access } from "@structs/access";
 
-export interface SubCommandInfo extends BaseCommandInfo {
+export type SubCommandInfo<Stage extends CommandStage> = BaseCommandInfo<Stage> & {
   isGlobal?: boolean;
   adminOnly?: boolean;
   disabled?: boolean;
@@ -19,15 +20,15 @@ export interface SubCommandInfo extends BaseCommandInfo {
   access?: Access;
 }
 
-export interface SubCommandStruct {
-  info: SubCommandInfo;
+export interface SubCommandStruct<Stage extends CommandStage> {
+  info: SubCommandInfo<Stage>;
   run: RunFunction<boolean>;
 }
 
-export function SubCommand<I extends SubCommandInfo>(
+export function SubCommand<I extends SubCommandInfo<"raw">>(
   info: I,
   run: RunFunction<I["isGlobal"] extends true ? false : true>,
-): SubCommandStruct {
+): SubCommandStruct<"configured"> {
   return {
     info: {
       ...info,

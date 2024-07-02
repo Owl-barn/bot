@@ -1,6 +1,7 @@
 {
     "eslint.workingDirectories": [
         "bot",
-        "owlet"
+        "owlet",
+        "web"
     ]
 }

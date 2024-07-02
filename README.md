@@ -1,4 +1,6 @@
 # Hootsifer
+https://bot.hootsifer.com/
+
 A modular discord bot with an unique multi-channel music system
 
 ## FAQ

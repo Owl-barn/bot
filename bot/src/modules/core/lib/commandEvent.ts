@@ -26,15 +26,15 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
 
   const commandName = command.info.commandName as string;
 
-  let parentCommand: ParentCommandStruct | undefined;
+  let parentCommand: ParentCommandStruct<"processed"> | undefined;
   // if the command includes a dash, that means its a subcommand
   if (commandName.includes("-")) {
     parentCommand = state.commands.get(
       commandName.split("-")[0],
-    ) as ParentCommandStruct;
+    ) as ParentCommandStruct<"processed">;
   }
 
-  const group = (command as CommandStruct).info.group || parentCommand?.info.group;
+  const group = (command as CommandStruct<"processed">).info.group || parentCommand?.info.group;
   if (!group) return;
 
   // Check if owner command.

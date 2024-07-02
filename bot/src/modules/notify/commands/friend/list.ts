@@ -7,7 +7,7 @@ export default SubCommand(
   // Info
   {
     name: "list",
-    description: "Add a user to your VC alerts!",
+    description: "View the users on your vc notify list",
 
     throttling: {
       duration: 600,

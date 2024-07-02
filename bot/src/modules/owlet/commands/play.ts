@@ -19,20 +19,20 @@ export default Command(
   // Info
   {
     name: "play",
-    description: "Plays a song",
+    description: "Play or queue a song",
     group: CommandGroup.music,
 
     arguments: [
       {
         type: ApplicationCommandOptionType.String,
         name: "song",
-        description: "song name or url",
+        description: "song name or youtube/spotify url",
         required: true,
       },
       {
         type: ApplicationCommandOptionType.Boolean,
         name: "force",
-        description: "force play?",
+        description: "Play the song immediately (requires perms)",
         required: false,
       },
       {

@@ -1,12 +1,10 @@
 import { state } from "@app";
-import { CommandType } from "@structs/command";
-import { CommandStruct } from "@structs/command/command";
-import { SubCommandStruct } from "@structs/command/subcommand";
+import { CommandType, ExecutableCommand } from "@structs/command";
 import { AutocompleteInteraction, ChatInputCommandInteraction } from "discord.js";
 
 type Input = ChatInputCommandInteraction | AutocompleteInteraction;
 
-export function getCommand(msg: Input): SubCommandStruct | CommandStruct {
+export function getCommand(msg: Input): ExecutableCommand<"processed"> {
   let { commandName } = msg;
   const subCommandGroup = msg.options.getSubcommandGroup(false);
   const subCommand = msg.options.getSubcommand(false);
@@ -14,7 +12,7 @@ export function getCommand(msg: Input): SubCommandStruct | CommandStruct {
   subCommandGroup ? (commandName += `-${subCommandGroup}`) : null;
   subCommand ? (commandName += `-${subCommand}`) : null;
 
-  const command = state.commands.get(commandName) as SubCommandStruct | CommandStruct;
+  const command = state.commands.get(commandName) as ExecutableCommand<"processed">;
   if (!command) throw new Error(`Command ${commandName} not found`);
   if (command.info.type !== CommandType.Default && command.info.type !== CommandType.Subcommand)
     throw new Error(`Command ${commandName} is not a executable command`);

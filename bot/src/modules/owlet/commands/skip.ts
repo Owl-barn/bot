@@ -29,7 +29,7 @@ export default Command(
       {
         type: ApplicationCommandOptionType.Boolean,
         name: "force",
-        description: "force skip?",
+        description: "Skip the song immediately (requires perms)",
         required: false,
       },
       {

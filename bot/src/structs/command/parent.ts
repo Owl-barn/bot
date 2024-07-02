@@ -1,16 +1,20 @@
-import { BaseCommandInfo, CommandGroup, CommandType } from ".";
+import { CommandGroup, CommandType } from ".";
+import { BaseCommandInfo, CommandStage } from "./basecommand";
 
-export interface ParentCommandInfo extends BaseCommandInfo {
+export type ParentCommandInfo<Stage extends CommandStage> = BaseCommandInfo<Stage> & {
   group: CommandGroup;
 }
 
-export interface ParentCommandStruct {
-  info: ParentCommandInfo;
+export interface ParentCommandStruct<Stage extends CommandStage> {
+  info: ParentCommandInfo<Stage>;
 }
 
 
-export function ParentCommand(info: ParentCommandStruct["info"]): ParentCommandStruct {
+export function ParentCommand(info: ParentCommandStruct<"raw">["info"]): ParentCommandStruct<"configured"> {
   return {
-    info: { ...info, type: CommandType.Parent },
+    info: {
+      ...info,
+      type: CommandType.Parent,
+    },
   };
 }

@@ -8,7 +8,7 @@ export default SubCommand(
   // Info
   {
     name: "remove",
-    description: "Add a user to your vc notify list!",
+    description: "Remove a user from your vc notify list",
 
     arguments: [
       {

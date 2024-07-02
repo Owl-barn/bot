@@ -68,7 +68,13 @@ export function yearsAgo(pastDate: Date, presentDate = new Date()): number {
   let age = presentDate.getFullYear() - pastDate.getFullYear();
   const m = presentDate.getMonth() - pastDate.getMonth();
   if (m < 0 || (m === 0 && presentDate.getDate() < pastDate.getDate())) {
-      age--;
+    age--;
   }
   return age;
+}
+
+export function getOrdinalSuffix(input: number): string {
+  const suffix = ["th", "st", "nd", "rd"],
+    v = input % 100;
+  return suffix[(v - 20) % 10] || suffix[v] || suffix[0];
 }

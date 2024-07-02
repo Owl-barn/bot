@@ -12,7 +12,7 @@ export default SubCommand(
   // Info
   {
     name: "set",
-    description: "Add your birthday to the bot!",
+    description: "Add your birthday to this server",
 
     arguments: [
       {
