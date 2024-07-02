@@ -8,13 +8,13 @@
 
 <nav>
     {#if $page.url.pathname === "/"}
-        <a href="/docs">Docs</a>
+        <a href="/docs">Documentation</a>
     {:else}
         <a href="/">Home</a>
     {/if}
 
     <div class="filler"></div>
-    <a target="_blank" href={PUBLIC_INVITE_URL}>invite</a>
+    <a target="_blank" href={PUBLIC_INVITE_URL}>Invite</a>
     <a class="premium" target="_blank" href={PUBLIC_PREMIUM_URL}><Crown /></a>
 </nav>
 {@render children()}

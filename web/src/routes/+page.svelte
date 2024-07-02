@@ -48,7 +48,7 @@
             <Envelope/>
         {/snippet}
         <Feature title="Get notified" artwork={envelope} moduleId="notify">
-            Get a personal message from hootsifer whenever your friend joins the
+            Get a personal message from Hootsifer whenever your friend joins the
             voice chat!
         </Feature>
 

@@ -56,6 +56,11 @@
 
         & .info {
             flex: 2;
+
+
+            & > * {
+                padding-block: .35rem;
+            }
         }
 
         & h1 {
@@ -80,7 +85,6 @@
         display: inline-flex;
         align-items: center;
         gap: 0.3em;
-        padding-block: 1em;
         font-size: 1rem;
         text-decoration: none;
 
