@@ -86,7 +86,10 @@ export default SubCommand(
       },
     });
 
-    if (hasBirthday && hasBirthday.timezone !== null && Date.now() - Number(hasBirthday.birthdayUpdatedAt) > lockoutMinutes * 60 * 1000) {
+    const isSameDate = hasBirthday?.birthdate?.getTime() === dateNoZone.toJSDate().getTime();
+    const isPastLockout = Date.now() - Number(hasBirthday?.birthdayUpdatedAt) < lockoutMinutes * 60 * 1000;
+
+    if (hasBirthday && hasBirthday.timezone !== null && !isSameDate && isPastLockout) {
       failEmbed.setDescription(
         "You can only change your birthday once a year, contact an admin if there was a mistake",
       );
@@ -129,7 +132,7 @@ export default SubCommand(
     embed.addFields([
       {
         name: "Note",
-        value: `You have **${lockoutMinutes} minutes** to correct any mistakes, after that you will have to wait a year to change it again.\n use \`/birthday toggle\` in any server you'd like to enable birthday notifications in.`,
+        value: `You have **${lockoutMinutes} minutes** to correct any mistakes, after that you will have to wait a year to change it again.\n use \`/birthday toggle\` in any other server you'd like to enable birthday notifications in.`,
         inline: false,
       },
     ]);
