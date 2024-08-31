@@ -53,6 +53,7 @@ async function eventHandler<T extends keyof ClientEvents>(args: ClientEvents[T],
 
     await event.execute(...args);
   } catch (error) {
+    console.error(error);
     state.log.error(`Error in event ${event.name}: `, { error });
   }
 }

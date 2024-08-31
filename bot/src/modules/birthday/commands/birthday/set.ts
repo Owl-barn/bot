@@ -57,9 +57,12 @@ export default SubCommand(
     const year = msg.options.getNumber("year", true);
     const zone = msg.options.getString("timezone", true);
 
-
     let embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
+
+    // Validate timezone
+    if (!Intl.supportedValuesOf("timeZone").includes(zone))
+      return { embeds: [failEmbed.setDescription("Invalid Timezone")], ephemeral: true };
 
     const date = DateTime.fromObject({ day, month, year }, { zone });
     const dateNoZone = DateTime.fromObject({ day, month, year });
@@ -67,7 +70,7 @@ export default SubCommand(
     // Check if the date is valid
     if (date.isValid === false) {
       failEmbed.setDescription("Invalid Date");
-      return { embeds: [failEmbed] };
+      return { embeds: [failEmbed], ephemeral: true };
     }
 
     // Check if the date is in the future
@@ -83,7 +86,7 @@ export default SubCommand(
       },
     });
 
-    if (hasBirthday && hasBirthday.timezone !== null && Date.now() - Number(hasBirthday.updatedAt) > lockoutMinutes * 60 * 1000) {
+    if (hasBirthday && hasBirthday.timezone !== null && Date.now() - Number(hasBirthday.birthdayUpdatedAt) > lockoutMinutes * 60 * 1000) {
       failEmbed.setDescription(
         "You can only change your birthday once a year, contact an admin if there was a mistake",
       );
@@ -126,7 +129,7 @@ export default SubCommand(
     embed.addFields([
       {
         name: "Note",
-        value: `You have **${lockoutMinutes} minutes** to correct any mistakes, after that you will have to wait a year to change it again.\n use \`/birthday config\` in any server you'd like to enable birthday notifications in.`,
+        value: `You have **${lockoutMinutes} minutes** to correct any mistakes, after that you will have to wait a year to change it again.\n use \`/birthday toggle\` in any server you'd like to enable birthday notifications in.`,
         inline: false,
       },
     ]);
