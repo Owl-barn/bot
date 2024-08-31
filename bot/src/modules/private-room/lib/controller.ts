@@ -13,13 +13,13 @@ import { getAvatar, randomRange } from "../../../lib/functions";
 import { embedTemplate } from "../../../lib/embedTemplate";
 import path from "path";
 import fs from "fs";
-import moment from "moment";
 import { state } from "@app";
 import { localState as owletState } from "../../owlet";
 import { logType } from "@lib/services/logService";
 import { PrivateRoom } from "@prisma/client";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { localState } from "..";
+import { DateTime } from "luxon";
 
 interface RoomNames {
   adjectives?: string[];
@@ -496,9 +496,11 @@ export class Controller {
     embed.setTitle("Private Room Disbanded");
 
     // How long the room was active for.
-    const lifespan = moment
-      .utc(moment(Date.now()).diff(mainRoom?.createdAt))
-      .format("HH:mm:ss");
+    const lifespan = mainRoom?.createdAt ?
+      DateTime.now()
+        .diff(DateTime.fromJSDate(mainRoom?.createdAt))
+        .toFormat("h:mm:ss")
+      : "Unknown";
 
     // Users that joined the room.
     const users = mainRoom?.isVoiceBased() ? mainRoom.permissionOverwrites.cache

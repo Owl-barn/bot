@@ -3,7 +3,7 @@ import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { ApplicationCommandOptionType } from "discord.js";
-import moment from "moment";
+import { DateTime } from "luxon";
 
 const db = state.db;
 
@@ -71,7 +71,7 @@ export default Command(
       },
       {
         name: "Uptime",
-        value: moment(Date.now() - (client.uptime as number)).fromNow().replace(" ago", ""),
+        value: DateTime.fromMillis(Date.now() - (client.uptime as number)).toRelative()?.replace("ago", "") || "0",
         inline: true,
       },
       {

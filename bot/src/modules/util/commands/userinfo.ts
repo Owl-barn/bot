@@ -70,7 +70,7 @@ export default Command(
     const muteTimeStamp = member?.communicationDisabledUntilTimestamp;
     const muted = (muteTimeStamp && muteTimeStamp > Date.now()) ? Math.round(muteTimeStamp / 1000) : undefined;
 
-    const birthday = userData?.birthdate && getDateTime(userData?.birthdate, userData?.timezone ?? "UTC").toJSDate();
+    const birthday = userData?.birthdate && getDateTime(userData?.birthdate, userData?.timezone).toJSDate();
 
     const fields: EmbedField[] = [];
 
