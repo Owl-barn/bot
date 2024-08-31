@@ -13,7 +13,11 @@ export function formatBirthdayEmbed(embed: EmbedBuilder, birthday: { birthdate: 
   const jsDate = date.toJSDate();
 
   const age = yearsAgo(jsDate);
-  const nextBirthday = nextDate(jsDate);
+  const now = DateTime.now().setZone(birthday.timezone);
+  const isToday = now.daysInMonth === date.daysInMonth && now.month === date.month;
+  const nextBirthday = isToday
+    ? date.plus({ days: 1 }).set({ year: now.year }).toJSDate()
+    : nextDate(jsDate);
   const starSign = getStarSign(jsDate);
 
   embed.addFields([
@@ -31,7 +35,7 @@ export function formatBirthdayEmbed(embed: EmbedBuilder, birthday: { birthdate: 
     },
     {
       name: "Countdown",
-      value: `<t:${Math.round(Number(nextBirthday) / 1000)}:R>`,
+      value: `${isToday ? "ends" : ""} <t:${Math.round(Number(nextBirthday) / 1000)}:R>`,
       inline: true,
     },
     {
