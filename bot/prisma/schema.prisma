@@ -281,8 +281,13 @@ model Birthday {
   userId  String
   guildId String
 
-  date    DateTime?
-  hasRole Boolean   @default(false)
+  date      DateTime @db.Date
+  timezone  String
+  hasRole   Boolean  @default(false)
+  isDeleted Boolean  @default(false)
+
+  // TODO: remove isLegacy after a certain amount of time?
+  isLegacy Boolean @default(true)
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)

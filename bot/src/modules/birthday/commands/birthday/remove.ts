@@ -25,9 +25,9 @@ export default SubCommand(
       where: {
         userId: msg.user.id,
         guildId: msg.guildId,
-        NOT: { date: null },
+        isDeleted: false,
       },
-      data: { date: null },
+      data: { isDeleted: true },
     });
 
     if (!query || query.count === 0)

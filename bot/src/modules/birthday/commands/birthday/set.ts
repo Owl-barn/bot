@@ -1,11 +1,11 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { getStarSign } from "@lib/functions";
-import { nextDate, yearsAgo } from "@lib/time";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
-import moment from "moment";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
+import { DateTime } from "luxon";
+import { formatBirthdayEmbed } from "@modules/birthday/lib/format";
+import { TimezoneAutocomplete } from "@modules/birthday/lib/autocomplete";
 
 export default SubCommand(
 
@@ -17,9 +17,27 @@ export default SubCommand(
     arguments: [
       {
         type: ApplicationCommandOptionType.String,
-        name: "birthday",
-        description:
-          "your birthday date formatted like: dd/mm/yyyy",
+        name: "timezone",
+        description: "Your timezone/city",
+        autoComplete: TimezoneAutocomplete,
+        required: true,
+      },
+      {
+        type: ApplicationCommandOptionType.Number,
+        name: "day",
+        description: "The day you were born on, in the format of `DD`",
+        required: true,
+      },
+      {
+        type: ApplicationCommandOptionType.Number,
+        name: "month",
+        description: "The month you were born in, in the format of `MM`",
+        required: true,
+      },
+      {
+        type: ApplicationCommandOptionType.Number,
+        name: "year",
+        description: "The year you were born in, in the format of `YYYY`",
         required: true,
       },
     ],
@@ -32,47 +50,27 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
+    const day = msg.options.getNumber("day", true);
+    const month = msg.options.getNumber("month", true);
+    const year = msg.options.getNumber("year", true);
+    const zone = msg.options.getString("timezone", true);
 
 
-    const birthday = msg.options.getString("birthday", true);
-    const birthdayCheck = new RegExp(
-      /(?<day>[0-9]{1,2})[/:-](?<month>[0-9]{1,2})[/:-](?<year>[0-9]{4})/g,
-    );
-
-    const embed = embedTemplate();
+    let embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const match = Array.from(birthday.matchAll(birthdayCheck));
+    const date = DateTime.fromObject({ day, month, year }, { zone });
+    const dateNoZone = DateTime.fromObject({ day, month, year });
 
-    if (!match[0]?.groups) {
-      failEmbed.setDescription(
-        "Invalid input format, the format is `DD/MM/YYYY`",
-      );
-      return { embeds: [failEmbed], ephemeral: true };
-    }
-
-    let { day, month, year } = match[0]?.groups as unknown as dateInput;
-
-    if (!day && !month && !year) {
-      failEmbed.setDescription(
-        "Invalid input format, the format is `DD/MM/YYYY`",
-      );
-      return { embeds: [failEmbed], ephemeral: true };
-    }
-
-    day = Number(day);
-    month = Number(month);
-    year = Number(year);
-
-    const birthdayMoment = moment(birthday, "DD-MM-YYYY");
-
-    if (birthdayMoment.isAfter(moment(Date.now()))) {
-      failEmbed.setDescription("That date is in the future");
-      return { embeds: [failEmbed], ephemeral: true };
-    }
-
-    if (!birthdayMoment.isValid()) {
+    // Check if the date is valid
+    if (date.isValid === false) {
       failEmbed.setDescription("Invalid Date");
+      return { embeds: [failEmbed] };
+    }
+
+    // Check if the date is in the future
+    if (date.millisecond > Date.now()) {
+      failEmbed.setDescription("That date is in the future");
       return { embeds: [failEmbed], ephemeral: true };
     }
 
@@ -85,13 +83,15 @@ export default SubCommand(
       },
     });
 
-    if (hasBirthday && Date.now() - Number(hasBirthday.updatedAt) > 600000) {
+    // TODO: remove isLegacy after a certain amount of time?
+    if (hasBirthday && !hasBirthday.isLegacy && Date.now() - Number(hasBirthday.updatedAt) > 600000) {
       failEmbed.setDescription(
         "You can only change your birthday once a year, contact an admin if there was a mistake",
       );
       return { embeds: [failEmbed] };
     }
 
+    // Upsert the birthday
     const query = await state.db.birthday.upsert({
       where: {
         userId_guildId: {
@@ -100,56 +100,25 @@ export default SubCommand(
         },
       },
       create: {
-        date: birthdayMoment.toDate(),
+        date: dateNoZone.toJSDate(),
+        timezone: zone,
         user: connectOrCreate(msg.user.id),
         guild: {
           connect: { id: msg.guild?.id },
         },
       },
       update: {
-        date: birthdayMoment.toDate(),
+        date: dateNoZone.toJSDate(),
+        timezone: zone,
         updatedAt: undefined,
       },
     });
+
     if (!query.date) throw new Error("No date???");
 
-    const nextBirthday = nextDate(query.date);
-    const age = yearsAgo(birthdayMoment.toDate());
-    const starSign = getStarSign(query.date);
-
     embed.setTitle("Birthday set!");
-    embed.addFields([
-      {
-        name: `Birth Date`,
-        value: `**you were born on** ${birthdayMoment.format(
-          "DD-MM-YYYY",
-        )}`,
-      },
-      {
-        name: `Info`,
-        value:
-          `**Age:** ${age} years \n` +
-          `**Next birthday:** <t:${Number(nextBirthday) / 1000}:R>`,
-        inline: true,
-      },
-      {
-        name: `Star Sign`,
-        value: `${starSign?.name} ${starSign?.icon}`,
-        inline: true,
-      },
-      {
-        name: "Disclaimer",
-        value: "All times are recorded in UTC timezone. The “next birthday” and birthday role times may be inaccurate due to this.",
-      },
-    ]);
+    embed = formatBirthdayEmbed(embed, query);
 
     return { embeds: [embed] };
   }
-
 );
-
-interface dateInput {
-  day: string | number;
-  month: string | number;
-  year: string | number;
-}

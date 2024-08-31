@@ -1,4 +1,5 @@
 import { escapeMarkdown } from "discord.js";
+import { DateTime } from "luxon";
 
 /**
  *  Converts a duration string to ms.
@@ -65,12 +66,8 @@ export function nextDate(pastDate: Date, currentDate = new Date()): Date {
 }
 
 export function yearsAgo(pastDate: Date, presentDate = new Date()): number {
-  let age = presentDate.getFullYear() - pastDate.getFullYear();
-  const m = presentDate.getMonth() - pastDate.getMonth();
-  if (m < 0 || (m === 0 && presentDate.getDate() < pastDate.getDate())) {
-    age--;
-  }
-  return age;
+  const difference = DateTime.fromJSDate(pastDate).diff(DateTime.fromJSDate(presentDate), "years").years;
+  return Math.floor(Math.abs(difference));
 }
 
 export function getOrdinalSuffix(input: number): string {
