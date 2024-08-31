@@ -14,7 +14,7 @@ export function formatBirthdayEmbed(embed: EmbedBuilder, birthday: { birthdate: 
 
   const age = yearsAgo(jsDate);
   const now = DateTime.now().setZone(birthday.timezone);
-  const isToday = now.daysInMonth === date.daysInMonth && now.month === date.month;
+  const isToday = now.day === date.day && now.month === date.month;
   const nextBirthday = isToday
     ? date.plus({ days: 1 }).set({ year: now.year }).toJSDate()
     : nextDate(jsDate);
