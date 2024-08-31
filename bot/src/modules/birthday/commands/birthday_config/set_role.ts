@@ -29,7 +29,7 @@ export default SubCommand(
   async (msg) => {
     const role = msg.options.getRole("birthday_role") as Role | undefined;
 
-    const failEmbed = failEmbedTemplate("I cant assign this role.");
+    const failEmbed = failEmbedTemplate("I cannot assign this role.");
 
     if (role && !role.editable) return { embeds: [failEmbed] };
 

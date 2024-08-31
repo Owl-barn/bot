@@ -2,17 +2,19 @@ import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
-import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { DateTime } from "luxon";
 import { formatBirthdayEmbed } from "@modules/birthday/lib/format";
 import { TimezoneAutocomplete } from "@modules/birthday/lib/autocomplete";
+import { getAvatar } from "@lib/functions";
+
+const lockoutMinutes = 15;
 
 export default SubCommand(
 
   // Info
   {
     name: "set",
-    description: "Add your birthday to this server",
+    description: "Set your birthday on the bot",
 
     arguments: [
       {
@@ -74,17 +76,14 @@ export default SubCommand(
       return { embeds: [failEmbed], ephemeral: true };
     }
 
-    const hasBirthday = await state.db.birthday.findUnique({
+    const hasBirthday = await state.db.user.findUnique({
       where: {
-        userId_guildId: {
-          userId: msg.user.id,
-          guildId: msg.guildId,
-        },
+        id: msg.user.id,
+        birthdate: { not: null },
       },
     });
 
-    // TODO: remove isLegacy after a certain amount of time?
-    if (hasBirthday && !hasBirthday.isLegacy && Date.now() - Number(hasBirthday.updatedAt) > 600000) {
+    if (hasBirthday && hasBirthday.timezone !== null && Date.now() - Number(hasBirthday.updatedAt) > lockoutMinutes * 60 * 1000) {
       failEmbed.setDescription(
         "You can only change your birthday once a year, contact an admin if there was a mistake",
       );
@@ -92,32 +91,45 @@ export default SubCommand(
     }
 
     // Upsert the birthday
-    const query = await state.db.birthday.upsert({
-      where: {
-        userId_guildId: {
-          userId: msg.user.id,
-          guildId: msg.guildId,
-        },
-      },
+    const query = await state.db.user.upsert({
+      where: { id: msg.user.id },
       create: {
-        date: dateNoZone.toJSDate(),
+        id: msg.user.id,
+        birthdate: dateNoZone.toJSDate(),
         timezone: zone,
-        user: connectOrCreate(msg.user.id),
-        guild: {
-          connect: { id: msg.guild?.id },
+        birthdayUpdatedAt: new Date(),
+        UserGuildConfig: {
+          connectOrCreate: {
+            where: { userId_guildId: { guildId: msg.guild.id, userId: msg.user.id } },
+            create: { guildId: msg.guild.id, birthdayEnabled: true },
+          },
         },
       },
       update: {
-        date: dateNoZone.toJSDate(),
+        birthdate: dateNoZone.toJSDate(),
+        birthdayUpdatedAt: new Date(),
         timezone: zone,
-        updatedAt: undefined,
+        UserGuildConfig: {
+          connectOrCreate: {
+            where: { userId_guildId: { guildId: msg.guild.id, userId: msg.user.id } },
+            create: { guildId: msg.guild.id, birthdayEnabled: true },
+          },
+        },
       },
     });
 
-    if (!query.date) throw new Error("No date???");
-
     embed.setTitle("Birthday set!");
-    embed = formatBirthdayEmbed(embed, query);
+    if (query.birthdate === null || !query.timezone) throw new Error("No date???");
+    embed = formatBirthdayEmbed(embed, { birthdate: query.birthdate, timezone: query.timezone });
+    embed.setThumbnail(getAvatar(msg.member ?? msg.user) || null);
+
+    embed.addFields([
+      {
+        name: "Note",
+        value: `You have **${lockoutMinutes} minutes** to correct any mistakes, after that you will have to wait a year to change it again.\n use \`/birthday config\` in any server you'd like to enable birthday notifications in.`,
+        inline: false,
+      },
+    ]);
 
     return { embeds: [embed] };
   }

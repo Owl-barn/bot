@@ -6,6 +6,7 @@ import { logType } from "@lib/services/logService";
 import { localState } from "..";
 import { removeRoles } from "../lib/removeRoles";
 import { filter } from "../lib/filter";
+import { getDateTime } from "../lib/format";
 
 
 export default cron(
@@ -18,9 +19,15 @@ export default cron(
     // Remove roles from users that have them.
     await removeRoles();
 
-    let birthdays = await state.db.birthday.findMany({
-      where: { hasRole: false },
-      include: { user: true, guild: true },
+    let birthdays = await state.db.userGuildConfig.findMany({
+      where: {
+        birthdayHasRole: false,
+        user: { birthdate: { not: null } },
+      },
+      include: {
+        user: true,
+        guild: true,
+      },
     });
 
     // Filter out birthdays that are not today.
@@ -89,9 +96,9 @@ export default cron(
         }
 
         // update db to reflect that the role has been added.
-        await state.db.birthday.update({
+        await state.db.userGuildConfig.update({
           where: { userId_guildId: { userId: birthday.userId, guildId: birthday.guildId } },
-          data: { hasRole: true },
+          data: { birthdayHasRole: true },
         }).catch(error => {
           state.log.error(`Error updating birthday`, { error });
         });
@@ -102,7 +109,7 @@ export default cron(
 
       // Birthday message.
       const sendBirthdayMessage = async () => {
-        if (!birthday.date) return;
+        if (!birthday.user.birthdate) return;
         if (!birthday.guild.birthdayChannelId) return;
         if (unavailableChannels.includes(birthday.guildId)) return;
 
@@ -127,7 +134,7 @@ export default cron(
           return;
         }
 
-        const age = yearsAgo(birthday.date);
+        const age = yearsAgo(getDateTime(birthday.user.birthdate, birthday.user.timezone ?? "UTC").toJSDate());
         const messageSent = await channel.send(`Happy ${age}${getOrdinalSuffix(age)} birthday <@${birthday.userId}>!!!`).catch(() => null);
         if (messageSent === null) {
           state.botLog.push(

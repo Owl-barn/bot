@@ -8,7 +8,7 @@ export default SubCommand(
   // Info
   {
     name: "remove",
-    description: "Remove your birthday from this server",
+    description: "Remove your birthday from the bot entirely",
 
     throttling: {
       duration: 60,
@@ -21,16 +21,18 @@ export default SubCommand(
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const query = await state.db.birthday.updateMany({
+    const query = await state.db.user.update({
       where: {
-        userId: msg.user.id,
-        guildId: msg.guildId,
-        isDeleted: false,
+        id: msg.user.id,
+        birthdate: { not: null },
       },
-      data: { isDeleted: true },
+      data: {
+        birthdate: null,
+        timezone: null,
+      },
     });
 
-    if (!query || query.count === 0)
+    if (!query)
       return { embeds: [failEmbed.setDescription("No birthday set")] };
 
     return {

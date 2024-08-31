@@ -48,7 +48,7 @@ export default Command(
       where: global ? {} : { guildId: msg.guildId },
     });
 
-    const birthdays = await db.birthday.count({
+    const birthdays = await db.userGuildConfig.count({
       where: global ? {} : { guildId: msg.guildId },
     });
 

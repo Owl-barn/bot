@@ -35,7 +35,7 @@ export default SubCommand(
       | GuildBasedChannel
       | undefined;
 
-    const failEmbed = failEmbedTemplate("I cant assign this role.");
+    const failEmbed = failEmbedTemplate("I cannot send messages to that channel.");
 
     if (channel && !channel.permissionsFor(msg.client.user as ClientUser))
       return { embeds: [failEmbed] };
