@@ -7,6 +7,7 @@ import { embedTemplate } from "@lib/embedTemplate";
 import { localState } from "..";
 import { formatGuildInfo } from "../lib/formatGuildInfo";
 import { updateCollection } from "@modules/selfrole/lib/selfrole";
+import { getDateTime } from "@modules/birthday/lib/format";
 
 export default Event({
   name: "messageCreate",
@@ -124,24 +125,30 @@ export default Event({
 
       // Gets stats for birthdays.
       case "age*": {
-        let birthdays = await state.db.birthday.findMany({
-          where: { guildId: msg.guildId as string },
+        let birthdays = await state.db.userGuildConfig.findMany({
+          where: { guildId: msg.guildId as string, user: { NOT: { birthdate: null } } },
+          include: { user: true },
         });
+
         let combined = 0;
         const currentYear = new Date().getFullYear();
 
-        birthdays = birthdays.filter(x => x.date && x.date.getFullYear() > currentYear - 40);
+        birthdays = birthdays.filter(x => x.user.birthdate && x.user.birthdate.getFullYear() > currentYear - 40);
+        birthdays = birthdays.map((x) => {
+          x.user.birthdate = getDateTime(x.user.birthdate as Date, x.user.timezone).toJSDate();
+          return x;
+        });
 
-        birthdays = birthdays.sort((x, y) => Number(y.date) - Number(x.date));
+        birthdays = birthdays.sort((x, y) => Number(y.user.birthdate) - Number(x.user.birthdate));
 
-        birthdays.forEach((x) => (combined += yearsAgo(x.date as Date)));
+        birthdays.forEach((x) => (combined += yearsAgo(x.user.birthdate as Date)));
 
         const average = Math.round(combined / birthdays.length);
 
         msg.reply(
           `**Average:** ${average}\n`
-          + `**Median:** ${yearsAgo(birthdays[Math.round(birthdays.length / 2)].date as Date)}\n`
-          + `**Range:** ${yearsAgo(birthdays[0].date as Date)} - ${yearsAgo(birthdays[birthdays.length - 1].date as Date,)}`,
+          + `**Median:** ${yearsAgo(birthdays[Math.round(birthdays.length / 2)].user.birthdate as Date)}\n`
+          + `**Range:** ${yearsAgo(birthdays[0].user.birthdate as Date)} - ${yearsAgo(birthdays[birthdays.length - 1].user.birthdate as Date,)}`,
         );
 
         return;

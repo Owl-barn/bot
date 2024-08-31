@@ -3,6 +3,7 @@ import { nextDate } from "@lib/time";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { getDateTime } from "@modules/birthday/lib/format";
+import { User } from "@prisma/client";
 
 export default SubCommand(
 
@@ -19,12 +20,17 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    let birthdays = await state.db.birthday.findMany({
+    let birthdays = await state.db.user.findMany({
       where: {
-        guildId: msg.guildId,
-        isDeleted: false,
+        birthdate: { not: null },
+        UserGuildConfig: {
+          some: {
+            guildId: msg.guild.id,
+            birthdayEnabled: true,
+          },
+        },
       },
-    });
+    }) as (Omit<User, "birthdate"> & { birthdate: Date })[];
 
 
     if (!birthdays.length) {
@@ -33,17 +39,17 @@ export default SubCommand(
       return { embeds: [failEmbed] };
     }
 
-    birthdays = birthdays.map(b => ({ ...b, date: nextDate(getDateTime(b.date, b.timezone).toJSDate()) }));
-    birthdays = birthdays.sort((x, y) => Number(x.date) - Number(y.date));
+    birthdays = birthdays.map(b => ({ ...b, birthdate: nextDate(getDateTime(b.birthdate, b.timezone ?? "UTC").toJSDate()) }));
+    birthdays = birthdays.sort((x, y) => Number(x.birthdate) - Number(y.birthdate));
 
     // Check if users are still in server
-    const users = await msg.guild.members.fetch({ user: birthdays.map(b => b.userId) });
-    birthdays = birthdays.filter(b => users.has(b.userId));
+    const users = await msg.guild.members.fetch({ user: birthdays.map(b => b.id) });
+    birthdays = birthdays.filter(b => users.has(b.id));
     birthdays = birthdays.slice(0, 10);
 
     const embed = embedTemplate();
     embed.setTitle(`Upcoming birthdays`);
-    embed.setDescription(birthdays.map((b, i) => `${i}. <@${b.userId}> - <t:${Math.round(Number(b.date) / 1000)}:R>`).join("\n"));
+    embed.setDescription(birthdays.map((b, i) => `${i}. ${users.get(b.id)?.displayName} - <t:${Math.round(Number(b.birthdate) / 1000)}:R>`).join("\n"));
 
     return { embeds: [embed] };
   }

@@ -29,6 +29,7 @@ export async function respond(
       return x;
     })
     .catch((error) => {
+      console.error(error);
       localState.log.error(`Error in command ${interaction.commandName.green}`, { error });
       return {
         ephemeral: true,
@@ -39,6 +40,7 @@ export async function respond(
   const processingDuration = Date.now() - timeStart;
 
   const logError = (error: Error) => {
+    console.error(error);
     localState.log.error(`Error sending command response for ${interaction.commandName.green}`, { error });
   };
 

@@ -48,13 +48,18 @@ export default SubCommand(
 
     if (!second_user) second_user = msg.member as GuildMember;
 
-    const users = await state.db.birthday.findMany({
+    const users = await state.db.user.findMany({
       where: {
-        OR: [{ userId: first_user.id }, { userId: second_user.id }],
-        guildId: msg.guildId,
-        isDeleted: false,
+        OR: [{ id: first_user.id }, { id: second_user.id }],
+        birthdate: { not: null },
+        UserGuildConfig: {
+          some: {
+            guildId: msg.guild.id,
+            birthdayEnabled: true,
+          },
+        },
       },
-      orderBy: { date: "asc" },
+      orderBy: { birthdate: "asc" },
     });
 
     if (users.length !== 2) {
@@ -64,8 +69,10 @@ export default SubCommand(
       return { embeds: [response] };
     }
 
-    const user0_date = getDateTime(users[0].date, users[0].timezone).toJSDate();
-    const user1_date = getDateTime(users[1].date, users[1].timezone).toJSDate();
+    if (users[0].birthdate === null || users[1].birthdate === null) throw Error("Missing date?");
+
+    const user0_date = getDateTime(users[0].birthdate, users[0].timezone ?? "UTC").toJSDate();
+    const user1_date = getDateTime(users[1].birthdate, users[1].timezone ?? "UTC").toJSDate();
 
     const user0_age = Number(new Date()) - Number(user0_date);
     const user1_age = Number(new Date()) - Number(user1_date);
@@ -90,10 +97,10 @@ export default SubCommand(
       : dayString;
 
     const oldest =
-      users[0].userId === second_user.id ? second_user : first_user;
+      users[0].id === second_user.id ? second_user : first_user;
 
     const youngest =
-      users[1].userId === second_user.id ? second_user : first_user;
+      users[1].id === second_user.id ? second_user : first_user;
 
     embed.addFields([
       {

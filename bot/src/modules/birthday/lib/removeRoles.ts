@@ -1,22 +1,27 @@
 import { state } from "@app";
-import { Birthday } from "@prisma/client";
 import { localState } from "..";
 import { DateTime } from "luxon";
 import { getDateTime } from "./format";
+import { UserGuildConfig } from "@prisma/client";
 
 export const removeRoles = async () => {
-  const birthdays = await state.db.birthday.findMany({
-    where: { hasRole: true },
-    include: { guild: { select: { birthdayRoleId: true } } },
+  const birthdays = await state.db.userGuildConfig.findMany({
+    where: { birthdayHasRole: true },
+    include: {
+      user: true,
+      guild: true,
+    },
   });
 
 
   // Filter out birthdays that are not yet over
   birthdays.filter((birthday) => {
-    const now = DateTime.now().startOf("minute");
-    const date = getDateTime(birthday.date, birthday.timezone).set({ year: now.year }).plus({ days: 1 });
+    if (birthday.user.birthdate === null) return false;
+    const zone = birthday.user.timezone ?? "UTC";
+    const now = DateTime.now().setZone(zone).startOf("minute");
+    const date = getDateTime(birthday.user.birthdate, zone).set({ year: now.year }).plus({ days: 1 });
     const difference = date.diff(now, "minutes").minutes;
-    return Math.abs(difference) <= 1;
+    return Math.abs(difference) == 0;
   });
 
   const failures = {
@@ -28,10 +33,10 @@ export const removeRoles = async () => {
 
   let removed = 0;
 
-  const removeFromDb = async (birthday: Birthday) => {
-    await state.db.birthday.update({
+  const removeFromDb = async (birthday: UserGuildConfig) => {
+    await state.db.userGuildConfig.update({
       where: { userId_guildId: { userId: birthday.userId, guildId: birthday.guildId } },
-      data: { hasRole: false },
+      data: { birthdayHasRole: false },
     }).catch(() => null);
   };
 

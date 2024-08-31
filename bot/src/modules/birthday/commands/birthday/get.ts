@@ -3,7 +3,8 @@ import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
 import { formatBirthdayEmbed } from "@modules/birthday/lib/format";
-import { Birthday } from "@prisma/client";
+import { User } from "@prisma/client";
+import { getAvatar } from "@lib/functions";
 
 export default SubCommand(
 
@@ -34,19 +35,30 @@ export default SubCommand(
     if (!member) member = msg.member as GuildMember;
 
     // Fetch the birthday.
-    let query: Pick<Birthday, "date" | "timezone"> | null;
+    let query: Pick<User, "birthdate" | "timezone"> | null;
     if (!member.user.bot) {
-      query = await state.db.birthday.findUnique({
-        where: {
-          userId_guildId: {
-            userId: member.id,
-            guildId: msg.guildId,
+      query = await state.db.user
+        .findUnique({
+          where: {
+            id: member.id,
+            birthdate: { not: null },
+            UserGuildConfig: {
+              some: {
+                guildId: msg.guild.id,
+                birthdayEnabled: true,
+              },
+            },
           },
-        },
-      });
+        })
+        .then((res) => {
+          if (res && !res.timezone) {
+            res.timezone = "UTC";
+          }
+          return res;
+        });
     } else {
       query = {
-        date: member.user.createdAt,
+        birthdate: member.user.createdAt,
         timezone: "UTC",
       };
     }
@@ -54,14 +66,16 @@ export default SubCommand(
     let embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    embed.setTitle(`${member.user.username}'s birthday`);
 
     if (!query) {
       failEmbed.setDescription("This user has no birthday registered");
       return { embeds: [failEmbed] };
     }
 
-    embed = formatBirthdayEmbed(embed, query);
+    embed.setTitle(`${member.user.username}'s birthday`);
+    if (query.birthdate === null || !query.timezone) throw new Error("No date???");
+    embed = formatBirthdayEmbed(embed, { birthdate: query.birthdate, timezone: query.timezone });
+    embed.setThumbnail(getAvatar(member) || null);
 
     return { embeds: [embed] };
   }

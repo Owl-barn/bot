@@ -4,9 +4,9 @@ import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { ApplicationCommandOptionType, EmbedField } from "discord.js";
-import moment from "moment";
 import { calculateLevelFromXP } from "modules/level/lib/calculateLevelFromXP";
 import { ModerationType } from "@prisma/client";
+import { getDateTime } from "@modules/birthday/lib/format";
 
 export default Command(
 
@@ -49,8 +49,8 @@ export default Command(
     const userData = await state.db.user.findUnique({
       where: { id: user.id },
       select: {
-        birthdays: { where: { NOT: { date: null } } },
-
+        birthdate: true,
+        timezone: true,
         infractions: { where: { NOT: { deletedOn: null } } },
         moderationActions: true,
 
@@ -70,7 +70,7 @@ export default Command(
     const muteTimeStamp = member?.communicationDisabledUntilTimestamp;
     const muted = (muteTimeStamp && muteTimeStamp > Date.now()) ? Math.round(muteTimeStamp / 1000) : undefined;
 
-    const birthday = member ? userData?.birthdays.find((x) => x.guildId === member.guild.id) : userData?.birthdays[0];
+    const birthday = userData?.birthdate && getDateTime(userData?.birthdate, userData?.timezone ?? "UTC").toJSDate();
 
     const fields: EmbedField[] = [];
 
@@ -88,8 +88,11 @@ export default Command(
       muted &&
       `**Mute will be removed** <t:${muted})}:R>`,
 
+      // Birthday
       birthday &&
-      `**Birthday:** ${moment(birthday.date).format("DD-MM-YYYY")}`,
+      `**Birthday:** ${birthday.toLocaleDateString("en-GB")}`,
+      userData?.timezone &&
+      `**Timezone:** ${userData.timezone}`,
 
       `**bot:** ${user.bot ? "yes 🤖" : "no 🦉"}`,
     ];
