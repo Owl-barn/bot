@@ -1,6 +1,8 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
+import { removeBirthdayRole } from "@modules/birthday/lib/removeRoles";
+import { localState } from "@modules/birthday";
 
 
 export default SubCommand(
@@ -34,6 +36,24 @@ export default SubCommand(
 
     if (!query)
       return { embeds: [failEmbed.setDescription("No birthday set")] };
+
+    const userGuildConfig = await state.db.userGuildConfig.findUnique({
+      where: {
+        userId_guildId: {
+          userId: msg.user.id,
+          guildId: msg.guild.id,
+        },
+      },
+      include: {
+        guild: true,
+        user: true,
+      },
+    });
+
+    if (userGuildConfig?.birthdayHasRole) {
+      localState.log.info("User with active birthday role removed their birthday.");
+      removeBirthdayRole(userGuildConfig).catch(() => null);
+    }
 
     return {
       embeds: [embed.setDescription("Birthday removed successfully!")],
