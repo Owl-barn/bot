@@ -60,6 +60,11 @@ export default SubCommand(
     let embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
+    if (year < 1900) {
+      failEmbed.setDescription("You aren't that old 🦉");
+      return { embeds: [failEmbed], ephemeral: true };
+    }
+
     // Validate timezone
     if (!Intl.supportedValuesOf("timeZone").includes(zone))
       return { embeds: [failEmbed.setDescription("Invalid Timezone")], ephemeral: true };
