@@ -140,15 +140,15 @@ export default Command(
     }
 
     // Moderation.
-    if (userData?.moderationActions.length || userData?.infractions.length) {
+    let moderationActions = userData?.moderationActions ?? [];
+    let infractions = userData?.infractions.filter((x) => !x.expiresOn || x.expiresOn < new Date()) ?? [];
 
-      let moderationActions = userData?.moderationActions;
-      let infractions = userData?.infractions.filter((x) => !x.expiresOn || x.expiresOn < new Date());
+    if (member) {
+      moderationActions = moderationActions.filter((x) => x.guildId === member.guild.id);
+      infractions = infractions.filter((x) => x.guildId === member.guild.id);
+    }
 
-      if (member) {
-        moderationActions = moderationActions.filter((x) => x.guildId === member.guild.id);
-        infractions = infractions.filter((x) => x.guildId === member.guild.id);
-      }
+    if (moderationActions?.length > 0 && infractions?.length > 0) {
 
       interface ModerationCount { given: number, received: number }
       const moderationCounts: { [x in ModerationType]: ModerationCount } = {
