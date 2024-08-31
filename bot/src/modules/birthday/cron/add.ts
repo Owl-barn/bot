@@ -11,14 +11,17 @@ import { filter } from "../lib/filter";
 export default cron(
   {
     name: "BirthdayAdd",
-    time: "0 0 * * *",
+    time: "*/15 * * * *",
   },
 
   async () => {
     // Remove roles from users that have them.
     await removeRoles();
 
-    let birthdays = await state.db.birthday.findMany({ include: { user: true, guild: true } });
+    let birthdays = await state.db.birthday.findMany({
+      where: { hasRole: false },
+      include: { user: true, guild: true },
+    });
 
     // Filter out birthdays that are not today.
     birthdays = birthdays.filter(filter);
@@ -145,6 +148,8 @@ export default cron(
       birthdays: birthdays.length,
     };
 
-    localState.log.debug("Birthday cron job finished", { data });
+    if (processed.rolesAdded > 0 || processed.messagesSent > 0) {
+      localState.log.info(`Successfully processed ${birthdays.length} birthdays (${processed.rolesAdded} roles, ${processed.messagesSent} messages)`, { data });
+    }
   },
 );

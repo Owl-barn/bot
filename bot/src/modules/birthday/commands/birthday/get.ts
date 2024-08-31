@@ -1,10 +1,9 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { getStarSign } from "@lib/functions";
-import { nextDate, yearsAgo } from "@lib/time";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
-import moment from "moment";
+import { formatBirthdayEmbed } from "@modules/birthday/lib/format";
+import { Birthday } from "@prisma/client";
 
 export default SubCommand(
 
@@ -35,7 +34,7 @@ export default SubCommand(
     if (!member) member = msg.member as GuildMember;
 
     // Fetch the birthday.
-    let query: { date: Date | null } | null;
+    let query: Pick<Birthday, "date" | "timezone"> | null;
     if (!member.user.bot) {
       query = await state.db.birthday.findUnique({
         where: {
@@ -48,54 +47,21 @@ export default SubCommand(
     } else {
       query = {
         date: member.user.createdAt,
+        timezone: "UTC",
       };
     }
 
-    const embed = embedTemplate();
+    let embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
     embed.setTitle(`${member.user.username}'s birthday`);
 
-    if (!query?.date) {
+    if (!query) {
       failEmbed.setDescription("This user has no birthday registered");
       return { embeds: [failEmbed] };
     }
 
-    // Transform data.
-    const nextBirthday = nextDate(new Date(query.date));
-    const age = yearsAgo(query.date);
-    const starSign = getStarSign(query.date);
-
-    const userString =
-      member.id === msg.user.id ? `you were` : `<@!${member.id}> was`;
-
-    const birthdayString = moment(query.date).format("DD-MM-YYYY");
-
-    // Format the response.
-    embed.addFields([
-      {
-        name: `Birth Date`,
-        value: `**${userString} born on** ${birthdayString}`,
-      },
-      {
-        name: "Info",
-        value:
-          `**Age:** ${age} years\n` +
-          `**Next birthday:** <t:${Math.round(
-            Number(nextBirthday) / 1000,
-          )}:R>`,
-        inline: true,
-      },
-      {
-        name: "Star Sign",
-        value: `${starSign?.name} ${starSign?.icon}`,
-        inline: true,
-      },
-      {
-        name: "Note",
-        value: "All times are recorded in UTC timezone. The “next birthday” and birthday role times may be inaccurate due to this.",
-      },
-    ]);
+    embed = formatBirthdayEmbed(embed, query);
 
     return { embeds: [embed] };
   }

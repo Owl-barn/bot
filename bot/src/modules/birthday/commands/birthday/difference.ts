@@ -2,6 +2,7 @@ import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
+import { getDateTime } from "@modules/birthday/lib/format";
 
 export default SubCommand(
 
@@ -35,9 +36,7 @@ export default SubCommand(
   // Execute
   async (msg) => {
 
-    const first_user = msg.options.getMember(
-      "first_user",
-    ) as GuildMember | null;
+    const first_user = msg.options.getMember("first_user") as GuildMember | null;
 
     if (first_user === null) throw "No first user?";
     let second_user = msg.options.getMember("second_user") as
@@ -53,7 +52,7 @@ export default SubCommand(
       where: {
         OR: [{ userId: first_user.id }, { userId: second_user.id }],
         guildId: msg.guildId,
-        NOT: { date: null },
+        isDeleted: false,
       },
       orderBy: { date: "asc" },
     });
@@ -65,8 +64,11 @@ export default SubCommand(
       return { embeds: [response] };
     }
 
-    const user0_age = Number(new Date()) - Number(users[0].date);
-    const user1_age = Number(new Date()) - Number(users[1].date);
+    const user0_date = getDateTime(users[0].date, users[0].timezone).toJSDate();
+    const user1_date = getDateTime(users[1].date, users[1].timezone).toJSDate();
+
+    const user0_age = Number(new Date()) - Number(user0_date);
+    const user1_age = Number(new Date()) - Number(user1_date);
 
     const percent_difference =
       (Math.abs(user0_age - user1_age) /
@@ -74,12 +76,12 @@ export default SubCommand(
       2;
 
     const difference = Math.abs(
-      (Number(users[0].date) - Number(users[1].date)) /
+      (Number(user0_date) - Number(user1_date)) /
       (1000 * 60 * 60 * 24),
     );
 
     const years = Math.floor(difference / 365);
-    const days = difference % 365;
+    const days = Math.floor(difference % 365);
 
     const yearString = years ? `${years} year${years == 1 ? "" : "s"}` : "";
     const dayString = `${days} day${days == 1 ? "" : "s"}`;

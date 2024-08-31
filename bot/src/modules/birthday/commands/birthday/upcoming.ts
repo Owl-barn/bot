@@ -2,6 +2,7 @@ import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { nextDate } from "@lib/time";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
+import { getDateTime } from "@modules/birthday/lib/format";
 
 export default SubCommand(
 
@@ -21,7 +22,7 @@ export default SubCommand(
     let birthdays = await state.db.birthday.findMany({
       where: {
         guildId: msg.guildId,
-        NOT: { date: null },
+        isDeleted: false,
       },
     });
 
@@ -32,7 +33,7 @@ export default SubCommand(
       return { embeds: [failEmbed] };
     }
 
-    birthdays = birthdays.map(b => ({ ...b, date: nextDate(new Date(b.date as Date)) }));
+    birthdays = birthdays.map(b => ({ ...b, date: nextDate(getDateTime(b.date, b.timezone).toJSDate()) }));
     birthdays = birthdays.sort((x, y) => Number(x.date) - Number(y.date));
 
     // Check if users are still in server
