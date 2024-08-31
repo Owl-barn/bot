@@ -10,12 +10,12 @@ import {
   escapeMarkdown,
   APIEmbedField,
 } from "discord.js";
-import moment from "moment";
 import { localState } from "..";
 import { baseAccessConfig } from "../lib/accessConfig";
 import { progressBar } from "../lib/progressbar";
 import { QueueInfo } from "../structs/queue";
 import { CurrentTrack, Track } from "../structs/track";
+import { DateTime } from "luxon";
 
 export default Command(
   // Info
@@ -139,10 +139,9 @@ function makeEmbed(
   }
 
   embed.setFooter({
-    text: `Queue length: ${moment()
-      .startOf("day")
-      .milliseconds(queueInfo.length)
-      .format("H:mm:ss")}`,
+    text: `Queue length: ${DateTime
+      .fromMillis(queueInfo.length)
+      .toFormat("h:mm:ss")}`,
   });
 
   return embed;

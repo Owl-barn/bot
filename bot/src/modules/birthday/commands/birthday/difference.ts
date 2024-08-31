@@ -71,8 +71,8 @@ export default SubCommand(
 
     if (users[0].birthdate === null || users[1].birthdate === null) throw Error("Missing date?");
 
-    const user0_date = getDateTime(users[0].birthdate, users[0].timezone ?? "UTC").toJSDate();
-    const user1_date = getDateTime(users[1].birthdate, users[1].timezone ?? "UTC").toJSDate();
+    const user0_date = getDateTime(users[0].birthdate, users[0].timezone).toJSDate();
+    const user1_date = getDateTime(users[1].birthdate, users[1].timezone).toJSDate();
 
     const user0_age = Number(new Date()) - Number(user0_date);
     const user1_age = Number(new Date()) - Number(user1_date);

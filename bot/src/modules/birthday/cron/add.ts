@@ -134,7 +134,7 @@ export default cron(
           return;
         }
 
-        const age = yearsAgo(getDateTime(birthday.user.birthdate, birthday.user.timezone ?? "UTC").toJSDate());
+        const age = yearsAgo(getDateTime(birthday.user.birthdate, birthday.user.timezone).toJSDate());
         const messageSent = await channel.send(`Happy ${age}${getOrdinalSuffix(age)} birthday <@${birthday.userId}>!!!`).catch(() => null);
         if (messageSent === null) {
           state.botLog.push(

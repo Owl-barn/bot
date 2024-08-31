@@ -2,7 +2,6 @@ import { getAvatar } from "@lib/functions";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { ApplicationCommandOptionType, GuildMember, EmbedAuthorOptions, escapeMarkdown, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import moment from "moment";
 import { failEmbedTemplate, embedTemplate } from "lib/embedTemplate";
 import { localState as VCState } from "modules/private-room";
 import { isDJ } from "../lib/isdj";
@@ -13,6 +12,7 @@ import { ReturnMessage } from "@structs/returnmessage";
 import { getOwlet } from "../lib/getBot";
 import skipButton from "../components/buttons/remove";
 import bumpButton from "../components/buttons/bump";
+import { DateTime } from "luxon";
 
 export default Command(
 
@@ -137,10 +137,9 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
 
 
   if (!playing) {
-    const timeTillPlay = moment()
-      .startOf("day")
-      .milliseconds(queueInfo.length - track.durationMs)
-      .format("H:mm:ss");
+    const timeTillPlay = DateTime
+      .fromMillis(queueInfo.length - track.durationMs)
+      .toFormat("h:mm:ss");
 
     embed.addFields([
       {

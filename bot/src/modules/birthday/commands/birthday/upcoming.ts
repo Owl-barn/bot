@@ -39,7 +39,7 @@ export default SubCommand(
       return { embeds: [failEmbed] };
     }
 
-    birthdays = birthdays.map(b => ({ ...b, birthdate: nextDate(getDateTime(b.birthdate, b.timezone ?? "UTC").toJSDate()) }));
+    birthdays = birthdays.map(b => ({ ...b, birthdate: nextDate(getDateTime(b.birthdate, b.timezone).toJSDate()) }));
     birthdays = birthdays.sort((x, y) => Number(x.birthdate) - Number(y.birthdate));
 
     // Check if users are still in server
