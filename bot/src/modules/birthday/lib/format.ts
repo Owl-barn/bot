@@ -20,19 +20,11 @@ export function formatBirthdayEmbed(embed: EmbedBuilder, birthday: { birthdate: 
     : nextDate(jsDate);
   const starSign = getStarSign(jsDate);
 
+  embed.setDescription(`** Age:** ${age} years \n`
+    + `** Date:** ${date.toFormat("LLL dd yyyy")} \n`
+    + `** Timezone:** ${birthday.timezone} \n`
+  );
   embed.addFields([
-    {
-      name: `Info`,
-      value:
-        `** Age:** ${age} years \n` +
-        `** Date:** ${birthday.birthdate.toLocaleDateString("en-GB")} \n`,
-      inline: true,
-    },
-    {
-      name: "Timezone",
-      value: `${birthday.timezone}`,
-      inline: true,
-    },
     {
       name: "Countdown",
       value: `${isToday ? "ends" : ""} <t:${Math.round(Number(nextBirthday) / 1000)}:R>`,
