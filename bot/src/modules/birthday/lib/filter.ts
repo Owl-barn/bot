@@ -4,7 +4,7 @@ import { getDateTime } from "./format";
 
 type Input = (UserGuildConfig & { user: User; guild: Guild; })
 
-export const filter = (birthday: Input) => {
+export function filterActiveBirthday(birthday: Input) {
 
   if (birthday.user.isBanned) return false;
   if (birthday.guild.birthdayChannelId === null && birthday.guild.birthdayRoleId === null) return false;
@@ -17,4 +17,13 @@ export const filter = (birthday: Input) => {
   const difference = date.diff(now, "minutes").minutes;
 
   return Math.abs(difference) == 0;
-};
+}
+
+
+export function filterExpiredBirthday(birthday: Input) {
+  if (birthday.user.birthdate === null) return false;
+  const zone = birthday.user.timezone ?? "UTC";
+  const now = DateTime.now().setZone(zone).startOf("minute");
+  const date = getDateTime(birthday.user.birthdate, zone).set({ year: now.year }).plus({ days: 1 });
+  return now > date;
+}

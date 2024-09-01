@@ -7,8 +7,6 @@ import { formatBirthdayEmbed } from "@modules/birthday/lib/format";
 import { TimezoneAutocomplete } from "@modules/birthday/lib/autocomplete";
 import { getAvatar } from "@lib/functions";
 
-const lockoutMinutes = 15;
-
 export default SubCommand(
 
   // Info
@@ -84,22 +82,26 @@ export default SubCommand(
       return { embeds: [failEmbed], ephemeral: true };
     }
 
-    const hasBirthday = await state.db.user.findUnique({
+    const hasPrevious = await state.db.user.findUnique({
       where: {
         id: msg.user.id,
-        birthdate: { not: null },
+        birthdayUpdatedAt: { not: null },
       },
     });
 
-    const isSameDate = hasBirthday?.birthdate?.getTime() === dateNoZone.toJSDate().getTime();
-    const isPastLockout = Date.now() - Number(hasBirthday?.birthdayUpdatedAt) < lockoutMinutes * 60 * 1000;
+    if (hasPrevious) {
+      const isSameDate = hasPrevious.birthdate?.getTime() === dateNoZone.toJSDate().getTime();
+      const isPastLockout = Date.now() - Number(hasPrevious.birthdayUpdatedAt) > state.env.BIRTHDAY_LOCKOUT_MINUTES * 60 * 1000;
+      const isLegacy = hasPrevious.timezone !== null && hasPrevious.birthdate !== null;
 
-    if (hasBirthday && hasBirthday.timezone !== null && !isSameDate && isPastLockout) {
-      failEmbed.setDescription(
-        "You can only change your birthday once a year, contact an admin if there was a mistake",
-      );
-      return { embeds: [failEmbed] };
+      if (!isLegacy && !isSameDate && isPastLockout) {
+        failEmbed.setDescription(
+          "You can only change your birthday once a year, contact an admin if there was a mistake",
+        );
+        return { embeds: [failEmbed] };
+      }
     }
+
 
     // Upsert the birthday
     const query = await state.db.user.upsert({
@@ -137,7 +139,7 @@ export default SubCommand(
     embed.addFields([
       {
         name: "Note",
-        value: `You have **${lockoutMinutes} minutes** to correct any mistakes, after that you will have to wait a year to change it again.\n use \`/birthday toggle\` in any other server you'd like to enable birthday notifications in.`,
+        value: `You have **${state.env.BIRTHDAY_LOCKOUT_MINUTES} minutes** to correct any mistakes, after that you will have to wait a year to change it again.\n use \`/birthday toggle\` in any other server you'd like to enable birthday notifications in.`,
         inline: false,
       },
     ]);

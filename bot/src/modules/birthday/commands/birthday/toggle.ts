@@ -14,9 +14,15 @@ export default SubCommand(
     arguments: [
       {
         name: "state",
-        description: "Whether to enable or disable your birthday here",
+        description: "should your birthday be available here?",
         type: ApplicationCommandOptionType.Boolean,
         required: true,
+      },
+      {
+        name: "announce",
+        description: "should your birthday be announced in this server?",
+        type: ApplicationCommandOptionType.Boolean,
+        required: false,
       },
     ],
 
@@ -30,6 +36,7 @@ export default SubCommand(
   // Execute
   async (msg) => {
     const birthdayEnabled = msg.options.getBoolean("state", true);
+    const birthdayAnnounceEnabled = msg.options.getBoolean("announce", false) ?? undefined;
 
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
@@ -45,16 +52,21 @@ export default SubCommand(
       return { embeds: [failEmbed] };
     }
 
-    await state.db.userGuildConfig.upsert({
+    const birthday = await state.db.userGuildConfig.upsert({
       where: { userId_guildId: { guildId: msg.guild.id, userId: msg.user.id } },
-      create: { userId: msg.user.id, guildId: msg.guild.id, birthdayEnabled: true },
-      update: { birthdayEnabled },
+      create: { userId: msg.user.id, guildId: msg.guild.id, birthdayEnabled: true, birthdayAnnounceEnabled },
+      update: { birthdayEnabled, birthdayAnnounceEnabled },
     });
 
-    let description = `Your birthday is now ${birthdayEnabled ? "visible" : "hidden"} in this server`;
+    let description = `Your birthday is now **${birthday.birthdayEnabled ? "visible" : "hidden"}** in this server`;
+
+    if (!birthday.birthdayAnnounceEnabled || !birthday.birthdayEnabled)
+      description += `, ${birthday.birthdayEnabled ? "but" : "and"} will **not** be announced"`;
+    else if (birthday.birthdayAnnounceEnabled)
+      description += `, and will be announced`;
 
     if (!hasBirthday.birthdate) {
-      description = "\n**note:** you have not set your birthday yet, please use `/birthday set` to set it";
+      description += "\n**note:** you have not set your birthday yet, please use `/birthday set` to set it";
     }
 
     embed.setTitle(`Birthday ${birthdayEnabled ? "Enabled" : "Disabled"}!`);

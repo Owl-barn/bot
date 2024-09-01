@@ -1,7 +1,7 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import { removeBirthdayRole } from "@modules/birthday/lib/removeRoles";
+import { removeBirthdayRoles } from "@modules/birthday/lib/removeRoles";
 import { localState } from "@modules/birthday";
 
 
@@ -23,7 +23,20 @@ export default SubCommand(
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    const query = await state.db.user.update({
+    const user = await state.db.user.findUnique({ where: { id: msg.user.id, birthdate: { not: null } } });
+
+    if (!user)
+      return { embeds: [failEmbed.setDescription("No birthday set")] };
+
+
+    // Check if the user has set their birthday within the lockout, if so reset it.
+    let birthdayUpdatedAt: undefined | null = undefined;
+    if (Date.now() - Number(user.birthdayUpdatedAt) < state.env.BIRTHDAY_LOCKOUT_MINUTES * 60 * 1000) {
+      birthdayUpdatedAt = null;
+    }
+
+    // Remove the birthday from the database.
+    await state.db.user.update({
       where: {
         id: msg.user.id,
         birthdate: { not: null },
@@ -31,18 +44,15 @@ export default SubCommand(
       data: {
         birthdate: null,
         timezone: null,
+        birthdayUpdatedAt,
       },
     });
 
-    if (!query)
-      return { embeds: [failEmbed.setDescription("No birthday set")] };
-
-    const userGuildConfig = await state.db.userGuildConfig.findUnique({
+    // Check if the user has an active birthday role and remove it.
+    const userGuildConfig = await state.db.userGuildConfig.findMany({
       where: {
-        userId_guildId: {
-          userId: msg.user.id,
-          guildId: msg.guild.id,
-        },
+        userId: msg.user.id,
+        birthdayHasRole: true,
       },
       include: {
         guild: true,
@@ -50,9 +60,9 @@ export default SubCommand(
       },
     });
 
-    if (userGuildConfig?.birthdayHasRole) {
+    if (userGuildConfig.length !== 0) {
       localState.log.info("User with active birthday role removed their birthday.");
-      removeBirthdayRole(userGuildConfig).catch(() => null);
+      await removeBirthdayRoles(userGuildConfig).catch(() => null);
     }
 
     return {
