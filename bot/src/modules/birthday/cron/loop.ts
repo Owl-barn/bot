@@ -32,6 +32,7 @@ export default cron(
     let birthdayAddQueue = await state.db.userGuildConfig.findMany({
       where: {
         birthdayHasRole: false,
+        birthdayEnabled: true,
         birthdayAnnounceEnabled: true,
         user: { birthdate: { not: null } },
       },
