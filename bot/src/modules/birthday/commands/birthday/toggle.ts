@@ -54,7 +54,7 @@ export default SubCommand(
 
     const birthday = await state.db.userGuildConfig.upsert({
       where: { userId_guildId: { guildId: msg.guild.id, userId: msg.user.id } },
-      create: { userId: msg.user.id, guildId: msg.guild.id, birthdayEnabled: true, birthdayAnnounceEnabled },
+      create: { userId: msg.user.id, guildId: msg.guild.id, birthdayEnabled, birthdayAnnounceEnabled },
       update: { birthdayEnabled, birthdayAnnounceEnabled },
     });
 
