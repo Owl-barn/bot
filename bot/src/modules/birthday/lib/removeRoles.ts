@@ -1,28 +1,9 @@
 import { state } from "@app";
 import { localState } from "..";
-import { DateTime } from "luxon";
-import { getDateTime } from "./format";
 import { Guild, User, UserGuildConfig } from "@prisma/client";
+import { ExpandedBirthday } from "../structs/expandedBirthday";
 
-export const removeRoles = async () => {
-  let birthdays = await state.db.userGuildConfig.findMany({
-    where: { birthdayHasRole: true },
-    include: {
-      user: true,
-      guild: true,
-    },
-  });
-
-
-  // Filter out birthdays that are not yet over
-  birthdays = birthdays.filter((birthday) => {
-    if (birthday.user.birthdate === null) return false;
-    const zone = birthday.user.timezone ?? "UTC";
-    const now = DateTime.now().setZone(zone).startOf("minute");
-    const date = getDateTime(birthday.user.birthdate, zone).set({ year: now.year }).plus({ days: 1 });
-    return now > date;
-  });
-
+export const removeBirthdayRoles = async (birthdays: ExpandedBirthday[]) => {
   let removed = 0;
 
   const failures = {
@@ -41,16 +22,16 @@ export const removeRoles = async () => {
     removeBirthdayRole(birthday)
       .catch((error) => {
         switch (error) {
-          case "Failed to fetch guild.":
+          case RemoveBirthdayRoleError.GUILD_NOT_FOUND:
             failures.guild.push(birthday.guildId);
             break;
-          case "Failed to fetch role.":
+          case RemoveBirthdayRoleError.ROLE_NOT_FOUND:
             failures.role.push(birthday.guild.birthdayRoleId as string);
             break;
-          case "Failed to fetch member.":
+          case RemoveBirthdayRoleError.MEMBER_NOT_FOUND:
             failures.member.push(birthday.userId);
             break;
-          case "Failed to remove role.":
+          case RemoveBirthdayRoleError.ROLE_NOT_REMOVED:
             failures.permissions.push(birthday.guild.birthdayRoleId as string);
             break;
           default:
@@ -64,6 +45,13 @@ export const removeRoles = async () => {
   if (removed > 0) localState.log.info(`Removed ${removed} birthday roles.`, { data: failures });
 };
 
+enum RemoveBirthdayRoleError {
+  GUILD_NOT_FOUND = "Failed to fetch guild.",
+  ROLE_NOT_FOUND = "Failed to fetch role.",
+  MEMBER_NOT_FOUND = "Failed to fetch member.",
+  ROLE_NOT_REMOVED = "Failed to remove role.",
+}
+
 
 export async function removeBirthdayRole(birthday: UserGuildConfig & { guild: Guild, user: User }) {
   // Toggle hasRole to false.
@@ -75,24 +63,24 @@ export async function removeBirthdayRole(birthday: UserGuildConfig & { guild: Gu
   // Attempt to fetch the guild, if it fails, set hasRole to false and continue.
   const guild = await state.client.guilds.fetch(birthday.guildId).catch(() => null);
   if (guild === null) {
-    throw "Failed to fetch guild.";
+    throw RemoveBirthdayRoleError.GUILD_NOT_FOUND;
   }
 
   // Attempt to fetch the role, if it fails, set hasRole to false and continue.
   if (birthday.guild.birthdayRoleId === null) return;
   const role = await guild.roles.fetch(birthday.guild.birthdayRoleId).catch(() => null);
   if (role === null) {
-    throw "Failed to fetch role.";
+    throw RemoveBirthdayRoleError.ROLE_NOT_FOUND;
   }
 
   // Attempt to fetch the member, if it fails, set hasRole to false and continue.
   const member = await guild.members.fetch(birthday.userId).catch(() => null);
   if (member === null) {
-    throw "Failed to fetch member.";
+    throw RemoveBirthdayRoleError.MEMBER_NOT_FOUND;
   }
 
   // Attempt to remove the role.
   const deletedRole = await member.roles.remove(role).catch(() => null);
   if (deletedRole === null)
-    throw "Failed to remove role.";
+    throw RemoveBirthdayRoleError.ROLE_NOT_REMOVED;
 }

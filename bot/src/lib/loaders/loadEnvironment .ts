@@ -79,6 +79,9 @@ const loadEnvironment = cleanEnv(process.env, {
     desc: "Max amount of time a user is allowed to be alone in a room for before it is deleted (seconds)",
   }),
 
+  // Birthday
+  BIRTHDAY_LOCKOUT_MINUTES: num({ default: 15, desc: "Minutes a user has to correct their birthday" }),
+
   // Embed
   EMBED_COLOR: HexColor({ default: "#957f5f" }),
   EMBED_FAIL_COLOR: HexColor({ default: "#934a4a" }),

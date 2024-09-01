@@ -283,9 +283,10 @@ model UserGuildConfig {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Date
-  birthdayEnabled Boolean @default(false)
-  birthdayHasRole Boolean @default(false)
+  // Data
+  birthdayAnnounceEnabled Boolean @default(true)
+  birthdayEnabled         Boolean @default(false)
+  birthdayHasRole         Boolean @default(false)
 
   // Relations
   userId  String
