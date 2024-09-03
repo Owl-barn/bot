@@ -61,7 +61,7 @@ export default SubCommand(
     let description = `Your birthday is now **${birthday.birthdayEnabled ? "visible" : "hidden"}** in this server`;
 
     if (!birthday.birthdayAnnounceEnabled || !birthday.birthdayEnabled)
-      description += `, ${birthday.birthdayEnabled ? "but" : "and"} will **not** be announced"`;
+      description += `, ${birthday.birthdayEnabled ? "but" : "and"} will **not** be announced`;
     else if (birthday.birthdayAnnounceEnabled)
       description += `, and will be announced`;
 

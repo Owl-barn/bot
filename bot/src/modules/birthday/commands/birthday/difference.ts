@@ -4,6 +4,7 @@ import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
 import { getDateTime } from "@modules/birthday/lib/format";
 import { isBirthdayVisible } from "@modules/birthday/lib/query";
+import { User } from "@prisma/client";
 
 export default SubCommand(
 
@@ -49,28 +50,34 @@ export default SubCommand(
 
     if (!second_user) second_user = msg.user;
 
-    const users = await state.db.user.findMany({
-      where: {
-        AND: [
-          { OR: [{ id: first_user.id }, { id: second_user.id }] },
-          isBirthdayVisible(msg.guildId),
-        ],
-        birthdate: { not: null },
-      },
-      orderBy: { birthdate: "asc" },
-    });
+    async function fetchUser(id: string) {
+      return state.db.user.findUnique({
+        where: {
+          id: id,
+          birthdate: { not: null },
+          ...isBirthdayVisible(msg, id),
+        },
+      });
+    }
 
-    if (users.length !== 2) {
+    const users = ([await fetchUser(first_user.id), await fetchUser(second_user.id)]
+      .filter(x => x !== null) as User[])
+      .sort((a, b) => Number(a.birthdate) - Number(b.birthdate));
+
+    if (users.length < 2) {
       const response = failEmbed.setDescription(
         "One or more of you don't have a birthday registered.",
       );
       return { embeds: [response] };
     }
 
-    if (users[0].birthdate === null || users[1].birthdate === null) throw Error("Missing date?");
+    const user1 = users[0];
+    const user2 = users[1];
 
-    const user0_date = getDateTime(users[0].birthdate, users[0].timezone).toJSDate();
-    const user1_date = getDateTime(users[1].birthdate, users[1].timezone).toJSDate();
+    if (user1.birthdate === null || user2.birthdate === null) throw Error("Missing date?");
+
+    const user0_date = getDateTime(user1.birthdate, user1.timezone).toJSDate();
+    const user1_date = getDateTime(user2.birthdate, user2.timezone).toJSDate();
 
     const user0_age = Number(new Date()) - Number(user0_date);
     const user1_age = Number(new Date()) - Number(user1_date);
@@ -95,10 +102,10 @@ export default SubCommand(
       : dayString;
 
     const oldest =
-      users[0].id === second_user.id ? second_user : first_user;
+      user1.id === second_user.id ? second_user : first_user;
 
     const youngest =
-      users[1].id === second_user.id ? second_user : first_user;
+      user2.id === second_user.id ? second_user : first_user;
 
     embed.addFields([
       {

@@ -105,7 +105,7 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
 
   // Check if the user is throttled.
   const isThrottled = state.throttle.isThrottled(
-    msg.guildId || "e",
+    msg.guildId || !msg.inGuild() ? msg.channelId : "e",
     msg.user.id,
     command.info,
   );

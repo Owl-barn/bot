@@ -1,6 +1,6 @@
 import { AutocompleteInteraction } from "discord.js";
 
-export async function TimezoneAutocomplete(msg: AutocompleteInteraction<"cached">, value: string) {
+export async function TimezoneAutocomplete(msg: AutocompleteInteraction, value: string) {
   const timeZones = Intl.supportedValuesOf("timeZone");
 
   return timeZones

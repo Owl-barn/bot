@@ -23,7 +23,7 @@ export enum CommandGroup {
 }
 
 export type RunFunction<G extends boolean> = (interaction: ChatInputCommandInteraction<G extends true ? "cached" : undefined>) => Promise<ReturnMessage>;
-export type AutocompleteFunction<G extends boolean, T> = (interaction: AutocompleteInteraction<G extends true ? "cached" : undefined>, value: T) => Promise<ApplicationCommandOptionChoiceData[]>;
+export type AutocompleteFunction<T> = (interaction: AutocompleteInteraction, value: T) => Promise<ApplicationCommandOptionChoiceData[]>;
 
 export type ExecutableCommand<Stage extends CommandStage> = CommandStruct<Stage> | SubCommandStruct<Stage>;
 export type GroupCommand<Stage extends CommandStage> = ParentCommandStruct<Stage> | SubCommandGroupStruct<Stage>;

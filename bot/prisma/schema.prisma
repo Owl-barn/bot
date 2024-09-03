@@ -239,7 +239,7 @@ model User {
   birthdate             DateTime? @db.Date
   timezone              String?
   birthdayUpdatedAt     DateTime?
-  birthdayGlobalEnabled Boolean   @default(false)
+  birthdayGlobalEnabled Boolean   @default(true)
 
   // Notify
   friendships Friendship[] @relation("friend")

@@ -2,7 +2,6 @@ import { state } from "@app";
 import { CommandTreeItem } from "@structs/shared/web_api";
 import { REST, Routes } from "discord.js";
 import { convertCommandToBuilder } from "./convert";
-import { writeFile } from "fs/promises";
 
 export default async function registerCommands(guildId?: string) {
   const commandTree = state.commandTree.reduce((total, current) => total.concat(current.commands), [] as CommandTreeItem[]);
@@ -10,8 +9,6 @@ export default async function registerCommands(guildId?: string) {
   const commands = commandTree.map((command) => convertCommandToBuilder(command));
 
   const commandJson = commands.map((command) => command.toJSON());
-
-  await writeFile(`./commands.json`, JSON.stringify(commandJson, null, 2));
 
   const rest = new REST({ version: "10" }).setToken(state.env.DISCORD_TOKEN);
 

@@ -43,7 +43,7 @@ export default SubCommand(
           where: {
             id: target.id,
             birthdate: { not: null },
-            ...isBirthdayVisible(msg.guildId),
+            ...isBirthdayVisible(msg, target.id),
           },
         })
         .then((res) => {
@@ -64,7 +64,7 @@ export default SubCommand(
 
 
     if (!query) {
-      failEmbed.setDescription("This user has no birthday registered");
+      failEmbed.setDescription("This user has no birthday registered or its hidden in this context.");
       return { embeds: [failEmbed] };
     }
 

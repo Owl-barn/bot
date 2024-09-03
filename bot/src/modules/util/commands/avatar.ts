@@ -33,7 +33,7 @@ export default Command(
 
     throttling: {
       duration: 60,
-      usages: 2,
+      usages: 5,
     },
   },
 
@@ -53,6 +53,7 @@ export default Command(
     const avatar = getAvatar(target);
 
     if (!avatar) return { embeds: [failEmbedTemplate("I cannot access that user's avatar")] };
+    console.log({ avatar });
 
     const embed = embedTemplate()
       .setTitle(`${userTarget.displayName}'s avatar`)

@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionAllowedChannelTypes, ApplicationCommandOptionType, ChannelType, LocalizationMap, SlashCommandChannelOption } from "discord.js";
+import { ApplicationCommandOptionAllowedChannelTypes, ApplicationCommandOptionType, LocalizationMap } from "discord.js";
 import { AutocompleteFunction } from ".";
 
 export enum ArgumentType {
@@ -33,7 +33,7 @@ export type Argument<T = string | number> = {
   choices?: ArgumentChoice<T>[];
   allowedChannelTypes?: ApplicationCommandOptionAllowedChannelTypes[];
   // NOTE: i wish this type could be inferred
-  autoComplete?: AutocompleteFunction<true, string>;
+  autoComplete?: AutocompleteFunction<string>;
 };
 
 export type ArgumentChoice<T> = {

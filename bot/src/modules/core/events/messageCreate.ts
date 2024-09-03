@@ -52,13 +52,6 @@ export default Event({
         return;
       }
 
-      // Remove all global and guild commands.
-      case "reset*": {
-        await msg.guild?.commands.set([]);
-        await client.application?.commands.set([]);
-        return;
-      }
-
       // Shut the bot down. (docker shouldnt restart it)
       case "terminate*": {
         await msg.reply("Shutting down...");
@@ -98,8 +91,14 @@ export default Event({
       // Sets slash commands for all guilds.
       case "innitall*": {
         await registerCommands();
-
         await msg.reply("Updated all servers' perms");
+        return;
+      }
+
+      // Remove all global and guild commands.
+      case "resetall*": {
+        const result = await client.application?.commands.set([]);
+        await msg.reply(`Deleted ${result?.size} commands`);
         return;
       }
 
@@ -108,7 +107,14 @@ export default Event({
         const start = Date.now();
         if (!msg.guild) return;
         await registerCommands(msg.guild.id);
-        msg.reply(`Updated this server's perms, took \`${Date.now() - start}ms\``);
+        await msg.reply(`Updated this server's perms, took \`${Date.now() - start}ms\``);
+        return;
+      }
+
+      // Remove all global and guild commands.
+      case "reset*": {
+        await msg.guild?.commands.set([]);
+        await msg.reply("Deleted all commands for this server");
         return;
       }
 

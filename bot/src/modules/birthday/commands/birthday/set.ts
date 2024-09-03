@@ -45,8 +45,8 @@ export default SubCommand(
       {
         type: ApplicationCommandOptionType.Boolean,
         name: "global",
-        description: "Is everyone allowed to see your birthday?",
-        required: false,
+        description: "Is everyone allowed to see your birthday everywhere?",
+        required: true,
       },
     ],
 
@@ -62,7 +62,7 @@ export default SubCommand(
     const month = msg.options.getNumber("month", true);
     const year = msg.options.getNumber("year", true);
     const timezone = msg.options.getString("timezone", true);
-    const birthdayGlobalEnabled = msg.options.getBoolean("global") ?? undefined;
+    const birthdayGlobalEnabled = msg.options.getBoolean("global", true);
 
     let embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
@@ -101,7 +101,7 @@ export default SubCommand(
     if (hasPrevious) {
       const isSameDate = hasPrevious.birthdate?.getTime() === dateNoZone.toJSDate().getTime();
       const isPastLockout = Date.now() - Number(hasPrevious.birthdayUpdatedAt) > state.env.BIRTHDAY_LOCKOUT_MINUTES * 60 * 1000;
-      const isLegacy = hasPrevious.timezone !== null && hasPrevious.birthdate !== null;
+      const isLegacy = hasPrevious.timezone === null && hasPrevious.birthdate !== null;
 
       if (!isLegacy && !isSameDate && isPastLockout) {
         failEmbed.setDescription(
