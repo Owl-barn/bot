@@ -12,7 +12,12 @@ export async function loadCommands(path: string): Promise<CommandTreeItem[]> {
 
   for (const file of topLevelFiles) {
     const commands = await loadCommand(file);
-    commands && commandTree.push(commands);
+    if (!commands) continue;
+
+    if (commands.owner) {
+      state.ownerCommandTree.push(commands.item);
+    } else
+      commandTree.push(commands.item);
   }
 
   console.log(
@@ -54,7 +59,7 @@ function processCommand(
   return processedCommand;
 }
 
-async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTreeItem | undefined> {
+async function loadCommand(file: Dirent, currentScope = ""): Promise<{ item: CommandTreeItem, owner: boolean } | undefined> {
   if (file.name.startsWith("_")) return;
 
   const path = `${file.path}/${file.name}`;
@@ -89,19 +94,18 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
     for (const subFile of folder) {
       if (subFile.name === "index.js") continue;
       const result = await loadCommand(subFile, currentScope);
-      result && commands.push(result);
-    }
-
-    if ("group" in index.info && index.info.group === "owner") {
-      return;
+      result && commands.push(result.item);
     }
 
     return {
-      type: "Group",
-      name: index.info.name,
-      commandName: index.info.commandName,
-      description: index.info.description,
-      commands,
+      owner: "group" in index.info && index.info.group === "owner",
+      item: {
+        type: "Group",
+        name: index.info.name,
+        commandName: index.info.commandName,
+        description: index.info.description,
+        commands,
+      },
     };
   }
 
@@ -118,21 +122,20 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
     // Register command
     registerCommand(currentScope, command);
 
-    if ("group" in command.info && command.info.group === "owner") {
-      return;
-    }
-
     return {
-      type: "Command",
-      name: command.info.name,
-      commandName: command.info.commandName,
-      description: command.info.description,
-      options: command.info.arguments?.map((arg) => ({
-        ...arg,
-        type: ApplicationCommandOptionType[arg.type as ApplicationCommandOptionType],
-        required: arg.required === undefined ? false : arg.required,
-        autoComplete: arg.autoComplete !== undefined,
-      })),
+      owner: "group" in command.info && command.info.group === "owner",
+      item: {
+        type: "Command",
+        name: command.info.name,
+        commandName: command.info.commandName,
+        description: command.info.description,
+        options: command.info.arguments?.map((arg) => ({
+          ...arg,
+          type: ApplicationCommandOptionType[arg.type as ApplicationCommandOptionType],
+          required: arg.required === undefined ? false : arg.required,
+          autoComplete: arg.autoComplete !== undefined,
+        })),
+      },
     };
   }
 

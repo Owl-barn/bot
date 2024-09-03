@@ -6,7 +6,12 @@ import { convertCommandToBuilder } from "./convert";
 export default async function registerCommands(guildId?: string) {
   const commandTree = state.commandTree.reduce((total, current) => total.concat(current.commands), [] as CommandTreeItem[]);
 
-  const commands = commandTree.map((command) => convertCommandToBuilder(command));
+  let commands = commandTree.map((command) => convertCommandToBuilder(command));
+
+  const config = guildId ? state.guilds.get(guildId) : undefined;
+  if (config?.isDev) {
+    commands = commands.concat(state.ownerCommandTree.map((command) => convertCommandToBuilder(command)));
+  }
 
   const commandJson = commands.map((command) => command.toJSON());
 

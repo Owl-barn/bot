@@ -16,7 +16,7 @@ import { loadLogger } from "@lib/loaders/loadLogger";
 import { loadGuilds } from "@lib/loaders/loadGuilds";
 import { SelectMenuStruct } from "@structs/selectMenu";
 import { initializeServer } from "api/webServer";
-import type { CommandTree } from "@structs/shared/web_api";
+import type { CommandTree, CommandTreeItem } from "@structs/shared/web_api";
 import Fastify, { FastifyInstance } from "fastify";
 
 colors.enable();
@@ -36,6 +36,7 @@ export interface State {
 
   commands: Map<string, CommandEnum<"processed">>;
   commandTree: CommandTree;
+  ownerCommandTree: CommandTreeItem[];
   interactables: Interactables;
 
   modules: Map<string, Module>;
@@ -56,6 +57,7 @@ const state = {
 
   commands: new Map(),
   commandTree: [],
+  ownerCommandTree: [],
   interactables: {
     buttons: new Map(),
     selectmenus: new Map(),
@@ -84,6 +86,21 @@ const state = {
   }
 
   console.log(" - Loaded ".green + bannedUsers.length.toString().cyan + " banned users".green);
+
+  const application = await state.client.application?.fetch();
+  const userInstallCount = application?.approximateUserInstallCount;
+  const guildInstallCount = application?.approximateGuildCount;
+  console.log(
+    " - Installed by ".green +
+    (userInstallCount ? userInstallCount.toString().cyan : "0".cyan) +
+    " users".green,
+  );
+
+  console.log(
+    " - Installed in ".green +
+    (guildInstallCount ? guildInstallCount.toString().cyan : "0".cyan) +
+    " guilds".green,
+  );
 }
 )();
 

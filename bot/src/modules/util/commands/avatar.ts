@@ -53,7 +53,6 @@ export default Command(
     const avatar = getAvatar(target);
 
     if (!avatar) return { embeds: [failEmbedTemplate("I cannot access that user's avatar")] };
-    console.log({ avatar });
 
     const embed = embedTemplate()
       .setTitle(`${userTarget.displayName}'s avatar`)
