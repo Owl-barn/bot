@@ -53,6 +53,7 @@ export async function loadModules() {
     state.commandTree.push({
       type: "Module",
       name: module.name,
+      commandName: module.name,
       description: module.description,
       commands,
     });

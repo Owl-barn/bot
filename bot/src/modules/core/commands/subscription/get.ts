@@ -11,6 +11,8 @@ export default SubCommand(
     name: "get",
     description: "View your current subscription.",
 
+    isGlobal: true,
+
     throttling: {
       duration: 60,
       usages: 3,

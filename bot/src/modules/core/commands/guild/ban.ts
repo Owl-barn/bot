@@ -1,4 +1,3 @@
-import registerCommand from "@lib/command.register";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
@@ -51,8 +50,6 @@ export default SubCommand(
       data: { isBanned },
     });
 
-    if (isBanned) await guild.commands.set([]);
-    else await registerCommand(guild);
     state.guilds.set(guildData.id, guildData);
 
     let left = false;

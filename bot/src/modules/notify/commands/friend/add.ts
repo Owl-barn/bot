@@ -15,6 +15,8 @@ export default SubCommand(
     name: "add",
     description: "Add a user to your vc notify list",
 
+    isGlobal: true,
+
     arguments: [
       {
         type: ApplicationCommandOptionType.User,
@@ -97,7 +99,7 @@ export default SubCommand(
         embeds: [failEmbedTemplate("I've no way to reach this user. Please make sure your friend is able to receive DMs from me!")],
       };
 
-      if (!msg.channel) return error;
+      if (!msg.channel || msg.channel.isDMBased()) return error;
 
       const sentChannelMsg = await msg.channel
         .send({ ...requestMessage, content: `${friendUser}` })

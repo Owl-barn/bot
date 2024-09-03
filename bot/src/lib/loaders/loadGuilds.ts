@@ -1,5 +1,4 @@
 import { state } from "@app";
-import registerCommand from "@lib/command.register";
 
 export async function loadGuilds() {
   let guilds = await state.db.guild.findMany();
@@ -18,13 +17,4 @@ export async function loadGuilds() {
   }
 
   guilds.forEach((guild) => state.guilds.set(guild.id, guild));
-
-  if (unregisteredGuilds.length > 0) {
-    for (const { id } of unregisteredGuilds) {
-      const guild = await state.client.guilds.fetch(id);
-      guild && await registerCommand(guild);
-    }
-
-    console.log(`- Registered `.cyan.bold + guilds.length.toString().green + ` new guild${guilds.length > 1 ? "s" : ""}`.cyan.bold);
-  }
 }

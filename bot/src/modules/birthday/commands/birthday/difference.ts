@@ -1,8 +1,9 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import { GuildMember, ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
 import { getDateTime } from "@modules/birthday/lib/format";
+import { isBirthdayVisible } from "@modules/birthday/lib/query";
 
 export default SubCommand(
 
@@ -11,6 +12,8 @@ export default SubCommand(
     name: "difference",
     description:
       "get the difference between your birthday and another user's",
+
+    isGlobal: true,
 
     arguments: [
       {
@@ -36,28 +39,23 @@ export default SubCommand(
   // Execute
   async (msg) => {
 
-    const first_user = msg.options.getMember("first_user") as GuildMember | null;
+    const first_user = msg.options.getUser("first_user", true);
 
     if (first_user === null) throw "No first user?";
-    let second_user = msg.options.getMember("second_user") as
-      | GuildMember
-      | undefined;
+    let second_user = msg.options.getUser("second_user");
 
     const embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
 
-    if (!second_user) second_user = msg.member as GuildMember;
+    if (!second_user) second_user = msg.user;
 
     const users = await state.db.user.findMany({
       where: {
-        OR: [{ id: first_user.id }, { id: second_user.id }],
+        AND: [
+          { OR: [{ id: first_user.id }, { id: second_user.id }] },
+          isBirthdayVisible(msg.guildId),
+        ],
         birthdate: { not: null },
-        UserGuildConfig: {
-          some: {
-            guildId: msg.guild.id,
-            birthdayEnabled: true,
-          },
-        },
       },
       orderBy: { birthdate: "asc" },
     });

@@ -10,6 +10,8 @@ export default SubCommand(
     name: "remove",
     description: "Remove a user from your vc notify list",
 
+    isGlobal: true,
+
     arguments: [
       {
         type: ApplicationCommandOptionType.String,

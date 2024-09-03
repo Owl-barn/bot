@@ -1,7 +1,9 @@
 import { CommandGroup, CommandType } from ".";
 import { BaseCommandInfo, CommandStage } from "./basecommand";
+import { CommandContext } from "./context";
 
 export type ParentCommandInfo<Stage extends CommandStage> = BaseCommandInfo<Stage> & {
+  context?: CommandContext;
   group: CommandGroup;
 }
 

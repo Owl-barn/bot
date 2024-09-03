@@ -1,8 +1,9 @@
-import { ImageURLOptions } from "@discordjs/rest";
-import { embedTemplate } from "@lib/embedTemplate";
+import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { getAvatar } from "@lib/functions";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
-import { GuildMember, ApplicationCommandOptionType } from "discord.js";
+import { contextEverywhere } from "@structs/command/context";
+import { ApplicationCommandOptionType } from "discord.js";
 
 export default Command(
 
@@ -11,6 +12,9 @@ export default Command(
     name: "avatar",
     description: "View avatar",
     group: CommandGroup.general,
+
+    context: contextEverywhere,
+    isGlobal: true,
 
     arguments: [
       {
@@ -35,24 +39,23 @@ export default Command(
 
   // Execute
   async (msg) => {
-    const settings: ImageURLOptions = {
-      size: 4096,
-      extension: "png",
-    };
+    const userArg = msg.options.getUser("user");
+    const memberArg = msg.options.getMember("user");
+    const globalArg = msg.options.getBoolean("global") ?? false;
 
-    const user = msg.options.getMember("user") as GuildMember | null;
-    const global = msg.options.getBoolean("global") ?? false;
-    const member = user || (msg.member as GuildMember);
-    let avatar;
+    let target = memberArg || userArg || msg.user;
+    const userTarget = userArg || msg.user;
 
-    if (global) avatar = member.user.avatarURL(settings);
-    else
-      avatar = member?.avatarURL(settings) || member.user.avatarURL(settings);
+    if (globalArg) {
+      target = userArg || msg.user;
+    }
 
-    if (!avatar) throw "no avatar??";
+    const avatar = getAvatar(target);
+
+    if (!avatar) return { embeds: [failEmbedTemplate("I cannot access that user's avatar")] };
 
     const embed = embedTemplate()
-      .setTitle(`${member.user.username}'s avatar`)
+      .setTitle(`${userTarget.displayName}'s avatar`)
       .setImage(avatar);
 
     return { embeds: [embed] };

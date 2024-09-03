@@ -9,6 +9,8 @@ export default SubCommand(
     name: "list",
     description: "View the users on your vc notify list",
 
+    isGlobal: true,
+
     throttling: {
       duration: 600,
       usages: 5,

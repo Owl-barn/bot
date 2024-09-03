@@ -7,13 +7,13 @@ export type CommandType = "Module" | "Group" | "Command";
 export interface CommandTreeModule {
   type: "Module"
   name: string;
+  commandName: string;
   description: string;
   commands: CommandTreeItem[];
 }
 
 export interface CommandTreeCommand extends Omit<CommandTreeModule, "type" | "commands"> {
   type: "Command"
-  commandName: string;
   options?: CommandTreeOption[];
   examples?: string[];
 }

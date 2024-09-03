@@ -1,5 +1,5 @@
 import { ImageURLOptions } from "@discordjs/rest";
-import { APIInteractionGuildMember, GuildMember, PartialGuildMember, User } from "discord.js";
+import { APIInteractionDataResolvedGuildMember, APIInteractionGuildMember, GuildMember, PartialGuildMember, User } from "discord.js";
 
 export function randomRange(begin: number, end: number): number {
   return Math.floor(Math.random() * (end - begin)) + begin;
@@ -11,7 +11,7 @@ interface starSign {
 }
 
 export function getAvatar(
-  member: GuildMember | User | undefined | APIInteractionGuildMember | PartialGuildMember,
+  member: GuildMember | User | undefined | APIInteractionGuildMember | APIInteractionDataResolvedGuildMember | PartialGuildMember,
 ): string | undefined {
   let avatar = undefined;
   if (!member) return avatar;

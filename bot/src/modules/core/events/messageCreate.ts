@@ -1,4 +1,3 @@
-import registerCommand from "@lib/command.register";
 import { yearsAgo } from "@lib/time";
 import { state } from "@app";
 import { Event } from "@structs/event";
@@ -8,6 +7,7 @@ import { localState } from "..";
 import { formatGuildInfo } from "../lib/formatGuildInfo";
 import { updateCollection } from "@modules/selfrole/lib/selfrole";
 import { getDateTime } from "@modules/birthday/lib/format";
+import registerCommands from "@lib/commandRegister";
 
 export default Event({
   name: "messageCreate",
@@ -97,18 +97,9 @@ export default Event({
 
       // Sets slash commands for all guilds.
       case "innitall*": {
-        const guilds = client.guilds.cache;
-        const start = Date.now();
-        const message = await msg.reply("updating...");
+        await registerCommands();
 
-        for (const guild of guilds.values()) {
-          await registerCommand(guild);
-        }
-
-        await message.edit(
-          `Updated all ${guilds.size} server perms, took \`${Date.now() - start
-          }ms\``,
-        );
+        await msg.reply("Updated all servers' perms");
         return;
       }
 
@@ -116,10 +107,8 @@ export default Event({
       case "innit*": {
         const start = Date.now();
         if (!msg.guild) return;
-        await registerCommand(msg.guild);
-        msg.reply(
-          `Updated this server's perms, took \`${Date.now() - start}ms\``,
-        );
+        await registerCommands(msg.guild.id);
+        msg.reply(`Updated this server's perms, took \`${Date.now() - start}ms\``);
         return;
       }
 
@@ -189,8 +178,6 @@ export default Event({
           where: { id: msg.guild.id },
           data: { isDev: !guild.isDev },
         });
-
-        await registerCommand(msg.guild);
 
         msg.reply(`Dev mode is now ${!guild.isDev ? "on" : "off"}`);
         return;

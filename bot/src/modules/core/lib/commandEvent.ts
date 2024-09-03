@@ -98,6 +98,11 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
       .catch(console.error);
   }
 
+  // Check if guild command in DMs.
+  if (!command.info.isGlobal && msg.guild === null) {
+    return await quickReply(msg, "This command is not available in DMs.");
+  }
+
   // Check if the user is throttled.
   const isThrottled = state.throttle.isThrottled(
     msg.guildId || "e",

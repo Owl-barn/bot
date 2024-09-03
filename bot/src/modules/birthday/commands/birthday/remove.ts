@@ -4,13 +4,14 @@ import { SubCommand } from "@structs/command/subcommand";
 import { removeBirthdayRoles } from "@modules/birthday/lib/removeRoles";
 import { localState } from "@modules/birthday";
 
-
 export default SubCommand(
 
   // Info
   {
     name: "remove",
     description: "Remove your birthday from the bot entirely",
+
+    isGlobal: true,
 
     throttling: {
       duration: 60,

@@ -15,19 +15,20 @@ export function formatBirthdayEmbed(embed: EmbedBuilder, birthday: { birthdate: 
   const age = yearsAgo(jsDate);
   const now = DateTime.now().setZone(birthday.timezone);
   const isToday = now.day === date.day && now.month === date.month;
+  const birthdayString = isToday ? "🎉" : "";
   const nextBirthday = isToday
     ? date.plus({ days: 1 }).set({ year: now.year }).toJSDate()
     : nextDate(jsDate);
   const starSign = getStarSign(jsDate);
 
-  embed.setDescription(`** Age:** ${age} years \n`
+  embed.setDescription(`** Age:** ${birthdayString} ${age} years  ${birthdayString}\n`
     + `** Date:** ${date.toFormat("LLL dd yyyy")} \n`
     + `** Timezone:** ${birthday.timezone} \n`
   );
   embed.addFields([
     {
       name: "Countdown",
-      value: `${isToday ? "ends" : ""} <t:${Math.round(Number(nextBirthday) / 1000)}:R>`,
+      value: `${isToday ? "🎉 ends" : ""} <t:${Math.round(Number(nextBirthday) / 1000)}:R>`,
       inline: true,
     },
     {

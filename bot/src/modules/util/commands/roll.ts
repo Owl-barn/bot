@@ -1,6 +1,7 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
+import { contextEverywhere } from "@structs/command/context";
 import { APIEmbedField, ApplicationCommandOptionType } from "discord.js";
 
 const maxRolls = 100;
@@ -15,6 +16,7 @@ export default Command(
     description: "Roll the dice",
     group: CommandGroup.general,
 
+    context: contextEverywhere,
     isGlobal: true,
 
     arguments: [

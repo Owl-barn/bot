@@ -13,6 +13,8 @@ export default SubCommand(
     name: "add",
     description: "Add a guild to your subscription",
 
+    isGlobal: true,
+
     arguments: [
       {
         type: ApplicationCommandOptionType.String,
@@ -33,11 +35,12 @@ export default SubCommand(
     // Get guild
     let guild: Guild | null;
     const guildId = msg.options.getString("guild_id");
+
     if (!guildId) guild = msg.guild;
-    else {
-      guild = await state.client.guilds.fetch(guildId).catch(() => null);
-      if (!guild) return { embeds: [warningEmbedTemplate("Sorry, I couldn't find that guild, are you sure the ID is correct and i am also in that server?")] };
-    }
+    else guild = await state.client.guilds.fetch(guildId).catch(() => null);
+
+    if (!guild)
+      return { embeds: [warningEmbedTemplate("Sorry, I couldn't find that guild, are you sure the ID is correct and i am also in that server?")] };
 
     // Check if user has a subscription
     const user = await state.db.user.findFirst({

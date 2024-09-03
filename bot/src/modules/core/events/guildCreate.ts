@@ -6,10 +6,9 @@ import {
   NonThreadGuildBasedChannel,
 } from "discord.js";
 import { state } from "@app";
-import registerCommand from "@lib/command.register";
 import { embedTemplate } from "@lib/embedTemplate";
 import { localState } from "..";
-
+import { getOrCreateGuild } from "@lib/guild";
 
 export default Event({
   name: "guildCreate",
@@ -33,11 +32,11 @@ export default Event({
 
       await owner.send({ embeds: [notifEmbed] }).catch(() => null);
 
+      await getOrCreateGuild(guild);
+
       // Return if banned
       const config = state.guilds.get(guild.id);
       if (config?.isBanned) return;
-
-      await registerCommand(guild);
 
       // Attempt to find a welcome channel.
       let channel: NonThreadGuildBasedChannel | null =

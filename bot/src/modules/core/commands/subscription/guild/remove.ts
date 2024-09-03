@@ -13,6 +13,8 @@ export default SubCommand(
     name: "remove",
     description: "remove a guild from your subscription",
 
+    isGlobal: true,
+
     arguments: [
       {
         type: ApplicationCommandOptionType.String,
@@ -31,7 +33,10 @@ export default SubCommand(
   // Execute
   async (msg) => {
     // Get guild
-    const guildId = msg.options.getString("guild_id") ?? msg.guild.id;
+    const guildId = msg.options.getString("guild_id") ?? msg.guild?.id;
+
+    if (!guildId)
+      return { embeds: [warningEmbedTemplate("Sorry, I couldn't find that guild, are you sure the ID is correct and i am also in that server?")] };
 
     // Check if user has a subscription
     const user = await state.db.user.findFirst({

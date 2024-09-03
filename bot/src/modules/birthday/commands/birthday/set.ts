@@ -14,6 +14,8 @@ export default SubCommand(
     name: "set",
     description: "Set your birthday on the bot",
 
+    isGlobal: true,
+
     arguments: [
       {
         type: ApplicationCommandOptionType.String,
@@ -40,6 +42,12 @@ export default SubCommand(
         description: "The year you were born in, in the format of `YYYY`",
         required: true,
       },
+      {
+        type: ApplicationCommandOptionType.Boolean,
+        name: "global",
+        description: "Is everyone allowed to see your birthday?",
+        required: false,
+      },
     ],
 
     throttling: {
@@ -53,7 +61,8 @@ export default SubCommand(
     const day = msg.options.getNumber("day", true);
     const month = msg.options.getNumber("month", true);
     const year = msg.options.getNumber("year", true);
-    const zone = msg.options.getString("timezone", true);
+    const timezone = msg.options.getString("timezone", true);
+    const birthdayGlobalEnabled = msg.options.getBoolean("global") ?? undefined;
 
     let embed = embedTemplate();
     const failEmbed = failEmbedTemplate();
@@ -64,10 +73,10 @@ export default SubCommand(
     }
 
     // Validate timezone
-    if (!Intl.supportedValuesOf("timeZone").includes(zone))
+    if (!Intl.supportedValuesOf("timeZone").includes(timezone))
       return { embeds: [failEmbed.setDescription("Invalid Timezone")], ephemeral: true };
 
-    const date = DateTime.fromObject({ day, month, year }, { zone });
+    const date = DateTime.fromObject({ day, month, year }, { zone: timezone });
     const dateNoZone = DateTime.fromObject({ day, month, year });
 
     // Check if the date is valid
@@ -109,25 +118,27 @@ export default SubCommand(
       create: {
         id: msg.user.id,
         birthdate: dateNoZone.toJSDate(),
-        timezone: zone,
+        timezone,
+        birthdayGlobalEnabled,
         birthdayUpdatedAt: new Date(),
-        UserGuildConfig: {
+        UserGuildConfig: msg.guild ? {
           connectOrCreate: {
             where: { userId_guildId: { guildId: msg.guild.id, userId: msg.user.id } },
             create: { guildId: msg.guild.id, birthdayEnabled: true },
           },
-        },
+        } : undefined,
       },
       update: {
         birthdate: dateNoZone.toJSDate(),
         birthdayUpdatedAt: new Date(),
-        timezone: zone,
-        UserGuildConfig: {
+        timezone,
+        birthdayGlobalEnabled,
+        UserGuildConfig: msg.guild ? {
           connectOrCreate: {
             where: { userId_guildId: { guildId: msg.guild.id, userId: msg.user.id } },
             create: { guildId: msg.guild.id, birthdayEnabled: true },
           },
-        },
+        } : undefined,
       },
     });
 

@@ -1,10 +1,11 @@
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import { GuildMember, ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
 import { formatBirthdayEmbed } from "@modules/birthday/lib/format";
 import { User } from "@prisma/client";
 import { getAvatar } from "@lib/functions";
+import { isBirthdayVisible } from "@modules/birthday/lib/query";
 
 export default SubCommand(
 
@@ -12,6 +13,8 @@ export default SubCommand(
   {
     name: "get",
     description: "See when it is your friends birthday",
+
+    isGlobal: true,
 
     arguments: [
       {
@@ -30,24 +33,17 @@ export default SubCommand(
 
   // Execute
   async (msg) => {
-    let member = msg.options.getMember("user");
-
-    if (!member) member = msg.member as GuildMember;
+    const target = msg.options.getUser("user") || msg.user;
 
     // Fetch the birthday.
     let query: Pick<User, "birthdate" | "timezone"> | null;
-    if (!member.user.bot) {
+    if (!target.bot) {
       query = await state.db.user
         .findUnique({
           where: {
-            id: member.id,
+            id: target.id,
             birthdate: { not: null },
-            UserGuildConfig: {
-              some: {
-                guildId: msg.guild.id,
-                birthdayEnabled: true,
-              },
-            },
+            ...isBirthdayVisible(msg.guildId),
           },
         })
         .then((res) => {
@@ -58,7 +54,7 @@ export default SubCommand(
         });
     } else {
       query = {
-        birthdate: member.user.createdAt,
+        birthdate: target.createdAt,
         timezone: "UTC",
       };
     }
@@ -72,10 +68,10 @@ export default SubCommand(
       return { embeds: [failEmbed] };
     }
 
-    embed.setTitle(`${member.user.username}'s birthday`);
+    embed.setTitle(`${target.displayName}'s birthday`);
     if (query.birthdate === null || !query.timezone) throw new Error("No date???");
     embed = formatBirthdayEmbed(embed, { birthdate: query.birthdate, timezone: query.timezone });
-    embed.setThumbnail(getAvatar(member) || null);
+    embed.setThumbnail(getAvatar(target) || null);
 
     return { embeds: [embed] };
   }

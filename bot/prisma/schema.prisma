@@ -236,9 +236,10 @@ model User {
   CommandLog       CommandLog[]
 
   // Birthday
-  birthdate         DateTime? @db.Date
-  timezone          String?
-  birthdayUpdatedAt DateTime?
+  birthdate             DateTime? @db.Date
+  timezone              String?
+  birthdayUpdatedAt     DateTime?
+  birthdayGlobalEnabled Boolean   @default(false)
 
   // Notify
   friendships Friendship[] @relation("friend")

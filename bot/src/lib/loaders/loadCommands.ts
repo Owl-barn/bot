@@ -99,6 +99,7 @@ async function loadCommand(file: Dirent, currentScope = ""): Promise<CommandTree
     return {
       type: "Group",
       name: index.info.name,
+      commandName: index.info.commandName,
       description: index.info.description,
       commands,
     };
