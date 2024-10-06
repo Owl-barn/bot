@@ -109,7 +109,7 @@ export class LogService {
       commandName: commandName,
       isHidden,
 
-      channelId: interaction.channelId,
+      channelId: interaction.channelId ?? undefined,
       user: connectOrCreate(interaction.user.id),
       guild: interaction.guildId ? connectOrCreate(interaction.guildId) : undefined,
     };
@@ -132,7 +132,7 @@ export class LogService {
       .then(() => state.log.info("Command: " + logList.join(" | ")))
       .catch(state.log.error);
 
-    if (!interaction.guildId) return;
+    if (!interaction.guild) return;
     const embed = embedTemplate();
     embed.setTitle("Command Usage");
 
@@ -158,6 +158,6 @@ export class LogService {
 
     embed.setTimestamp();
 
-    this.addToQueue(embed, interaction.guildId, logType.BOT);
+    this.addToQueue(embed, interaction.guild.id, logType.BOT);
   };
 }

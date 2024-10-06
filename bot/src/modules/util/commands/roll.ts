@@ -2,7 +2,7 @@ import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { contextEverywhere } from "@structs/command/context";
-import { APIEmbedField, ApplicationCommandOptionType } from "discord.js";
+import { APIEmbedField, ApplicationCommandOptionType, escapeMarkdown } from "discord.js";
 
 const maxRolls = 100;
 const maxSides = 10000;
@@ -121,7 +121,7 @@ export default Command(
 
       embed
         .setTitle(`Dice roll`)
-        .setDescription(`rolled ${renderAST(ast)}`)
+        .setDescription(`rolled ${escapeMarkdown(renderAST(ast))}`)
         .addFields(fields);
 
       return { embeds: [embed] };
