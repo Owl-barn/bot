@@ -12,7 +12,7 @@ import { ReturnMessage } from "@structs/returnmessage";
 import { getOwlet } from "../lib/getBot";
 import skipButton from "../components/buttons/remove";
 import bumpButton from "../components/buttons/bump";
-import { DateTime } from "luxon";
+import { Duration } from "luxon";
 
 export default Command(
 
@@ -137,7 +137,7 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
 
 
   if (!playing) {
-    const timeTillPlay = DateTime
+    const timeTillPlay = Duration
       .fromMillis(queueInfo.length - track.durationMs)
       .toFormat("h:mm:ss");
 

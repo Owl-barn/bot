@@ -5,7 +5,7 @@ RUN npm i
 COPY . .
 RUN npm run compile
 
-FROM node:20 as prod
+FROM node:20 AS prod
 WORKDIR /app/
 COPY --from=build /build/package.json /build/package-lock.json ./
 COPY --from=build /build/ ./

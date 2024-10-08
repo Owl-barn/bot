@@ -10,7 +10,7 @@ RUN npx prisma generate
 COPY . .
 RUN npm run compile
 
-FROM node:20-alpine as prod
+FROM node:20-alpine AS prod
 WORKDIR /app/
 COPY --from=build /build/package.json /build/package-lock.json ./
 COPY --from=build /build/ ./
