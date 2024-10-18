@@ -14,7 +14,7 @@ export interface CalculatedLevel {
   currentXP: number;
 }
 
-type handleXPEventConfig = {
+type HandleXPEventConfig = {
   xp?: number;
   sendMessage?: boolean;
   timeout?: number;
@@ -96,7 +96,7 @@ export class LevelController {
     return levelData;
   }
 
-  // user related
+  // Timeout functions
   public isUserTimedOut(member: GuildMember, timeout = 60 * 1000): boolean {
     const id = `${member.guild.id}-${member.id}`;
     const lastTimeout = this.lastXPgrant.get(id);
@@ -110,7 +110,16 @@ export class LevelController {
     this.lastXPgrant.set(id, Date.now());
   }
 
-  public async ChangeUserXP(guildId: string, userId: string, xp: number) {
+  public async clearExpiredTimeouts() {
+    const now = Date.now();
+    const expiryDuration = 10 * 60 * 1000;
+    this.lastXPgrant.forEach((value, key) => {
+      if (now - value > expiryDuration) this.lastXPgrant.delete(key);
+    });
+  }
+
+  // XP functions
+  public async changeUserXP(guildId: string, userId: string, xp: number) {
     const oldData = await LevelController.getLevelData(guildId, userId);
     const newData = await state.db.level.update({
       where: { userId_guildId: { guildId: oldData.guildId, userId: oldData.userId } },
@@ -123,14 +132,6 @@ export class LevelController {
     const levelDelta = newLevel.level - oldLevel.level;
 
     return { oldData, newData, oldLevel, newLevel, levelDelta };
-  }
-
-  public async clearExpiredTimeouts() {
-    const now = Date.now();
-    const expiryDuration = 10 * 60 * 1000;
-    this.lastXPgrant.forEach((value, key) => {
-      if (now - value > expiryDuration) this.lastXPgrant.delete(key);
-    });
   }
 
   public async vcLoop() {
@@ -156,7 +157,7 @@ export class LevelController {
     }
   }
 
-  public async handleXPEvent(member: GuildMember, message: Message<true> | null, config: handleXPEventConfig = {}) {
+  public async handleXPEvent(member: GuildMember, message: Message<true> | null, config: HandleXPEventConfig = {}) {
     const guildConfig = state.guilds.get(member.guild.id);
     if (!guildConfig) return;
     if (!guildConfig?.level) return;
@@ -166,7 +167,7 @@ export class LevelController {
     if (!this.isUserTimedOut(member, config.timeout)) return;
 
     const xp = (config.xp || LevelController.getRandomXP()) * guildConfig.levelModifier;
-    const data = await this.ChangeUserXP(member.guild.id, member.id, xp);
+    const data = await this.changeUserXP(member.guild.id, member.id, xp);
 
     this.setUserTimeout(member);
 
@@ -176,13 +177,13 @@ export class LevelController {
     const roles = await this.getRoles(member, data.newLevel);
 
     await Promise.allSettled([
-      this.addRoles(member, roles),
-      config.sendMessage ? this.notify(member, message, guildConfig, data.newLevel, roles) : null,
+      this.addLevelRoles(member, roles),
+      config.sendMessage ? this.sendLevelUpMessage(member, message, guildConfig, data.newLevel, roles) : null,
     ]);
   }
 
   // Level change
-  public async addRoles(member: GuildMember, rolesToAdd: LevelReward[]) {
+  public async addLevelRoles(member: GuildMember, rolesToAdd: LevelReward[]) {
     if (rolesToAdd.length === 0) return;
 
     // Resolve the roles to add
@@ -196,7 +197,7 @@ export class LevelController {
     await member?.roles.add(roles);
   }
 
-  public async notify(member: GuildMember, msg: Message<true> | null, config: Guild, current: CalculatedLevel, roles: LevelReward[]) {
+  public async sendLevelUpMessage(member: GuildMember, msg: Message<true> | null, config: Guild, current: CalculatedLevel, roles: LevelReward[]) {
     let message = config.levelMessage;
     if (!message) return;
 
