@@ -91,7 +91,7 @@ export default SubCommand(
       ownerString,
       "\n",
       `premium: ${query?.subscriptionTier}`,
-      `level: ${query?.level}`,
+      `level: ${query?.levelSystemEnabled}`,
       `Banned: ${query?.isBanned}`,
       `Dev: ${query?.isDev}`,
       "\n",

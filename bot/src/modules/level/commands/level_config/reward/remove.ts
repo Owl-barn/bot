@@ -1,7 +1,7 @@
 import { embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import { ApplicationCommandOptionType, Role } from "discord.js";
+import { ApplicationCommandOptionType } from "discord.js";
 
 
 export default SubCommand(

@@ -47,7 +47,7 @@ export default SubCommand(
     }
 
     const config = state.guilds.get(msg.guild.id);
-    if (!config || !config.level) {
+    if (!config || !config.levelSystemEnabled) {
       const response = failEmbed.setDescription(
         "Leveling is not enabled on this server.",
       );
