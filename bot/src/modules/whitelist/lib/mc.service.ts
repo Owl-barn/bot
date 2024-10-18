@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-import { state } from "@app";
+import { Database, state } from "@app";
 import axios from "axios";
 import { ChatInputCommandInteraction, Guild } from "discord.js";
 import { Rcon } from "rcon-client/lib";
@@ -103,7 +102,7 @@ export async function massRename(msg: ChatInputCommandInteraction): Promise<void
 
 export async function massWhitelist(
   guild: Guild,
-  db: PrismaClient,
+  db: Database,
 ): Promise<void> {
   const users = await db.whitelist.findMany();
   const config = await getConfig(guild.id);

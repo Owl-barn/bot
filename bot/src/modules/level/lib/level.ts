@@ -119,15 +119,15 @@ export class LevelController {
   }
 
   // XP functions
-  public async changeUserXP(guildId: string, userId: string, xp: number) {
+  public async changeUserXP(guildId: string, userId: string, { voiceXP, messageXP }: { voiceXP?: number, messageXP?: number }) {
     const oldData = await LevelController.getLevelData(guildId, userId);
     const newData = await state.db.level.update({
       where: { userId_guildId: { guildId: oldData.guildId, userId: oldData.userId } },
-      data: { experience: oldData.experience + xp },
+      data: { messageExperience: { increment: messageXP || 0 }, voiceExperience: { increment: voiceXP || 0 } },
     });
 
-    const newLevel = this.getLevelFromXP(newData.experience);
-    const oldLevel = this.getLevelFromXP(oldData.experience);
+    const newLevel = this.getLevelFromXP(newData.messageExperience + newData.voiceExperience);
+    const oldLevel = this.getLevelFromXP(oldData.messageExperience + oldData.voiceExperience);
 
     const levelDelta = newLevel.level - oldLevel.level;
 
@@ -173,7 +173,12 @@ export class LevelController {
     if (!this.isUserTimedOut(member, config.timeout)) return;
 
     const xp = (config.xp || LevelController.getRandomXP()) * guildConfig.levelModifier;
-    const data = await this.changeUserXP(member.guild.id, member.id, xp);
+
+    const data = await this.changeUserXP(
+      member.guild.id,
+      member.id,
+      message ? { messageXP: xp } : { voiceXP: xp }
+    );
 
     this.setUserTimeout(member);
 

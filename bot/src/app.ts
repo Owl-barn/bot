@@ -6,7 +6,7 @@ import { ThrottleService } from "@lib/services/throttleService";
 
 import colors from "colors";
 import { Client } from "discord.js";
-import { Guild, PrismaClient } from "@prisma/client";
+import { Guild } from "@prisma/client";
 
 import { ButtonStruct } from "@structs/button";
 import { Module } from "@structs/module";
@@ -18,6 +18,7 @@ import { SelectMenuStruct } from "@structs/selectMenu";
 import { initializeServer } from "api/webServer";
 import type { CommandTree, CommandTreeItem } from "@structs/shared/web_api";
 import Fastify, { FastifyInstance } from "fastify";
+import { loadDatabase } from "@lib/loaders/loadDatabase";
 
 colors.enable();
 
@@ -28,8 +29,10 @@ export interface Interactables {
   selectmenus: Map<string, SelectMenuStruct>;
 }
 
+export type Database = ReturnType<typeof loadDatabase>;
+
 export interface State {
-  db: PrismaClient;
+  db: Database;
   env: typeof import("./lib/loaders/loadEnvironment ").loadEnvironment;
   client: Client;
   webServer: FastifyInstance;
@@ -52,7 +55,7 @@ export interface State {
 
 const state = {
   env: loadEnvironment,
-  db: new PrismaClient(),
+  db: loadDatabase(),
   webServer: Fastify(),
 
   commands: new Map(),
