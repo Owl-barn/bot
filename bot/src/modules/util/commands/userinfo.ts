@@ -116,7 +116,7 @@ export default Command(
     }
 
     // Level.
-    if (guildConfig?.level && userData?.Level) {
+    if (guildConfig?.levelSystemEnabled && userData?.Level) {
       if (!member) {
 
         let highestXP = 0;

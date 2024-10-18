@@ -136,7 +136,12 @@ export class LevelController {
 
   public async vcLoop() {
     let guilds = state.client.guilds.cache;
-    guilds = guilds.filter((x) => state.guilds.get(x.id)?.levelVCEnabled);
+
+    // Filter out guilds that don't have the level system and voice XP gain enabled.
+    guilds = guilds.filter((x) => {
+      const config = state.guilds.get(x.id);
+      return config && config.levelSystemEnabled && config.levelVoiceXPGain;
+    });
 
     for (const guild of guilds.values()) {
       const channels = guild.channels.cache.filter((x) => x.type === ChannelType.GuildVoice) as Collection<string, VoiceChannel>;
@@ -160,7 +165,8 @@ export class LevelController {
   public async handleXPEvent(member: GuildMember, message: Message<true> | null, config: HandleXPEventConfig = {}) {
     const guildConfig = state.guilds.get(member.guild.id);
     if (!guildConfig) return;
-    if (!guildConfig?.level) return;
+    if (!guildConfig?.levelSystemEnabled) return;
+    if (message && !guildConfig.levelMessageXPGain) return;
 
     config.sendMessage = config.sendMessage === false ? false : true;
 

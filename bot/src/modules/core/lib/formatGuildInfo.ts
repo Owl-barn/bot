@@ -14,7 +14,7 @@ export function formatGuildInfo(guild: Guild, db: PrismaGuild) {
     premiumUser: db.subscribedUserId
       ? db.subscribedUserId + (subscriber ? ` - ${subscriber?.displayName}` : "")
       : undefined,
-    level: db?.level,
+    level: db?.levelSystemEnabled,
     privateRooms: db.privateRoomChannelId !== null,
   };
 

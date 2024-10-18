@@ -10,7 +10,7 @@ export default Event({
   async execute(member) {
     const config = state.guilds.get(member.guild.id);
 
-    if (!config?.level) return;
+    if (!config?.levelSystemEnabled) return;
 
     const userLevel = await state.db.level.findUnique({
       where: {

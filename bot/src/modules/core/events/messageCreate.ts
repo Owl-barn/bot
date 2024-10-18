@@ -27,6 +27,9 @@ export default Event({
     const client = msg.client;
 
     if (msg.member?.id !== state.env.OWNER_ID) return;
+    if (!state.client.user || !msg.mentions.has(msg.client.user)) return;
+
+    msg.content = msg.content.replace(/<@!?\d+>/g, "").trim();
 
     switch (msg.content) {
 
@@ -214,7 +217,7 @@ export default Event({
           if (db._count.commandLogs > 5) continue;
           if (db.selfroleCollections.length > 0) continue;
           if (db.subscriptionTier) continue;
-          if (db.level) continue;
+          if (db.levelSystemEnabled) continue;
           if (db.privateRoomChannelId) continue;
 
           leaveInfo.push(formatGuildInfo(guild, db));
