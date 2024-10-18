@@ -29,10 +29,8 @@ export default SubCommand(
       return { embeds: [response] };
     }
 
-    const levels = await state.db.level.findMany({
-      where: { guildId: msg.guildId },
-      orderBy: { experience: "desc" },
-    });
+    const levels = await state.db.level.findMany({ where: { guildId: msg.guildId } });
+    levels.sort((a, b) => b.experience - a.experience);
 
     const top = levels.slice(0, 10);
 

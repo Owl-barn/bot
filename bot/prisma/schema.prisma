@@ -78,7 +78,8 @@ model Level {
   userId  String
   guildId String
 
-  experience Int @default(0)
+  messageExperience Int @default(0)
+  voiceExperience   Int @default(0)
 
   guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)

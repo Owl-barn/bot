@@ -7,6 +7,7 @@ import { ApplicationCommandOptionType } from "discord.js";
 import { progressBar } from "modules/owlet/lib/progressbar";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { localState } from "@modules/level";
+import { Duration } from "luxon";
 
 const db = state.db;
 
@@ -72,15 +73,14 @@ export default SubCommand(
       });
     }
 
-    const rank = await db.level.aggregate({
-      _count: { userId: true },
-      where: {
-        experience: { gt: level.experience },
-        guildId: msg.guild.id,
-      },
+    const allUsers = await db.level.findMany({
+      where: { guildId: msg.guild.id },
     });
 
-    rank._count.userId += 1;
+    allUsers.sort((a, b) => b.experience - a.experience);
+
+    const rank = allUsers.findIndex((x) => x.userId === member.id) + 1;
+
     const stats = localState.controller.getLevelFromXP(level.experience);
 
     const NextReward = await db.levelReward.findFirst({
@@ -111,11 +111,18 @@ export default SubCommand(
     embed.setThumbnail(getAvatar(member) || null);
 
     embed.setDescription(
+      `**Rank:** ${rank}\n` +
       `**Level:** ${stats.level}\n` +
-      `**Rank:** #${rank._count.userId}\n` +
-      `**Total XP:** ${formatNumber(stats.totalXP)}\n` +
+      `**Message XP:** ${formatNumber(level.messageExperience)}\n` +
+      `**Voice XP:** ${formatNumber(level.voiceExperience)}\n` +
+      `**Total XP:** ${formatNumber(level.experience)}\n` +
       `\`\`\`${stats.level}${progress}${stats.level + 1}\`\`\``,
     );
+
+    const neededXPList = [`**XP:** ${formatNumber(remaining)}`];
+    if (config.levelMessageXPGain) neededXPList.push(`**Messages:** ~${formatNumber(remainingMsg)}`);
+    if (config.levelVoiceXPGain) neededXPList.push(`**Voice:** ~${Duration.fromObject({ minutes: remainingMsg * 2 }).toHuman()}`);
+
     embed.addFields([
       {
         name: "Next level",
@@ -126,9 +133,7 @@ export default SubCommand(
       },
       {
         name: "Needed to level up",
-        value:
-          `**XP:** ${formatNumber(remaining)}\n` +
-          `**Msg:** ~${formatNumber(remainingMsg)}`,
+        value: neededXPList.join("\n"),
         inline: true,
       },
     ]);
