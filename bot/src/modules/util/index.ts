@@ -3,7 +3,7 @@ import { Module } from "@structs/module";
 
 export default {
   name: "util",
-  description: "Utility commands for the bot."
+  description: "Utility commands for the bot.",
 } as Module;
 
 const localState = {} as LocalState;
