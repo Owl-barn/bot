@@ -9,5 +9,8 @@ export default cron(
 
   async () => {
     await localState.controller.vcLoop();
+
+    // Clear old timeouts to prevent memory leaks.
+    localState.controller.clearExpiredTimeouts();
   },
 );

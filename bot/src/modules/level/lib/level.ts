@@ -125,6 +125,14 @@ export class LevelController {
     return { oldData, newData, oldLevel, newLevel, levelDelta };
   }
 
+  public async clearExpiredTimeouts() {
+    const now = Date.now();
+    const expiryDuration = 10 * 60 * 1000;
+    this.lastXPgrant.forEach((value, key) => {
+      if (now - value > expiryDuration) this.lastXPgrant.delete(key);
+    });
+  }
+
   public async vcLoop() {
     let guilds = state.client.guilds.cache;
     guilds = guilds.filter((x) => state.guilds.get(x.id)?.levelVCEnabled);
