@@ -8,6 +8,7 @@ import { progressBar } from "modules/owlet/lib/progressbar";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { localState } from "@modules/level";
 import { msToString } from "@lib/time";
+import { LevelController } from "@modules/level/lib/level";
 
 const db = state.db;
 
@@ -105,7 +106,9 @@ export default SubCommand(
       theme,
     );
     const remaining = stats.levelXP - stats.currentXP;
-    const remainingMsg = Math.round(remaining / 20) || 1;
+    const remainingMessages = Math.round(remaining / LevelController.messageAverageExperience) || 1;
+    const remainingVoiceTriggers = Math.round(remaining / LevelController.voiceAverageExperience) || 1;
+    const remaningVoiceTime = msToString(remainingVoiceTriggers * LevelController.voiceTimeoutMs);
 
     embed.setTitle(`${member.user.username}'s level`);
     embed.setThumbnail(getAvatar(member) || null);
@@ -120,8 +123,8 @@ export default SubCommand(
     );
 
     const neededXPList = [`**XP:** ${formatNumber(remaining)}`];
-    if (config.levelMessageXPGain) neededXPList.push(`**Messages:** ~${formatNumber(remainingMsg)}`);
-    if (config.levelVoiceXPGain) neededXPList.push(`**Voice:** ~${msToString(remainingMsg * 5 * 60 * 1000)}`);
+    if (config.levelMessageXPGain) neededXPList.push(`**Messages:** ~${formatNumber(remainingMessages)}`);
+    if (config.levelVoiceXPGain) neededXPList.push(`**Voice:** ~${remaningVoiceTime}`);
 
     embed.addFields([
       {
