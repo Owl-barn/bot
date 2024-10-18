@@ -111,7 +111,7 @@ export default SubCommand(
     embed.setThumbnail(getAvatar(member) || null);
 
     embed.setDescription(
-      `**Rank:** ${rank}\n` +
+      `**Rank:** #${rank}\n` +
       `**Level:** ${stats.level}\n` +
       `**Message XP:** ${formatNumber(level.messageExperience)}\n` +
       `**Voice XP:** ${formatNumber(level.voiceExperience)}\n` +
