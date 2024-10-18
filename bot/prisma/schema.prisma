@@ -47,8 +47,9 @@ model Guild {
   // Leveling
   levelModifier  Float         @default(1.0)
   levelChannelId String?
-  levelMessage   String?       @default("You leveled up!, you're now {LEVEL}")
+  levelMessage   String?       @default("You leveled up {USER}!, you're now level {LEVEL}")
   level          Boolean       @default(false)
+  levelVCEnabled Boolean       @default(false)
   levels         Level[]
   levelRewards   LevelReward[]
 
