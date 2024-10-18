@@ -2,7 +2,6 @@ import { state } from "@app";
 import { Event } from "@structs/event";
 import { RoleResolvable } from "discord.js";
 import { localState } from "..";
-import { calculateLevelFromXP } from "../lib/calculateLevelFromXP";
 
 export default Event({
   name: "guildMemberAdd",
@@ -24,7 +23,7 @@ export default Event({
 
     if (!userLevel) return;
 
-    const level = calculateLevelFromXP(userLevel.experience);
+    const level = localState.controller.getLevelFromXP(userLevel.experience);
     const rewards = await state.db.levelReward.findMany({
       where: { level: { lte: level.level }, guildId: member.guild.id },
     });

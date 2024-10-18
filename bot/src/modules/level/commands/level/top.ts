@@ -1,6 +1,6 @@
 import { state } from "@app";
 import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
-import { calculateLevelFromXP } from "@modules/level/lib/calculateLevelFromXP";
+import { localState } from "@modules/level";
 import { SubCommand } from "@structs/command/subcommand";
 
 export default SubCommand(
@@ -39,7 +39,7 @@ export default SubCommand(
     embed.setTitle(`${msg.guild?.name} leaderboard`);
 
     embed.setDescription(
-      top.map((x, i) => `${i + 1}. <@${x.userId}> - Level ${calculateLevelFromXP(x.experience).level}`)
+      top.map((x, i) => `${i + 1}. <@${x.userId}> - Level ${localState.controller.getLevelFromXP(x.experience).level}`)
         .join("\n")
     );
 

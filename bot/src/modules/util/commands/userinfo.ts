@@ -4,9 +4,9 @@ import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { ApplicationCommandOptionType, EmbedField } from "discord.js";
-import { calculateLevelFromXP } from "modules/level/lib/calculateLevelFromXP";
 import { ModerationType } from "@prisma/client";
 import { getDateTime } from "@modules/birthday/lib/format";
+import { localState } from "@modules/level";
 
 export default Command(
 
@@ -121,7 +121,7 @@ export default Command(
 
         let highestXP = 0;
         userData.Level.forEach((x) => x.experience > highestXP && (highestXP = x.experience));
-        const highestLevel = calculateLevelFromXP(highestXP);
+        const highestLevel = localState.controller.getLevelFromXP(highestXP);
 
         fields.push({
           name: "Level",
@@ -129,7 +129,7 @@ export default Command(
           inline: true,
         });
       } else {
-        const level = calculateLevelFromXP(userData.Level.find(x => x.guildId === member.guild.id)?.experience || 0);
+        const level = localState.controller.getLevelFromXP(userData.Level.find(x => x.guildId === member.guild.id)?.experience || 0);
 
         fields.push({
           name: "Level",

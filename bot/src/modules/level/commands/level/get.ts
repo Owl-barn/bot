@@ -4,9 +4,9 @@ import { getAvatar } from "@lib/functions";
 import { formatNumber } from "@lib/number";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
-import { calculateLevelFromXP } from "../../lib/calculateLevelFromXP";
 import { progressBar } from "modules/owlet/lib/progressbar";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
+import { localState } from "@modules/level";
 
 const db = state.db;
 
@@ -81,7 +81,7 @@ export default SubCommand(
     });
 
     rank._count.userId += 1;
-    const stats = calculateLevelFromXP(level.experience);
+    const stats = localState.controller.getLevelFromXP(level.experience);
 
     const NextReward = await db.levelReward.findFirst({
       where: {

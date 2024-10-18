@@ -4,11 +4,10 @@ import { localState } from "..";
 export default cron(
   {
     name: "cleanup",
-    time: "0 * * * *",
+    time: "*/1 * * * *",
   },
 
   async () => {
-    localState.log.debug("Running cleanup cron job...");
-    localState.timeout = new Map();
+    await localState.controller.vcLoop();
   },
 );

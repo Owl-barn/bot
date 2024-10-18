@@ -1,7 +1,6 @@
 import { LocalState } from "@structs/localState";
 import { Module } from "@structs/module";
-import { generateLevelArray } from "./lib/generateLevels";
-import { LevelArray } from "./structs/levelArray";
+import { LevelController } from "./lib/level";
 
 export default {
   name: "level",
@@ -10,13 +9,11 @@ export default {
 } as Module;
 
 interface State extends LocalState {
-  levelArray: LevelArray[],
-  timeout: Map<string, number>,
+  controller: LevelController,
   maxLevel: number,
 }
 
 const localState: State = {
-  timeout: new Map(),
   maxLevel: 1000,
 } as unknown as State;
 
@@ -24,5 +21,5 @@ const localState: State = {
 export { localState };
 
 async function initialize() {
-  localState.levelArray = generateLevelArray(localState.maxLevel);
+  localState.controller = new LevelController();
 }

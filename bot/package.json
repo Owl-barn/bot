@@ -10,13 +10,13 @@
     "updatePrisma": "npm i --save-dev prisma@latest && npm i --save-dev @prisma/client@latest"
   },
   "devDependencies": {
-    "@prisma/client": "^5.20.0",
+    "@prisma/client": "^5.21.1",
     "@types/cron": "^2.4.0",
     "@types/ws": "^8.5.12",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "eslint": "^8.57.1",
-    "prisma": "^5.20.0",
-    "typescript": "^5.6.2"
+    "prisma": "^5.21.1",
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "axios": "^1.7.7",
