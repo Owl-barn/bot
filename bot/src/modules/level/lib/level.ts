@@ -6,6 +6,7 @@ import { ChannelType, Collection, GuildMember, Message, RoleResolvable, VoiceCha
 import { warningEmbedTemplate } from "@lib/embedTemplate";
 import { logType } from "@lib/services/logService";
 import { Guild, LevelReward } from "@prisma/client";
+import { randomRange } from "@lib/functions";
 
 export interface CalculatedLevel {
   totalXP: number;
@@ -31,7 +32,19 @@ export class LevelController {
    * Map of userId-guildId as key and last XP grant time as value.
    */
   private lastXPgrant: Map<string, number> = new Map();
+  public readonly expiryDuration = 10 * 60 * 1000;
 
+  // Voice
+  public static readonly voiceTimeoutMs = 5 * 60 * 1000;
+  public static readonly voiceExperienceRange = [25, 40];
+  public static readonly voiceAverageExperience = (this.voiceExperienceRange[0] + this.voiceExperienceRange[1]) / 2;
+  public static voiceXP = () => randomRange(this.voiceExperienceRange[0], this.voiceExperienceRange[1]);
+
+  // Message
+  public static readonly messageTimeoutMs = 60 * 1000;
+  public static readonly messageExperienceRange = [15, 25];
+  public static readonly messageAverageExperience = (this.messageExperienceRange[0] + this.messageExperienceRange[1]) / 2;
+  public static messageXP = () => randomRange(this.messageExperienceRange[0], this.messageExperienceRange[1]);
 
   constructor() {
     this.levelArray = LevelController.generateLevelArray(localState.maxLevel);
@@ -97,7 +110,7 @@ export class LevelController {
   }
 
   // Timeout functions
-  public isUserTimedOut(member: GuildMember, timeout = 60 * 1000) {
+  public isUserTimedOut(member: GuildMember, timeout = LevelController.messageTimeoutMs) {
     const id = `${member.guild.id}-${member.id}`;
     const lastTimeout = this.lastXPgrant.get(id);
 
@@ -115,9 +128,8 @@ export class LevelController {
 
   public async clearExpiredTimeouts() {
     const now = Date.now();
-    const expiryDuration = 10 * 60 * 1000;
     this.lastXPgrant.forEach((value, key) => {
-      if (now - value > expiryDuration) this.lastXPgrant.delete(key);
+      if (now - value > this.expiryDuration) this.lastXPgrant.delete(key);
     });
   }
 
@@ -159,7 +171,7 @@ export class LevelController {
         if (members.size <= 1) continue;
 
         for (const member of members.values()) {
-          await this.handleXPEvent(member, null, { xp: 20, timeout: 5 * 60 * 1000 });
+          await this.handleXPEvent(member, null, { xp: LevelController.voiceXP(), timeout: LevelController.voiceTimeoutMs });
         }
       }
     }
@@ -175,7 +187,7 @@ export class LevelController {
 
     if (this.isUserTimedOut(member, config.timeout)) return;
 
-    const xp = (config.xp || LevelController.getRandomXP()) * guildConfig.levelModifier;
+    const xp = (config.xp || LevelController.messageXP()) * guildConfig.levelModifier;
 
     const data = await this.changeUserXP(
       member.guild.id,
@@ -271,9 +283,5 @@ export class LevelController {
       : roleRewards;
 
     return rolesToAdd;
-  }
-
-  public static getRandomXP() {
-    return Math.floor((Math.random() * (25 - 15) + 15));
   }
 }
