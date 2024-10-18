@@ -97,12 +97,15 @@ export class LevelController {
   }
 
   // Timeout functions
-  public isUserTimedOut(member: GuildMember, timeout = 60 * 1000): boolean {
+  public isUserTimedOut(member: GuildMember, timeout = 60 * 1000) {
     const id = `${member.guild.id}-${member.id}`;
     const lastTimeout = this.lastXPgrant.get(id);
-    if (lastTimeout && Date.now() - timeout < lastTimeout) return false;
+
+    if (lastTimeout && lastTimeout + timeout > Date.now()) return true;
+
     this.lastXPgrant.set(id, Date.now());
-    return true;
+
+    return false;
   }
 
   public setUserTimeout(member: GuildMember) {
@@ -170,7 +173,7 @@ export class LevelController {
 
     config.sendMessage = config.sendMessage === false ? false : true;
 
-    if (!this.isUserTimedOut(member, config.timeout)) return;
+    if (this.isUserTimedOut(member, config.timeout)) return;
 
     const xp = (config.xp || LevelController.getRandomXP()) * guildConfig.levelModifier;
 
