@@ -106,8 +106,8 @@ export default SubCommand(
       theme,
     );
     const remaining = stats.levelXP - stats.currentXP;
-    const remainingMessages = Math.round(remaining / LevelController.messageAverageExperience) || 1;
-    const remainingVoiceTriggers = Math.round(remaining / LevelController.voiceAverageExperience) || 1;
+    const remainingMessages = Math.round(remaining / (LevelController.messageAverageExperience * config.levelModifier)) || 1;
+    const remainingVoiceTriggers = Math.round(remaining / (LevelController.voiceAverageExperience * config.levelModifier)) || 1;
     const remaningVoiceTime = msToString(remainingVoiceTriggers * LevelController.voiceTimeoutMs);
 
     embed.setTitle(`${member.user.username}'s level`);
