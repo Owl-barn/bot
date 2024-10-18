@@ -110,7 +110,7 @@ export class LevelController {
     this.lastXPgrant.set(id, Date.now());
   }
 
-  public async ChangeUserXP(guildId: string, userId: string, xp = LevelController.getRandomXP()) {
+  public async ChangeUserXP(guildId: string, userId: string, xp: number) {
     const oldData = await LevelController.getLevelData(guildId, userId);
     const newData = await state.db.level.update({
       where: { userId_guildId: { guildId: oldData.guildId, userId: oldData.userId } },
@@ -133,19 +133,16 @@ export class LevelController {
       const channels = guild.channels.cache.filter((x) => x.type === ChannelType.GuildVoice) as Collection<string, VoiceChannel>;
 
       for (const channel of channels.values()) {
-        const members = channel.members;
         // Filter out bots and deafened users.
-        members.filter((x) => !x.user.bot);
-        members.filter(member => member.voice.deaf);
+        const members = channel.members
+          .filter(member => !member.user.bot)
+          .filter(member => !member.voice.deaf);
 
         // filter out users that are alone.
         if (members.size <= 1) continue;
 
         for (const member of members.values()) {
-          // TODO, remove this, temporary debug.
-          localState.log.debug(`Vcloop triggered, User ${member.user.tag} in ${guild.name}.`);
           await this.handleXPEvent(member, null, { xp: 20, timeout: 5 * 60 * 1000 });
-
         }
       }
     }
@@ -160,13 +157,10 @@ export class LevelController {
 
     if (!this.isUserTimedOut(member, config.timeout)) return;
 
-    const xp = config.xp || LevelController.getRandomXP(guildConfig.levelModifier);
+    const xp = (config.xp || LevelController.getRandomXP()) * guildConfig.levelModifier;
     const data = await this.ChangeUserXP(member.guild.id, member.id, xp);
 
     this.setUserTimeout(member);
-
-    // TODO, remove this, temporary debug.
-    if (!message) localState.log.debug(`User ${member.user.tag} in ${member.guild.name} gained ${xp} XP.`);
 
     // Check if the user leveled up.
     if (data.levelDelta === 0) return;
@@ -256,7 +250,7 @@ export class LevelController {
     return rolesToAdd;
   }
 
-  public static getRandomXP(modifier = 1.0) {
-    return Math.floor(modifier * (Math.random() * (25 - 15) + 15));
+  public static getRandomXP() {
+    return Math.floor((Math.random() * (25 - 15) + 15));
   }
 }
