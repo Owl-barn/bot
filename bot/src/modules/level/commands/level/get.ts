@@ -7,7 +7,7 @@ import { ApplicationCommandOptionType } from "discord.js";
 import { progressBar } from "modules/owlet/lib/progressbar";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { localState } from "@modules/level";
-import { Duration } from "luxon";
+import { msToString } from "@lib/time";
 
 const db = state.db;
 
@@ -121,7 +121,7 @@ export default SubCommand(
 
     const neededXPList = [`**XP:** ${formatNumber(remaining)}`];
     if (config.levelMessageXPGain) neededXPList.push(`**Messages:** ~${formatNumber(remainingMsg)}`);
-    if (config.levelVoiceXPGain) neededXPList.push(`**Voice:** ~${Duration.fromObject({ minutes: remainingMsg * 2 }).toHuman()}`);
+    if (config.levelVoiceXPGain) neededXPList.push(`**Voice:** ~${msToString(remainingMsg * 5 * 60 * 1000)}`);
 
     embed.addFields([
       {
