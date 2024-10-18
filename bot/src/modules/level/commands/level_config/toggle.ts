@@ -54,9 +54,9 @@ export default SubCommand(
     embed.setTitle("Level system configuration");
     embed.setDescription(
       `Level system enabled: ${guild.levelSystemEnabled ? "✅" : "❌"}\n` +
-      `Message experience gain: ${guild.levelMessageXPGain ? "✅" : "❌"}${!guild.levelSystemEnabled ? "*" : ""}\n` +
-      `Voice experience gain: ${guild.levelVoiceXPGain ? "✅" : "❌"}${!guild.levelSystemEnabled ? "*" : ""}` +
-      (!guild.levelSystemEnabled ? "\n*\\*Level system must be enabled for this to take effect.*" : "")
+      `Message experience gain: ${guild.levelMessageXPGain ? "✅" : "❌"}${!guild.levelSystemEnabled && guild.levelMessageXPGain ? "*" : ""}\n` +
+      `Voice experience gain: ${guild.levelVoiceXPGain ? "✅" : "❌"}${!guild.levelSystemEnabled && guild.levelVoiceXPGain ? "*" : ""}` +
+      (!guild.levelSystemEnabled && (guild.levelMessageXPGain || guild.levelVoiceXPGain) ? "\n*\\*Level system must be enabled for this to take effect.*" : "")
     );
 
     return { embeds: [embed] };
