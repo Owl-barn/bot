@@ -65,8 +65,13 @@ export function nextDate(pastDate: Date, currentDate = new Date()): Date {
   return nextBirthday;
 }
 
-export function yearsAgo(pastDate: Date, presentDate = new Date()): number {
-  const difference = DateTime.fromJSDate(pastDate).diff(DateTime.fromJSDate(presentDate), "years").years;
+export function yearsAgo(pastDate: Date, timezone: string | null, currentDateTime: Date = new Date()): number {
+  if (timezone === null)
+    timezone = "utc";
+
+  const currentDate = DateTime.fromJSDate(currentDateTime, { zone: "utc" }).setZone(timezone);
+  const convertedPastDate = DateTime.fromJSDate(pastDate, { zone: "utc" }).setZone(timezone, { keepLocalTime: true });
+  const difference = convertedPastDate.diff(currentDate, "years").years;
   return Math.floor(Math.abs(difference));
 }
 

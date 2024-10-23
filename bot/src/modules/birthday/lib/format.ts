@@ -5,14 +5,14 @@ import { DateTime } from "luxon";
 
 export function getDateTime(date: Date, timezone: string | null) {
   if (timezone === null) timezone = "UTC";
-  return DateTime.fromJSDate(date).setZone(timezone, { keepLocalTime: true });
+  return DateTime.fromJSDate(date, { zone: "utc" }).setZone(timezone, { keepLocalTime: true });
 }
 
 export function formatBirthdayEmbed(embed: EmbedBuilder, birthday: { birthdate: Date, timezone: string }) {
   const date = getDateTime(birthday.birthdate, birthday.timezone);
   const jsDate = date.toJSDate();
 
-  const age = yearsAgo(jsDate);
+  const age = yearsAgo(birthday.birthdate, birthday.timezone);
   const now = DateTime.now().setZone(birthday.timezone);
   const isToday = now.day === date.day && now.month === date.month;
   const birthdayString = isToday ? "🎉" : "";

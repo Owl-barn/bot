@@ -139,14 +139,16 @@ export default Event({
 
         birthdays = birthdays.sort((x, y) => Number(y.user.birthdate) - Number(x.user.birthdate));
 
-        birthdays.forEach((x) => (combined += yearsAgo(x.user.birthdate as Date)));
+        const yearsAgoHelper = (user: { birthdate: Date | null; timezone: string | null; }) => yearsAgo(user.birthdate as Date, user.timezone);
+
+        birthdays.forEach((x) => (combined += yearsAgoHelper(x.user)));
 
         const average = Math.round(combined / birthdays.length);
 
         msg.reply(
           `**Average:** ${average}\n`
-          + `**Median:** ${yearsAgo(birthdays[Math.round(birthdays.length / 2)].user.birthdate as Date)}\n`
-          + `**Range:** ${yearsAgo(birthdays[0].user.birthdate as Date)} - ${yearsAgo(birthdays[birthdays.length - 1].user.birthdate as Date,)}`,
+          + `**Median:** ${yearsAgoHelper(birthdays[Math.round(birthdays.length / 2)].user)}\n`
+          + `**Range:** ${yearsAgoHelper(birthdays[0].user)} - ${yearsAgoHelper(birthdays[birthdays.length - 1].user)}`,
         );
 
         return;

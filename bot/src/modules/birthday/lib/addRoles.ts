@@ -4,7 +4,6 @@ import { logType } from "@lib/services/logService";
 import { yearsAgo, getOrdinalSuffix } from "@lib/time";
 import { localState } from "..";
 import { ExpandedBirthday } from "../structs/expandedBirthday";
-import { getDateTime } from "./format";
 import { Guild } from "discord.js";
 import { UserGuildConfig } from "@prisma/client";
 
@@ -124,7 +123,7 @@ async function sendBirthdayMessage(birthday: ExpandedBirthday, guild: Guild) {
     throw { channel: birthday.guildId };
   }
 
-  const age = yearsAgo(getDateTime(birthday.user.birthdate, birthday.user.timezone).toJSDate());
+  const age = yearsAgo(birthday.user.birthdate, birthday.user.timezone);
   const messageSent = await channel.send(`Happy ${age}${getOrdinalSuffix(age)} birthday <@${birthday.userId}>!!!`).catch(() => null);
   if (messageSent === null) {
     state.botLog.push(
