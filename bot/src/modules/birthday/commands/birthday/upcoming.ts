@@ -49,7 +49,7 @@ export default SubCommand(
 
     const embed = embedTemplate();
     embed.setTitle(`Upcoming birthdays`);
-    embed.setDescription(birthdays.map((b, i) => `${i}. ${users.get(b.id)?.displayName} - <t:${Math.round(Number(b.birthdate) / 1000)}:R>`).join("\n"));
+    embed.setDescription(birthdays.map((b, i) => `${i}. ${users.get(b.id)?.user.displayName} - <t:${Math.round(Number(b.birthdate) / 1000)}:R>`).join("\n"));
 
     return { embeds: [embed] };
   }
