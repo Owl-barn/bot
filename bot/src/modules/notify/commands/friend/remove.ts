@@ -1,7 +1,7 @@
 import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, escapeMarkdown } from "discord.js";
 
 export default SubCommand(
 
@@ -75,7 +75,7 @@ export default SubCommand(
 
     return {
       embeds: [
-        embedTemplate(`Successfully removed ${friendUser.username} from your ${type} list`),
+        embedTemplate(`Successfully removed ${escapeMarkdown(friendUser.displayName)} from your ${type} list`),
       ],
     };
   }

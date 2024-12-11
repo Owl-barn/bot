@@ -1,6 +1,7 @@
 import { SubCommand } from "@structs/command/subcommand";
 import { embedTemplate } from "lib/embedTemplate";
 import { localState } from "../..";
+import { escapeMarkdown } from "discord.js";
 
 export default SubCommand(
 
@@ -54,7 +55,7 @@ export default SubCommand(
       }
       embed.addFields([
         {
-          name: botUser.username,
+          name: escapeMarkdown(botUser.username),
           value:
             botList.length == 0
               ? "Nothing playing"

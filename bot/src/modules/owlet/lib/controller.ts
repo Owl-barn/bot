@@ -275,13 +275,21 @@ export default class Controller {
     channelId: Snowflake,
     guildId: Snowflake,
   ): Owlet | undefined => {
+
+    const botsInVc = [];
     // search for a bot in that channel
     for (const bot of this.bots.values()) {
       for (const guild of bot.getGuilds().values()) {
         if (guild.channelId === channelId) {
-          return bot;
+          botsInVc.push(bot);
         }
       }
+    }
+
+    if (botsInVc.length > 0) {
+      const mainBot = botsInVc.find(bot => bot.getId() === state.client.user?.id);
+      if (mainBot) return mainBot;
+      return botsInVc[0];
     }
 
     // Check if main bot is available.

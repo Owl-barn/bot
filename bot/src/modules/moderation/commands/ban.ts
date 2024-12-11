@@ -147,7 +147,7 @@ export default Command(
     });
 
     embed.setTitle(
-      `${target.username} has been banned.`,
+      `${escapeMarkdown(target.username)} has been banned.`,
     );
     embed.addFields([
       {

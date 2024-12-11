@@ -119,7 +119,7 @@ export default Command(
     const dm = await target.send({ embeds: [embed] }).catch(() => null);
 
     embed.setTitle(
-      `${target.username} has been warned, ${warnCount} total`,
+      `${escapeMarkdown(target.displayName)} has been warned, ${warnCount} total`,
     );
     embed.addFields([
       {

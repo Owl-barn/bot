@@ -3,7 +3,7 @@ import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import { formatNumber } from "@lib/number";
 import { SubCommand } from "@structs/command/subcommand";
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, escapeMarkdown } from "discord.js";
 import { progressBar } from "modules/owlet/lib/progressbar";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { localState } from "@modules/level";
@@ -110,7 +110,7 @@ export default SubCommand(
     const remainingVoiceTriggers = Math.round(remaining / (LevelController.voiceAverageExperience * config.levelModifier)) || 1;
     const remaningVoiceTime = msToString(remainingVoiceTriggers * LevelController.voiceTimeoutMs);
 
-    embed.setTitle(`${member.user.username}'s level`);
+    embed.setTitle(`${escapeMarkdown(member.user.displayName)}'s level`);
     embed.setThumbnail(getAvatar(member) || null);
 
     embed.setDescription(

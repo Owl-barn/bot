@@ -3,7 +3,7 @@ import { embedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
 import { canForce, isWithBot } from "../../lib/isdj";
 import { getOwlet } from "../../lib/getBot";
 import { getAvatar } from "@lib/functions";
-import { EmbedAuthorOptions } from "discord.js";
+import { EmbedAuthorOptions, escapeMarkdown } from "discord.js";
 
 export default Button(
 
@@ -32,7 +32,7 @@ export default Button(
     failEmbed
       .setAuthor(author)
       .setFooter({
-        text: msg.user.username,
+        text: escapeMarkdown(msg.user.displayName),
         iconURL: getAvatar(msg.member),
       });
 
@@ -40,7 +40,7 @@ export default Button(
     const embed = embedTemplate()
       .setAuthor(author)
       .setFooter({
-        text: msg.user.username,
+        text: escapeMarkdown(msg.user.displayName),
         iconURL: getAvatar(msg.member),
       });
 

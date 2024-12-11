@@ -3,7 +3,7 @@ import { getAvatar } from "@lib/functions";
 import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
-import { ApplicationCommandOptionType, EmbedField } from "discord.js";
+import { ApplicationCommandOptionType, EmbedField, escapeMarkdown } from "discord.js";
 import { ModerationType } from "@prisma/client";
 import { getDateTime } from "@modules/birthday/lib/format";
 import { localState as levelState } from "@modules/level";
@@ -76,8 +76,8 @@ export default Command(
 
     // Base Info.
     const info = [
-      `**Display Name:** ${member?.displayName || user.username}`,
-      `**Username:** ${user.username}`,
+      `**Display Name:** ${escapeMarkdown(member?.displayName || user.displayName)}`,
+      `**Username:** ${escapeMarkdown(user.username)}`,
       `**tag:** ${user}`,
       `**ID:** \`${user.id}\``,
       `**Created:** <t:${createdTime}>`,
