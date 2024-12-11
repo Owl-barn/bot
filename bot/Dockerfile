@@ -12,6 +12,7 @@ RUN npm run compile
 
 FROM node:20-alpine AS prod
 WORKDIR /app/
+RUN apk add --no-cache openssl
 COPY --from=build /build/package.json /build/package-lock.json ./
 COPY --from=build /build/ ./
 EXPOSE 3001
