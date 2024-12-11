@@ -14,26 +14,26 @@
     <section class="divider"></section>
 
     <section class="features">
-
         <!-- Music -->
         {#snippet notes()}
-        <Note delay={800} size={6} />
-        <Note delay={0} size={4} />
+            <Note delay={800} size={6} />
+            <Note delay={0} size={4} />
         {/snippet}
-        
+
         <Feature
             title="Music streaming"
             artwork={notes}
             moduleId="owlet"
             premium
         >
-            Use Hootsifer's one of a kind Owlet system and listen to music in a <b>multitude of channels</b
+            Use Hootsifer's one of a kind Owlet system and listen to music in a <b
+                >multitude of channels</b
             > at once!
         </Feature>
 
         <!-- Vc -->
         {#snippet lock()}
-            <Lock/>
+            <Lock />
         {/snippet}
         <Feature
             title="Voice channel privacy"
@@ -45,7 +45,7 @@
 
         <!-- Notify -->
         {#snippet envelope()}
-            <Envelope/>
+            <Envelope />
         {/snippet}
         <Feature title="Get notified" artwork={envelope} moduleId="notify">
             Get a personal message from Hootsifer whenever your friend joins the
@@ -75,12 +75,14 @@
 
         <!-- Selfrole -->
         <Feature title="Express yourself!" artwork={notes} moduleId="selfrole">
-            Easily configure <b>self roles</b> for your community and watch your community express themselves!
+            Easily configure <b>self roles</b> for your community and watch your
+            community express themselves!
         </Feature>
 
         <!-- Reminder -->
         <Feature title="Never forget" artwork={notes} moduleId="reminder">
-            Set reminders for yourself and never forget to do that one thing again!
+            Set reminders for yourself and never forget to do that one thing
+            again!
         </Feature>
     </section>
 </main>

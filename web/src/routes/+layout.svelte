@@ -17,15 +17,20 @@
     <a target="_blank" href={PUBLIC_INVITE_URL}>Invite</a>
     <a class="premium" target="_blank" href={PUBLIC_PREMIUM_URL}><Crown /></a>
 </nav>
+
 {@render children()}
 
 <svelte:head>
-    <meta name="theme-color" content="#bf8d50" />
     <title>Hootsifer bot</title>
+    <meta name="theme-color" content="#bf8d50" />
+    <meta
+        name="description"
+        content="Hootsifer offers a variety of unique features to enhance your Discord server!"
+    />
 </svelte:head>
 
 <style lang="scss" global>
-    @import "styles/global.scss";
+    @use "styles/global.scss" as *;
 
     nav {
         display: flex;

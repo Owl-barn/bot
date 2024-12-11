@@ -4,6 +4,10 @@
     let { data } = $props();
 </script>
 
+<svelte:head>
+    <title>Documentation - Hootsifer</title>
+</svelte:head>
+
 <main>
     <ul>
         {#each data.commands as module}
