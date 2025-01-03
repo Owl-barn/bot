@@ -1,24 +1,27 @@
 # Hootsifer
-https://bot.hootsifer.com/
+[Website](https://bot.hootsifer.com/)
+[Official invite link](https://discord.com/api/oauth2/authorize?client_id=896781020056145931&permissions=8&scope=bot%20applications.commands)
+[support server](https://discord.gg/UR3sPVEhkd)
 
 A modular Discord bot with a unique multi-channel music system, self-roles, levelling system and much more! 
 
-## Prerequisites
+## Installation
+### Prerequisites
 - Basic knowledge of docker  
 - Docker + compose installed
 - Discord account
 
-## Making the bot account
+### Making the bot account
 1. Navigate to [https://discord.com/developers/applications](https://discord.com/developers/applications)
 2. Click `New Application` at the top right and give it an appropriate name.
 
 
-### Configuring Bot Installation Process
+#### Configuring Bot Installation Process
 1. Navigate to the `Installation` page.
 2. Under Default install settings, add the `bot` scope in the guild install section, and add `Administrator` under permissions.
 ![](./instructions_assets/installation_1.png)
 
-### Configuring bot user
+#### Configuring bot user
 1. Navigate to the `Bot` page.
 2. Disable the `Public bot` option if you prefer.
 3. Under `Privileged Gateway Intents` enable the `Presence`, `Server member` and `message content` intents.
@@ -28,9 +31,9 @@ A modular Discord bot with a unique multi-channel music system, self-roles, leve
 > [!CAUTION]
 > Anyone with this token can access your bot's account!
 
-## Local configuration
+### Local configuration
 
-### Main bot
+#### Main bot
 1. Navigate to the `bot` folder.
 2. Rename the file called `example.env` to `.env`.
 3. Put the token from the previous section between the quotation mark after `DISCORD_TOKEN`.
@@ -38,7 +41,7 @@ A modular Discord bot with a unique multi-channel music system, self-roles, leve
 5. Paste this ID in the `OWNER_ID` field of the `.env` .
 For further customization please refer to [`./bot/src/lib/loaders/loadEnvironment.ts`](https://github.com/Owl-barn/bot/blob/main/bot/src/lib/loaders/loadEnvironment%20.ts) to see all the available environment variables.
 
-### Owlet
+##### Owlet
 > [!NOTE]
 > If you do not have spotify API credentials you can skip this chapter.
 1. Navigate to the `owlet` folder.
@@ -47,7 +50,7 @@ For further customization please refer to [`./bot/src/lib/loaders/loadEnvironmen
 For further customization please refer to [`./owlet/src/lib/loaders/loadEnvironment.ts`](https://github.com/Owl-barn/bot/blob/main/owlet/src/lib/loaders/loadEnvironment%20.ts) to see all the available environment variables.
 
 
-## Starting the bot
+### Starting the bot
 1. Open a terminal in the root folder of the project (Where this file is located).
 2. Run `docker compose up`
 
