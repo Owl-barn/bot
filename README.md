@@ -1,9 +1,9 @@
 # Hootsifer
-[Website](https://bot.hootsifer.com/)
-[Official invite link](https://discord.com/api/oauth2/authorize?client_id=896781020056145931&permissions=8&scope=bot%20applications.commands)
-[support server](https://discord.gg/UR3sPVEhkd)
-
 A modular Discord bot with a unique multi-channel music system, self-roles, levelling system and much more! 
+
+- [Website](https://bot.hootsifer.com/)
+- [Official invite link](https://discord.com/api/oauth2/authorize?client_id=896781020056145931&permissions=8&scope=bot%20applications.commands)
+- [support server](https://discord.gg/UR3sPVEhkd)
 
 ## Installation
 ### Prerequisites
