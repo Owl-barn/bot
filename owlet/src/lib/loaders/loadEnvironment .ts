@@ -19,14 +19,14 @@ const env = cleanEnv(process.env, {
   // Music
   IDLE_TIMEOUT: num({
     default: 300000, // 5 minutes
-    desc: "How long to wait before disconnecting from voice channel (miliseconds)",
+    desc: "How long to wait before disconnecting from voice channel (milliseconds)",
   }),
 
   // Spotify
-  SP_ID: str(),
-  SP_SECRET: str(),
-  SP_RT: str({ desc: "Spotify refresh token" }),
-  SP_MARKET: str(),
+  SP_ID: str({ default: undefined }),
+  SP_SECRET: str({ default: undefined }),
+  SP_RT: str({ default: undefined, desc: "Spotify refresh token" }),
+  SP_MARKET: str({ default: undefined }),
 
 });
 

@@ -67,7 +67,7 @@ export default Event({
       const embed = embedTemplate()
         .setTitle("Thank you!")
         .setDescription(
-          "Thank you for inviting me! For any questions we are happy to help you out in our server!",
+          `Thank you for inviting me! ${state.env.SUPPORT_SERVER !== undefined ? "For any questions we are happy to help you out in our server!" : ""}`,
         )
         .setThumbnail(
           guild.client.user?.avatarURL() ||
@@ -75,25 +75,34 @@ export default Event({
         )
         .setTimestamp();
 
-      const donateButton = new ButtonBuilder()
-        .setLabel("Donation")
-        .setStyle(ButtonStyle.Link)
-        .setURL(state.env.DONATION_URL);
+      const buttons: ButtonBuilder[] = [];
 
-      const discordButton = new ButtonBuilder()
-        .setLabel("Discord")
-        .setStyle(ButtonStyle.Link)
-        .setURL(state.env.SUPPORT_SERVER);
+      if (state.env.DONATION_URL) {
+        buttons.push(
+          new ButtonBuilder()
+            .setLabel("Donation")
+            .setStyle(ButtonStyle.Link)
+            .setURL(state.env.DONATION_URL)
+        );
+      }
 
-      const component = new ActionRowBuilder().setComponents([
-        donateButton,
-        discordButton,
-      ]) as ActionRowBuilder<ButtonBuilder>;
+      if (state.env.SUPPORT_SERVER) {
+        buttons.push(
+          new ButtonBuilder()
+            .setLabel("Discord")
+            .setStyle(ButtonStyle.Link)
+            .setURL(state.env.SUPPORT_SERVER)
+        );
+      }
+
+      const components = state.env.DONATION_URL && state.env.SUPPORT_SERVER
+        ? [new ActionRowBuilder().setComponents(buttons) as ActionRowBuilder<ButtonBuilder>]
+        : [];
 
       await channel
-        .send({ embeds: [embed], components: [component] })
+        .send({ embeds: [embed], components })
         .catch(() =>
-          localState.log.warn(`Couldnt send message in new server. (${guild.id})`),
+          localState.log.warn(`couldn't send message in new server. (${guild.id})`),
         );
     } catch (e) {
       localState.log.error(e);

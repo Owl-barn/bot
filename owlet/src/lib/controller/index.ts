@@ -6,6 +6,7 @@ import { Track } from "@lib/track";
 
 export class Controller {
   private queues: Map<string, Queue>;
+  private hasSpotifyCredentials = false;
   private shutdown = false;
 
   constructor() {
@@ -14,15 +15,20 @@ export class Controller {
   }
 
   private async login() {
-    await play.setToken({
-      spotify: {
-        client_id: state.env.SP_ID,
-        client_secret: state.env.SP_SECRET,
-        refresh_token: state.env.SP_RT,
-        market: state.env.SP_MARKET,
-      },
-    })
-    state.log.controller.info("Spotify token set");
+    if (state.env.SP_ID && state.env.SP_SECRET && state.env.SP_RT && state.env.SP_MARKET) {
+      this.hasSpotifyCredentials = true;
+      await play.setToken({
+        spotify: {
+          client_id: state.env.SP_ID,
+          client_secret: state.env.SP_SECRET,
+          refresh_token: state.env.SP_RT,
+          market: state.env.SP_MARKET,
+        },
+      })
+      state.log.controller.info("Spotify token set");
+    } else {
+      state.log.controller.info("No spotify credentials available");
+    }
   }
 
   public getQueue = (guildId: string) => this.queues.get(guildId);
@@ -93,6 +99,10 @@ export class Controller {
     const spotifyType = play.sp_validate(query)
     if (spotifyType) {
 
+      if (!this.hasSpotifyCredentials) {
+        return { error: "Spotify links are currently disabled." };
+      }
+
       if (spotifyType !== "track") return { error: `You entered a ${spotifyType} link, which is currently not supported.` }
 
       // Refresh token if expired
@@ -103,9 +113,9 @@ export class Controller {
 
       let song = await play
         .spotify(query)
-        .catch(error => { state.log.queue.warn("Couldnt fetch spotify URL", { error }) });
+        .catch(error => { state.log.queue.warn("couldn't fetch spotify URL", { error }) });
 
-      if (!song) return { error: "Couldnt play this song, please try a youtube link" }
+      if (!song) return { error: "couldn't play this song, please try a youtube link" }
 
       song = song as play.SpotifyTrack;
 
@@ -137,10 +147,10 @@ export class Controller {
         if (message.includes("unavailable"))
           return { error: "This video is unavailable in the bot's country." }
 
-        state.log.queue.error("Couldnt fetch video info: ", { error, message });
+        state.log.queue.error("couldn't fetch video info: ", { error, message });
       });
 
-    if (!song) throw new Error("Couldnt fetch video info");
+    if (!song) throw new Error("couldn't fetch video info");
     if ("error" in song) return song;
 
     const info = song.video_details;
@@ -162,10 +172,10 @@ export class Controller {
       limit: 1,
       fuzzy: true,
     })
-      .catch((error) => { state.log.queue.warn("Couldnt fetch search result: ", { error }); })
+      .catch((error) => { state.log.queue.warn("couldn't fetch search result: ", { error }); })
       .then((results) => results?.[0]);
 
-    if (!song) return { error: "Couldnt play this song" }
+    if (!song) return { error: "couldn't play this song" }
     return await this.getTrackFromUrl(song.url, user);
   }
 }

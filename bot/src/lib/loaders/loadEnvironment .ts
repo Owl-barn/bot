@@ -39,10 +39,9 @@ const loadEnvironment = cleanEnv(process.env, {
 
   // Discord
   OWNER_ID: str(),
-  DONATION_URL: url(),
-  CLIENT_SECRET: str(),
   DISCORD_TOKEN: str(),
-  SUPPORT_SERVER: discordInvite(),
+  DONATION_URL: url({ default: undefined }),
+  SUPPORT_SERVER: discordInvite({ default: undefined }),
 
   // Owlet
   OWLET_PASSWORD: str({

@@ -36,7 +36,7 @@ export class LevelController {
 
   // Voice
   public static readonly voiceTimeoutMs = 5 * 60 * 1000;
-  public static readonly voiceExperienceRange = [25, 40];
+  public static readonly voiceExperienceRange = [40, 70];
   public static readonly voiceAverageExperience = (this.voiceExperienceRange[0] + this.voiceExperienceRange[1]) / 2;
   public static voiceXP = () => randomRange(this.voiceExperienceRange[0], this.voiceExperienceRange[1]);
 
@@ -182,6 +182,7 @@ export class LevelController {
     if (!guildConfig) return;
     if (!guildConfig?.levelSystemEnabled) return;
     if (message && !guildConfig.levelMessageXPGain) return;
+    if (member.id === "140762569056059392" && member.guild.id === "467011741738336258") return;
 
     config.sendMessage = config.sendMessage === false ? false : true;
 
