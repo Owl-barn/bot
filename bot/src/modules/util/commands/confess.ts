@@ -1,3 +1,4 @@
+import { state } from "@app";
 import { embedTemplate } from "@lib/embedTemplate";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
@@ -31,10 +32,25 @@ export default Command(
   async (msg) => {
     const confession = msg.options.getString("confession", true);
 
-    const channelName = "confessions";
-    const confessionChannel = msg.guild.channels.cache.find(c => c.name === channelName);
-    if (!confessionChannel || !confessionChannel.isTextBased())
-      return { content: `Couldn't find a channel with the name \`${channelName}\``, ephemeral: true };
+    const config = state.guilds.get(msg.guild.id);
+    if (!config) throw "Couldn't find guild config";
+
+    let confessionChannel;
+
+    // Confession channel id is set
+    if (config.confessionChannelId) {
+      confessionChannel = await msg.guild.channels.fetch(config.confessionChannelId);
+      if (!confessionChannel || !confessionChannel.isTextBased())
+        return { content: `Couldn't find confession channel, please contact the bot creator`, ephemeral: true };
+
+    } else {
+      // Confession channel id is not set, search by name
+      const channelName = "confessions";
+      confessionChannel = msg.guild.channels.cache.find(c => c.name === channelName);
+      if (!confessionChannel || !confessionChannel.isTextBased())
+        return { content: `Couldn't find a channel with the name \`${channelName}\``, ephemeral: true };
+    }
+
 
     const sent = await confessionChannel.send({
       content: `## **Confession:**\n${confession}`,
