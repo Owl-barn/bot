@@ -7,9 +7,10 @@ A modular Discord bot with a unique multi-channel music system, self-roles, leve
 
 ## Installation
 ### Prerequisites
+- Discord account
 - Basic knowledge of docker  
 - Docker + compose installed
-- Discord account
+- basic knowledge on how to use json (for advanced configuration)
 
 ### Making the bot account
 1. Navigate to [https://discord.com/developers/applications](https://discord.com/developers/applications)
@@ -52,7 +53,7 @@ For further customization please refer to [`./owlet/src/lib/loaders/loadEnvironm
 
 ### Starting the bot
 1. Open a terminal in the root folder of the project (Where this file is located).
-2. Run `docker compose up`
+2. Run `docker compose up -d`
 
 ## Additional configuration
 The bot has more advanced features you can customize using JSON files, The functionality of these will be explained in this chapter.

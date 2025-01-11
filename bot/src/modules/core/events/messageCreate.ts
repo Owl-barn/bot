@@ -1,4 +1,3 @@
-import { yearsAgo } from "@lib/time";
 import { state } from "@app";
 import { Event } from "@structs/event";
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ComponentType, Guild, Message } from "discord.js";
@@ -6,8 +5,8 @@ import { embedTemplate } from "@lib/embedTemplate";
 import { localState } from "..";
 import { formatGuildInfo } from "../lib/formatGuildInfo";
 import { updateCollection } from "@modules/selfrole/lib/selfrole";
-import { getDateTime } from "@modules/birthday/lib/format";
 import registerCommands from "@lib/commandRegister";
+import { getAgeInfo } from "@modules/birthday/lib/analyse";
 
 export default Event({
   name: "messageCreate",
@@ -121,36 +120,28 @@ export default Event({
         return;
       }
 
-      // Gets stats for birthdays.
+      // Gets stats for global birthdays.
+      case "ageAll*": {
+        const birthdays = await state.db.user.findMany({
+          where: { birthdate: { not: null } },
+        });
+
+        const info = getAgeInfo(birthdays);
+
+        msg.reply(`Average: \`${info.average}\`\nMedian: \`${info.median}\`\nRange: \`${info.range.min} - ${info.range.max}\``);
+        return;
+      }
+
+      // Gets stats for this guild's birthdays.
       case "age*": {
-        let birthdays = await state.db.userGuildConfig.findMany({
-          where: { guildId: msg.guildId as string, user: { NOT: { birthdate: null } } },
-          include: { user: true },
+        if (!msg.guild) return;
+        const birthdays = await state.db.user.findMany({
+          where: { birthdate: { not: null }, UserGuildConfig: { some: { guildId: msg.guild.id, birthdayEnabled: true } } },
         });
 
-        let combined = 0;
-        const currentYear = new Date().getFullYear();
+        const info = getAgeInfo(birthdays);
 
-        birthdays = birthdays.filter(x => x.user.birthdate && x.user.birthdate.getFullYear() > currentYear - 40);
-        birthdays = birthdays.map((x) => {
-          x.user.birthdate = getDateTime(x.user.birthdate as Date, x.user.timezone).toJSDate();
-          return x;
-        });
-
-        birthdays = birthdays.sort((x, y) => Number(y.user.birthdate) - Number(x.user.birthdate));
-
-        const yearsAgoHelper = (user: { birthdate: Date | null; timezone: string | null; }) => yearsAgo(user.birthdate as Date, user.timezone);
-
-        birthdays.forEach((x) => (combined += yearsAgoHelper(x.user)));
-
-        const average = Math.round(combined / birthdays.length);
-
-        msg.reply(
-          `**Average:** ${average}\n`
-          + `**Median:** ${yearsAgoHelper(birthdays[Math.round(birthdays.length / 2)].user)}\n`
-          + `**Range:** ${yearsAgoHelper(birthdays[0].user)} - ${yearsAgoHelper(birthdays[birthdays.length - 1].user)}`,
-        );
-
+        msg.reply(`Average: \`${info.average}\`\nMedian: \`${info.median}\`\nRange: \`${info.range.min} - ${info.range.max}\``);
         return;
       }
 
