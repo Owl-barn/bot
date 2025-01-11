@@ -10,15 +10,15 @@ export default Command(
 
   // Info
   {
-    name: "clear",
-    description: "clear chat",
+    name: "purge",
+    description: "Delete the last x chat messages.",
     group: CommandGroup.moderation,
 
     arguments: [
       {
         type: ApplicationCommandOptionType.Integer,
         name: "amount",
-        description: "how many messages to delete",
+        description: "How many messages to delete",
         required: true,
       },
     ],
