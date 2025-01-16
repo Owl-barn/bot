@@ -10,7 +10,7 @@ export default Event({
 
   async execute(guild) {
     if (!guild) throw "failed to log deleted guild";
-    localState.log.info(`Left Guild, ID: ${guild.name.cyan} Owner: ${guild.ownerId.cyan} Name: ${guild.name.green}`.red.bold);
+    localState.log.info(`Left Guild, ID: ${guild.id.cyan} Owner: ${guild.ownerId.cyan} Name: ${guild.name.green}`.red.bold);
 
     const notifEmbed = failEmbedTemplate()
       .setTitle("Guild deleted")

@@ -137,14 +137,15 @@ function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAutho
 
 
   if (!playing) {
-    const timeTillPlay = Duration
+    console.log({ queue: queueInfo.length, track: track.durationMs });
+    const timeUntilPlay = Duration
       .fromMillis(queueInfo.length - track.durationMs)
       .toFormat("h:mm:ss");
 
     embed.addFields([
       {
-        name: "Time untill play",
-        value: `*${timeTillPlay}*`,
+        name: "Time until play",
+        value: `*${timeUntilPlay}*`,
         inline: true,
       },
     ]);

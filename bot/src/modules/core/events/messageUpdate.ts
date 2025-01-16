@@ -3,7 +3,7 @@ import { getAvatar } from "@lib/functions";
 import { logType } from "@lib/services/logService";
 import { state } from "@app";
 import { Event } from "@structs/event";
-import { GuildMember, escapeMarkdown } from "discord.js";
+import { escapeMarkdown } from "discord.js";
 
 export default Event({
   name: "messageUpdate",
@@ -18,7 +18,7 @@ export default Event({
     if (!config || !config.logEvents || config.isBanned) return;
     if (old.content == current.content) return;
 
-    const member = current.member as GuildMember;
+    const member = current.member || old.member;
 
     const embed = warningEmbedTemplate();
 
@@ -38,10 +38,13 @@ export default Event({
       "**current:**\n" +
       newMsg,
     );
-    embed.setFooter({
-      text: `${member.user.tag} <@${member.id}>`,
-      iconURL: getAvatar(member),
-    });
+
+    if (member) {
+      embed.setFooter({
+        text: `${member.user.tag} <@${member.user.id}>`,
+        iconURL: getAvatar(member),
+      });
+    }
 
     state.botLog.push(embed, current.guildId, logType.EVENT);
   },

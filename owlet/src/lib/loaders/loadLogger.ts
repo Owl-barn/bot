@@ -41,7 +41,7 @@ export const loadLogger = () => createLogger({
     new transports.File({
       level: "debug",
       dirname: "logs",
-      filename: `${hostname}.combined.log`,
+      filename: `combined.log`,
       format: format.combine(
         ignoreToken(),
         format.json(),
@@ -51,7 +51,7 @@ export const loadLogger = () => createLogger({
     new transports.File({
       level: "error",
       dirname: "logs",
-      filename: `${hostname}.error.log`,
+      filename: `error.log`,
       handleExceptions: true,
       handleRejections: true,
       format: format.combine(

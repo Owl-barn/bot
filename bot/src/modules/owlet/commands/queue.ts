@@ -15,7 +15,7 @@ import { baseAccessConfig } from "../lib/accessConfig";
 import { progressBar } from "../lib/progressbar";
 import { QueueInfo } from "../structs/queue";
 import { CurrentTrack, Track } from "../structs/track";
-import { DateTime } from "luxon";
+import { Duration } from "luxon";
 
 export default Command(
   // Info
@@ -138,8 +138,9 @@ function makeEmbed(
     ]);
   }
 
+  console.log({ length: queueInfo.length });
   embed.setFooter({
-    text: `Queue length: ${DateTime
+    text: `Queue length: ${Duration
       .fromMillis(queueInfo.length)
       .toFormat("h:mm:ss")}`,
   });
