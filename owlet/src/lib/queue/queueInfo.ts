@@ -1,23 +1,21 @@
-import { AudioPlayerStatus } from "@discordjs/voice";
-import { Queue } from ".";
-import { loopMode } from "./loop";
+import { BotLoopMode, botLoopModeFromPlayer } from "./loop";
+import { GuildQueue } from "discord-player";
 
-export function getQueueInfo(queue: Queue): QueueInfo {
-  const tracks = queue.getTracks();
+export function getQueueInfo(queue: GuildQueue): QueueInfo {
 
-  let length = tracks
-    .map((track) => track.durationMs)
+  let length = queue.tracks
+    .map((track) => track.durationMS)
     .reduce((total, current) => total + current, 0);
 
-  const current = queue.nowPlaying();
+  const current = queue.currentTrack;
 
-  if (current) length += current.durationMs - current.progressMs;
+  if (current) length += queue.node.estimatedDuration - queue.node.estimatedPlaybackTime;
 
   return {
     length,
-    size: tracks.length,
-    loop: queue.getLoopMode(),
-    paused: queue.player.state.status === AudioPlayerStatus.Paused,
+    size: queue.tracks.size,
+    loop: botLoopModeFromPlayer(queue.repeatMode),
+    paused: queue.node.isPaused(),
   };
 }
 
@@ -25,5 +23,5 @@ export interface QueueInfo {
   length: number;
   size: number;
   paused: boolean;
-  loop: loopMode;
+  loop: BotLoopMode;
 }

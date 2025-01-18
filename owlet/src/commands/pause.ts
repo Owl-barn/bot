@@ -1,5 +1,4 @@
 import { state } from "@app";
-import { AudioPlayerStatus } from "@discordjs/voice";
 import { Command } from "@structs/command";
 
 export default Command({
@@ -9,14 +8,14 @@ export default Command({
   // Command Run
   async run(data) {
     const { guildId } = data;
-    const queue = state.controller.getQueue(guildId);
+    const queue = state.player.nodes.get(guildId);
 
-    if (!queue || queue.destroyed) return { error: "No music is playing" };
+    if (!queue || queue.currentTrack === null) return { error: "No music is playing" };
 
-    const paused = queue.player.state.status != AudioPlayerStatus.Paused;
+    const wasPaused = queue.node.isPaused();
 
-    queue.pause();
+    wasPaused ? queue.node.resume() : queue.node.pause();
 
-    return { paused };
+    return { paused: !wasPaused };
   }
 });

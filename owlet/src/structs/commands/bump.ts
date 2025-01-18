@@ -1,4 +1,4 @@
-import { Track } from "@lib/track";
+import { BotTrack } from "@lib/queue/track";
 
 export interface Arguments {
   guildId: string,
@@ -7,5 +7,5 @@ export interface Arguments {
 };
 
 export interface Response {
-  track: Track;
+  track: BotTrack;
 }

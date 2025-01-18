@@ -1,6 +1,8 @@
 import { state } from "@app";
 import { getQueueInfo } from "@lib/queue/queueInfo";
+import { BotTrack } from "@lib/queue/track";
 import { Command } from "@structs/command";
+import { PlayerNodeInitializationResult } from "discord-player";
 
 export default Command({
   // Command Info
@@ -12,49 +14,49 @@ export default Command({
 
     const guild = await state.client.guilds.fetch(guildId);
     const channel = await guild.channels.fetch(channelId);
+    const requestedBy = await state.client.users.fetch(userId);
 
     if (!channel || !channel.isVoiceBased()) return { error: "That is not a voice channel" };
     if (!channel.joinable) return { error: "I can't join this channel" };
 
-    let queue = state.controller.getQueue(guildId);
-    if (!queue || queue.destroyed) {
-      queue = state.controller.createQueue(channel);
+    const queue = state.player.queues.get(guildId);
 
-      queue.on("SongStart", (track, queue) => {
-        state.server.broadcast("SongStart", {
-          track,
-          queue,
-          channelId: channelId,
-          guildId: guildId,
-        });
-      });
+    const track = await state.player.search(query, {
+      requestedBy: userId,
+    });
 
-      queue.on("QueueEnd", () => {
-        state.server.broadcast("QueueEnd", {
-          channelId: channelId,
-          guildId: guildId,
-        });
-      });
+    track.setRequestedBy(requestedBy);
 
-      queue.on("SongEnd", (track, queue) => {
-        state.server.broadcast("SongEnd", {
-          track,
-          queue,
-          channelId: channelId,
-          guildId: guildId,
+    let response: PlayerNodeInitializationResult<unknown>;
+
+    try {
+      response = await state.player.play(
+        channel,
+        track,
+        {
+          nodeOptions: {
+            leaveOnEmptyCooldown: state.env.IDLE_TIMEOUT,
+            leaveOnEndCooldown: state.env.IDLE_TIMEOUT,
+          }
         });
-      });
+
+    } catch (error: any) {
+      if ("code" in error) {
+        if (error.code === "ERR_NO_RESULT") {
+          return { error: "I couldn't find that song." };
+        }
+      }
+      return { error: "I couldn't play that song." };
     }
 
-    const track = await state.controller.search(query, userId);
+    // Skip current song if forced
+    if (queue && queue.node.isPlaying() && force) {
+      queue.node.skip();
+    }
 
-    if ("error" in track) return track;
-
-    // Add the track to the queue
-    queue.addTrack(track, force);
-    // If the force flag is set, skip the current track
-    if (force) queue.skip();
-
-    return { track, queueInfo: getQueueInfo(queue) };
+    return {
+      track: new BotTrack(response.track),
+      queueInfo: getQueueInfo(response.queue),
+    };
   }
 });

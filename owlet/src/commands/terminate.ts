@@ -10,7 +10,21 @@ export default Command({
     const { now } = data;
 
     if (now) process.exit(1);
-    state.controller.softShutdown();
+    else {
+      state.log.controller.info(`Emitting shutdown to ${state.player.queues.cache.size} queues`);
+      state.player.queues.cache.forEach(async (queue) => {
+        if (queue.isEmpty()) {
+          queue.delete();
+          return;
+        }
+
+        state.server.broadcast(
+          "Shutdown",
+          queue.guild.id,
+          queue.channel?.id
+        );
+      });
+    }
 
     setTimeout(() => {
       process.exit(1);
