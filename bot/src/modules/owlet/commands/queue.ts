@@ -7,7 +7,6 @@ import {
   GuildMember,
   EmbedBuilder,
   ApplicationCommandOptionType,
-  escapeMarkdown,
   APIEmbedField,
 } from "discord.js";
 import { localState } from "..";
@@ -104,7 +103,7 @@ function makeEmbed(
   const progress = progressBar(current.progressMs / current.durationMs, 20);
 
   const fieldContent = `
-    [${escapeMarkdown(current.title.substring(0, 40))}](${current.url})
+    [${current.title.substring(0, 40)}](${current.url})
     **${current.progress}** ${progress} **${current.duration}**
     ${italic(`Requested by: <@!${current.requestedBy}>`)}
     `;

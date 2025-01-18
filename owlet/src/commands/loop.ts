@@ -1,4 +1,5 @@
 import { state } from "@app";
+import { playerLoopModeFromBot } from "@lib/queue/loop";
 import { Command } from "@structs/command";
 
 export default Command({
@@ -9,11 +10,11 @@ export default Command({
   async run(data) {
     const { guildId, loop } = data;
 
-    const queue = state.controller.getQueue(guildId);
+    const queue = state.player.nodes.get(guildId);
 
-    if (!queue || queue.destroyed) return { error: "No music is playing" }
+    if (!queue) return { error: "No music is playing" };
 
-    queue.setLoopMode(loop);
+    queue.setRepeatMode(playerLoopModeFromBot(loop));
 
     return { loop };
   }

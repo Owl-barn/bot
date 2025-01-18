@@ -7,12 +7,13 @@ import { env } from "@lib/loaders/loadEnvironment ";
 import { Server } from "@lib/server";
 import { CommandStruct } from "@structs/command";
 import { loadCommands } from "@lib/loaders/loadCommands";
-import { Controller } from "@lib/controller";
 import { loadEvents } from "@lib/loaders/loadEvents";
 import { Commands } from "@structs/commands";
 import status from "commands/status";
 import { Logger } from "winston";
 import { loadLogger } from "@lib/loaders/loadLogger";
+import { Player } from "discord-player";
+import { loadPlayer } from "@lib/loaders/loadPlayer";
 
 
 interface Log {
@@ -24,9 +25,9 @@ interface Log {
 }
 interface State {
   env: typeof env;
-  controller: Controller;
   server: Server;
   client: Client;
+  player: Player;
   commands: Map<string, CommandStruct<keyof Commands>>;
   log: Log;
 }
@@ -56,8 +57,9 @@ export { state };
   state.client = await loadClient(token);
 
   // Music Player
-  state.controller = new Controller();
+  state.player = await loadPlayer(state.client);
 
+  // Commands
   await loadCommands(`${__dirname}/commands`);
   await loadEvents(`${__dirname}/events`)
 

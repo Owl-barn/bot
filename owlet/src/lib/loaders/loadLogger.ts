@@ -4,7 +4,7 @@ import os from "os";
 
 const ignoreToken = format((info) => {
   if (!info.data) return info;
-  const data = { ...info.data.data };
+  const data = { ...(info.data as Record<string, any>).data  };
 
   if (data?.token) data.token = "REDACTED";
   if (data?.password) data.password = "REDACTED";

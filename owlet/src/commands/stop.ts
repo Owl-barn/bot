@@ -9,11 +9,15 @@ export default Command({
   async run(data) {
     const { guildId } = data;
 
-    const queue = state.controller.getQueue(guildId);
+    const guild = await state.client.guilds.fetch(guildId);
 
-    if (!queue || queue.destroyed) return { error: "No music is playing" }
+    if (!guild) throw "Could not find guild";
 
-    queue.stop("Stopped by user");
+    const queue = state.player.queues.get(guild.id);
+
+    if (!queue) return { error: "No music is playing" };
+
+    queue.delete();
 
     return {};
   }
