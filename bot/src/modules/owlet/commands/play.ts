@@ -13,6 +13,7 @@ import { getOwlet } from "../lib/getBot";
 import skipButton from "../components/buttons/remove";
 import bumpButton from "../components/buttons/bump";
 import { Duration } from "luxon";
+import { Playlist } from "../structs/playlist";
 
 export default Command(
 
@@ -28,6 +29,12 @@ export default Command(
         name: "song",
         description: "song name or youtube/spotify url",
         required: true,
+      },
+      {
+        type: ApplicationCommandOptionType.Boolean,
+        name: "play_next",
+        description: "Play the song next",
+        required: false,
       },
       {
         type: ApplicationCommandOptionType.Boolean,
@@ -52,9 +59,11 @@ export default Command(
     const botId = msg.options.getString("bot_id");
     const hidden = msg.options.getBoolean("hidden") ?? false;
     let force = msg.options.getBoolean("force") ?? false;
+    let next = msg.options.getBoolean("play_next") ?? false;
 
     const member = msg.member as GuildMember;
     const vc = member.voice.channel;
+    const hasDJPerms = isDJ(member);
 
     if (vc == null) {
       return {
@@ -72,7 +81,8 @@ export default Command(
     await msg.deferReply({ ephemeral: hidden });
 
     // Set force to false if the user is not a DJ.
-    if (!isDJ(member) && force) force = false;
+    if (!hasDJPerms && force) force = false;
+    if (!hasDJPerms && next) next = false;
 
     // Get owlet.
     const node = await getOwlet(msg.guild, vc, botId).catch(() => null);
@@ -96,10 +106,15 @@ export default Command(
       return { embeds: [failEmbed] };
     }
 
+    const memberCount = vc.members.filter((x) => !x.user.bot).size;
+    const allowPlaylists = hasDJPerms || memberCount === 1;
+
     const requestData = {
       guildId: msg.guild.id,
-      channelId: vc.id,
       userId: msg.user.id,
+      channelId: vc.id,
+      allowPlaylists,
+      next,
       query,
       force,
     };
@@ -107,37 +122,52 @@ export default Command(
     const response = await owlet.runCommand("Play", requestData, msg.id);
     if (response.error) return { embeds: [failEmbed.setDescription(response.error)] };
 
-    const res = generateResponse(response.track, response.queueInfo, author);
+    const res = generateResponse(response.track, response.playlist, response.queueInfo, author);
 
     return res;
   },
 );
 
-function generateResponse(track: Track, queueInfo: QueueInfo, author: EmbedAuthorOptions): ReturnMessage {
+function generateResponse(track: Track, playlist: Playlist | undefined, queueInfo: QueueInfo, author: EmbedAuthorOptions): ReturnMessage {
   const embed = embedTemplate();
   let channelName = escapeMarkdown(track.author);
   channelName = channelName.replace(/[()[\]]/g, "");
   const playing = queueInfo.size === 0;
 
-  embed
-    .setThumbnail(track.thumbnail)
-    .setTitle(queueInfo.size < 1 ? `Now playing` : "Song queued")
-    .setDescription(`**[${track.title}](${track.url})**`)
-    // .setFooter({ text: track.id }) // for some reason this fucks up the formatting!??
-    .setAuthor(author)
-    .addFields([
-      { name: "Channel", value: `*${channelName}*`, inline: true },
-      { name: "Duration", value: `${track.duration}`, inline: true },
-      {
-        name: "Queue Position",
-        value: `*${playing ? "Currently playing" : queueInfo.size}*`,
-        inline: true,
-      },
-    ]);
+  const queuePosition = track.position !== undefined
+    ? track.position + 1
+    : playing
+      ? "Currently playing"
+      : queueInfo.size;
+
+  embed.setAuthor(author);
+
+  if (playlist) {
+    embed
+      .setThumbnail(playlist.thumbnail)
+      .setTitle("Playlist queued")
+      .setDescription(`**[${playlist.title}](${playlist.url})**`)
+      .addFields([
+        { name: "Channel", value: `*${playlist.author}*`, inline: true },
+        { name: "Duration", value: `${playlist.duration}`, inline: true },
+        { name: "Songs", value: `*${playlist.size}*`, inline: true },
+        { name: "Queue Position", value: `*${queuePosition}*`, inline: true },
+      ]);
+  } else {
+    embed
+      .setThumbnail(track.thumbnail)
+      .setTitle(queueInfo.size < 1 ? `Now playing` : "Song queued")
+      .setDescription(`**[${track.title}](${track.url})**`)
+      // .setFooter({ text: track.id })
+      .addFields([
+        { name: "Channel", value: `*${channelName}*`, inline: true },
+        { name: "Duration", value: `${track.duration}`, inline: true },
+        { name: "Queue Position", value: `*${queuePosition}*`, inline: true },
+      ]);
+  }
 
 
   if (!playing) {
-    console.log({ queue: queueInfo.length, track: track.durationMs });
     const timeUntilPlay = Duration
       .fromMillis(queueInfo.length - track.durationMs)
       .toFormat("h:mm:ss");

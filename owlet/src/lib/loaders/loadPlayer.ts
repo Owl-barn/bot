@@ -34,6 +34,7 @@ const loadPlayer = async (client: Client): Promise<Player> => {
   });
 
   player.events.on(GuildQueueEvent.PlayerStart, (queue: GuildQueue<unknown>, track: Track<unknown>) => {
+    if (queue.history.isEmpty()) return;
     state.server.broadcast("SongStart", {
       track: new BotTrack(track),
       queue: new BotQueue(queue),

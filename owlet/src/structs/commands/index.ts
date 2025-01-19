@@ -6,6 +6,7 @@ import * as skip from "./skip";
 import * as stop from "./stop";
 import * as terminate from "./terminate";
 import * as bump from "./bump";
+import * as shuffle from "./shuffle";
 import * as status from "./status";
 
 export interface Commands {
@@ -14,6 +15,7 @@ export interface Commands {
   "Pause": { arguments: pause.Arguments, response: pause.Response },
   "Play": { arguments: play.Arguments, response: play.Response },
   "Bump": { arguments: bump.Arguments, response: bump.Response },
+  "Shuffle": { arguments: shuffle.Arguments, response: shuffle.Response },
   "Skip": { arguments: skip.Arguments, response: skip.Response },
   "Status": { arguments: status.Arguments, response: status.Response },
   "Stop": { arguments: stop.Arguments, response: stop.Response },

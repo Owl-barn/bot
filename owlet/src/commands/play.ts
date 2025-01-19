@@ -1,8 +1,8 @@
 import { state } from "@app";
+import { BotPlaylist } from "@lib/queue/playlist";
 import { getQueueInfo } from "@lib/queue/queueInfo";
 import { BotTrack } from "@lib/queue/track";
 import { Command } from "@structs/command";
-import { PlayerNodeInitializationResult } from "discord-player";
 
 export default Command({
   // Command Info
@@ -10,7 +10,7 @@ export default Command({
 
   // Command Run
   async run(data) {
-    const { guildId, channelId, userId, force, query } = data;
+    const { guildId, channelId, userId, force, next, allowPlaylists, query } = data;
 
     const guild = await state.client.guilds.fetch(guildId);
     const channel = await guild.channels.fetch(channelId);
@@ -19,44 +19,68 @@ export default Command({
     if (!channel || !channel.isVoiceBased()) return { error: "That is not a voice channel" };
     if (!channel.joinable) return { error: "I can't join this channel" };
 
-    const queue = state.player.queues.get(guildId);
+    let queue = state.player.queues.get(guildId);
 
-    const track = await state.player.search(query, {
+    const searchResult = await state.player.search(query, {
       requestedBy: userId,
     });
 
-    track.setRequestedBy(requestedBy);
+    searchResult.setRequestedBy(requestedBy);
 
-    let response: PlayerNodeInitializationResult<unknown>;
+    if (searchResult.hasPlaylist() && !allowPlaylists)
+      return { error: "You are not allowed to queue playlists and albums" };
 
-    try {
-      response = await state.player.play(
-        channel,
-        track,
-        {
-          nodeOptions: {
-            leaveOnEmptyCooldown: state.env.IDLE_TIMEOUT,
-            leaveOnEndCooldown: state.env.IDLE_TIMEOUT,
-          }
-        });
+    if (searchResult.isEmpty())
+      return { error: "I couldn't find that song." };
 
-    } catch (error: any) {
-      if ("code" in error) {
-        if (error.code === "ERR_NO_RESULT") {
-          return { error: "I couldn't find that song." };
-        }
+
+    let track = searchResult.tracks[0];
+    let response;
+
+    if (queue) {
+
+      if ((next || force)) {
+        // Add the song in the first queue position
+        queue.insertTrack(track, 0);
+
+      } else {
+        // Add the song to the queue
+        response = await queue.play(searchResult);
       }
-      return { error: "I couldn't play that song." };
+
+      // Skip current song if forced
+      if (force && queue.node.isPlaying()) {
+        queue.node.skip();
+      }
+
+    } else {
+      // Add the song to the queue
+      try {
+        response = await state.player.play(
+          channel,
+          searchResult,
+          {
+            nodeOptions: {
+              leaveOnEmptyCooldown: state.env.IDLE_TIMEOUT,
+              leaveOnEndCooldown: state.env.IDLE_TIMEOUT,
+            }
+          });
+      } catch (error: any) {
+        return { error: "I couldn't play that song." };
+      }
     }
 
-    // Skip current song if forced
-    if (queue && queue.node.isPlaying() && force) {
-      queue.node.skip();
+    if (response) {
+      track = response.track;
+      queue = response.queue;
     }
+
+    if (!queue) throw new Error("Queue not found");
 
     return {
-      track: new BotTrack(response.track),
-      queueInfo: getQueueInfo(response.queue),
+      track: new BotTrack(track, queue.node),
+      playlist: searchResult.playlist && new BotPlaylist(searchResult.playlist),
+      queueInfo: getQueueInfo(queue),
     };
   }
 });
