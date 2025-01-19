@@ -1,15 +1,19 @@
+import { BotPlaylist } from "@lib/queue/playlist";
 import { QueueInfo } from "@lib/queue/queueInfo";
-import { Track } from "@lib/track";
+import { BotTrack } from "@lib/queue/track";
 
 export interface Arguments {
   guildId: string,
   channelId: string,
   userId: string,
   force: boolean,
+  next: boolean,
+  allowPlaylists: boolean,
   query: string,
 };
 
 export interface Response {
-  track: Track;
+  track: BotTrack;
+  playlist?: BotPlaylist;
   queueInfo: QueueInfo
 }

@@ -33,7 +33,7 @@ export default SubCommand(
 
         const queue = await bot.runCommand(
           "Queue",
-          { guildId: msg.guild.id },
+          { guildId: guild.id },
           bot.getId() + guild.id,
         );
 

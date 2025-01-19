@@ -1,12 +1,12 @@
 import { QueueInfo } from "@lib/queue/queueInfo";
-import { CurrentTrack, Track } from "@lib/track";
+import { BotTrack, BotCurrentTrack } from "@lib/queue/track";
 
 export interface Arguments {
   guildId: string,
 };
 
 export interface Response {
-  queue: Track[];
-  current: CurrentTrack | null;
+  queue: BotTrack[];
+  current: BotCurrentTrack | null;
   queueInfo: QueueInfo;
 }

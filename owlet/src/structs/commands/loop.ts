@@ -1,11 +1,11 @@
-import { loopMode } from "@lib/queue/loop";
+import { BotLoopMode } from "@lib/queue/loop";
 
 export interface Arguments {
   guildId: string,
-  loop: loopMode,
+  loop: BotLoopMode,
 }
 
 export interface Response {
-  loop: loopMode;
+  loop: BotLoopMode;
 }
 

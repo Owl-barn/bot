@@ -1,5 +1,6 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import { state } from "@app";
+import { Player } from 'discord-player';
 
 
 const loadClient = (token: string): Promise<Client> => {
@@ -14,6 +15,7 @@ const loadClient = (token: string): Promise<Client> => {
           if (!client.user) {
             reject("Client user not available");
           } else {
+            const player = new Player(client);
             state.log.client.info(`Client ready, logged in as ${client.user.tag} (${client.user.id})`);
             console.log(
               " ✓ Client ready, logged in as ".green.bold +

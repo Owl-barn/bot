@@ -8,16 +8,20 @@ export default Command({
   // Command Run
   async run(data) {
     const { guildId, query, userId } = data;
+    const guild = await state.client.guilds.fetch(guildId);
 
-    const queue = state.controller.getQueue(guildId);
+    if (!guild) throw "Could not find guild";
 
-    if (!queue || queue.destroyed) return { error: "No music is playing" }
+    const queue = state.player.queues.get(guild.id);
 
-    const track = queue.getTrack(query);
+    if (!queue || queue.isEmpty()) return { error: "No music is playing" };
+
+    const track = queue.tracks.find((track) => track.id === query);
 
     if (!track) return { error: "I couldn't find that song" };
 
-    queue.bump(track);
+    queue.moveTrack(track, 0);
+    queue.node.skip();
 
     return { track };
   }

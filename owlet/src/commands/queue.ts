@@ -1,6 +1,7 @@
 import { state } from "@app";
 import { Command } from "@structs/command";
 import { getQueueInfo } from "../lib/queue/queueInfo";
+import { BotCurrentTrack, BotTrack } from "@lib/queue/track";
 
 export default Command({
   // Command Info
@@ -14,17 +15,14 @@ export default Command({
 
     if (!guild) throw "Could not find guild";
 
-    const queue = state.controller.getQueue(guildId);
+    const queue = state.player.queues.get(guild.id);
 
-    if (!queue || queue.destroyed) return { error: "No music is playing" };
-
-    let queueList = queue.getTracks();
-    const nowPlaying = queue.nowPlaying();
+    if (!queue || !queue.isPlaying()) return { error: "No music is playing" };
 
     return {
       queueInfo: getQueueInfo(queue),
-      queue: queueList,
-      current: nowPlaying,
+      queue: queue.tracks.map((track) => new BotTrack(track)),
+      current: new BotCurrentTrack(queue.currentTrack!, queue.node),
     };
   }
 });
