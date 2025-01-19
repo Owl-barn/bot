@@ -142,18 +142,23 @@ function generateResponse(track: Track, playlist: Playlist | undefined, queueInf
 
   embed.setAuthor(author);
 
+  let timeUntilPlay = queueInfo.length;
+
   if (playlist) {
+    timeUntilPlay -= playlist.durationMs;
     embed
       .setThumbnail(playlist.thumbnail)
       .setTitle("Playlist queued")
       .setDescription(`**[${playlist.title}](${playlist.url})**`)
       .addFields([
-        { name: "Channel", value: `*${playlist.author}*`, inline: true },
+        { name: "Made by", value: `*${playlist.author}*`, inline: true },
         { name: "Duration", value: `${playlist.duration}`, inline: true },
         { name: "Songs", value: `*${playlist.size}*`, inline: true },
         { name: "Queue Position", value: `*${queuePosition}*`, inline: true },
       ]);
+
   } else {
+    timeUntilPlay -= track.durationMs;
     embed
       .setThumbnail(track.thumbnail)
       .setTitle(queueInfo.size < 1 ? `Now playing` : "Song queued")
@@ -166,20 +171,16 @@ function generateResponse(track: Track, playlist: Playlist | undefined, queueInf
       ]);
   }
 
-
   if (!playing) {
-    const timeUntilPlay = Duration
-      .fromMillis(queueInfo.length - track.durationMs)
-      .toFormat("h:mm:ss");
-
     embed.addFields([
       {
         name: "Time until play",
-        value: `*${timeUntilPlay}*`,
+        value: `*${Duration.fromMillis(timeUntilPlay).toFormat("h:mm:ss")}*`,
         inline: true,
       },
     ]);
   }
+
 
   // Buttons
   const components = [generateButtons(track.id, !playing)];
