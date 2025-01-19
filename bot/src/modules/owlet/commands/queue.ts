@@ -112,12 +112,14 @@ function makeEmbed(
 
   list.push({ name: "Now playing:", value: fieldContent });
   let x = 0;
-
-  if (queue.length >= 24) {
-    queue = queue.slice(0, 23);
-  }
+  let truncated = false;
 
   for (const song of queue) {
+    if (x >= 20) {
+      truncated = true;
+      break;
+    }
+
     x++;
     list.push({
       name: x.toString(),
@@ -128,16 +130,32 @@ function makeEmbed(
   }
 
   embed.addFields(list);
+
+  if (truncated) {
+    embed.addFields({
+      name: "Note",
+      value: `Queue is too long to display all ${queue.length} songs`,
+    });
+  }
+
+  // Queue settings
+  const settings = [];
   if (queueInfo.loop) {
+    settings.push(queueInfo.loop == 1 ? "🔂 Track" : "🔁 Queue",);
+  }
+  if (queueInfo.isShuffling) {
+    settings.push("🔀 Shuffling");
+  }
+
+  if (settings.length !== 0) {
     embed.addFields([
       {
-        name: "Loop",
-        value: queueInfo.loop == 1 ? "🔂 Track" : "🔁 Queue",
+        name: "Settings",
+        value: settings.join("\n"),
       },
     ]);
   }
 
-  console.log({ length: queueInfo.length });
   embed.setFooter({
     text: `Queue length: ${Duration
       .fromMillis(queueInfo.length)

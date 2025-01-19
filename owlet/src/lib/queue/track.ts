@@ -1,5 +1,5 @@
 import { escapeMarkdown } from "discord.js";
-import { GuildQueuePlayerNode, Track } from "discord-player";
+import { GuildQueue, GuildQueuePlayerNode, Track } from "discord-player";
 import { Duration } from "luxon";
 
 export class BotTrack {
@@ -11,8 +11,9 @@ export class BotTrack {
   public duration: string;
   public durationMs: number;
   public requestedBy: string;
+  public position?: number;
 
-  constructor(track: Track<unknown>) {
+  constructor(track: Track<unknown>, node?: GuildQueuePlayerNode<unknown>) {
     this.id = track.id;
     this.title = track.title.substring(0, 48).replace(/[()[\]]/g, "");
     this.author = track.author ? escapeMarkdown(track.author) : "NaN";
@@ -21,6 +22,11 @@ export class BotTrack {
     this.duration = track.duration;
     this.durationMs = track.durationMS;
     this.requestedBy = track.requestedBy!.id;
+
+    if (node) {
+      const position = node.getTrackPosition(track);
+      if (position != -1) this.position = position;
+    }
   }
 }
 
@@ -29,7 +35,7 @@ export class BotCurrentTrack extends BotTrack {
   progressMs: number;
 
   constructor(track: Track<unknown>, node: GuildQueuePlayerNode<unknown>) {
-    super(track);
+    super(track, node);
     this.progressMs = node.estimatedPlaybackTime;
     // ms into 03:34
     this.progress = Duration

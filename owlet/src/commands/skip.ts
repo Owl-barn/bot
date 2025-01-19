@@ -16,7 +16,7 @@ export default Command({
 
     const queue = state.player.queues.get(guild.id);
 
-    if (!queue || queue.isEmpty()) return { error: "No music is playing" };
+    if (!queue || queue.isEmpty() && queue.currentTrack == null) return { error: "No music is playing" };
 
     let track: Track<unknown> | undefined | null;
     let isNowPlaying = false;
