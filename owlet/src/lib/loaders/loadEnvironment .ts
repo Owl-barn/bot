@@ -22,12 +22,6 @@ const env = cleanEnv(process.env, {
     desc: "How long to wait before disconnecting from voice channel (milliseconds)",
   }),
 
-  // Spotify
-  SP_ID: str({ default: undefined }),
-  SP_SECRET: str({ default: undefined }),
-  SP_RT: str({ default: undefined, desc: "Spotify refresh token" }),
-  SP_MARKET: str({ default: undefined }),
-
 });
 
 export { env };
