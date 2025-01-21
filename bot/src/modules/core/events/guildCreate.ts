@@ -9,6 +9,7 @@ import { state } from "@app";
 import { embedTemplate } from "@lib/embedTemplate";
 import { localState } from "..";
 import { getOrCreateGuild } from "@lib/guild";
+import { getActionButtons } from "@lib/actions";
 
 export default Event({
   name: "guildCreate",
@@ -75,32 +76,8 @@ export default Event({
         )
         .setTimestamp();
 
-      const buttons: ButtonBuilder[] = [];
-
-      if (state.env.DONATION_URL) {
-        buttons.push(
-          new ButtonBuilder()
-            .setLabel("Donation")
-            .setStyle(ButtonStyle.Link)
-            .setURL(state.env.DONATION_URL)
-        );
-      }
-
-      if (state.env.SUPPORT_SERVER) {
-        buttons.push(
-          new ButtonBuilder()
-            .setLabel("Discord")
-            .setStyle(ButtonStyle.Link)
-            .setURL(state.env.SUPPORT_SERVER)
-        );
-      }
-
-      const components = state.env.DONATION_URL && state.env.SUPPORT_SERVER
-        ? [new ActionRowBuilder().setComponents(buttons) as ActionRowBuilder<ButtonBuilder>]
-        : [];
-
       await channel
-        .send({ embeds: [embed], components })
+        .send({ embeds: [embed], components: getActionButtons() })
         .catch(() =>
           localState.log.warn(`couldn't send message in new server. (${guild.id})`),
         );

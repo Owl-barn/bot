@@ -11,6 +11,7 @@ import { localState } from "..";
 import { respond } from "./respond";
 import { getCommand } from "./getCommand";
 import { errorEmbed } from "./interactionError";
+import { getActionButtons } from "@lib/actions";
 
 export async function commandEvent(msg: ChatInputCommandInteraction) {
   const timeStart = Date.now();
@@ -74,26 +75,11 @@ export async function commandEvent(msg: ChatInputCommandInteraction) {
     if (fields.length > 0) embed.addFields(fields);
     else embed.setDescription("This command is not available to you.");
 
-    const donateButton = new ButtonBuilder()
-      .setLabel("Subscribe")
-      .setStyle(ButtonStyle.Link)
-      .setURL(state.env.DONATION_URL);
-
-    const discordButton = new ButtonBuilder()
-      .setLabel("Support Server")
-      .setStyle(ButtonStyle.Link)
-      .setURL(state.env.SUPPORT_SERVER);
-
-    const component = new ActionRowBuilder().setComponents([
-      donateButton,
-      discordButton,
-    ]) as ActionRowBuilder<ButtonBuilder>;
-
     return await msg
       .reply({
         ephemeral: true,
         embeds: [embed],
-        components: [component],
+        components: getActionButtons(),
       })
       .catch(console.error);
   }
