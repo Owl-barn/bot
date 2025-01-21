@@ -44,11 +44,10 @@ For further customization please refer to [`./bot/src/lib/loaders/loadEnvironmen
 
 ##### Owlet
 > [!NOTE]
-> If you do not have spotify API credentials you can skip this chapter.
+> This step is optional and only needed for very fine customization of the owlets.
 1. Navigate to the `owlet` folder.
-2. Rename the file called `example.env` to `.env`.
-3. Paste your spotify API credentials into their respective fields.
-For further customization please refer to [`./owlet/src/lib/loaders/loadEnvironment.ts`](https://github.com/Owl-barn/bot/blob/main/owlet/src/lib/loaders/loadEnvironment%20.ts) to see all the available environment variables.
+2. Make a `.env` file
+3. refer to [`./owlet/src/lib/loaders/loadEnvironment.ts`](https://github.com/Owl-barn/bot/blob/main/owlet/src/lib/loaders/loadEnvironment%20.ts) to see all the available environment variables.
 
 
 ### Starting the bot
