@@ -24,7 +24,7 @@
         {@render artwork()}
     </section>
     <section class="info">
-        <h1 class:premium>{title}</h1>
+        <h2 class:premium>{title}</h2>
         <p>
             {@render children()}
         </p>
@@ -63,7 +63,7 @@
             }
         }
 
-        & h1 {
+        & h2 {
             font-size: clamp(1.2rem, $scale, 2rem);
         }
 
