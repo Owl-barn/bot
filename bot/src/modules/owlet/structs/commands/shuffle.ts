@@ -3,5 +3,5 @@ export interface Arguments {
 }
 
 export interface Response {
-  isShuffling: boolean;
+  queueSize: number
 }

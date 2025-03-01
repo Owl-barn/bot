@@ -16,8 +16,8 @@ export default Command({
 
     if (!queue || queue.isEmpty()) return { error: "There is no queue to shuffle." };
 
-    queue.toggleShuffle();
+    queue.tracks.shuffle();
 
-    return { isShuffling: queue.isShuffling };
+    return { queueSize: queue.tracks.size };
   }
 });

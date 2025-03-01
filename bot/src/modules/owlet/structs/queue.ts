@@ -20,7 +20,6 @@ export interface QueueInfo {
   size: number;
   paused: boolean;
   loop: LoopMode;
-  isShuffling: boolean;
 }
 
 export interface Queue {

@@ -14,7 +14,7 @@ export default Command(
   // Info
   {
     name: "shuffle",
-    description: "Toggle queue shuffling",
+    description: "Shuffle the queue",
     group: CommandGroup.music,
 
     arguments: [
@@ -82,7 +82,7 @@ export default Command(
     const response = await musicBot.runCommand("Shuffle", { guildId: msg.guild.id }, msg.id);
     if (response.error) return { embeds: [failEmbed.setDescription(response.error)] };
 
-    embed.setDescription(`Queue is now ${response.isShuffling ? "shuffling" : "not shuffling"}`);
+    embed.setDescription(`Shuffled all ${response.queueSize} tracks in the queue.`);
 
     return { embeds: [embed] };
   }

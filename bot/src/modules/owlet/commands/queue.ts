@@ -143,9 +143,6 @@ function makeEmbed(
   if (queueInfo.loop) {
     settings.push(queueInfo.loop == 1 ? "🔂 Track" : "🔁 Queue",);
   }
-  if (queueInfo.isShuffling) {
-    settings.push("🔀 Shuffling");
-  }
 
   if (settings.length !== 0) {
     embed.addFields([
