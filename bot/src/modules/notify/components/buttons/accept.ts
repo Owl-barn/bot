@@ -1,6 +1,7 @@
 import { failEmbedTemplate, successEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { Button } from "@structs/button";
+import { localState } from "@modules/notify";
 
 export default Button(
   {
@@ -50,6 +51,8 @@ export default Button(
 
     const thumbnail = msg.message.embeds[0].thumbnail?.url;
     if (thumbnail) embed.setThumbnail(thumbnail);
+
+    localState.log.info(`Friend request accepted by ${friend} for ${user}`);
 
     await msg.update({ components: [], embeds: [embed] });
     return {};
