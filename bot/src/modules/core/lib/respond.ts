@@ -1,6 +1,6 @@
 import { state } from "@app";
-import { ReturnMessage } from "@structs/returnmessage";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ProcessedReturnMessage, ReturnMessage } from "@structs/returnmessage";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { localState } from "..";
 import { errorEmbed } from "./interactionError";
 
@@ -22,17 +22,23 @@ export async function respond(
 
   const config = state.guilds.get(interaction.guildId || "e");
 
-  const response: ReturnMessage | null = await func(interaction)
+  const response: ProcessedReturnMessage | null = await func(interaction)
     .then((x) => {
       if (!x) return null;
-      x.ephemeral = x.ephemeral || hidden;
+      if (x.ephemeral || hidden) {
+        if (typeof x.flags === "number") {
+          x.flags |= MessageFlags.Ephemeral;
+        } else {
+          x.flags = MessageFlags.Ephemeral;
+        }
+      }
       return x;
     })
     .catch((error) => {
       console.error(error);
       localState.log.error(`Error in command ${interaction.commandName.green}`, { error });
       return {
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         embeds: [errorEmbed(config?.hideSupportInvite || false)],
       };
     });
@@ -50,12 +56,12 @@ export async function respond(
       .followUp(response)
       .catch(logError);
 
-  else if (interaction.deferred)
+  else if (interaction.deferred) {
     await interaction
-      .editReply(response)
+      .editReply({ ...response, flags: undefined })
       .catch(logError);
 
-  else
+  } else
     await interaction
       .reply(response)
       .catch(logError);
