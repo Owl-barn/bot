@@ -15,7 +15,6 @@ export function getQueueInfo(queue: GuildQueue): QueueInfo {
     length,
     size: queue.tracks.size,
     loop: botLoopModeFromPlayer(queue.repeatMode),
-    isShuffling: queue.isShuffling,
     paused: queue.node.isPaused(),
   };
 }
@@ -25,5 +24,4 @@ export interface QueueInfo {
   size: number;
   paused: boolean;
   loop: BotLoopMode;
-  isShuffling: boolean;
 }
