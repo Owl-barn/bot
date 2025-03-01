@@ -4,6 +4,8 @@ import { QueueEvent } from "../structs/queue";
 import { embedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import { localState } from "..";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import skipButton from "../components/buttons/remove";
 
 
 type Data = Events[QueueEvent.SongStart] & {
@@ -45,7 +47,13 @@ const songStart: (data: Data) => Promise<void> =
       },
     ]);
 
-    await channel.send({ embeds: [embed] }).catch((e) => {
+    const button = new ActionRowBuilder<ButtonBuilder>()
+      .setComponents(new ButtonBuilder()
+        .setCustomId(`${skipButton.info.name}-${track.id}`)
+        .setLabel("Skip")
+        .setStyle(ButtonStyle.Danger));
+
+    await channel.send({ embeds: [embed], components: [button] }).catch((e) => {
 
       localState.log.warn(
         `Failed to send song start embed in <#${channel.id.cyan}>.`,

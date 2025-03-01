@@ -207,6 +207,5 @@ export function generateButtons(id: string, showBump = false) {
   );
 
 
-  return (new ActionRowBuilder() as ActionRowBuilder<ButtonBuilder>)
-    .setComponents(buttons);
+  return new ActionRowBuilder<ButtonBuilder>().setComponents(buttons);
 }

@@ -5,8 +5,8 @@ import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
 import { checkFriendLimit } from "../../lib/checkFriendLimit";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
-
 import { generateRequestMessage } from "modules/notify/lib/generateRequestMessage";
+import { localState } from "@modules/notify";
 
 export default SubCommand(
 
@@ -87,8 +87,8 @@ export default SubCommand(
 
     const sentDm = await friendUser
       .send(requestMessage)
-      .catch((e) => {
-        console.error(e);
+      .catch((error) => {
+        localState.log.debug("Failed to send notify request DM to user", { error });
         return null;
       });
 

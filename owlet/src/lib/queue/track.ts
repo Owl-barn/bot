@@ -14,13 +14,15 @@ export class BotTrack {
   public position?: number;
 
   constructor(track: Track<unknown>, node?: GuildQueuePlayerNode<unknown>) {
+    const title = track.bridgedTrack?.title || track.title;
+
     this.id = track.id;
-    this.title = track.title.substring(0, 48).replace(/[()[\]]/g, "");
-    this.author = track.author ? escapeMarkdown(track.author) : "NaN";
-    this.url = track.url;
-    this.thumbnail = track.thumbnail;
-    this.duration = track.duration;
-    this.durationMs = track.durationMS;
+    this.title = title.substring(0, 48).replace(/[()[\]]/g, "");
+    this.author = escapeMarkdown(track.bridgedTrack?.author || track.author)
+    this.url = track.bridgedTrack?.url || track.url;
+    this.thumbnail = track.bridgedTrack?.thumbnail || track.thumbnail;
+    this.duration = track.bridgedTrack?.duration || track.duration;
+    this.durationMs = track.bridgedTrack?.durationMS || track.durationMS;
     this.requestedBy = track.requestedBy!.id;
 
     if (node) {
