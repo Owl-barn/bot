@@ -57,7 +57,7 @@ export async function removeBirthdayRole(birthday: UserGuildConfig & { guild: Gu
   // Toggle hasRole to false.
   await state.db.userGuildConfig.update({
     where: { userId_guildId: { userId: birthday.userId, guildId: birthday.guildId } },
-    data: { birthdayHasRole: false },
+    data: { birthdayRoleGivenAt: null },
   }).catch(() => null);
 
   // Attempt to fetch the guild, if it fails, set hasRole to false and continue.

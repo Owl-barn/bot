@@ -14,7 +14,7 @@ export default cron(
   async () => {
     // Remove roles from users who had a birthday before.
     let BirthdayRemoveQueue = await state.db.userGuildConfig.findMany({
-      where: { birthdayHasRole: true },
+      where: { birthdayRoleGivenAt: { not: null } },
       include: {
         user: true,
         guild: true,
@@ -31,7 +31,7 @@ export default cron(
     // Add roles to users who have a birthday today.
     let birthdayAddQueue = await state.db.userGuildConfig.findMany({
       where: {
-        birthdayHasRole: false,
+        birthdayRoleGivenAt: null,
         birthdayEnabled: true,
         birthdayAnnounceEnabled: true,
         user: { birthdate: { not: null } },

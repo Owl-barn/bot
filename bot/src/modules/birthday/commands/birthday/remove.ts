@@ -53,7 +53,7 @@ export default SubCommand(
     const userGuildConfig = await state.db.userGuildConfig.findMany({
       where: {
         userId: msg.user.id,
-        birthdayHasRole: true,
+        birthdayRoleGivenAt: { not: null },
       },
       include: {
         guild: true,

@@ -1,10 +1,10 @@
 import { state } from "@app";
-import { warningEmbedTemplate, failEmbedTemplate } from "@lib/embedTemplate";
+import { warningEmbedTemplate, failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { logType } from "@lib/services/logService";
 import { yearsAgo, getOrdinalSuffix } from "@lib/time";
 import { localState } from "..";
 import { ExpandedBirthday } from "../structs/expandedBirthday";
-import { Guild } from "discord.js";
+import { GuildMember } from "discord.js";
 import { UserGuildConfig } from "@prisma/client";
 
 export async function HandleBirthdays(birthdays: ExpandedBirthday[]) {
@@ -19,15 +19,25 @@ export async function HandleBirthdays(birthdays: ExpandedBirthday[]) {
     const guild = await state.client.guilds.fetch(birthday.guildId).catch(() => null);
     if (!guild) continue;
 
+    const member = await guild.members.fetch(birthday.userId).catch(() => null);
+    if (!member) {
+      state.botLog.push(
+        warningEmbedTemplate(`Tried assigning birthday role to a user that is not in the guild. \`<@${birthday.userId}>\``),
+        birthday.guildId,
+        logType.BOT
+      );
+      continue;
+    }
+
     // Try to add role.
     if (unavailableRoles.includes(birthday.guildId)) return;
-    await addRole(birthday, guild)
+    await addRole(birthday, member)
       .catch((err) => err.role && unavailableRoles.push(err.role));
 
 
     // Try to send birthday message.
     if (unavailableChannels.includes(birthday.guildId)) return;
-    await sendBirthdayMessage(birthday, guild)
+    await sendBirthdayMessage(birthday, member)
       .catch((err) => err.channel && unavailableChannels.push(err.channel));
   }
 
@@ -50,10 +60,10 @@ async function removeRoleFromDb(birthday: UserGuildConfig) {
 }
 
 // Add birthday role.
-async function addRole(birthday: ExpandedBirthday, guild: Guild) {
+async function addRole(birthday: ExpandedBirthday, member: GuildMember) {
   if (!birthday.guild.birthdayRoleId) return;
   // Attempt to fetch the role, if it fails remove the role from the database and return.
-  const role = await guild.roles.fetch(birthday.guild.birthdayRoleId).catch(() => null);
+  const role = await member.guild.roles.fetch(birthday.guild.birthdayRoleId).catch(() => null);
   if (role === null) {
     // Notify the bot owner.
     state.botLog.push(
@@ -64,17 +74,6 @@ async function addRole(birthday: ExpandedBirthday, guild: Guild) {
 
     await removeRoleFromDb(birthday);
     throw { role: birthday.guild.birthdayRoleId };
-  }
-
-  // Attempt to fetch the member, if it fails return.
-  const member = await guild.members.fetch(birthday.userId).catch(() => null);
-  if (member === null) {
-    state.botLog.push(
-      warningEmbedTemplate(`Tried assigning birthday role to a user that is not in the guild. \`<@${birthday.userId}>\``),
-      birthday.guildId,
-      logType.BOT
-    );
-    return;
   }
 
   // Attempt to add the role, if it fails remove the role from the database and return.
@@ -92,7 +91,7 @@ async function addRole(birthday: ExpandedBirthday, guild: Guild) {
   // update db to reflect that the role has been added.
   await state.db.userGuildConfig.update({
     where: { userId_guildId: { userId: birthday.userId, guildId: birthday.guildId } },
-    data: { birthdayHasRole: true },
+    data: { birthdayRoleGivenAt: new Date() },
   }).catch(error => {
     state.log.error(`Error updating birthday`, { error });
   });
@@ -100,12 +99,12 @@ async function addRole(birthday: ExpandedBirthday, guild: Guild) {
 }
 
 // Birthday message.
-async function sendBirthdayMessage(birthday: ExpandedBirthday, guild: Guild) {
+async function sendBirthdayMessage(birthday: ExpandedBirthday, member: GuildMember) {
   if (!birthday.user.birthdate) return;
   if (!birthday.guild.birthdayChannelId) return;
 
   // Attempt to fetch the channel, if it fails remove the channel from the database, notify and return.
-  const channel = await guild.channels.fetch(birthday.guild.birthdayChannelId).catch(() => null);
+  const channel = await member.guild.channels.fetch(birthday.guild.birthdayChannelId).catch(() => null);
   if (!channel || !channel.isTextBased()) {
     // Notify the bot owner.
     state.botLog.push(
@@ -124,7 +123,17 @@ async function sendBirthdayMessage(birthday: ExpandedBirthday, guild: Guild) {
   }
 
   const age = yearsAgo(birthday.user.birthdate, birthday.user.timezone);
-  const messageSent = await channel.send(`Happy ${age}${getOrdinalSuffix(age)} birthday <@${birthday.userId}>!!!`).catch(() => null);
+
+  const embed = embedTemplate()
+    .setThumbnail(member.user.displayAvatarURL())
+    .setTitle(`${member.user.displayName}'s Birthday!`)
+    .setDescription(`Happy ${age}${getOrdinalSuffix(age)} birthday <@${member.user.id}>!!!`);
+
+  const messageSent = await channel.send({
+    content: `<@${birthday.userId}>`,
+    embeds: [embed],
+  }).catch(() => null);
+
   if (messageSent === null) {
     state.botLog.push(
       warningEmbedTemplate(`Tried sending birthday message to a channel, but failed. \`<#${birthday.guild.birthdayChannelId}>\``),

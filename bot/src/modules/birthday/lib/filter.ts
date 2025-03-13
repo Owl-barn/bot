@@ -21,9 +21,18 @@ export function filterActiveBirthday(birthday: Input) {
 
 
 export function filterExpiredBirthday(birthday: Input) {
-  if (birthday.user.birthdate === null) return false;
-  const zone = birthday.user.timezone ?? "UTC";
-  const now = DateTime.now().setZone(zone).startOf("minute");
-  const date = getDateTime(birthday.user.birthdate, zone).set({ year: now.year }).plus({ days: 1 });
-  return now > date;
+  if (!birthday.user?.birthdate || !birthday.birthdayRoleGivenAt) return false;
+
+  const yesterday = DateTime
+    .utc()
+    .minus({ days: 1 })
+    .startOf("minute")
+    .toSeconds();
+
+  const birthdayGivenAt = DateTime
+    .fromJSDate(birthday.birthdayRoleGivenAt)
+    .startOf("minute")
+    .toSeconds();
+
+  return birthdayGivenAt <= yesterday;
 }

@@ -291,7 +291,7 @@ model UserGuildConfig {
   // Data
   birthdayAnnounceEnabled Boolean @default(true)
   birthdayEnabled         Boolean @default(false)
-  birthdayHasRole         Boolean @default(false)
+  birthdayRoleGivenAt     DateTime?
 
   // Relations
   userId  String
