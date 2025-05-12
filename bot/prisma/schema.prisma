@@ -69,12 +69,13 @@ model Guild {
   selfroleCollections SelfroleCollection[]
 
   // Misc
-  hideSupportInvite Boolean @default(false)
+  hideSupportInvite   Boolean @default(false)
   confessionChannelId String?
 }
 
 model Level {
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
   userId  String
   guildId String
@@ -289,9 +290,13 @@ model UserGuildConfig {
   updatedAt DateTime @updatedAt
 
   // Data
-  birthdayAnnounceEnabled Boolean @default(true)
-  birthdayEnabled         Boolean @default(false)
+  birthdayAnnounceEnabled Boolean   @default(true)
+  birthdayEnabled         Boolean   @default(false)
   birthdayRoleGivenAt     DateTime?
+
+  lastMessageActivity DateTime?
+  lastVoiceActivity   DateTime?
+  lastCommandActivity DateTime?
 
   // Relations
   userId  String

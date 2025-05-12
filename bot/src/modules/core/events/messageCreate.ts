@@ -7,6 +7,8 @@ import { formatGuildInfo } from "../lib/formatGuildInfo";
 import { updateCollection } from "@modules/selfrole/lib/selfrole";
 import registerCommands from "@lib/commandRegister";
 import { getAgeInfo } from "@modules/birthday/lib/analyse";
+import { yearsAgo } from "@lib/time";
+import { DateTime } from "luxon";
 
 export default Event({
   name: "messageCreate",
@@ -31,6 +33,63 @@ export default Event({
     msg.content = msg.content.replace(/<@!?\d+>/g, "").trim();
 
     switch (msg.content) {
+      case "activity": {
+        if (!msg.guildId) return;
+
+        const users = await state.db.userGuildConfig.findMany({
+          where: { guildId: msg.guildId },
+        });
+
+        await msg.guild?.members.fetch();
+
+        const list = users
+          .sort((a, b) => {
+            const getLatest = (user: typeof a) =>
+              Math.max(
+                (user.lastMessageActivity?.getTime() || 0),
+                (user.lastVoiceActivity?.getTime() || 0),
+                (user.lastCommandActivity?.getTime() || 0)
+              );
+
+            return getLatest(b) - getLatest(a);
+          })
+          .map((user) => {
+            const name = msg.client.users.cache.get(user.userId)?.displayName;
+
+            function getFormattedDate(date: Date | null) {
+              if (!date) return "never";
+              return DateTime.fromJSDate(date).toRelative({ style: "narrow" }) || "just now";
+            }
+
+            return [
+              `Name: ${name || "??"}`,
+              `ID: ${user.userId}`,
+              `LastMessage: ${getFormattedDate(user.lastMessageActivity)}`,
+              `LastVoice: ${getFormattedDate(user.lastVoiceActivity)}`,
+              `LastCommand: ${getFormattedDate(user.lastCommandActivity)}`,
+            ].join("\n");
+          });
+
+        list.unshift(
+          "Disclaimer: This is not a 100% accurate list, as it only shows the activity of users who have interacted since the bot was added.\n" +
+          `Total Users: ${list.length}\n` +
+          `Guild: ${msg.guild?.name}\n` +
+          `ID: ${msg.guildId}`
+        );
+
+        // Return list as file
+        const attachment = new AttachmentBuilder(
+          Buffer.from(list.join("\n\n"))
+        );
+
+        attachment.setName("activity.txt");
+
+        await msg.reply({
+          files: [attachment],
+        });
+
+        return;
+      }
 
       // Reset cached guild configs.
       case "cache*": {
@@ -90,6 +149,27 @@ export default Event({
         return;
       }
 
+      case "poll*": {
+        const players = msg.member?.voice.channel?.members
+          .map((x) => x.user)
+          .filter((x) => !x.bot);
+
+        if (!players) return;
+
+        await msg.reply({
+          poll: {
+            allowMultiselect: false,
+            duration: 1,
+            question: { text: "Who?" },
+            answers: [
+              ...players.map((x) => ({ text: x.displayName, emoji: "" })).slice(0, 10),
+            ],
+          },
+        });
+
+        return;
+      }
+
       // Sets slash commands for all guilds.
       case "innitall*": {
         await registerCommands();
@@ -142,6 +222,34 @@ export default Event({
         const info = getAgeInfo(birthdays);
 
         msg.reply(`Average: \`${info.average}\`\nMedian: \`${info.median}\`\nRange: \`${info.range.min} - ${info.range.max}\``);
+        return;
+      }
+
+      case "birthdays*": {
+        if (!msg.guild) return;
+        const birthdays = await state.db.user.findMany({
+          where: { birthdate: { not: null }, UserGuildConfig: { some: { guildId: msg.guild.id, birthdayEnabled: true } } },
+          orderBy: { birthdate: "asc" },
+        });
+
+        const embed = embedTemplate()
+          .setTitle("Birthday List")
+          .setDescription(birthdays.map((birthday, i) => {
+            if (!birthday.birthdate) return;
+            const name = msg.client.users.cache.get(birthday.id);
+            const age = yearsAgo(birthday.birthdate, birthday.timezone);
+            const ageString = birthday.birthdate.toLocaleDateString("en-gb", { year: "numeric", month: "2-digit", day: "2-digit" });
+            return `${i}. **${name?.displayName || birthday.id}** - ${ageString} (${age})`;
+          }).join("\n"));
+
+        if (birthdays.length > 0) {
+          embed.setFooter({ text: `Total: ${birthdays.length}` });
+        } else {
+          embed.setDescription("No birthdays found");
+        }
+
+        await msg.reply({ embeds: [embed] });
+
         return;
       }
 
