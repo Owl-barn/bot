@@ -1,5 +1,6 @@
 import { state } from "@app";
 import { Event } from "@structs/event";
+import { connectGuildUserConfig } from "../lib/connect";
 
 export default Event({
   name: "interactionCreate",
@@ -18,8 +19,7 @@ export default Event({
       update: data,
       create: {
         ...data,
-        user: { connect: { id: user.id } },
-        guild: { connect: { id: guild.id } },
+        ...connectGuildUserConfig(guild.id, user.id),
       }
     });
   }
