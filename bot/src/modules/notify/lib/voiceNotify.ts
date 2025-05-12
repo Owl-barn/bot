@@ -13,7 +13,8 @@ import {
 import { localState as VCState } from "modules/private-room";
 import { Friendship } from "@prisma/client";
 import { localState } from "..";
-import button from "../../core/components/buttons/delete";
+import deleteMessageButton from "../../core/components/buttons/delete";
+import removeAlertButton from "../components/buttons/remove";
 
 
 export class Controller {
@@ -108,9 +109,8 @@ export class Controller {
     // Make embed.
     const embed = embedTemplate();
     embed.setTitle("Your friend is in a voice channel!");
-    embed.setDescription(
-      `<@${member.id}> joined <#${channel.id}> \n\n[Click here to join them!](${channel.url})`,
-    );
+    embed.setDescription(`<@${member.id}> joined <#${channel.id}>`);
+
     const avatar = getAvatar(member);
     if (avatar) embed.setThumbnail(avatar);
 
@@ -141,8 +141,22 @@ export class Controller {
 
       component.addComponents(
         new ButtonBuilder()
-          .setCustomId(`${button.info.name}-${friend.id}`)
-          .setLabel("Delete")
+          .setURL(channel.url)
+          .setLabel("Join vc")
+          .setStyle(ButtonStyle.Link),
+      );
+
+      component.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`${deleteMessageButton.info.name}-${friend.id}`)
+          .setLabel("Delete message")
+          .setStyle(ButtonStyle.Secondary),
+      );
+
+      component.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`${removeAlertButton.info.name}-${friend.id}-${member.id}`)
+          .setLabel("Disable alert")
           .setStyle(ButtonStyle.Danger),
       );
 

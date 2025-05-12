@@ -53,7 +53,7 @@ export default SubCommand(
 
 
     embed.addFields({
-      name: "my friends",
+      name: "My friends",
       inline: true,
       value: friends.length > 0 ?
         friends.map(x => formatFriend(x.userId, x.isPending)).join("\n")
