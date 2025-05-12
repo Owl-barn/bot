@@ -154,7 +154,7 @@ export class Controller {
       localState.log.debug(`Notifying ${friend.user.tag.cyan} for ${member.user.tag.cyan}`);
     });
 
-    await Promise.all(notifyQueue);
+    await Promise.allSettled(notifyQueue);
 
     this.lastNotified.set(member.id, Date.now());
   };

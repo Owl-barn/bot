@@ -31,6 +31,7 @@ export async function respond(
         } else {
           x.flags = MessageFlags.Ephemeral;
         }
+        delete x.ephemeral;
       }
       return x;
     })

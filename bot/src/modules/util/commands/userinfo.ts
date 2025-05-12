@@ -58,6 +58,7 @@ export default Command(
         friendships: { where: { isPending: false } },
 
         Level: true,
+        UserGuildConfig: msg.guild ? { where: { guildId: msg.guild?.id } } : undefined,
       },
     });
 
@@ -95,7 +96,19 @@ export default Command(
       `**Timezone:** ${userData.timezone}`,
 
       `**bot:** ${user.bot ? "yes 🤖" : "no 🦉"}`,
+
     ];
+
+    // Activity.
+    let userGuildConfig = userData?.UserGuildConfig?.[0];
+    if (userGuildConfig) {
+      const lastActivity = Math.max(
+        Number(userGuildConfig.lastMessageActivity || 0),
+        Number(userGuildConfig.lastVoiceActivity || 0),
+        Number(userGuildConfig.lastCommandActivity || 0));
+
+      if (lastActivity) info.push(`**Last activity:** <t:${Math.round(lastActivity / 1000)}:R>`);
+    }
 
     fields.push({
       name: "Base Info",
@@ -110,7 +123,7 @@ export default Command(
 
       fields.push({
         name: "Friends",
-        value: `**Friends:** ${friends}\n **Friendships:** ${friendships}`,
+        value: `**Alerts:** ${friends}\n **Friends:** ${friendships}`,
         inline: true,
       });
     }

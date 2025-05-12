@@ -2,7 +2,7 @@ import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
 import { getAvatar } from "@lib/functions";
 import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
-import { ApplicationCommandOptionType } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ComponentBuilder } from "discord.js";
 import { checkFriendLimit } from "../../lib/checkFriendLimit";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { generateRequestMessage } from "modules/notify/lib/generateRequestMessage";
@@ -130,14 +130,27 @@ export default SubCommand(
         name: "Disclaimer",
         value: `this will only alert you when they join a voice channel, and not the other way around!`,
       },
+      {
+        name: "Tip",
+        value: `To ensure you can receive alerts make sure to add the bot to your apps with the button below!`,
+      }
     ]);
+
+    const button = new ActionRowBuilder<ButtonBuilder>()
+      .setComponents(
+        new ButtonBuilder()
+          .setURL(`https://discord.com/oauth2/authorize?client_id=${state.client.user!.id}`)
+          .setLabel("Add bot")
+          .setStyle(ButtonStyle.Link)
+      );
+
 
     response.setTitle("Friend request sent!");
 
     const userAvatar = getAvatar(friendUser);
     if (userAvatar) response.setThumbnail(userAvatar);
 
-    return { embeds: [response] };
+    return { embeds: [response], components: [button] };
   }
 
 );

@@ -26,6 +26,8 @@ export function getAvatar(
   } else if (member instanceof User) {
     avatar =
       member.avatarURL(settings) || member.defaultAvatarURL || undefined;
+  } else if (member.avatar && "id" in member) {
+    avatar = `https://cdn.discordapp.com/avatars/${member.id}/${member.avatar}.webp?size=4096`;
   }
 
   return avatar;

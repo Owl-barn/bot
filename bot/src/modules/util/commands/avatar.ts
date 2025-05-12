@@ -3,7 +3,7 @@ import { getAvatar } from "@lib/functions";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { contextEverywhere } from "@structs/command/context";
-import { ApplicationCommandOptionType } from "discord.js";
+import { ApplicationCommandOptionType, GuildMember, User } from "discord.js";
 
 export default Command(
 
@@ -41,21 +41,43 @@ export default Command(
   async (msg) => {
     const userArg = msg.options.getUser("user");
     const memberArg = msg.options.getMember("user");
-    const globalArg = msg.options.getBoolean("global") ?? false;
+    let isGlobal = msg.options.getBoolean("global") ?? false;
 
-    let target = memberArg || userArg || msg.user;
-    const userTarget = userArg || msg.user;
+    let avatar: string | undefined;
+    let target: User;
 
-    if (globalArg) {
-      target = userArg || msg.user;
+    // Other user
+    if (memberArg || userArg) {
+      // Guild avatar
+      if (memberArg?.avatar && !isGlobal) {
+        // API guild member
+        if (!(memberArg instanceof GuildMember) && userArg) {
+          avatar = `https://cdn.discordapp.com/guilds/${msg.guildId}/users/${userArg.id}/avatars/${memberArg.avatar}.webp?size=4096`;
+        } else {
+          avatar = getAvatar(memberArg);
+        }
+
+        // Global avatar
+      } else if (userArg?.avatar) {
+        isGlobal = true;
+        avatar = getAvatar(userArg);
+      }
+
+      if (!userArg) throw new Error("memberArg should have a user");
+      target = userArg;
+
+      // Self
+    } else {
+      if (!msg.member?.avatar) isGlobal = true;
+      avatar = getAvatar(isGlobal ? msg.user : msg.member || msg.user);
+      target = msg.user;
     }
 
-    const avatar = getAvatar(target);
-
-    if (!avatar) return { embeds: [failEmbedTemplate("I cannot access that user's avatar")] };
+    if (!avatar)
+      return { embeds: [failEmbedTemplate("I cannot access that user's avatar")] };
 
     const embed = embedTemplate()
-      .setTitle(`${userTarget.displayName}'s avatar`)
+      .setTitle(`${target.displayName}'s ${isGlobal ? "global" : "server"} avatar`)
       .setImage(avatar);
 
     return { embeds: [embed] };
