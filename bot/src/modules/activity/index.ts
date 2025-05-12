@@ -4,6 +4,7 @@ import { Module } from "@structs/module";
 export default {
   name: "Activity",
   description: "Activity tracking.",
+  isHidden: true,
 } as Module;
 
 interface State extends LocalState {

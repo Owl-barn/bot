@@ -50,13 +50,15 @@ export async function loadModules() {
 
     // Add the module to the state object.
     state.modules.set(module.name, module);
-    state.commandTree.push({
-      type: "Module",
-      name: module.name,
-      commandName: module.name,
-      description: module.description,
-      commands,
-    });
+    if (module.isHidden !== true) {
+      state.commandTree.push({
+        type: "Module",
+        name: module.name,
+        commandName: module.name,
+        description: module.description,
+        commands,
+      });
+    }
 
     console.log(`✅ Loaded module: ${module.name.cyan.italic}`.green.bold);
     console.log(`----------------------------------------`.cyan.bold);
