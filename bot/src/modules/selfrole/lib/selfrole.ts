@@ -1,4 +1,3 @@
-import { embedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import {
   ActionRowBuilder,
@@ -6,14 +5,17 @@ import {
   ButtonStyle,
   ChannelType,
   ClientUser,
-  EmbedBuilder,
+  ContainerBuilder,
   Message,
+  MessageFlags,
+  SectionBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  TextDisplayBuilder,
+  SeparatorBuilder,
 } from "discord.js";
 import prisma, { Selfrole } from "@prisma/client";
 import button from "../components/selectmenus/toggle";
-import { checkEmojis } from "@lib/emoji";
 
 export async function isValidChannel(channelId: string) {
   const channel = await state.client.channels.fetch(channelId);
@@ -37,10 +39,13 @@ export async function updateCollection(collection: selfRoleCollection, createNew
 
   let message: Message | null;
 
+  const container = generateContainer(collection);
+
   async function sendMessage() {
     message = await channel.send({
-      embeds: generateEmbed(collection),
-      components: generateMenu(collection, button.info.name),
+      flags: MessageFlags.IsComponentsV2,
+      components: [container],
+      embeds: [],
     });
     await state.db.selfroleCollection.update({
       where: { id: collection.id },
@@ -55,59 +60,70 @@ export async function updateCollection(collection: selfRoleCollection, createNew
       await sendMessage();
       return;
     }
+
     message = await message.edit({
-      embeds: generateEmbed(collection),
-      components: generateMenu(
-        collection,
-        button.info.name,
-      ),
+      flags: MessageFlags.IsComponentsV2,
+      components: [container],
+      embeds: [],
     });
   } else {
     await sendMessage();
   }
 }
 
-function generateRoleName(role: Selfrole) {
-  let name = role.title;
-  if (role.emoji) {
-    const emoji = checkEmojis(role.emoji).unicode[0];
-    emoji && (name = `${emoji} ${name}`);
+export function generateContainer(collection: selfRoleCollection): ContainerBuilder {
+  let titleContent = "# ";
+  if (collection.title) titleContent += collection.title;
+  else titleContent += "Select a role";
+
+  if (collection.description) titleContent += `\n${collection.description}`;
+  else titleContent += `\nSelect a role from the list below!`;
+
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder({ content: titleContent }));
+
+  // Add the roles
+  for (const role of collection.roles) {
+    const buttonComponent = new ButtonBuilder()
+      .setCustomId(`${button.info.name}-${role.id}`)
+      .setLabel(role.title)
+      .setStyle(ButtonStyle.Secondary);
+
+    const section = new SectionBuilder()
+      .addTextDisplayComponents(generateRoleSectionText(role))
+      .setButtonAccessory(buttonComponent);
+
+    collection.roles.length <= 10 && container.addSeparatorComponents(new SeparatorBuilder());
+    container.addSectionComponents(section);
   }
-  return name;
+
+
+  // Footer
+  let footerContent = `-# ${collection.id}`;
+  if (!collection.allowMultiple)
+    footerContent = `-# *You can only select one role at a time.\n\n` + footerContent;
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(footerContent));
+
+  return container;
 }
 
-export function generateEmbed(collection: selfRoleCollection): EmbedBuilder[] {
-  const embed = embedTemplate()
-    .setFooter({ text: collection.id });
+function generateRoleSectionText(role: Selfrole): TextDisplayBuilder[] {
+  const textDisplayComponents = [
+    // Title
+    new TextDisplayBuilder({ content: generateRoleName(role) }),
 
-  collection.title && embed.setTitle(collection.title);
-  collection.description && embed.setDescription(collection.description);
+    // Description
+    role.description && new TextDisplayBuilder({ content: role.description }),
+  ];
 
-  const useFields = collection.roles.some((role) => role.description);
-  if (useFields) {
-    embed.addFields(collection.roles.map((role) => ({
-      name: generateRoleName(role),
-      value: role.description ?? "No description provided",
-      inline: false,
-    })));
+  return textDisplayComponents.filter(Boolean) as TextDisplayBuilder[];
+}
 
-  } else {
-    let description = collection.roles.reduce((acc, role) => {
-      const name = generateRoleName(role);
-      return acc + `${name}\n`;
-    }, "");
-
-    if (description.length === 0)
-      description = "No roles available";
-
-    if (collection.description) {
-      embed.setFields([{ name: "Roles", value: description }]);
-    } else {
-      embed.setDescription(description);
-    }
-  }
-
-  return [embed];
+function generateRoleName(role: Selfrole) {
+  // TODO: Add support for custom emojis
+  // const emoji = role.emoji && checkEmojis(role.emoji).unicode[0];
+  return `###${role.emoji ? ` ${role.emoji}` : ""} ${role.title}`;
 }
 
 export function generateMenu(
