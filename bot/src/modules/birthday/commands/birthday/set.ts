@@ -86,7 +86,7 @@ export default SubCommand(
     }
 
     // Check if the date is in the future
-    if (date.millisecond > Date.now()) {
+    if (date.toMillis() > Date.now()) {
       failEmbed.setDescription("That date is in the future");
       return { embeds: [failEmbed], ephemeral: true };
     }

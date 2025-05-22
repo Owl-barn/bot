@@ -43,6 +43,12 @@ export default Event({
         await msg.guild?.members.fetch();
 
         const list = users
+          .filter((user) => {
+            const member = msg.guild?.members.cache.get(user.userId);
+            if (!member) return false;
+            if (member.user.bot) return false;
+            return true;
+          })
           .sort((a, b) => {
             const getLatest = (user: typeof a) =>
               Math.max(
@@ -53,7 +59,7 @@ export default Event({
 
             return getLatest(b) - getLatest(a);
           })
-          .map((user) => {
+          .map((user, index) => {
             const name = msg.client.users.cache.get(user.userId)?.displayName;
 
             function getFormattedDate(date: Date | null) {
@@ -62,6 +68,7 @@ export default Event({
             }
 
             return [
+              `${index + 1}.`,
               `Name: ${name || "??"}`,
               `ID: ${user.userId}`,
               `LastMessage: ${getFormattedDate(user.lastMessageActivity)}`,

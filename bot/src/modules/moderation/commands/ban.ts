@@ -143,7 +143,7 @@ export default Command(
 
     await msg.guild.bans.create(target.id, {
       reason: reason ?? undefined,
-      deleteMessageDays: days,
+      deleteMessageSeconds: days * 24 * 60 * 60,
     });
 
     embed.setTitle(
