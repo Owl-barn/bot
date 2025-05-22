@@ -4,6 +4,7 @@ import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { getDateTime } from "@modules/birthday/lib/format";
 import { User } from "@prisma/client";
+import { isBirthdayVisible } from "@modules/birthday/lib/query";
 
 export default SubCommand(
 
@@ -23,12 +24,7 @@ export default SubCommand(
     let birthdays = await state.db.user.findMany({
       where: {
         birthdate: { not: null },
-        UserGuildConfig: {
-          some: {
-            guildId: msg.guild.id,
-            birthdayEnabled: true,
-          },
-        },
+        ...isBirthdayVisible(msg.guildId),
       },
     }) as (Omit<User, "birthdate"> & { birthdate: Date })[];
 

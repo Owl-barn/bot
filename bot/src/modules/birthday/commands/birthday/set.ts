@@ -142,6 +142,15 @@ export default SubCommand(
       },
     });
 
+    // Update existing guild config,
+    // Will double write if the row was just created, but unlikely to be the case with the activity module, so whatever
+    if (msg.guildId) {
+      await state.db.userGuildConfig.update({
+        where: { userId_guildId: { guildId: msg.guildId, userId: msg.user.id } },
+        data: { birthdayEnabled: true },
+      });
+    }
+
     embed.setTitle("Birthday set!");
     if (query.birthdate === null || !query.timezone) throw new Error("No date???");
     embed = formatBirthdayEmbed(embed, { birthdate: query.birthdate, timezone: query.timezone });

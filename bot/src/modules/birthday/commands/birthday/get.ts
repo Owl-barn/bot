@@ -5,7 +5,7 @@ import { ApplicationCommandOptionType } from "discord.js";
 import { formatBirthdayEmbed } from "@modules/birthday/lib/format";
 import { User } from "@prisma/client";
 import { getAvatar } from "@lib/functions";
-import { isBirthdayVisible } from "@modules/birthday/lib/query";
+import { canUserViewBirthday } from "@modules/birthday/lib/query";
 
 export default SubCommand(
 
@@ -43,7 +43,7 @@ export default SubCommand(
           where: {
             id: target.id,
             birthdate: { not: null },
-            ...isBirthdayVisible(msg, target.id),
+            ...canUserViewBirthday(msg.guildId, target.id, msg.user.id),
           },
         })
         .then((res) => {

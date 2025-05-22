@@ -9,6 +9,7 @@ import registerCommands from "@lib/commandRegister";
 import { getAgeInfo } from "@modules/birthday/lib/analyse";
 import { yearsAgo } from "@lib/time";
 import { DateTime } from "luxon";
+import { isBirthdayVisible } from "@modules/birthday/lib/query";
 
 export default Event({
   name: "messageCreate",
@@ -235,7 +236,10 @@ export default Event({
       case "birthdays*": {
         if (!msg.guild) return;
         const birthdays = await state.db.user.findMany({
-          where: { birthdate: { not: null }, UserGuildConfig: { some: { guildId: msg.guild.id, birthdayEnabled: true } } },
+          where: {
+            birthdate: { not: null },
+            ...isBirthdayVisible(msg.guildId),
+          },
           orderBy: { birthdate: "asc" },
         });
 

@@ -3,7 +3,7 @@ import { state } from "@app";
 import { SubCommand } from "@structs/command/subcommand";
 import { ApplicationCommandOptionType } from "discord.js";
 import { getDateTime } from "@modules/birthday/lib/format";
-import { isBirthdayVisible } from "@modules/birthday/lib/query";
+import { canUserViewBirthday } from "@modules/birthday/lib/query";
 import { User } from "@prisma/client";
 
 export default SubCommand(
@@ -55,7 +55,7 @@ export default SubCommand(
         where: {
           id: id,
           birthdate: { not: null },
-          ...isBirthdayVisible(msg, id),
+          ...canUserViewBirthday(msg.guildId, id, msg.user.id),
         },
       });
     }

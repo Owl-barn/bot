@@ -1,18 +1,17 @@
-import { CommandInteraction } from "discord.js";
+export function canUserViewBirthday(guildId: string | null, target: string, self: string) {
+  return self === target ? {} : isBirthdayVisible(guildId);
+}
 
-export function isBirthdayVisible(msg: CommandInteraction, userId: string) {
-  if (userId == msg.user.id) return {} as Record<string, unknown>;
+export function isBirthdayVisible(guildId: string | null) {
   return {
     OR: [
-      { birthdayGlobalEnabled: true },
-      msg.guild ? {
-        UserGuildConfig: {
-          some: {
-            guildId: msg.guildId,
-            birthdayEnabled: true,
-          },
-        },
-      } : {},
+      guildId ? {
+        UserGuildConfig: { some: { guildId } },
+        OR: [
+          { UserGuildConfig: { some: { birthdayEnabled: true } } },
+          { birthdayGlobalEnabled: true },
+        ],
+      } : { birthdayGlobalEnabled: true },
     ],
   };
 }
