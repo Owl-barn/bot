@@ -33,11 +33,13 @@ export function argumentHandler<T extends builderType>(
       .setDescription(argument.description)
       .setRequired(argument.required ? true : false);
 
+    // Set localization if provided
     argument.nameLocalization &&
       option.setNameLocalizations(argument.nameLocalization);
     argument.descriptionLocalization &&
       option.setNameLocalizations(argument.descriptionLocalization);
 
+    // Set min/max values for number types
     if (
       option.type == ApplicationCommandOptionType.Integer ||
       option.type == ApplicationCommandOptionType.Number
@@ -46,6 +48,13 @@ export function argumentHandler<T extends builderType>(
       if (argument.max !== undefined) option.setMaxValue(argument.max);
     }
 
+    // Set min/max length for string types
+    if (option.type === ApplicationCommandOptionType.String) {
+      argument.max && option.setMaxLength(argument.max);
+      argument.min && option.setMinLength(argument.min);
+    }
+
+    // Set choices if provided
     if (argument.choices) {
       if (option.type == ApplicationCommandOptionType.String)
         option.setChoices(...argument.choices as ArgumentChoice<string>[]);
@@ -53,12 +62,14 @@ export function argumentHandler<T extends builderType>(
         option.setChoices(...argument.choices as ArgumentChoice<number>[]);
     }
 
+    // Set channel types if provided
     if (option.type === ApplicationCommandOptionType.Channel) {
       if (argument.allowedChannelTypes) {
         option.addChannelTypes(...argument.allowedChannelTypes);
       }
     }
 
+    // Set autocomplete if provided
     if (argument.autoComplete !== undefined) {
       if (
         option.type == ApplicationCommandOptionType.String ||
