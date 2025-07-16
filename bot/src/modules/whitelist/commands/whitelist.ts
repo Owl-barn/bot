@@ -3,18 +3,18 @@ import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
-import { RconClient, RCONError } from "../lib/mc.service";
+import { RconClient, RCONError } from "../lib/rcon.service";
 import { getConfig } from "../lib/getConfig";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
 import { localState, MAX_MINECRAFT_NAME_LENGTH } from "..";
-import { MinecraftUser } from "../lib/minecraftApi";
+import { MinecraftUser } from "../lib/minecraft_api.service";
 
 export default Command(
 
   // Info
   {
     name: "whitelist",
-    description: "whitelist to mc server",
+    description: "Whitelist yourself to the connected minecraft server.",
     group: CommandGroup.general,
 
     arguments: [
@@ -22,6 +22,7 @@ export default Command(
         type: ApplicationCommandOptionType.String,
         name: "mc_name",
         description: "What mc account to whitelist",
+        max: MAX_MINECRAFT_NAME_LENGTH,
         required: true,
       },
     ],
@@ -35,11 +36,12 @@ export default Command(
 
   // Execute
   async (msg) => {
-    let username = msg.options.getString("mc_name", true);
+    const suppliedMinecraftName = msg.options
+      .getString("mc_name", true)
+      .trim()
+      .substring(0, MAX_MINECRAFT_NAME_LENGTH);
 
     await msg.deferReply();
-
-    username = username.trim().substring(0, MAX_MINECRAFT_NAME_LENGTH);
     const author = msg.member as GuildMember;
 
     // Get guild.
@@ -54,7 +56,7 @@ export default Command(
     }
 
     // Get UUID
-    const minecraftUser = await MinecraftUser.fromUsername(username);
+    const minecraftUser = await MinecraftUser.fromUsername(suppliedMinecraftName);
 
     // Check if exists.
     if (!minecraftUser)
@@ -80,9 +82,7 @@ export default Command(
 
     // Execute command.
     try {
-      const rcon = await RconClient.connect(config);
-      await rcon.addUserToWhitelist(minecraftUser.name);
-      await rcon.close();
+      await RconClient.addUserToWhitelist(config, minecraftUser.name);
     } catch (error) {
       if (error !== RCONError.RedundantAction) {
         let message = "An error occurred while whitelisting.";

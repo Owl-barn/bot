@@ -34,12 +34,10 @@ export class RconClient {
     return this.client.end();
   }
 
-  async addUserToWhitelist(username: string): Promise<void> {
-    if (!this.client.authenticated) {
-      throw RCONError.NotAuthenticated;
-    }
+  public static async addUserToWhitelist(config: RconGuild, username: string): Promise<void> {
+    const rcon = await this.connect(config);
 
-    const response = await this.client.send(`whitelist add ${username}`);
+    const response = await rcon.client.send(`whitelist add ${username}`);
 
     if (response.includes("already whitelisted")) {
       throw RCONError.RedundantAction;
@@ -50,15 +48,15 @@ export class RconClient {
       throw RCONError.UnknownServerError;
     }
 
+    await rcon.close();
+
     return;
   }
 
-  async removeUserFromWhitelist(username: string): Promise<void> {
-    if (!this.client.authenticated) {
-      throw RCONError.NotAuthenticated;
-    }
+  public static async removeUserFromWhitelist(config: RconGuild, username: string): Promise<void> {
+    const rcon = await this.connect(config);
 
-    const response = await this.client.send(`whitelist remove ${username}`);
+    const response = await rcon.client.send(`whitelist remove ${username}`);
 
     if (response.includes("not whitelisted")) {
       throw RCONError.RedundantAction;
@@ -68,6 +66,8 @@ export class RconClient {
       localState.log.error(`Failed to remove user from whitelist, "${response}"`);
       throw RCONError.UnknownServerError;
     }
+
+    await rcon.close();
 
     return;
   }

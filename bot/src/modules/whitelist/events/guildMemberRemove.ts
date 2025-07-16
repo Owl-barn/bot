@@ -1,9 +1,9 @@
 import { state } from "@app";
-import { RconClient } from "../lib/mc.service";
+import { RconClient } from "../lib/rcon.service";
 import { Event } from "@structs/event";
 import { localState } from "..";
 import { getConfig } from "../lib/getConfig";
-import { MinecraftUser } from "../lib/minecraftApi";
+import { MinecraftUser } from "../lib/minecraft_api.service";
 
 export default Event({
   name: "guildMemberRemove",
@@ -36,9 +36,7 @@ export default Event({
     }
 
     try {
-      const client = await RconClient.connect(guild);
-      await client.removeUserFromWhitelist(minecraftUser.name);
-      await client.close();
+      await RconClient.removeUserFromWhitelist(guild, minecraftUser.name);
     } catch (error) {
       localState.log.warn(`couldn't remove ${member.id.cyan} from whitelist in (${member.guild.id.cyan})`, { error });
       return;
