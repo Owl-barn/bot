@@ -8,3 +8,5 @@ export default {
 
 const localState = {} as LocalState;
 export { localState };
+
+export const MAX_MINECRAFT_NAME_LENGTH = 16;

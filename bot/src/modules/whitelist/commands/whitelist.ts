@@ -3,9 +3,11 @@ import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
-import { getMcUUID, RCONHandler } from "../lib/mc.service";
+import { RconClient, RCONError } from "../lib/mc.service";
 import { getConfig } from "../lib/getConfig";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
+import { localState, MAX_MINECRAFT_NAME_LENGTH } from "..";
+import { MinecraftUser } from "../lib/minecraftApi";
 
 export default Command(
 
@@ -37,7 +39,7 @@ export default Command(
 
     await msg.deferReply();
 
-    username = username.trim().substring(0, 64);
+    username = username.trim().substring(0, MAX_MINECRAFT_NAME_LENGTH);
     const author = msg.member as GuildMember;
 
     // Get guild.
@@ -52,10 +54,10 @@ export default Command(
     }
 
     // Get UUID
-    const uuid = await getMcUUID(username).catch(() => null);
+    const minecraftUser = await MinecraftUser.fromUsername(username);
 
     // Check if exists.
-    if (!uuid)
+    if (!minecraftUser)
       return {
         embeds: [failEmbedTemplate("mc account doesn't exist")],
       };
@@ -63,27 +65,52 @@ export default Command(
     // Check if already registered.
     const userExists = await state.db.whitelist.findFirst({
       where: {
-        OR: [{ userId: author.id }, { minecraftId: uuid }],
+        OR: [{ userId: author.id }, { minecraftId: minecraftUser.id }],
       },
     });
 
     // Check if already in db.
     if (userExists !== null) {
+      const currentMinecraftUser = await MinecraftUser.fromId(userExists.minecraftId);
       const response = failEmbedTemplate(
-        "You already have an account linked.",
+        `You already have an account linked with the name \`${currentMinecraftUser?.name ?? "---------"}\`.`,
       );
       return { embeds: [response] };
     }
 
     // Execute command.
-    const response = await RCONHandler([`whitelist add ${username}`], config).catch(() => null);
+    try {
+      const rcon = await RconClient.connect(config);
+      await rcon.addUserToWhitelist(minecraftUser.name);
+      await rcon.close();
+    } catch (error) {
+      if (error !== RCONError.RedundantAction) {
+        let message = "An error occurred while whitelisting.";
 
-    // If already whitelisted.
-    if (response === null) {
-      const fail = failEmbedTemplate(
-        "This account is already whitelisted or the server couldnt be reached",
-      );
-      return { embeds: [fail] };
+        // Check for specific RCON errors.
+        switch (error) {
+          case RCONError.ServerUnreachable:
+            message = "The server is currently unreachable, please try again later.";
+            break;
+          case RCONError.UnknownServerError:
+            message = "An unknown error occurred on the minecraft server.";
+            break;
+          case RCONError.RedundantAction:
+            message = "You are already whitelisted.";
+            break;
+          default: {
+            localState.log.error(
+              `Error while whitelisting user ${author.id} (${author.user.tag}) with username ${minecraftUser.name}`,
+              { error },
+            );
+          }
+        }
+
+        const fail = failEmbedTemplate(message);
+        return { embeds: [fail] };
+      } else {
+        localState.log.info(`User ${author.id} (${author.user.tag}) was already whitelisted with username ${minecraftUser.name}, saved to database regardless.`);
+      }
     }
 
     // Add to db.
@@ -91,18 +118,18 @@ export default Command(
       data: {
         user: connectOrCreate(author.id),
         guild: connectOrCreate(author.guild.id),
-        minecraftId: uuid,
+        minecraftId: minecraftUser.id,
       },
     });
 
     // Give role.
-    if (config.rconRoleId) await author.roles.add(config.rconRoleId);
+    if (config.roleId) await author.roles.add(config.roleId);
 
     // Set Nickname.
-    await author.setNickname(username).catch(() => null);
+    await author.setNickname(minecraftUser.name).catch(() => null);
 
     // Respond.
-    return { embeds: [embedTemplate("You've been whitelisted!")] };
+    return { embeds: [embedTemplate(`You've successfully been whitelisted with the account \`${minecraftUser.name}\`!`)] };
   }
 
 );
