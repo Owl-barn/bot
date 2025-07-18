@@ -133,7 +133,7 @@ export default Command(
     });
 
     // Give role.
-    if (config.roleId) await author.roles.add(config.roleId);
+    if (config.roleId && !author.roles.cache.has(config.roleId)) await author.roles.add(config.roleId);
 
     // Set Nickname.
     await author.setNickname(foundMinecraftUser.name).catch(() => null);

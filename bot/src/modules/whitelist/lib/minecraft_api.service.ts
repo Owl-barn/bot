@@ -11,26 +11,36 @@ export class MinecraftUser {
   }
 
   // get account by username
-  public static async fromUsername(username: string): Promise<MinecraftUser | null> {
-    const response = await axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`);
-    return this.processResponse(response);
+  public static async fromUsername(username: string) {
+    return this.fetchAccount(`https://api.minecraftservices.com/minecraft/profile/lookup/name/${username}`);
   }
 
   // get account by id
-  public static async fromId(id: string): Promise<MinecraftUser | null> {
-    const response = await axios.get(`https://api.minecraftservices.com/minecraft/profile/lookup/${id}`);
-    return this.processResponse(response);
+  public static async fromId(id: string) {
+    return this.fetchAccount(`https://api.minecraftservices.com/minecraft/profile/lookup/${id}`);
   }
 
-  private static processResponse(response: AxiosResponse): MinecraftUser | null {
-    if (response.status !== 200) return null;
+  private static async fetchAccount(url: string): Promise<MinecraftUser | null> {
 
-    const data = response.data;
-    if (!data || !data.id || !data.name) {
-      localState.log.error("Invalid response from Minecraft API", { data });
+    try {
+      const response: AxiosResponse = await axios.get(url);
+
+      const data = response.data;
+      if (!data || !data.id || !data.name) {
+        localState.log.error("Invalid response from Minecraft API", { data });
+        return null;
+      }
+
+      return new MinecraftUser(data.id, data.name);
+
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status !== 404) {
+          throw new Error(`Failed to fetch Minecraft account: ${error.message}`);
+        }
+      }
+
       return null;
     }
-
-    return new MinecraftUser(data.id, data.name);
   }
 }
