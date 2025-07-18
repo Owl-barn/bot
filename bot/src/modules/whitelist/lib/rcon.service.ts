@@ -1,4 +1,4 @@
-import { Rcon } from "rcon-client/lib";
+import Rcon from "rcon-srcds";
 import { localState } from "..";
 import { RconGuild } from "./getConfig";
 
@@ -19,11 +19,15 @@ export class RconClient {
 
   static async connect(login: RconGuild): Promise<RconClient> {
     try {
-      const client = await Rcon.connect(login);
+      const rcon = new Rcon({
+        host: login.host,
+        port: login.port,
+        timeout: 3000,
+      });
 
-      if (typeof client == "boolean") throw "client is false";
+      await rcon.authenticate(login.password);
 
-      return new RconClient(client);
+      return new RconClient(rcon);
     } catch (error) {
       localState.log.error("Failed to connect to RCON server", { error });
       throw RCONError.ServerUnreachable;
@@ -31,13 +35,17 @@ export class RconClient {
   }
 
   public close(): Promise<void> {
-    return this.client.end();
+    return this.client.disconnect();
   }
 
   public static async addUserToWhitelist(config: RconGuild, username: string): Promise<void> {
     const rcon = await this.connect(config);
 
-    const response = await rcon.client.send(`whitelist add ${username}`);
+    const response = await rcon.client.execute(`whitelist add ${username}`);
+
+    if (typeof response === "boolean") {
+      throw RCONError.NotAuthenticated;
+    }
 
     if (response.includes("already whitelisted")) {
       throw RCONError.RedundantAction;
@@ -56,7 +64,11 @@ export class RconClient {
   public static async removeUserFromWhitelist(config: RconGuild, username: string): Promise<void> {
     const rcon = await this.connect(config);
 
-    const response = await rcon.client.send(`whitelist remove ${username}`);
+    const response = await rcon.client.execute(`whitelist remove ${username}`);
+
+    if (typeof response === "boolean") {
+      throw RCONError.NotAuthenticated;
+    }
 
     if (response.includes("not whitelisted")) {
       throw RCONError.RedundantAction;
