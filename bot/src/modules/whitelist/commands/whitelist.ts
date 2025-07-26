@@ -61,7 +61,7 @@ export default Command(
     // Check if exists.
     if (!foundMinecraftUser)
       return {
-        embeds: [failEmbedTemplate("mc account doesn't exist")],
+        embeds: [failEmbedTemplate("Minecraft account does not exist")],
       };
 
     // Check if already registered.
@@ -78,12 +78,12 @@ export default Command(
       let response;
 
       if (currentMinecraftUser?.id === foundMinecraftUser.id) {
-        response = embedTemplate(
+        response = warningEmbedTemplate(
           `Good news! You are already whitelisted with \`${foundMinecraftUser.name}\`!!`,
         );
       } else {
         response = warningEmbedTemplate(
-          `You are already whitelisted with the account \`${currentMinecraftUser?.name ?? "??????"}\`, but you can still change it.`,
+          `You are already whitelisted with the account \`${currentMinecraftUser?.name ?? "??????"}\`.`,
         );
       }
 
@@ -104,9 +104,6 @@ export default Command(
             break;
           case RCONError.UnknownServerError:
             message = "An unknown error occurred on the minecraft server.";
-            break;
-          case RCONError.RedundantAction:
-            message = "You are already whitelisted.";
             break;
           default: {
             localState.log.error(
