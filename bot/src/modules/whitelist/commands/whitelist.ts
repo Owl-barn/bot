@@ -1,18 +1,20 @@
-import { failEmbedTemplate, embedTemplate } from "@lib/embedTemplate";
+import { failEmbedTemplate, embedTemplate, warningEmbedTemplate } from "@lib/embedTemplate";
 import { state } from "@app";
 import { CommandGroup } from "@structs/command";
 import { Command } from "@structs/command/command";
 import { GuildMember, ApplicationCommandOptionType } from "discord.js";
-import { getMcUUID, RCONHandler } from "../lib/mc.service";
+import { RconClient, RCONError } from "../lib/rcon.service";
 import { getConfig } from "../lib/getConfig";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
+import { localState, MAX_MINECRAFT_NAME_LENGTH } from "..";
+import { MinecraftUser } from "../lib/minecraft_api.service";
 
 export default Command(
 
   // Info
   {
     name: "whitelist",
-    description: "whitelist to mc server",
+    description: "Whitelist yourself to the connected minecraft server.",
     group: CommandGroup.general,
 
     arguments: [
@@ -20,6 +22,7 @@ export default Command(
         type: ApplicationCommandOptionType.String,
         name: "mc_name",
         description: "What mc account to whitelist",
+        max: MAX_MINECRAFT_NAME_LENGTH,
         required: true,
       },
     ],
@@ -33,11 +36,12 @@ export default Command(
 
   // Execute
   async (msg) => {
-    let username = msg.options.getString("mc_name", true);
+    const suppliedMinecraftName = msg.options
+      .getString("mc_name", true)
+      .trim()
+      .substring(0, MAX_MINECRAFT_NAME_LENGTH);
 
     await msg.deferReply();
-
-    username = username.trim().substring(0, 64);
     const author = msg.member as GuildMember;
 
     // Get guild.
@@ -51,39 +55,69 @@ export default Command(
       return { embeds: [response] };
     }
 
-    // Get UUID
-    const uuid = await getMcUUID(username).catch(() => null);
+    // Get minecraft user
+    const foundMinecraftUser = await MinecraftUser.fromUsername(suppliedMinecraftName);
 
     // Check if exists.
-    if (!uuid)
+    if (!foundMinecraftUser)
       return {
-        embeds: [failEmbedTemplate("mc account doesn't exist")],
+        embeds: [failEmbedTemplate("Minecraft account does not exist")],
       };
 
     // Check if already registered.
     const userExists = await state.db.whitelist.findFirst({
       where: {
-        OR: [{ userId: author.id }, { minecraftId: uuid }],
+        OR: [{ userId: author.id }, { minecraftId: foundMinecraftUser.id }],
       },
     });
 
     // Check if already in db.
     if (userExists !== null) {
-      const response = failEmbedTemplate(
-        "You already have an account linked.",
-      );
+      const currentMinecraftUser = await MinecraftUser.fromId(userExists.minecraftId);
+
+      let response;
+
+      if (currentMinecraftUser?.id === foundMinecraftUser.id) {
+        response = warningEmbedTemplate(
+          `Good news! You are already whitelisted with \`${foundMinecraftUser.name}\`!!`,
+        );
+      } else {
+        response = warningEmbedTemplate(
+          `You are already whitelisted with the account \`${currentMinecraftUser?.name ?? "??????"}\`.`,
+        );
+      }
+
       return { embeds: [response] };
     }
 
     // Execute command.
-    const response = await RCONHandler([`whitelist add ${username}`], config).catch(() => null);
+    try {
+      await RconClient.addUserToWhitelist(config, foundMinecraftUser.name);
+    } catch (error) {
+      if (error !== RCONError.RedundantAction) {
+        let message = "An error occurred while whitelisting.";
 
-    // If already whitelisted.
-    if (response === null) {
-      const fail = failEmbedTemplate(
-        "This account is already whitelisted or the server couldnt be reached",
-      );
-      return { embeds: [fail] };
+        // Check for specific RCON errors.
+        switch (error) {
+          case RCONError.ServerUnreachable:
+            message = "The server is currently unreachable, please try again later.";
+            break;
+          case RCONError.UnknownServerError:
+            message = "An unknown error occurred on the minecraft server.";
+            break;
+          default: {
+            localState.log.error(
+              `Error while whitelisting user ${author.id} (${author.user.tag}) with username ${foundMinecraftUser.name}`,
+              { error },
+            );
+          }
+        }
+
+        const fail = failEmbedTemplate(message);
+        return { embeds: [fail] };
+      } else {
+        localState.log.info(`User ${author.id} (${author.user.tag}) was already whitelisted with username ${foundMinecraftUser.name}, saved to database regardless.`);
+      }
     }
 
     // Add to db.
@@ -91,18 +125,18 @@ export default Command(
       data: {
         user: connectOrCreate(author.id),
         guild: connectOrCreate(author.guild.id),
-        minecraftId: uuid,
+        minecraftId: foundMinecraftUser.id,
       },
     });
 
     // Give role.
-    if (config.rconRoleId) await author.roles.add(config.rconRoleId);
+    if (config.roleId && !author.roles.cache.has(config.roleId)) await author.roles.add(config.roleId);
 
     // Set Nickname.
-    await author.setNickname(username).catch(() => null);
+    await author.setNickname(foundMinecraftUser.name).catch(() => null);
 
     // Respond.
-    return { embeds: [embedTemplate("You've been whitelisted!")] };
+    return { embeds: [embedTemplate(`You've successfully been whitelisted with the account \`${foundMinecraftUser.name}\`!`)] };
   }
 
 );

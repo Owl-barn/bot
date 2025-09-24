@@ -1,10 +1,10 @@
-import { state } from "@app"
-import { Guild } from "@prisma/client"
+import { state } from "@app";
 
-
-export interface RconGuild extends Guild {
-  rconHost: string
-  rconPassword: string
+export interface RconGuild {
+  host: string
+  port: number
+  password: string
+  roleId: string
 }
 
 export const getConfig = async (id: string) => {
@@ -15,9 +15,18 @@ export const getConfig = async (id: string) => {
       NOT: [
         { rconHost: null },
         { rconPassword: null },
-      ]
-    }
-  }) as RconGuild | null
-  return config
-}
+        { rconRoleId: null },
+      ],
+    },
+  });
+
+  if (!config) return null;
+
+  return {
+    host: config.rconHost,
+    port: config.rconPort,
+    password: config.rconPassword,
+    roleId: config.rconRoleId,
+  } as RconGuild;
+};
 

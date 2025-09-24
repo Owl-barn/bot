@@ -1,8 +1,9 @@
 import { state } from "@app";
-import { getMcName, RCONHandler } from "../lib/mc.service";
+import { RconClient } from "../lib/rcon.service";
 import { Event } from "@structs/event";
 import { localState } from "..";
 import { getConfig } from "../lib/getConfig";
+import { MinecraftUser } from "../lib/minecraft_api.service";
 
 export default Event({
   name: "guildMemberRemove",
@@ -15,7 +16,7 @@ export default Event({
 
     if (!guild) return;
 
-    const whitelist = await state.db.whitelist
+    const deletedWhitelist = await state.db.whitelist
       .delete({
         where: {
           whitelist_guild_user_un: {
@@ -26,14 +27,22 @@ export default Event({
       })
       .catch(() => null);
 
-    if (!whitelist) return;
-    const mcName = await getMcName(whitelist.minecraftId);
+    if (!deletedWhitelist) return;
+    const minecraftUser = await MinecraftUser.fromId(deletedWhitelist.minecraftId);
 
-    if (!mcName) return;
-    const result = await RCONHandler([`whitelist remove ${mcName}`], guild).catch(() => null);
+    if (!minecraftUser) {
+      localState.log.warn(`Couldn't find Minecraft user for ${member.id.cyan} (${deletedWhitelist.minecraftId}) in ${member.guild.id.cyan}`);
+      return;
+    }
 
-    if (!result) localState.log.warn(`couldn't remove ${member.id.cyan} from whitelist in (${member.guild.id.cyan})`);
-    else localState.log.info(`Removed ${member.id.cyan} from whitelist in (${member.guild.id.cyan})`);
+    try {
+      await RconClient.removeUserFromWhitelist(guild, minecraftUser.name);
+    } catch (error) {
+      localState.log.warn(`couldn't remove ${member.id.cyan} from whitelist in (${member.guild.id.cyan})`, { error });
+      return;
+    }
+
+    localState.log.info(`Removed ${member.id.cyan} from whitelist in (${member.guild.id.cyan})`);
 
   },
 
