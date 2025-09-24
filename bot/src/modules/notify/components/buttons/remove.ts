@@ -44,7 +44,7 @@ export default Button(
       },
     });
 
-    const embed = failEmbedTemplate(`Successfully disabled your alerts for <@${user}>!`);
+    const embed = failEmbedTemplate(`Successfully disabled your alerts for <@${friend}>!`);
     embed.setTitle("Alerts disabled");
 
     const thumbnail = msg.message.embeds[0].thumbnail?.url;
