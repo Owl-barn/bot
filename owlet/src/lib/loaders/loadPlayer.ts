@@ -2,6 +2,7 @@ import { state } from "@app";
 import { DefaultExtractors } from "@discord-player/extractor";
 import { BotQueue } from "@lib/queue/queue";
 import { BotTrack } from "@lib/queue/track";
+import { buildYoutubeStreamer } from "@lib/streamers/youtube";
 import { GuildQueue, GuildQueueEvent, Player, Track } from "discord-player";
 import { YoutubeiExtractor } from "discord-player-youtubei";
 import { Client } from "discord.js";
@@ -11,7 +12,9 @@ const loadPlayer = async (client: Client): Promise<Player> => {
 
   await player.extractors.loadMulti(DefaultExtractors);
 
-  player.extractors.register(YoutubeiExtractor, { streamOptions: { highWaterMark: 1 << 25 } });
+  player.extractors.register(YoutubeiExtractor, {
+    createStream: await buildYoutubeStreamer(),
+  });
 
 
   // Queue end
