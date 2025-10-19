@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Owl-barn/owlet#readme",
   "devDependencies": {
     "@types/luxon": "^3.6.2",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
     "eslint": "^8.57.1",
     "typescript": "^5.8.3"
   },
@@ -35,6 +36,8 @@
     "envalid": "^7.3.1",
     "luxon": "^3.6.1",
     "tsconfig-paths": "^4.2.0",
-    "winston": "^3.17.0"
+    "undici": "^7.16.0",
+    "winston": "^3.17.0",
+    "ytdlp-nodejs": "^2.3.5"
   }
 }
