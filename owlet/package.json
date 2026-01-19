@@ -18,26 +18,26 @@
   },
   "homepage": "https://github.com/Owl-barn/owlet#readme",
   "devDependencies": {
-    "@types/luxon": "^3.6.2",
+    "@types/luxon": "^3.7.1",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "eslint": "^8.57.1",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@discord-player/extractor": "^7.1.0",
-    "@discordjs/opus": "^0.9.0",
-    "@discordjs/voice": "^0.18.0",
+    "@discordjs/opus": "^0.10.0",
+    "@discordjs/voice": "^0.19.0",
     "bgutils-js": "^3.2.0",
     "colors": "^1.4.0",
     "discord-player": "^7.1.0",
-    "discord-player-youtubei": "^1.4.6",
-    "discord.js": "^14.19.3",
-    "dotenv": "^16.5.0",
+    "discord-player-youtubei": "^1.5.0",
+    "discord.js": "^14.25.1",
+    "dotenv": "^16.6.1",
     "envalid": "^7.3.1",
-    "luxon": "^3.6.1",
+    "luxon": "^3.7.2",
     "tsconfig-paths": "^4.2.0",
-    "undici": "^7.16.0",
-    "winston": "^3.17.0",
+    "undici": "^7.18.2",
+    "winston": "^3.19.0",
     "ytdlp-nodejs": "^2.3.5"
   }
 }

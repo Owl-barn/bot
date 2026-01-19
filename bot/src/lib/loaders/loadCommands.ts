@@ -62,7 +62,7 @@ function processCommand(
 async function loadCommand(file: Dirent, currentScope = ""): Promise<{ item: CommandTreeItem, owner: boolean } | undefined> {
   if (file.name.startsWith("_")) return;
 
-  const path = `${file.path}/${file.name}`;
+  const path = `${file.parentPath}/${file.name}`;
 
   // Command groups.
   if (file.isDirectory()) {
