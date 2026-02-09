@@ -244,7 +244,7 @@ export default Event({
         });
 
         const embed = embedTemplate()
-          .setTitle("Birthday List")
+          .setTitle(`Birthday List - (${birthdays.length})`)
           .setDescription(birthdays.map((birthday, i) => {
             if (!birthday.birthdate) return;
             const name = msg.client.users.cache.get(birthday.id);
