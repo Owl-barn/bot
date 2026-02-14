@@ -16,7 +16,7 @@ export default SubCommand(
         name: "modifier",
         description: "What factor to multiply the xp by.",
         min: 0.1,
-        max: 5,
+        max: 10,
         required: true,
       },
     ],

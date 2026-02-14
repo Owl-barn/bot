@@ -2,7 +2,7 @@ import { state } from "@app";
 import { localState } from "..";
 import { LevelArray } from "../structs/levelArray";
 import { connectOrCreate } from "@lib/prisma/connectOrCreate";
-import { ChannelType, Collection, GuildMember, Message, RoleResolvable, VoiceChannel } from "discord.js";
+import { ChannelType, Collection, GuildMember, Message, MessageCreateOptions, RoleResolvable, VoiceChannel } from "discord.js";
 import { warningEmbedTemplate } from "@lib/embedTemplate";
 import { logType } from "@lib/services/logService";
 import { Guild, LevelReward } from "@prisma/client";
@@ -228,11 +228,16 @@ export class LevelController {
     let message = config.levelMessage;
     if (!message) return;
 
+    const messageOptions: MessageCreateOptions = { content: message, allowedMentions: { parse: [] } };
+    if (message.includes("{@USER}")) messageOptions.allowedMentions = { parse: ["users"] };
+
     // Replace the placeholders with the actual values.
-    message = message.replace("{USER}", `<@${member.id}>`);
+    message = message.replace("{@USER}", `<@${member.id}>`);
+    message = message.replace("{USER}", `<@${member.id}>`); // don't ping
     message = message.replace("{LEVEL}", String(current.level));
     message = message.replace("{XP}", String(current.levelXP));
     message = message.replace("{NEW_ROLES}", String(roles.length));
+    messageOptions.content = message;
 
     if (config.levelChannelId) {
       const channel = await member.guild.channels.fetch(config.levelChannelId);
@@ -251,18 +256,18 @@ export class LevelController {
           logType.BOT
         );
 
-        if (msg) await msg.reply(message);
+        if (msg) await msg.reply(messageOptions);
       } else {
         // If the channel is found, send the message.
-        await channel.send(message);
+        await channel.send(messageOptions);
       }
 
     } else if (msg) {
       // If the channel is not set, send the message to the user with a reply.
-      msg.reply(message);
+      msg.reply(messageOptions);
     } else if (member.voice.channel) {
       // If the user is in a voice channel, send the message to the voice channel.
-      await member.voice.channel.send(message);
+      await member.voice.channel.send(messageOptions);
     } else {
       localState.log.warning(`Could not send level message to <@${member.user.tag}> in ${member.guild.name}`);
     }

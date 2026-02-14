@@ -1,5 +1,5 @@
 import { state } from "@app";
-import { DefaultExtractors } from "@discord-player/extractor";
+import { AppleMusicExtractor, AttachmentExtractor, DefaultExtractors, SpotifyExtractor } from "@discord-player/extractor";
 import { BotQueue } from "@lib/queue/queue";
 import { BotTrack } from "@lib/queue/track";
 import { buildYoutubeStreamer } from "@lib/streamers/youtube";
@@ -16,6 +16,7 @@ const loadPlayer = async (client: Client): Promise<Player> => {
     createStream: await buildYoutubeStreamer(),
   });
 
+  await player.extractors.loadMulti([AttachmentExtractor, AppleMusicExtractor, SpotifyExtractor]);
 
   // Queue end
   player.events.on(GuildQueueEvent.QueueDelete, (queue: GuildQueue<unknown>) => {
@@ -44,6 +45,10 @@ const loadPlayer = async (client: Client): Promise<Player> => {
       channelId: queue.channel?.id,
       guildId: queue.guild.id,
     });
+  });
+
+  player.events.on(GuildQueueEvent.PlayerError, (queue: GuildQueue<unknown>, error: Error) => {
+    console.log("Player Error:", error);
   });
 
   return player;

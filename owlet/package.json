@@ -38,6 +38,6 @@
     "tsconfig-paths": "^4.2.0",
     "undici": "^7.18.2",
     "winston": "^3.19.0",
-    "ytdlp-nodejs": "^2.3.5"
+    "ytdlp-nodejs": "^3.4.1"
   }
 }
